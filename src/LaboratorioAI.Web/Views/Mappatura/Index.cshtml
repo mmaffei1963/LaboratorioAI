@@ -1,0 +1,126 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Mappatura incubatori";
+    var responsabile = Utente.NomeCompleto == "Utente di sviluppo" ? "" : Utente.NomeCompleto;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Mappatura apparecchiature termostatiche</h1>
+        <p class="sottotitolo">
+            Rilievo della temperatura del CDR nei ripiani/posizioni (A/B/C/D), con test statistici
+            di omogeneità (Modulo Statistico 04-03). Solo database interno.
+        </p>
+    </div>
+    <div class="azioni"><button class="pulsante" id="btn-nuova-taratura">Nuova mappatura</button></div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Registro mappature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th>N° rapporto</th><th>Apparecchiatura</th><th class="numerico">Esercizio °C</th><th>Data</th><th>Scadenza</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.MappaturaValidazione))
+{
+    <section class="riquadro" id="pannello-validazione">
+        <div class="barra-risultati"><h2>Validazione del calcolo</h2><span id="validazione-stato" class="sottotesto"></span></div>
+        <p class="sottotitolo">Verifica periodica che il calcolo riproduca il foglio storico su tre casi. Esito atteso: VALIDATO.</p>
+        <div id="validazione-avviso" class="avviso nascosto"></div>
+        <div class="azioni-filtri"><button type="button" class="pulsante" id="btn-valida">Valida calcoli</button><div style="flex:1"></div></div>
+        <div id="validazione-esito" class="nascosto" style="margin-top:0.5rem">
+            <div id="validazione-badge"></div>
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-validazione-casi">
+                    <thead><tr><th>Caso</th><th>Descrizione</th><th class="numerico">OK/KO</th><th>Esito</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <h3 style="margin-top:0.6rem">Registro validazioni</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-validazioni">
+                <thead><tr><th>Data</th><th>Esito</th><th class="numerico">OK/KO</th><th>Set</th><th>Versione</th><th>Operatore</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<section class="riquadro nascosto" id="pannello-taratura">
+    <div class="barra-risultati"><h2 id="taratura-titolo">Nuova mappatura</h2><span id="taratura-numero" class="sottotesto"></span></div>
+    <input type="hidden" id="t-id" />
+
+    <div class="griglia-filtri">
+        <label>Campione di riferimento (CDR)<select id="t-cdr"></select></label>
+        <label>Data mappatura<input type="date" id="t-data" /></label>
+        <label>Data scadenza<input type="date" id="t-scadenza" placeholder="default +365 gg" /></label>
+        <label>Riferimento istruzione<input type="text" id="t-istruzione" value="IO 04-02" /></label>
+        <label>N° rapporto<input type="text" id="t-numero" placeholder="automatico" /></label>
+        <label>Responsabile del rapporto<input type="text" id="t-responsabile" value="@responsabile" /></label>
+    </div>
+
+    <h3>Apparecchiatura</h3>
+    <div class="griglia-filtri">
+        <label>Origine<select id="a-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select></label>
+        <label>Identificazione<input type="text" id="a-identificazione" list="lista-a" /><datalist id="lista-a"></datalist></label>
+        <label>Codice<input type="text" id="a-codice" /></label>
+    </div>
+
+    <h3>Condizioni di esercizio</h3>
+    <div class="griglia-filtri">
+        <label>Temperatura di esercizio (°C)<input type="number" step="0.01" id="t-nominale" /></label>
+        <label>Tolleranza ± (°C)<input type="number" step="0.01" id="t-tolleranza" value="3" /></label>
+        <label>Risoluzione CDR (°C)<input type="number" step="0.001" id="t-risoluzione" value="0.01" /></label>
+    </div>
+
+    <h3>Misure <span class="sottotesto">(per ogni lettura: posizione/ripiano A-D, temperatura CDR; previste 5 per ripiano)</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-misure">
+            <thead><tr><th>Posizione</th><th class="numerico">Temperatura CDR °C</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-misura-riga">Aggiungi lettura</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-ripiano">Aggiungi ripiano (5 letture)</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button>
+    </div>
+
+    <div id="pannello-risultati-taratura" class="nascosto">
+        <h3>Risultati</h3>
+        <div id="risultati-sintesi"></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-ripiani">
+                <thead><tr><th>Ripiano</th><th class="numerico">Media °C</th><th class="numerico">Min °C</th><th class="numerico">Max °C</th><th>Conforme</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="risultati-giudizio" style="margin-top:0.4rem"></div>
+    </div>
+
+    <div id="pannello-analisi-ai" class="nascosto" style="margin-top:0.6rem">
+        <h3>Analisi AI <span id="analisi-ai-badge" class="sottotesto"></span></h3>
+        <div id="analisi-ai-anomalie"></div>
+        <div id="analisi-ai-testo" class="riquadro-tenue" style="white-space:pre-wrap"></div>
+    </div>
+
+    <div class="azioni-filtri">
+        <label class="casella"><input type="checkbox" id="t-copia-letture" checked /> copia letture nel duplicato</label>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica">Duplica per altra apparecchiatura</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-word">Rapporto Word</button>
+        <button type="button" class="pulsante" id="btn-taratura-salva">Salva mappatura</button>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/mappatura.js" asp-append-version="true"></script>
+}

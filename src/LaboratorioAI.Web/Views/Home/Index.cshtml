@@ -1,0 +1,69 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Home";
+}
+
+<div class="riquadro">
+    <h1>Laboratorio AI</h1>
+    <p class="sottotitolo">Benvenuto, @ViewData["NomeUtente"].</p>
+</div>
+
+<div class="griglia-schede">
+
+    @if (Utente.HaPermesso(Permessi.ValidazioneVisualizza))
+    {
+        <a class="scheda scheda-collegamento" href="/Validazione">
+            <h2>Da Validare</h2>
+            <p>Campioni pronti per la validazione e analisi AI, singola o massiva.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.ConsultazioneCampioni))
+    {
+        <a class="scheda scheda-collegamento" href="/Consultazione">
+            <h2>Consultazione</h2>
+            <p>Ricerca campioni nell'archivio storico con filtri combinabili.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.ConsultazioneCertificati))
+    {
+        <a class="scheda scheda-collegamento" href="/Consultazione/Certificati">
+            <h2>Certificati emessi</h2>
+            <p>Ricerca dei rapporti di prova e analisi a posteriori.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.MetodiConsulta))
+    {
+        <a class="scheda scheda-collegamento" href="/Metodi">
+            <h2>Metodi e Controlli</h2>
+            <p>Ricerca bidirezionale, accreditamenti, subappalti e prezzi.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.CommesseConsulta))
+    {
+        <a class="scheda scheda-collegamento" href="/Commesse">
+            <h2>Commesse</h2>
+            <p>Commesse in vigore, campioni collegati e prestazioni erogate.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta))
+    {
+        <a class="scheda scheda-collegamento" href="/LaboratoriEsterni">
+            <h2>Laboratori Esterni</h2>
+            <p>Analisi affidate all'esterno, riepiloghi ed esportazione.</p>
+        </a>
+    }
+
+    @if (Utente.HaPermesso(Permessi.DvrGenera))
+    {
+        <a class="scheda scheda-collegamento" href="/Dvr">
+            <h2>DVR Legionella</h2>
+            <p>Generazione dei documenti di valutazione del rischio, singola o massiva.</p>
+        </a>
+    }
+
+</div>

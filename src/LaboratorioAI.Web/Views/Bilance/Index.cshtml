@@ -1,0 +1,172 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Taratura bilance";
+    var responsabile = Utente.NomeCompleto == "Utente di sviluppo" ? "" : Utente.NomeCompleto;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Taratura bilance</h1>
+        <p class="sottotitolo">Modulo Statistico 45 secondo EURAMET cg-18: eccentricità, ripetibilità, linearità e budget d'incertezza. Solo database interno.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-nuova-pesiera">Nuova pesiera</button>
+        <button class="pulsante" id="btn-nuova-taratura">Nuova taratura</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th>N° rapporto</th><th>Bilancia</th><th class="numerico">Portata g</th><th>Data</th><th>Scadenza</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Pesiere</h2></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-pesiere">
+            <thead><tr><th>Identificazione</th><th class="numerico">N° masse</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.BilanceValidazione))
+{
+    <section class="riquadro" id="pannello-validazione">
+        <div class="barra-risultati"><h2>Validazione del calcolo</h2><span id="validazione-stato" class="sottotesto"></span></div>
+        <p class="sottotitolo">Verifica che il calcolo riproduca l'esempio ufficiale EURAMET cg-18. Esito atteso: VALIDATO.</p>
+        <div id="validazione-avviso" class="avviso nascosto"></div>
+        <div class="azioni-filtri"><button type="button" class="pulsante" id="btn-valida">Valida calcoli</button><div style="flex:1"></div></div>
+        <div id="validazione-esito" class="nascosto" style="margin-top:0.5rem"><div id="validazione-badge"></div></div>
+        <h3 style="margin-top:0.6rem">Registro validazioni</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-validazioni">
+                <thead><tr><th>Data</th><th>Esito</th><th class="numerico">OK/KO</th><th>Set</th><th>Versione</th><th>Operatore</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<!-- ══ Form pesiera ══ -->
+<section class="riquadro nascosto" id="pannello-pesiera">
+    <div class="barra-risultati"><h2 id="pesiera-titolo">Nuova pesiera</h2></div>
+    <input type="hidden" id="p-id" />
+    <div class="griglia-filtri">
+        <label>Identificazione<input type="text" id="p-identificazione" /></label>
+        <label>Note<input type="text" id="p-note" /></label>
+    </div>
+    <h3>Masse <span class="sottotesto">(nominale, valore convenzionale [g], U k=2 [mg], u [mg], mpe [mg], classe OIML, certificato, date, centro)</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-masse">
+            <thead><tr><th>Nom. g</th><th>V. conv. g</th><th>U mg</th><th>u mg</th><th>mpe mg</th><th>Classe</th><th>Cert.</th><th>Data cert.</th><th>Scad.</th><th>Centro</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-massa-riga">Aggiungi massa</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-pesiera-predefinita">Carica pesiera MARE.A</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-pesiera-annulla">Annulla</button>
+        <button type="button" class="pulsante" id="btn-pesiera-salva">Salva pesiera</button>
+    </div>
+</section>
+
+<!-- ══ Form taratura ══ -->
+<section class="riquadro nascosto" id="pannello-taratura">
+    <div class="barra-risultati"><h2 id="taratura-titolo">Nuova taratura</h2><span id="taratura-numero" class="sottotesto"></span></div>
+    <input type="hidden" id="t-id" />
+    <div class="griglia-filtri">
+        <label>Pesiera<select id="t-pesiera"></select></label>
+        <label>Data taratura<input type="date" id="t-data" /></label>
+        <label>Data scadenza<input type="date" id="t-scadenza" /></label>
+        <label>Riferimento istruzione<input type="text" id="t-istruzione" value="IO 4-05" /></label>
+        <label>Termometro utilizzato<input type="text" id="t-termometro" list="lista-termo" placeholder="scegli da ArcLab o digita" /><datalist id="lista-termo"></datalist></label>
+        <label>N° rapporto<input type="text" id="t-numero" placeholder="automatico" /></label>
+        <label>Responsabile<input type="text" id="t-responsabile" value="@responsabile" /></label>
+    </div>
+
+    <h3>Bilancia</h3>
+    <div class="griglia-filtri">
+        <label>Origine<select id="b-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select></label>
+        <label>Identificazione<input type="text" id="b-identificazione" list="lista-b" /><datalist id="lista-b"></datalist></label>
+        <label>Modello<input type="text" id="b-modello" /></label>
+        <label>Tipo<input type="text" id="b-tipo" /></label>
+        <label>SDA<input type="text" id="b-sda" /></label>
+        <label>Portata (g)<input type="text" inputmode="decimal" id="t-portata" /></label>
+        <label>Campo di taratura (g)<input type="text" inputmode="decimal" id="t-campo" placeholder="= portata se vuoto" /></label>
+        <label>Unità di formato (g)<input type="text" inputmode="decimal" id="t-uf" value="0.0001" /></label>
+        <label>Coeff. sens. termica (1/°C)<input type="text" inputmode="decimal" id="t-coeff" value="0.0000015" /></label>
+        <label>Max incertezza ammessa (g)<input type="text" inputmode="decimal" id="t-maxu" value="0.02" /></label>
+        <label>Tempo stabilizzazione (s)<input type="text" inputmode="decimal" id="t-stab" value="2" /></label>
+        <label>Intervallo di lettura (s)<input type="text" inputmode="decimal" id="t-intervallo" value="30" /></label>
+        <label>Temp. taratura (°C)<input type="text" inputmode="decimal" id="t-ttar" value="21" /></label>
+        <label>Temp. utilizzo (°C)<input type="text" inputmode="decimal" id="t-tuso" value="22" /></label>
+        <label>Max variazione temp. (°C)<input type="text" inputmode="decimal" id="t-maxvar" value="0" /></label>
+    </div>
+
+    <h3>Prova di eccentricità <span class="sottotesto">(un carico, letture nelle posizioni)</span></h3>
+    <p id="hint-ecc" class="sottotesto"></p>
+    <div class="griglia-filtri">
+        <label>Carico nominale (g)<input type="text" inputmode="decimal" step="0.0001" id="e-carico" /></label>
+        <label>Valore convenzionale (g)<input type="text" inputmode="decimal" step="0.0000001" id="e-conv" /></label>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-ecc"><thead><tr><th>Posizione</th><th class="numerico">Lettura g</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="azioni-filtri"><button type="button" class="pulsante pulsante-tenue" id="btn-ecc-riga">Aggiungi posizione</button></div>
+
+    <h3>Prova di ripetibilità <span class="sottotesto">(un carico, 5 letture)</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-rip"><thead><tr><th>n.</th><th class="numerico">Lettura g</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="azioni-filtri"><button type="button" class="pulsante pulsante-tenue" id="btn-rip-riga">Aggiungi lettura</button></div>
+
+    <h3>Prova di linearità <span class="sottotesto">(inserisci solo carico nominale e lettura: valore convenzionale, u e mpe derivano dalla pesiera)</span></h3>
+    <p id="hint-lin" class="sottotesto"></p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-lin">
+            <thead><tr><th>Carico nom. g</th><th class="numerico">Lettura g</th><th>V. conv. g</th><th>u massa g</th><th>mpe g</th><th>Composizione</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri"><button type="button" class="pulsante pulsante-tenue" id="btn-lin-riga">Aggiungi punto</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button></div>
+
+    <div id="pannello-risultati-taratura" class="nascosto">
+        <h3>Risultati</h3>
+        <div id="risultati-sintesi"></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-risultati">
+                <thead><tr><th>Carico g</th><th class="numerico">Errore g</th><th class="numerico">U g</th><th class="numerico">U d'uso g</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="pannello-analisi-ai" class="nascosto" style="margin-top:0.6rem">
+        <h3>Analisi AI <span id="analisi-ai-badge" class="sottotesto"></span></h3>
+        <div id="analisi-ai-anomalie"></div>
+        <div id="analisi-ai-testo" class="riquadro-tenue" style="white-space:pre-wrap"></div>
+    </div>
+
+    <div class="azioni-filtri">
+        <label class="casella"><input type="checkbox" id="t-copia-letture" checked /> copia letture nel duplicato</label>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica">Duplica per altra bilancia</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-word">Rapporto Word</button>
+        <button type="button" class="pulsante" id="btn-taratura-salva">Salva taratura</button>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/bilance.js" asp-append-version="true"></script>
+}

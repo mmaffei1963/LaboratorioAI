@@ -1,0 +1,188 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Taratura termometri";
+    var responsabile = Utente.NomeCompleto == "Utente di sviluppo" ? "" : Utente.NomeCompleto;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Taratura termometri</h1>
+        <p class="sottotitolo">
+            Taratura per confronto con campione di riferimento (Modulo Statistico 04-01),
+            budget d'incertezza GUM. Solo database interno.
+        </p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-nuovo-cdr">Nuovo CDR</button>
+        <button class="pulsante" id="btn-nuova-taratura">Nuova taratura</button>
+    </div>
+</div>
+
+<!-- ══ Registro tarature ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th>N° rapporto</th><th>Strumento</th><th>Committente</th><th>Data</th><th>Scadenza</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TaraturaValidazione))
+{
+    <!-- ══ Validazione del motore di calcolo ══ -->
+    <section class="riquadro" id="pannello-validazione">
+        <div class="barra-risultati">
+            <h2>Validazione del calcolo</h2>
+            <span id="validazione-stato" class="sottotesto"></span>
+        </div>
+        <p class="sottotitolo">
+            Verifica periodica che il calcolo dell'applicazione riproduca quello validato del foglio storico,
+            sui tre casi di riferimento (errore nullo, positivo, negativo). Esito atteso: VALIDATO.
+        </p>
+        <div id="validazione-avviso" class="avviso nascosto"></div>
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante" id="btn-valida">Valida calcoli</button>
+            <div style="flex:1"></div>
+        </div>
+        <div id="validazione-esito" class="nascosto" style="margin-top:0.5rem">
+            <div id="validazione-badge"></div>
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-validazione-casi">
+                    <thead><tr><th>Caso</th><th>Descrizione</th><th class="numerico">OK/KO</th><th>Esito</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <h3 style="margin-top:0.6rem">Registro validazioni</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-validazioni">
+                <thead><tr><th>Data</th><th>Esito</th><th class="numerico">OK/KO</th><th>Set</th><th>Versione</th><th>Operatore</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<!-- ══ Anagrafica CDR ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Campioni di riferimento (CDR)</h2></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-cdr">
+            <thead><tr><th>Identificazione</th><th>Codice</th><th>Centro LAT</th><th>Certificato</th><th>Scadenza</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ══ Form CDR ══ -->
+<section class="riquadro nascosto" id="pannello-cdr">
+    <div class="barra-risultati"><h2 id="cdr-titolo">Nuovo CDR</h2></div>
+    <input type="hidden" id="cdr-id" />
+    <div class="griglia-filtri">
+        <label>Identificazione<input type="text" id="cdr-identificazione" /></label>
+        <label>Tipo termometro<input type="text" id="cdr-tipo" /></label>
+        <label>Codice interno<input type="text" id="cdr-codice" /></label>
+        <label>Centro LAT<input type="text" id="cdr-centrolat" /></label>
+        <label>Certificato n°<input type="text" id="cdr-certificato" /></label>
+        <label>Tarato il<input type="date" id="cdr-datatar" /></label>
+        <label>Scadenza<input type="date" id="cdr-scadenza" /></label>
+        <label>Risoluzione (°C)<input type="number" step="0.001" id="cdr-risoluzione" value="0.01" /></label>
+        <label>Fattore k<input type="number" step="0.1" id="cdr-k" value="2" /></label>
+        <label>Instabilità u(stCR) (°C)<input type="number" step="0.0001" id="cdr-instabilita" value="0"
+            title="Incertezza di deriva del CDR, per le tarature di incubatori/celle" /></label>
+        <label>UE testata (°C)<input type="number" step="0.001" id="cdr-ue-testata" value="0"
+            title="Incertezza estesa di testata del certificato, per la mappatura. 0 = usa il massimo tra i punti" /></label>
+    </div>
+    <h3>Punti del certificato <span class="sottotesto">(T indicata · T riferimento · differenza · UE(CR) · u(CR))</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-cert">
+            <thead><tr><th>T indicata °C</th><th>T riferim. °C</th><th>Differenza °C</th><th>UE(CR) °C</th><th>u(CR) °C</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-cert-riga">Aggiungi punto</button>
+    </div>
+
+    <h3>Taratura secondaria / interna <span class="sottotesto">(opzionale — per la deriva u(stCR) delle tarature incubatori; T indicata · T riferimento)</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-cert-sec">
+            <thead><tr><th>T indicata °C</th><th>T riferim. °C</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-cert-sec-riga">Aggiungi punto secondario</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-cdr-annulla">Annulla</button>
+        <button type="button" class="pulsante" id="btn-cdr-salva">Salva CDR</button>
+    </div>
+</section>
+
+<!-- ══ Form taratura ══ -->
+<section class="riquadro nascosto" id="pannello-taratura">
+    <div class="barra-risultati"><h2 id="taratura-titolo">Nuova taratura</h2><span id="taratura-numero" class="sottotesto"></span></div>
+    <input type="hidden" id="t-id" />
+    <div class="griglia-filtri">
+        <label>Campione di riferimento (CDR)<select id="t-cdr"></select></label>
+        <label>Strumento in taratura<input type="text" id="t-strumento" list="lista-strumenti-tar"
+            placeholder="interno MARE.A o testo libero" />
+            <datalist id="lista-strumenti-tar"></datalist></label>
+        <label>Codice strumento<input type="text" id="t-codice" /></label>
+        <label>Risoluzione strumento (°C)<input type="number" step="0.001" id="t-risoluzione" value="0.1" /></label>
+        <label>Committente<input type="text" id="t-committente" list="lista-clienti-tar" placeholder="anagrafica ArcLab (vuoto = interno)" />
+            <datalist id="lista-clienti-tar"></datalist></label>
+        <label>Riferimento istruzione<input type="text" id="t-istruzione" value="IO 4-01" /></label>
+        <label>Data taratura<input type="date" id="t-data" /></label>
+        <label>Data scadenza<input type="date" id="t-scadenza" placeholder="default +365 gg" /></label>
+        <label>N° rapporto<input type="text" id="t-numero" placeholder="automatico" /></label>
+        <label>Responsabile del rapporto<input type="text" id="t-responsabile" value="@responsabile" /></label>
+    </div>
+
+    <h3>Misure <span class="sottotesto">(per ogni lettura: punto, T riferimento, T strumento)</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-misure">
+            <thead><tr><th>Punto</th><th class="numerico">T riferimento °C</th><th class="numerico">T strumento °C</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-misura-riga">Aggiungi lettura</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button>
+    </div>
+
+    <div id="pannello-risultati-taratura" class="nascosto">
+        <h3>Risultati</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-risultati-taratura">
+                <thead><tr><th>Punto</th><th class="numerico">Tr [°C]</th><th class="numerico">Tw [°C]</th>
+                    <th class="numerico">Diff. Tw−Tr [°C]</th><th class="numerico">Incert. U [°C]</th><th class="numerico">Correzione [°C]</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="pannello-analisi-ai" class="nascosto" style="margin-top:0.6rem">
+        <h3>Analisi AI <span id="analisi-ai-badge" class="sottotesto"></span></h3>
+        <div id="analisi-ai-anomalie"></div>
+        <div id="analisi-ai-testo" class="riquadro-tenue" style="white-space:pre-wrap"></div>
+    </div>
+
+    <div class="azioni-filtri">
+        <label class="casella"><input type="checkbox" id="t-copia-letture" checked /> copia letture nel duplicato</label>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica"
+                title="Apre una nuova taratura con stesso CDR e valori del primario, per un altro termometro">Duplica per nuovo termometro</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-word">Rapporto Word</button>
+        <button type="button" class="pulsante" id="btn-taratura-salva">Salva taratura</button>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/taratura.js" asp-append-version="true"></script>
+}

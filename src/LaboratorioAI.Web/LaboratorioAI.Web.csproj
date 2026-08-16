@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LaboratorioAI.Web</RootNamespace>
+    <UserSecretsId>laboratorioai-web</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.19.1" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.19.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LaboratorioAI.Core\LaboratorioAI.Core.csproj" />
+    <ProjectReference Include="..\LaboratorioAI.Dati\LaboratorioAI.Dati.csproj" />
+    <ProjectReference Include="..\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj" />
+    <ProjectReference Include="..\LaboratorioAI.IA\LaboratorioAI.IA.csproj" />
+  </ItemGroup>
+
+</Project>

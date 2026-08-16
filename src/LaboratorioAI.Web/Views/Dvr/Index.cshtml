@@ -1,0 +1,161 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "DVR Legionella";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>DVR Legionellosi</h1>
+        <p class="sottotitolo">
+            Generazione dei documenti di valutazione del rischio, singola o massiva.
+        </p>
+    </div>
+    <div class="azioni">
+        @if (Utente.HaPermesso(Permessi.DvrRegistro))
+        {
+            <button class="pulsante pulsante-tenue" id="btn-registro">Registro</button>
+        }
+        <button class="pulsante pulsante-tenue" id="btn-ispeziona">Verifica modelli</button>
+    </div>
+</div>
+
+<div class="disposizione-doppia">
+
+    <section class="riquadro pannello-elenco">
+        <input type="search" id="filtro-strutture" class="campo-ricerca"
+               placeholder="Cerca struttura, cliente o comune…" />
+
+        @if (Utente.HaPermesso(Permessi.DvrLotto))
+        {
+            <div class="barra-selezione">
+                <label class="casella">
+                    <input type="checkbox" id="seleziona-tutte" /> Seleziona tutte
+                </label>
+                <button class="pulsante minuto" id="btn-lotto" disabled>
+                    Genera selezionate
+                </button>
+            </div>
+        }
+
+        <div id="elenco-strutture" class="elenco"></div>
+    </section>
+
+    <section id="pannello-scheda" class="riquadro nascosto">
+        <h2 id="titolo-scheda"></h2>
+
+        <form id="scheda-dvr">
+            <fieldset>
+                <legend>Identificazione</legend>
+                <div class="griglia-campi">
+                    <label>Ragione sociale<input type="text" id="c-ragione" required /></label>
+                    <label>Insediamento<input type="text" id="c-insediamento" /></label>
+                    <label>Indirizzo<input type="text" id="c-indirizzo" /></label>
+                    <label>Comune<input type="text" id="c-comune" /></label>
+                    <label>Provincia<input type="text" id="c-provincia" maxlength="2" /></label>
+                    <label>CAP<input type="text" id="c-cap" maxlength="5" /></label>
+                    <label>Regione
+                        <select id="c-regione">
+                            <option value="EmiliaRomagna">Emilia-Romagna</option>
+                            <option value="Marche">Marche</option>
+                        </select>
+                    </label>
+                    <label>Data sopralluogo<input type="text" id="c-sopralluogo" placeholder="gg/mm/aaaa" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Riferimenti</legend>
+                <div class="griglia-campi">
+                    <label>Legale rappresentante<input type="text" id="c-legale" /></label>
+                    <label>Responsabile struttura<input type="text" id="c-responsabile" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Caratteristiche della struttura</legend>
+                <div class="griglia-campi">
+                    <label>Tipologia<input type="text" id="c-tipologia" placeholder="Albergo, RSA, palestra…" /></label>
+                    <label>Numero camere<input type="number" id="c-camere" min="0" /></label>
+                    <label>Piani fuori terra<input type="number" id="c-piani" min="0" /></label>
+                    <label>Anno costruzione<input type="number" id="c-anno" min="1800" max="2100" /></label>
+                    <label>Anno ristrutturazione<input type="number" id="c-ristrutturazione" min="1800" max="2100" /></label>
+                    <label>Periodo di apertura<input type="text" id="c-apertura" placeholder="aprile – ottobre" /></label>
+                </div>
+                <label class="casella"><input type="checkbox" id="c-stagionale" /> Esercizio stagionale</label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Impianto idrico</legend>
+                <div class="griglia-campi">
+                    <label>Produzione acqua calda
+                        <select id="c-produzione">
+                            <option value="0">Non specificata</option>
+                            <option value="1">Istantanea</option>
+                            <option value="2">Accumulo centralizzato</option>
+                            <option value="3">Accumulo locale</option>
+                            <option value="4">Sistema misto</option>
+                        </select>
+                    </label>
+                    <label>Temperatura mandata (°C)<input type="number" id="c-mandata" step="0.1" /></label>
+                    <label>Temperatura ritorno (°C)<input type="number" id="c-ritorno" step="0.1" /></label>
+                    <label>Trattamenti<input type="text" id="c-trattamenti" /></label>
+                </div>
+                <div class="gruppo-caselle">
+                    <label class="casella"><input type="checkbox" id="c-serbatoi" /> Serbatoi di accumulo acqua fredda</label>
+                    <label class="casella"><input type="checkbox" id="c-ricircolo" /> Ricircolo acqua calda</label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Elementi che aumentano il rischio</legend>
+                <div class="gruppo-caselle">
+                    <label class="casella"><input type="checkbox" id="c-torri" /> Torri evaporative</label>
+                    <label class="casella"><input type="checkbox" id="c-fontane" /> Fontane decorative</label>
+                    <label class="casella"><input type="checkbox" id="c-piscine" /> Piscine o idromassaggio</label>
+                    <label class="casella"><input type="checkbox" id="c-umidificatori" /> Umidificatori dell'aria</label>
+                    <label class="casella"><input type="checkbox" id="c-antincendio" /> Impianti antincendio ad umido</label>
+                </div>
+                <label>Altri elementi<input type="text" id="c-altri-rischi" /></label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Punti di prelievo</legend>
+                <div id="elenco-punti"></div>
+                <button type="button" class="pulsante pulsante-tenue minuto" id="btn-aggiungi-punto">
+                    Aggiungi punto
+                </button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Note</legend>
+                <label>Note di sopralluogo<textarea id="c-note" rows="3"></textarea></label>
+                <label>Misure già adottate<textarea id="c-misure" rows="3"></textarea></label>
+            </fieldset>
+
+            <div class="azioni-dettaglio">
+                <button type="submit" class="pulsante" id="btn-genera">Genera documento</button>
+            </div>
+        </form>
+
+        <div id="esito-generazione" class="esito nascosto"></div>
+    </section>
+
+    <section id="segnaposto-scheda" class="riquadro segnaposto">
+        <p>Seleziona una struttura dall'elenco per compilare la scheda.</p>
+    </section>
+
+</div>
+
+<div id="finestra" class="finestra nascosto">
+    <div class="finestra-contenuto">
+        <header>
+            <h2 id="titolo-finestra"></h2>
+            <button class="chiudi" id="chiudi-finestra">&times;</button>
+        </header>
+        <div id="corpo-finestra"></div>
+    </div>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/dvr.js" asp-append-version="true"></script>
+}

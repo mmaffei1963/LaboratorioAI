@@ -1,0 +1,128 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Non fatturare";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Non fatturare</h1>
+        <p class="sottotitolo">
+            Campioni con il flag «non fatturare» attivo nel periodo, raggruppati
+            per prelevatore. Solo lettura, nessuna scrittura su ArcLab.
+        </p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-esporta" disabled>
+            Esporta in Excel
+        </button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Data ricezione da<input type="date" id="f-da" /></label>
+        <label>Data ricezione a<input type="date" id="f-a" /></label>
+        <label>Cliente<input type="search" id="f-cliente" placeholder="parte del nome" /></label>
+        <label>Insediamento<input type="search" id="f-insediamento" placeholder="parte del nome" /></label>
+        <label>Contratto HACCP
+            <select id="f-haccp">
+                <option value="">Tutti</option>
+                <option value="si">Sì</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+        <label>Prelevatore
+            <select id="f-prelevatore"><option value="">Tutti</option></select>
+        </label>
+        <label>Ricevitore
+            <select id="f-ricevitore"><option value="">Tutti</option></select>
+        </label>
+    </div>
+
+    <div class="azioni-filtri">
+        <span class="sottotesto">Controlli (nessuna spunta = tutti):</span>
+        <label class="casella"><input type="checkbox" id="c-180" /> 180</label>
+        <label class="casella"><input type="checkbox" id="c-203" /> 203</label>
+        <label class="casella"><input type="checkbox" id="c-2513" /> 2513</label>
+        <label class="casella">Altro
+            <input type="number" id="c-altro" style="width:6rem" placeholder="opzionale" /></label>
+        <div style="flex:1"></div>
+        <button class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+</section>
+
+<div id="pannello-sintesi" class="griglia-schede nascosto"></div>
+
+<div id="pannello-esiti" style="display:none">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Riepilogo per prelevatore</h2>
+            <span id="conteggio-riepilogo" class="sottotesto">clicca una riga per filtrare il dettaglio</span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-riepilogo">
+                <thead>
+                    <tr>
+                        <th>Prelevatore</th>
+                        <th class="numerico">N° campioni</th>
+                        <th class="numerico">di cui in contratto HACCP</th>
+                        <th class="numerico">Totale €</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Riepilogo per ricevitore</h2>
+            <span id="conteggio-riepilogo-ric" class="sottotesto">clicca una riga per filtrare il dettaglio</span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-riepilogo-ric">
+                <thead>
+                    <tr>
+                        <th>Ricevitore</th>
+                        <th class="numerico">N° campioni</th>
+                        <th class="numerico">di cui in contratto HACCP</th>
+                        <th class="numerico">Totale €</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Dettaglio campioni</h2>
+            <span id="conteggio-dettaglio" class="sottotesto"></span>
+        </div>
+        <div class="azioni-filtri">
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-mostra-tutti">
+                Mostra tutti
+            </button>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-dettaglio">
+                <thead>
+                    <tr>
+                        <th>Prelevatore</th><th>Ricevitore</th><th>Cliente</th><th>Insediamento</th>
+                        <th>N° campione</th><th>Controllo</th><th>Data ricezione</th>
+                        <th>Contratto HACCP</th><th class="numerico">Prezzo €</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="avviso-troncato" class="avviso nascosto">
+            Elenco troncato: affina il periodo per un conteggio completo.
+        </div>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/non-fatturare.js" asp-append-version="true"></script>
+}

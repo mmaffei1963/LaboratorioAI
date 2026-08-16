@@ -1,0 +1,645 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "DVR Piscine";
+    var haccpPericolo = new[] { "Errata regolazione sistema di dosaggio", "Errata immissione manuale" };
+    var haccpPrev = new[] { "Verifica della corretta funzionalità e manutenzione dell'impianto ad opera dell'addetto (responsabile piscina/gestore)", "Corretta formazione del personale addetto" };
+    var haccpMon = new[] { "Verifica dati impianto automatico" };
+    var haccpCorr = new[] { "Ripristino anomalie impiantistiche", "Sostituzione immediata con pompa di riserva" };
+    var prodDisinf = new[] { "Non utilizzato", "Ozono", "Cloro liquido", "Ipoclorito di sodio", "Ipoclorito di calcio", "Dicloroisocianurato sodico anidro", "Dicloroisocianurato sodico biidrato", "Acido tricloroisocianurato", "Ipoclorito di sodio prodotto in situ (elettrolisi salina)", "Bromo" };
+    var dosaggio = new[] { "Nessuno", "Manuale", "Pompa dosatrice", "Dissolutore granulare", "Salinatore" };
+    var prodFlocc = new[] { "Non utilizzato", "Solfato di alluminio (solido)", "Solfato di alluminio (soluzione)", "Cloruro ferrico", "Cloruro ferrico anidro", "Clorosolfato ferrico", "Alluminio polidrossicloruro", "Alluminio polidrossiclorosolfato", "Alluminato di sodio" };
+    var prodCorrPh = new[] { "Non utilizzato", "Acido cloridrico", "Acido solforico", "Sodio idrossido", "Sodio bisolfato", "Sodio bicarbonato", "Sodio carbonato", "Anidride carbonica" };
+    var prodAntialghe = new[] { "Non utilizzato", "N-alchil-dimetil-benzilammonio cloruro", "Poli (idrossietilene(dimetiliminio)etilene(dimetiliminio)metilene dicloruro)", "Poli (ossietilene(dimetiliminio)etilene(dimetiliminio)etilene dicloruro)", "Composti di ammonio sali quaternari" };
+    var serviziCaratt = new[] { "Ad uso esclusivo della piscina", "Ad uso promiscuo con altre attività della struttura" };
+    var serviziDistinz = new[] { "Donne", "Uomini", "Disabili", "Comune a donne e uomini", "Comune a donne e disabili", "Comune a donne, uomini, disabili" };
+    var passaggioAcc = new[] { "Obbligato ma non separato", "Separato", "Separato da spogliatoio", "Separato da tornello" };
+    var lavapNum = new[] { "Non presente", "1", "2", "3", "4" };
+    var lavapRil = new[] { "Ricambio manuale 3 volte al giorno ad opera dell'assistente bagnanti", "Rilascio automatico mediante fotocellula" };
+    var lavapSol = new[] { "di soluzione con sanificante e antimicotico", "di soluzione con sanificante", "di soluzione con antimicotico" };
+    var antimicFreq = new[] { "Continua", "3 volte al giorno" };
+    var antimicProc = new[] { "Dosaggio del prodotto antimicotico nell'acqua di alimentazione", "Immissione del prodotto antimicotico in vasca lavapiedi" };
+    var docceCaratt = new[] { "Esterne, dedicate esclusivamente alla piscina", "Collocate all'interno degli spogliatoi", "Ad uso promiscuo, a rotazione, con altre attività" };
+    var docceComp = new[] { "Colonna e bracci cromati", "Tubature murate e rompigetto cromati esposti", "Tubature murate e flessibile con doccino", "Colonna doccia in plastica con riserva idrica integrata a riscaldamento passivo" };
+    var docceLinee = new[] { "Calda e fredda", "Fredda" };
+    var docceMisc = new[] { "Nessuna", "Miscelabile al punto d'utenza", "Premiscelata a monte del punto d'utenza mediante premiscelatore." };
+    var prontoSocc = new[] { "Presente cassetta del pronto soccorso", "Presente locale di primo soccorso ad uso esclusivo della piscina", "Presente locale di primo soccorso a servizio anche di altre attività" };
+    var accessMezzi = new[] { "Ingresso principale", "Ingresso secondario", "Ingresso dedicato" };
+    var psAzPrev = new[] { "Dotazione del locale di primo soccorso", "Dotazione di apposita cassetta di pronto soccorso" };
+    var psLuogo = new[] { "Luogo di conservazione" };
+    var psUbic = new[] { "Postazione dell'assistente bagnanti", "Servizi igienici dedicati alla piscina", "Reception", "Bar adiacente all'area piscina" };
+    // Registro Marche
+    var marGruppo = new[] { "Strutture alberghiere fino a 120 posti letto", "Strutture alberghiere con posti letto superiori a 120 aventi una piscina con una superficie non superiore a mq. 240" };
+    var marCarSup = new[] { "< 240 m2", "> 240 m2" };
+    var marCarProf = new[] { "Profondità ≤ 160 cm", "Profondità > 160 cm" };
+    var marPostiLetto = new[] { "< 120", "> 120" };
+    var marImmTipo = new[] { "Immissori dal fondo", "Immissori da parete" };
+    var marRipresaSup = new[] { "da bordo sfioratore interno vasca", "da bordo sfioratore superficiale tipo finlandese", "da bordo sfioratore superficiale tipo Wlesbaden", "da skimmers" };
+    var marRipresaImmTipo = new[] { "scarichi di fondo", "aspirazioni a parete" };
+    var marSistemaAuto = new[] { "Nessuno", "Controllo disinfettante", "Controllo del pH", "Centralina redox" };
+    var marFiltroTipo = new[] { "Sabbia", "Sabbia quarzifera", "Vetro" };
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>DVR Piscine</h1>
+        <p class="sottotitolo">
+            Valutazione del rischio degli impianti natatori: precompilazione da
+            ArcLab, salvataggio della scheda e generazione del documento Word.
+        </p>
+    </div>
+    <div class="azioni">
+        <select id="regione-modulo" class="campo-inline" title="Regione del modulo di raccolta dati">
+            <option value="">Emilia-Romagna</option>
+            <option value="Marche">Marche</option>
+        </select>
+        <button class="pulsante pulsante-tenue" id="btn-modulo-raccolta"
+                title="Scarica un modulo Word vuoto da stampare e compilare a mano">
+            Modulo raccolta dati
+        </button>
+        @if (Utente.HaPermesso(Permessi.PiscineRegistro))
+        {
+            <button class="pulsante pulsante-tenue" id="btn-registro">Registro</button>
+        }
+    </div>
+</div>
+
+<div class="disposizione-doppia">
+
+    <section class="riquadro pannello-elenco">
+        <input type="search" id="ricerca-insediamento" class="campo-ricerca"
+               placeholder="Cerca cliente, comune o P.IVA…" />
+        <div id="elenco-insediamenti" class="elenco">
+            <p class="vuoto">Digita almeno tre caratteri per cercare.</p>
+        </div>
+    </section>
+
+    <section id="pannello-scheda" class="riquadro nascosto">
+        <h2 id="titolo-scheda">Nuova scheda</h2>
+
+        <form id="scheda-piscina">
+            <input type="hidden" id="p-id" />
+
+            <fieldset>
+                <legend>Anagrafica (da ArcLab, sola lettura)</legend>
+                <div class="griglia-campi">
+                    <label>Ragione sociale<input type="text" id="p-ragione" readonly /></label>
+                    <label>P.IVA<input type="text" id="p-piva" readonly /></label>
+                    <label>Indirizzo<input type="text" id="p-indirizzo" readonly /></label>
+                    <label>Comune<input type="text" id="p-comune" readonly /></label>
+                    <label>Provincia<input type="text" id="p-provincia" readonly /></label>
+                    <label>Regione<input type="text" id="p-regione" readonly /></label>
+                    <label>Codice fiscale<input type="text" id="p-codfisc" readonly /></label>
+                    <label>Sede legale<input type="text" id="p-sedelegale" readonly /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Anagrafica estesa e classificazione</legend>
+                <div class="griglia-campi">
+                    <label>Codice ATECO<input type="text" id="p-ateco" /></label>
+                    <label>Attività esercitata<input type="text" id="p-attivita" /></label>
+                    <label>Periodo di esercizio<input type="text" id="p-periodo" /></label>
+                    <label>Anno di costruzione<input type="number" id="p-anno" min="1900" max="2100" /></label>
+                    <label>Gestore della piscina<input type="text" id="p-gestore" /></label>
+                    <label>Categoria
+                        <select id="p-categoria">
+                            <option value="">—</option>
+                            <option value="0">A — utenza pubblica / uso collettivo</option>
+                            <option value="1">B — condominiali / alberghiere</option>
+                            <option value="2">C — usi speciali (curative, termali)</option>
+                        </select>
+                    </label>
+                    <label>Gruppo<input type="text" id="p-gruppo" placeholder="es. a2, b2…" /></label>
+                    <label>Fonte di approvvigionamento<input type="text" id="p-fonte" placeholder="Acquedotto pubblico…" /></label>
+                    <label>Autorizzazione sanitaria (protocollo)<input type="text" id="p-autsan" /></label>
+                    <label>Data autorizzazione sanitaria<input type="text" id="p-autsan-data" placeholder="gg/mm/aaaa" /></label>
+                    <label>Autorizzazione allo scarico<input type="text" id="p-autscarico" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Caratteristiche tecniche funzionali e vigilanza</legend>
+                <div class="griglia-campi">
+                    <label>Tipologia (caratteristiche strutturali)
+                        <select id="p-tipologia-str">
+                            <option value="">—</option>
+                            <option value="Tipologia 1 - piscine scoperte: costituite da complessi con uno o più bacini artificiali non confinati entro strutture chiuse permanenti">Tipologia 1 — scoperte</option>
+                            <option value="Tipologia 2 - piscine coperte: costituite da complessi con uno o più bacini artificiali confinati entro strutture chiuse permanenti">Tipologia 2 — coperte</option>
+                            <option value="Tipologia 3 - piscine di tipo misto: costituite da complessi con uno o più bacini artificiali scoperti e coperti utilizzabili anche contemporaneamente">Tipologia 3 — misto</option>
+                            <option value="Tipologia 4 - piscine di tipo convertibile: costituite da complessi con uno o più bacini artificiali nei quali gli spazi destinati alle attività possono essere aperti o chiusi in relazione alle condizioni atmosferiche">Tipologia 4 — convertibile</option>
+                        </select>
+                    </label>
+                    <label>Tipo (utilizzazione)
+                        <select id="p-tipo-util">
+                            <option value="">—</option>
+                            <option value="Tipo A - vasche per nuotatori e di addestramento al nuoto e destinate alle attività agonistiche, aventi requisiti che consentono l’esercizio delle attività natatorie in conformità al genere ed al livello di prestazioni per le quali è destinata la piscina">Tipo A — nuotatori/agonistica</option>
+                            <option value="Tipo B - vasche per tuffi ed attività subacquee e destinate alle attività agonistiche, aventi requisiti che consentono l’esercizio delle attività in conformità al genere ed al livello di prestazioni per le quali è destinata la piscina">Tipo B — tuffi/subacquee</option>
+                            <option value="Tipo C - vasche ricreative, aventi requisiti morfologici e funzionali che le rendono idonee per il gioco e la balneazione">Tipo C — ricreative</option>
+                            <option value="Tipo D - vasche per bambini, aventi requisiti morfologici e funzionali, quali la profondità ≤60 cm, che le rendono idonee per la balneazione dei bambini">Tipo D — bambini</option>
+                            <option value="Tipo E - vasche polifunzionali, aventi caratteristiche morfologiche e funzionali che consentono l’uso contemporaneo del bacino per attività differenti o che possiedono requisiti di convertibilità che le rendono idonee ad usi diversi">Tipo E — polifunzionali</option>
+                            <option value="Tipo F - vasche ricreative attrezzate, caratterizzate dalla prevalenza di attrezzature accessorie quali acquascivoli, sistemi di formazione di onde, fondi mobili, ecc">Tipo F — ricreative attrezzate</option>
+                        </select>
+                    </label>
+                    <label>Contatore acqua di immissione
+                        <select id="p-contatore">
+                            <option value="">—</option>
+                            <option value="Presente">Presente</option>
+                            <option value="Non presente">Non presente</option>
+                        </select>
+                    </label>
+                    <label>Registrazione ingressi alle vasche<input type="text" id="p-registrazione" placeholder="Nessuna registrazione" /></label>
+                    <label>Caratteristica vasca — superficie
+                        <select id="p-carvasca-sup">
+                            <option value="">—</option>
+                            <option value="@("< 100 m2")">Inferiore a 100 m²</option>
+                            <option value="@("> 100 m2")">Superiore a 100 m²</option>
+                        </select>
+                    </label>
+                    <label>Caratteristica vasca — profondità
+                        <select id="p-carvasca-prof">
+                            <option value="">—</option>
+                            <option value="Profondità ≤ 140 cm">Profondità ≤ 140 cm</option>
+                            <option value="@("Profondità > 140 cm")">Profondità superiore a 140 cm</option>
+                        </select>
+                    </label>
+                    <label>Lati del bordo vasca liberi (visuale)
+                        <select id="p-lati-bordo">
+                            <option value="">—</option>
+                            <option value="Non presente">Non presente</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </label>
+                    <label>Vigilanza bagnanti in vasca
+                        <select id="p-vigilanza">
+                            <option value="">—</option>
+                            <option value="Vigilanza adeguata da postazione presidiata">Vigilanza adeguata da postazione presidiata</option>
+                            <option value="Sistemi di controllo remoto (videosorveglianza)">Sistemi di controllo remoto (videosorveglianza)</option>
+                            <option value="Vetrate che permettono la visuale della vasca da postazioni presidiate quali hall, bar e desk">Vetrate con visuale da postazioni presidiate</option>
+                        </select>
+                    </label>
+                    <label>Assistente bagnanti (dichiarazione)
+                        <select id="p-assistente-scelta">
+                            <option value="">—</option>
+                            <option value="Il Titolare dell’attività ricettiva non si avvale della figura di assistente bagnanti poiché sussistono i seguenti requisiti:">Non si avvale (requisiti sotto)</option>
+                            <option value="Il Titolare dell’attività ricettiva assume egli stesso la figura di assistente bagnanti, poiché sussistono i seguenti requisiti:">Assume egli stesso (requisiti sotto)</option>
+                            <option value="Il Titolare dell’attività ricettiva si avvale della figura di assistenti bagnanti.">Si avvale di assistenti bagnanti</option>
+                        </select>
+                    </label>
+                    <label>Istruttori di nuoto
+                        <select id="p-istruttori">
+                            <option value="">—</option>
+                            <option value="Non sono presenti istruttori di nuoto in struttura.">Non presenti</option>
+                            <option value="Sono presenti istruttori di nuoto in struttura.">Presenti</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>HACCP — analisi dei punti critici</legend>
+                <div class="griglia-campi">
+                    <label>pH — pericolo
+                        <select id="p-ph-pericolo"><option value="">—</option>
+                            @foreach (var o in haccpPericolo) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>pH — azione preventiva
+                        <select id="p-ph-prev"><option value="">—</option>
+                            @foreach (var o in haccpPrev) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>pH — monitoraggio
+                        <select id="p-ph-mon"><option value="">—</option>
+                            @foreach (var o in haccpMon) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Cloro libero — pericolo
+                        <select id="p-cll-pericolo"><option value="">—</option>
+                            @foreach (var o in haccpPericolo) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Cloro libero — azione preventiva
+                        <select id="p-cll-prev"><option value="">—</option>
+                            @foreach (var o in haccpPrev) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Cloro libero — monitoraggio
+                        <select id="p-cll-mon"><option value="">—</option>
+                            @foreach (var o in haccpMon) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Cloro combinato — pericolo
+                        <select id="p-clc-pericolo"><option value="">—</option>
+                            @foreach (var o in haccpPericolo) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Pompe — azione correttiva
+                        <select id="p-pompe-corr"><option value="">—</option>
+                            @foreach (var o in haccpCorr) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Filtri — azione correttiva
+                        <select id="p-filtri-corr"><option value="">—</option>
+                            @foreach (var o in haccpCorr) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Sostanze chimiche per il trattamento</legend>
+                <div class="griglia-campi">
+                    <label>Disinfettante — principio attivo
+                        <select id="p-disinf-prod"><option value="">—</option>
+                            @foreach (var o in prodDisinf) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Disinfettante — dosaggio
+                        <select id="p-disinf-dos"><option value="">—</option>
+                            @foreach (var o in dosaggio) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Reintegro cloro — principio attivo
+                        <select id="p-reintegro-prod"><option value="">—</option>
+                            @foreach (var o in prodDisinf) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Reintegro cloro — modalità
+                        <select id="p-reintegro-mod"><option value="">—</option>
+                            @foreach (var o in dosaggio) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Flocculante — principio attivo
+                        <select id="p-flocc-prod"><option value="">—</option>
+                            @foreach (var o in prodFlocc) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Flocculante — modalità
+                        <select id="p-flocc-mod"><option value="">—</option>
+                            @foreach (var o in dosaggio) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Correttore pH — principio attivo
+                        <select id="p-corrph-prod"><option value="">—</option>
+                            @foreach (var o in prodCorrPh) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Correttore pH — modalità
+                        <select id="p-corrph-mod"><option value="">—</option>
+                            @foreach (var o in dosaggio) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Antialghe — principio attivo
+                        <select id="p-antialghe-prod"><option value="">—</option>
+                            @foreach (var o in prodAntialghe) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Antialghe — modalità
+                        <select id="p-antialghe-mod"><option value="">—</option>
+                            @foreach (var o in dosaggio) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Servizi igienici</legend>
+                <div class="griglia-campi">
+                    <label>Caratterizzazione
+                        <select id="p-servizi-caratt"><option value="">—</option>
+                            @foreach (var o in serviziCaratt) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>Distinzione
+                        <select id="p-servizi-distinz"><option value="">—</option>
+                            @foreach (var o in serviziDistinz) { <option value="@o">@o</option> }
+                        </select>
+                    </label>
+                    <label>N. docce<input type="text" id="p-servizi-docce" /></label>
+                    <label>N. lavabo<input type="text" id="p-servizi-lavabo" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Servizi, docce e dotazioni</legend>
+                <div class="griglia-campi">
+                    <label>Passaggio di accesso e rientro
+                        <select id="p-passaggio"><option value="">—</option>@foreach (var o in passaggioAcc) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Vaschette lavapiedi — numero
+                        <select id="p-lavap-num"><option value="">—</option>@foreach (var o in lavapNum) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Vaschette lavapiedi — rilascio
+                        <select id="p-lavap-ril"><option value="">—</option>@foreach (var o in lavapRil) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Vaschette lavapiedi — soluzione
+                        <select id="p-lavap-sol"><option value="">—</option>@foreach (var o in lavapSol) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Trattamento antimicotico — frequenza
+                        <select id="p-antimic-freq"><option value="">—</option>@foreach (var o in antimicFreq) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Trattamento antimicotico — procedura
+                        <select id="p-antimic-proc"><option value="">—</option>@foreach (var o in antimicProc) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Docce — caratterizzazione
+                        <select id="p-docce-caratt"><option value="">—</option>@foreach (var o in docceCaratt) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Docce — composizione
+                        <select id="p-docce-comp"><option value="">—</option>@foreach (var o in docceComp) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Docce — linee alimentazione
+                        <select id="p-docce-linee"><option value="">—</option>@foreach (var o in docceLinee) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Docce — miscelazione
+                        <select id="p-docce-misc"><option value="">—</option>@foreach (var o in docceMisc) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Pronto soccorso
+                        <select id="p-pronto-socc"><option value="">—</option>@foreach (var o in prontoSocc) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Accessibilità mezzi di soccorso
+                        <select id="p-access-mezzi"><option value="">—</option>@foreach (var o in accessMezzi) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Pronto soccorso — azione preventiva
+                        <select id="p-ps-azprev"><option value="">—</option>@foreach (var o in psAzPrev) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Pronto soccorso — luogo di conservazione
+                        <select id="p-ps-luogo"><option value="">—</option>@foreach (var o in psLuogo) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Pronto soccorso — ubicazione
+                        <select id="p-ps-ubic"><option value="">—</option>@foreach (var o in psUbic) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Addetto alle pulizie (matrice)
+                        <select id="p-addetto-pulizie"><option value="">—</option>
+                            <option value="Personale addetto alle pulizie">Personale addetto alle pulizie</option>
+                            <option value="Assistente bagnanti">Assistente bagnanti</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Dati specifici Marche (Registro tecnico funzionale)</legend>
+                <div class="griglia-campi">
+                    <label>Gruppo struttura
+                        <select id="p-mar-gruppo"><option value="">—</option>@foreach (var o in marGruppo) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Caratteristica vasca — superficie
+                        <select id="p-mar-carsup"><option value="">—</option>@foreach (var o in marCarSup) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Caratteristica vasca — profondità
+                        <select id="p-mar-carprof"><option value="">—</option>@foreach (var o in marCarProf) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Posti letto struttura
+                        <select id="p-mar-postiletto"><option value="">—</option>@foreach (var o in marPostiLetto) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Immissione — n°<input type="text" id="p-mar-imm-n" /></label>
+                    <label>Immissione — tipo
+                        <select id="p-mar-imm-tipo"><option value="">—</option>@foreach (var o in marImmTipo) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Ripresa acqua superficiale
+                        <select id="p-mar-ripresa-sup"><option value="">—</option>@foreach (var o in marRipresaSup) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Ripresa acqua immersa — n°<input type="text" id="p-mar-ripresa-imm-n" /></label>
+                    <label>Ripresa acqua immersa — tipo
+                        <select id="p-mar-ripresa-imm-tipo"><option value="">—</option>@foreach (var o in marRipresaImmTipo) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Filtri — modello<input type="text" id="p-mar-filtri-modello" /></label>
+                    <label>Filtri — altezza (m)<input type="text" id="p-mar-filtri-altezza" /></label>
+                    <label>Filtri — portata nominale (m³/h)<input type="text" id="p-mar-filtri-portata" /></label>
+                    <label>Pompe servizio — modello<input type="text" id="p-mar-pompe-modello" /></label>
+                    <label>Pompe servizio — HP<input type="text" id="p-mar-pompe-hp" /></label>
+                    <label>Pompe di riserva<input type="text" id="p-mar-pompe-riserva" placeholder="Nessuna" /></label>
+                    <label>Curva caratteristica (H m C.A.)<input type="text" id="p-mar-curva" /></label>
+                    <label>Neutralizzante cloro — prodotto<input type="text" id="p-mar-neutr-prod" /></label>
+                    <label>Neutralizzante cloro — dosaggio
+                        <select id="p-mar-neutr-mod"><option value="">—</option>@foreach (var o in dosaggio) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Sistema automatico di analisi
+                        <select id="p-mar-sistema-auto"><option value="">—</option>@foreach (var o in marSistemaAuto) { <option value="@o">@o</option> }</select>
+                    </label>
+                    <label>Ditta manut. ordinaria — ragione sociale<input type="text" id="p-ditta-ord-rag" /></label>
+                    <label>Ditta manut. ordinaria — sede<input type="text" id="p-ditta-ord-sede" /></label>
+                    <label>Ditta manut. ordinaria — comune<input type="text" id="p-ditta-ord-comune" /></label>
+                    <label>Ditta manut. ordinaria — P.IVA<input type="text" id="p-ditta-ord-piva" /></label>
+                    <label>Ditta manut. straordinaria — ragione sociale<input type="text" id="p-ditta-str-rag" /></label>
+                    <label>Ditta manut. straordinaria — sede<input type="text" id="p-ditta-str-sede" /></label>
+                    <label>Ditta manut. straordinaria — comune<input type="text" id="p-ditta-str-comune" /></label>
+                    <label>Ditta manut. straordinaria — P.IVA<input type="text" id="p-ditta-str-piva" /></label>
+                    <label>Gestore — data di nascita<input type="text" id="p-mar-gest-nascita" placeholder="gg/mm/aaaa" /></label>
+                    <label>Gestore — luogo di nascita<input type="text" id="p-mar-gest-luogo" /></label>
+                    <label>Gestore — residenza<input type="text" id="p-mar-gest-residenza" /></label>
+                    <label>Gestore — comune residenza<input type="text" id="p-mar-gest-comune" /></label>
+                    <label>Gestore — codice fiscale<input type="text" id="p-mar-gest-cf" /></label>
+                    <label>N° max bagnanti in vasca<input type="text" id="p-mar-bagnanti" /></label>
+                    <label>Personale interno manutenzione (nome e cognome)<input type="text" id="p-mar-manut-interno" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Documento</legend>
+                <div class="griglia-campi">
+                    <label>Data valutazione<input type="text" id="p-data" placeholder="gg/mm/aaaa" /></label>
+                    <label>Revisione<input type="text" id="p-revisione" /></label>
+                    <label>Valutatore<input type="text" id="p-valutatore" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Caratteristiche dell'impianto</legend>
+                <div class="griglia-campi">
+                    <label>Tipo struttura
+                        <select id="p-tipo-struttura">
+                            <option value="">—</option>
+                            <option value="0">Albergo</option>
+                            <option value="1">Villaggio turistico</option>
+                            <option value="2">Residence</option>
+                            <option value="3">Agriturismo</option>
+                            <option value="4">Altro</option>
+                        </select>
+                    </label>
+                    <label>N° vasche<input type="number" id="p-numero-vasche" min="0" /></label>
+                    <label>Collocazione
+                        <select id="p-collocazione">
+                            <option value="">—</option>
+                            <option value="0">Coperto</option>
+                            <option value="1">Scoperto</option>
+                            <option value="2">Misto</option>
+                        </select>
+                    </label>
+                    <label>Tipo utenza
+                        <select id="p-tipo-utenza">
+                            <option value="">—</option>
+                            <option value="0">Adulti</option>
+                            <option value="1">Bambini</option>
+                            <option value="2">Mista</option>
+                        </select>
+                    </label>
+                    <label>Sistema ricircolo
+                        <select id="p-ricircolo">
+                            <option value="">—</option>
+                            <option value="0">A sfioro</option>
+                            <option value="1">A bordo</option>
+                            <option value="2">Misto</option>
+                        </select>
+                    </label>
+                    <label>Griglie/bocchettoni
+                        <select id="p-griglie">
+                            <option value="">—</option>
+                            <option value="0">Conformi</option>
+                            <option value="1">Non conformi</option>
+                            <option value="2">Da verificare</option>
+                        </select>
+                    </label>
+                    <label>Trattamento acqua
+                        <select id="p-trattamento">
+                            <option value="">—</option>
+                            <option value="0">Cloro</option>
+                            <option value="1">Sale</option>
+                            <option value="2">Ossigeno attivo</option>
+                            <option value="3">UV-Ozono</option>
+                            <option value="4">Altro</option>
+                        </select>
+                    </label>
+                    <label>Idromassaggio
+                        <select id="p-idromassaggio">
+                            <option value="false">No</option>
+                            <option value="true">Sì</option>
+                        </select>
+                    </label>
+                    <label>Assistente bagnanti
+                        <select id="p-bagnino">
+                            <option value="">—</option>
+                            <option value="0">Sì, continuativo</option>
+                            <option value="1">Sì, fasce orarie</option>
+                            <option value="2">No</option>
+                        </select>
+                    </label>
+                    <label>DAE presente
+                        <select id="p-dae">
+                            <option value="false">No</option>
+                            <option value="true">Sì</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Figure di responsabilità</legend>
+                <div class="griglia-campi">
+                    <label>Datore di lavoro (nome e cognome)<input type="text" id="p-datore" /></label>
+                    <label>Responsabile piscina<input type="text" id="p-responsabile" /></label>
+                    <label>Addetto agli impianti tecnologici<input type="text" id="p-addetto" /></label>
+                    <label>Responsabile sicurezza dei bagnanti<input type="text" id="p-resp-bagnanti" /></label>
+                    <label>Assistente ai bagnanti<input type="text" id="p-assistente" /></label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Vasche e impianti tecnologici</legend>
+                <div id="elenco-vasche"></div>
+                <button type="button" class="pulsante minuto" id="btn-aggiungi-vasca">+ Aggiungi vasca</button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Misure di prevenzione</legend>
+                <div class="griglia-caselle">
+                    <label class="casella"><input type="checkbox" id="m-griglie" /> Griglie anti-effetto-ventosa</label>
+                    <label class="casella"><input type="checkbox" id="m-cartelli" /> Cartellonistica</label>
+                    <label class="casella"><input type="checkbox" id="m-salvagente" /> Salvagente e asta</label>
+                    <label class="casella"><input type="checkbox" id="m-pronto" /> Cassetta primo soccorso</label>
+                    <label class="casella"><input type="checkbox" id="m-dae" /> DAE e personale BLSD</label>
+                    <label class="casella"><input type="checkbox" id="m-regolamento" /> Regolamento esposto</label>
+                    <label class="casella"><input type="checkbox" id="m-registro" /> Registro analisi aggiornato</label>
+                    <label class="casella"><input type="checkbox" id="m-manutenzione" /> Piano manutenzione attivo</label>
+                    <label class="casella"><input type="checkbox" id="m-formazione" /> Formazione erogata</label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>6.1 Parametri di controllo dell'acqua</legend>
+                <table class="tabella-compatta" id="tab-parametri">
+                    <thead><tr><th>Parametro</th><th>Unità</th><th>Limite</th>
+                        <th>Frequenza</th><th>Metodo</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <div class="riga-pulsanti">
+                    <button type="button" class="pulsante minuto" id="btn-standard-parametri">Carica standard (Tabella A)</button>
+                    <button type="button" class="pulsante minuto" id="btn-aggiungi-parametro">+ Riga</button>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>6.2 Punti di prelievo</legend>
+                <table class="tabella-compatta" id="tab-punti">
+                    <thead><tr><th>Punto</th><th>Ubicazione</th><th>Frequenza</th>
+                        <th>Esito storico</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <button type="button" class="pulsante minuto" id="btn-aggiungi-punto">+ Punto</button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Rapporti di prova degli ultimi 5 anni (da ArcLab, consultazione)</legend>
+                <div id="tab-rapporti" class="elenco-punti"><p class="vuoto">—</p></div>
+            </fieldset>
+
+            <fieldset>
+                <legend>6.3 Scadenzario manutentivo</legend>
+                <table class="tabella-compatta" id="tab-manutenzione">
+                    <thead><tr><th>Attività</th><th>Frequenza</th><th>Responsabile</th>
+                        <th>Prossima scadenza</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <button type="button" class="pulsante minuto" id="btn-aggiungi-manutenzione">+ Attività</button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Rischio residuo</legend>
+                <textarea id="p-rischio" rows="4"></textarea>
+                <div class="riga-pulsanti">
+                    <button type="button" class="pulsante minuto" id="btn-proponi-rischio">Proponi rischio residuo</button>
+                    <span class="nota-campo">Suggerimento dalle risposte date; verifica e correggi.</span>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Regolamento interno</legend>
+                <div class="griglia-campi">
+                    <label>Orario apertura (dalle)<input type="text" id="p-orario-dalle" placeholder="09.00" /></label>
+                    <label>Orario chiusura (alle)<input type="text" id="p-orario-alle" placeholder="20.00" /></label>
+                    <label>Ubicazione servizi igienici<input type="text" id="p-servizi" /></label>
+                </div>
+            </fieldset>
+
+            <div class="azioni-scheda">
+                <button type="button" class="pulsante pulsante-tenue" id="btn-salva-bozza">Salva bozza</button>
+                <button type="button" class="pulsante" id="btn-salva-definitivo">Salva definitivo</button>
+                <button type="button" class="pulsante pulsante-primario" id="btn-genera" disabled>Genera DVR</button>
+                <button type="button" class="pulsante pulsante-primario" id="btn-genera-regolamento" disabled>Genera Regolamento</button>
+                <button type="button" class="pulsante pulsante-primario" id="btn-genera-manuale" disabled>Genera Manuale</button>
+            </div>
+        </form>
+    </section>
+
+    <section id="segnaposto-scheda" class="riquadro segnaposto">
+        <p>Cerca e seleziona un insediamento per iniziare una scheda, oppure apri il Registro.</p>
+    </section>
+
+</div>
+
+<div id="finestra" class="finestra nascosto">
+    <div class="finestra-contenuto">
+        <header>
+            <h2 id="titolo-finestra">Registro DVR Piscine</h2>
+            <button class="chiudi" id="chiudi-finestra">&times;</button>
+        </header>
+        <div id="corpo-finestra"></div>
+    </div>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/piscine.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,31 @@
+﻿  Individuazione dei progetti da ripristinare...
+  Tutti i progetti sono aggiornati per il ripristino.
+  LaboratorioAI.Core -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Core\bin\Debug\net8.0\LaboratorioAI.Core.dll
+  LaboratorioAI.Dati -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Dati\bin\Debug\net8.0\LaboratorioAI.Dati.dll
+  LaboratorioAI.IA -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.IA\bin\Debug\net8.0\LaboratorioAI.IA.dll
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(12,35): warning CS1591: Manca il commento XML per il tipo o il membro 'IGeneratoreDvr.GeneraAsync(SchedaDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(29,12): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.GeneratoreDvr(IOptions<OpzioniDvr>, ILogger<GeneratoreDvr>)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(39,48): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.GeneraAsync(SchedaDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(211,40): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.IspezionaModelloAsync(RegioneDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\OpzioniDvr.cs(8,25): warning CS1591: Manca il commento XML per il tipo o il membro 'OpzioniDvr.Sezione' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\OpzioniDvr.cs(30,19): warning CS1591: Manca il commento XML per il tipo o il membro 'OpzioniDvr.ModelloPer(RegioneDvr)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\EsportatoreLaboratoriEsterni.cs(19,19): warning CS1591: Manca il commento XML per il tipo o il membro 'EsportatoreLaboratoriEsterni.Genera(EsitoLaboratoriEsterni, CriteriLaboratoriEsterni)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\EsportatoreLaboratoriEsterni.cs(35,19): warning CS1591: Manca il commento XML per il tipo o il membro 'EsportatoreLaboratoriEsterni.NomeFile(CriteriLaboratoriEsterni)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+  LaboratorioAI.Documenti -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\bin\Debug\net8.0\LaboratorioAI.Documenti.dll
+  LaboratorioAI.Portale -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Portale\bin\Debug\net8.0\LaboratorioAI.Portale.dll
+  LaboratorioAI.Web -> C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\bin\Debug\net8.0\LaboratorioAI.Web.dll
+
+Compilazione completata.
+
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(12,35): warning CS1591: Manca il commento XML per il tipo o il membro 'IGeneratoreDvr.GeneraAsync(SchedaDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(29,12): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.GeneratoreDvr(IOptions<OpzioniDvr>, ILogger<GeneratoreDvr>)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(39,48): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.GeneraAsync(SchedaDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\GeneratoreDvr.cs(211,40): warning CS1591: Manca il commento XML per il tipo o il membro 'GeneratoreDvr.IspezionaModelloAsync(RegioneDvr, CancellationToken)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\OpzioniDvr.cs(8,25): warning CS1591: Manca il commento XML per il tipo o il membro 'OpzioniDvr.Sezione' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\Dvr\OpzioniDvr.cs(30,19): warning CS1591: Manca il commento XML per il tipo o il membro 'OpzioniDvr.ModelloPer(RegioneDvr)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\EsportatoreLaboratoriEsterni.cs(19,19): warning CS1591: Manca il commento XML per il tipo o il membro 'EsportatoreLaboratoriEsterni.Genera(EsitoLaboratoriEsterni, CriteriLaboratoriEsterni)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\EsportatoreLaboratoriEsterni.cs(35,19): warning CS1591: Manca il commento XML per il tipo o il membro 'EsportatoreLaboratoriEsterni.NomeFile(CriteriLaboratoriEsterni)' visibile pubblicamente [C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj]
+    Avvisi: 8
+    Errori: 0
+
+Tempo trascorso 00:00:02.83

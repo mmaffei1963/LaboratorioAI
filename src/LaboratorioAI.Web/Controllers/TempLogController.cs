@@ -1,0 +1,446 @@
+using System.Text.Json;
+using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Modelli;
+using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Dati.LaboratorioAI;
+using LaboratorioAI.Documenti;
+using LaboratorioAI.Web.Autorizzazione;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace LaboratorioAI.Web.Controllers;
+
+/// <summary>
+/// Monitoraggio TempLog Econorma: carica il file notturno dei registratori di temperatura,
+/// applica i limiti di taratura (letti da ArcLab tramite la mappatura canale→strumento),
+/// evidenzia le escursioni sopra/sotto ed elenca i canali da sistemare. Nessuna alterazione dei dati.
+/// </summary>
+[RichiedePermesso(Permessi.TempLogEsegui)]
+public class TempLogController : Controller
+{
+    private const string MimeXlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private const string MimePdf = "application/pdf";
+    private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
+
+    private readonly ContestoLaboratorioAI _ctx;
+    private readonly ILettoreFileTempLog _lettore;
+    private readonly IServizioMonitoraggioTempLog _monitor;
+    private readonly IRepositoryTempLog _repo;
+    private readonly IGeneratoreReportTempLog _report;
+    private readonly IContestoUtente _utente;
+    private readonly IServizioVersione _versione;
+    private readonly IConfiguration _config;
+
+    public TempLogController(
+        ContestoLaboratorioAI ctx, ILettoreFileTempLog lettore, IServizioMonitoraggioTempLog monitor,
+        IRepositoryTempLog repo, IGeneratoreReportTempLog report, IContestoUtente utente,
+        IServizioVersione versione, IConfiguration config)
+    {
+        _ctx = ctx; _lettore = lettore; _monitor = monitor; _repo = repo; _report = report;
+        _utente = utente; _versione = versione; _config = config;
+    }
+
+    private string CartellaPredefinita => _config["TempLog:CartellaScarico"]
+        ?? @"\\SRVMAREA\marea\ArcLab\Archivio_TempLog\ARCHIVIO\Scarico_Dati";
+
+    public IActionResult Index()
+    {
+        ViewData["Titolo"] = "Monitoraggio TempLog";
+        return View();
+    }
+
+    // ── Caricamento e monitoraggio del file notturno ────────────────
+    [HttpPost("api/templog/monitora")]
+    [RequestSizeLimit(30_000_000)]
+    public async Task<IActionResult> Monitora(IFormFile? file, [FromForm] bool salva = false, CancellationToken ct = default)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { messaggio = "Nessun file caricato." });
+
+        FileTempLog contenuto;
+        try
+        {
+            await using var s = file.OpenReadStream();
+            using var ms = new MemoryStream();
+            await s.CopyToAsync(ms, ct);
+            ms.Position = 0;
+            contenuto = _lettore.Leggi(ms, file.FileName);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { messaggio = "File non leggibile: " + ex.Message });
+        }
+
+        var limiti = await RisolviLimitiAsync(contenuto.Canali, ct);
+        var risultato = _monitor.Monitora(contenuto, limiti);
+
+        if (salva)
+        {
+            _ctx.CaricamentiTempLog.Add(new CaricamentoTempLog
+            {
+                NomeFile = risultato.NomeFile,
+                DataDal = risultato.DataDal,
+                DataAl = risultato.DataAl,
+                NumeroCanaliMonitorati = risultato.NumeroCanaliMonitorati,
+                NumeroCanaliConEscursioni = risultato.NumeroCanaliConEscursioni,
+                NumeroEscursioni = risultato.Escursioni.Count,
+                TuttoConforme = risultato.TuttoConforme,
+                EscursioniJson = JsonSerializer.Serialize(risultato.Escursioni, JsonOpts),
+                DaSistemare = string.Join(", ", risultato.DaSistemare),
+                IdUtente = _utente.IdUtente,
+                VersioneApplicazione = _versione.Versione
+            });
+            await _ctx.SaveChangesAsync(ct);
+        }
+
+        return Json(risultato);
+    }
+
+    // ── Export report (Excel / PDF) ─────────────────────────────────
+    [HttpPost("api/templog/report")]
+    [RequestSizeLimit(30_000_000)]
+    public async Task<IActionResult> Report(IFormFile? file, [FromQuery] string formato = "pdf", CancellationToken ct = default)
+    {
+        if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file caricato." });
+        FileTempLog contenuto;
+        try
+        {
+            await using var s = file.OpenReadStream();
+            using var ms = new MemoryStream(); await s.CopyToAsync(ms, ct); ms.Position = 0;
+            contenuto = _lettore.Leggi(ms, file.FileName);
+        }
+        catch (Exception ex) { return BadRequest(new { messaggio = "File non leggibile: " + ex.Message }); }
+
+        var risultato = _monitor.Monitora(contenuto, await RisolviLimitiAsync(contenuto.Canali, ct));
+        bool excel = string.Equals(formato, "excel", StringComparison.OrdinalIgnoreCase);
+        var bytes = excel ? _report.GeneraExcel(risultato) : _report.GeneraPdf(risultato);
+        return File(bytes, excel ? MimeXlsx : MimePdf, _report.NomeFile(risultato, excel ? "xlsx" : "pdf"));
+    }
+
+    // ── Caricamento da cartella di rete (ricorda l'ultima usata) ────
+    [HttpGet("api/templog/cartella")]
+    public async Task<IActionResult> Cartella([FromQuery] string? percorso, CancellationToken ct)
+    {
+        var cartella = !string.IsNullOrWhiteSpace(percorso) ? percorso!
+            : (await _ctx.CaricamentiTempLog.AsNoTracking().Where(c => c.CartellaOrigine != null)
+                   .OrderByDescending(c => c.DataCreazione).Select(c => c.CartellaOrigine).FirstOrDefaultAsync(ct))
+              ?? CartellaPredefinita;
+        try
+        {
+            var files = Directory.Exists(cartella)
+                ? new DirectoryInfo(cartella).GetFiles("*.xls*")
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .Take(50)
+                    .Select(f => new { f.Name, Data = f.LastWriteTime, f.Length }).ToList()
+                : null;
+            return Json(new { cartella, accessibile = files != null, files });
+        }
+        catch (Exception ex) { return Json(new { cartella, accessibile = false, errore = ex.Message, files = (object?)null }); }
+    }
+
+    [HttpPost("api/templog/carica-cartella")]
+    public async Task<IActionResult> CaricaDaCartella([FromBody] RichiestaCaricaCartella req, [FromQuery] bool salva = false, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(req.Cartella) || string.IsNullOrWhiteSpace(req.NomeFile))
+            return BadRequest(new { messaggio = "Cartella e file obbligatori." });
+        var percorso = Path.Combine(req.Cartella, req.NomeFile);
+        if (!System.IO.File.Exists(percorso)) return NotFound(new { messaggio = "File non trovato: " + percorso });
+
+        FileTempLog contenuto;
+        try
+        {
+            await using var fs = System.IO.File.OpenRead(percorso);
+            using var ms = new MemoryStream(); await fs.CopyToAsync(ms, ct); ms.Position = 0;
+            contenuto = _lettore.Leggi(ms, req.NomeFile);
+        }
+        catch (Exception ex) { return BadRequest(new { messaggio = "File non leggibile: " + ex.Message }); }
+
+        var risultato = _monitor.Monitora(contenuto, await RisolviLimitiAsync(contenuto.Canali, ct));
+        if (salva) await SalvaCaricamentoAsync(risultato, req.Cartella, ct);
+        else await RicordaCartellaAsync(req.Cartella, ct);
+        return Json(risultato);
+    }
+
+    private async Task RicordaCartellaAsync(string cartella, CancellationToken ct)
+    {
+        // registra solo la cartella (senza esito) per riproporla, evitando duplicati inutili
+        var ultima = await _ctx.CaricamentiTempLog.OrderByDescending(c => c.DataCreazione)
+            .Select(c => c.CartellaOrigine).FirstOrDefaultAsync(ct);
+        if (string.Equals(ultima, cartella, StringComparison.OrdinalIgnoreCase)) return;
+        _ctx.CaricamentiTempLog.Add(new CaricamentoTempLog { CartellaOrigine = cartella, IdUtente = _utente.IdUtente });
+        await _ctx.SaveChangesAsync(ct);
+    }
+
+    private async Task SalvaCaricamentoAsync(RisultatoMonitoraggio r, string? cartella, CancellationToken ct)
+    {
+        _ctx.CaricamentiTempLog.Add(new CaricamentoTempLog
+        {
+            NomeFile = r.NomeFile, CartellaOrigine = cartella, DataDal = r.DataDal, DataAl = r.DataAl,
+            NumeroCanaliMonitorati = r.NumeroCanaliMonitorati, NumeroCanaliConEscursioni = r.NumeroCanaliConEscursioni,
+            NumeroEscursioni = r.Escursioni.Count, TuttoConforme = r.TuttoConforme,
+            EscursioniJson = JsonSerializer.Serialize(r.Escursioni, JsonOpts),
+            DaSistemare = string.Join(", ", r.DaSistemare),
+            IdUtente = _utente.IdUtente, VersioneApplicazione = _versione.Versione
+        });
+        await _ctx.SaveChangesAsync(ct);
+    }
+
+    // ── Validazione (revisione umana) ───────────────────────────────
+    private static readonly string[] EsitiValidi = { "Conforme", "Dubbio", "NonConforme" };
+
+    /// <summary>Analizza il file e lo registra già validato con l'esito indicato (validatore = utente collegato).</summary>
+    [HttpPost("api/templog/valida-corrente")]
+    [RichiedePermesso(Permessi.TempLogValidazione)]
+    [RequestSizeLimit(30_000_000)]
+    public async Task<IActionResult> ValidaCorrente(IFormFile? file, [FromForm] string? esito, [FromForm] string? note,
+        [FromForm] string? cartella, CancellationToken ct = default)
+    {
+        if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file caricato." });
+        if (!EsitiValidi.Contains(esito)) return BadRequest(new { messaggio = "Esito non valido." });
+
+        FileTempLog contenuto;
+        try
+        {
+            await using var s = file.OpenReadStream();
+            using var ms = new MemoryStream(); await s.CopyToAsync(ms, ct); ms.Position = 0;
+            contenuto = _lettore.Leggi(ms, file.FileName);
+        }
+        catch (Exception ex) { return BadRequest(new { messaggio = "File non leggibile: " + ex.Message }); }
+
+        var risultato = _monitor.Monitora(contenuto, await RisolviLimitiAsync(contenuto.Canali, ct));
+        var c = NuovoCaricamento(risultato, cartella);
+        c.EsitoValidazione = esito; c.Validatore = NomeValidatore(); c.DataValidazione = DateTime.UtcNow;
+        c.NoteValidazione = string.IsNullOrWhiteSpace(note) ? null : note!.Trim();
+        _ctx.CaricamentiTempLog.Add(c);
+        await _ctx.SaveChangesAsync(ct);
+        return Json(new { c.IdCaricamento, c.EsitoValidazione, c.Validatore, c.DataValidazione });
+    }
+
+    [HttpGet("api/templog/registro")]
+    public async Task<IActionResult> Registro(CancellationToken ct)
+    {
+        var righe = await _ctx.CaricamentiTempLog.AsNoTracking()
+            .Where(c => c.NomeFile != null)
+            .OrderByDescending(c => c.DataCreazione).Take(200)
+            .Select(c => new
+            {
+                c.IdCaricamento, c.NomeFile, c.DataDal, c.DataCreazione,
+                c.NumeroCanaliConEscursioni, c.NumeroEscursioni, c.TuttoConforme,
+                c.EsitoValidazione, c.Validatore, c.DataValidazione, c.NoteValidazione
+            }).ToListAsync(ct);
+        return Json(righe);
+    }
+
+    [HttpPost("api/templog/valida")]
+    [RichiedePermesso(Permessi.TempLogValidazione)]
+    public async Task<IActionResult> Valida([FromBody] RichiestaValidazioneTempLog req, CancellationToken ct)
+    {
+        if (req.Ids is null || req.Ids.Count == 0) return BadRequest(new { messaggio = "Nessun caricamento selezionato." });
+        if (!EsitiValidi.Contains(req.Esito)) return BadRequest(new { messaggio = "Esito non valido." });
+
+        var righe = await _ctx.CaricamentiTempLog.Where(c => req.Ids.Contains(c.IdCaricamento)).ToListAsync(ct);
+        var validatore = NomeValidatore();
+        var ora = DateTime.UtcNow;
+        foreach (var c in righe)
+        {
+            c.EsitoValidazione = req.Esito; c.Validatore = validatore; c.DataValidazione = ora;
+            if (!string.IsNullOrWhiteSpace(req.Note)) c.NoteValidazione = req.Note!.Trim();
+        }
+        await _ctx.SaveChangesAsync(ct);
+        return Json(new { validati = righe.Count });
+    }
+
+    private string NomeValidatore() => _utente.NomeCompleto ?? "";
+
+    private CaricamentoTempLog NuovoCaricamento(RisultatoMonitoraggio r, string? cartella) => new()
+    {
+        NomeFile = r.NomeFile, CartellaOrigine = cartella, DataDal = r.DataDal, DataAl = r.DataAl,
+        NumeroCanaliMonitorati = r.NumeroCanaliMonitorati, NumeroCanaliConEscursioni = r.NumeroCanaliConEscursioni,
+        NumeroEscursioni = r.Escursioni.Count, TuttoConforme = r.TuttoConforme,
+        EscursioniJson = JsonSerializer.Serialize(r.Escursioni, JsonOpts),
+        DaSistemare = string.Join(", ", r.DaSistemare),
+        IdUtente = _utente.IdUtente, VersioneApplicazione = _versione.Versione
+    };
+
+    /// <summary>Costruisce i limiti per ogni canale del file: mappatura → IdStrumento → limiti ArcLab (riletti).</summary>
+    private async Task<IReadOnlyList<LimitiCanale>> RisolviLimitiAsync(IReadOnlyList<string> canali, CancellationToken ct)
+    {
+        var mappe = await _ctx.MappatureCanaliTempLog.AsNoTracking()
+            .Where(m => m.Attivo && m.DataCancellazione == null)
+            .ToListAsync(ct);
+        var perCanale = mappe
+            .GroupBy(m => m.Canale, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        var ids = perCanale.Values.Select(m => m.IdStrumento).Distinct().ToList();
+        var limitiArc = (await _repo.LimitiPerStrumentiAsync(ids, ct))
+            .GroupBy(x => x.IdStrumento).ToDictionary(g => g.Key, g => g.First());
+
+        var risultato = new List<LimitiCanale>();
+        foreach (var canale in canali)
+        {
+            if (!perCanale.TryGetValue(canale, out var m))
+            {
+                risultato.Add(new LimitiCanale { Canale = canale, MotivoMancanza = "Canale non mappato ad alcuno strumento." });
+                continue;
+            }
+            limitiArc.TryGetValue(m.IdStrumento, out var lim);
+            risultato.Add(new LimitiCanale
+            {
+                Canale = canale,
+                IdStrumento = m.IdStrumento,
+                Sonda = m.Sonda,
+                Ambiente = lim?.Ambiente,
+                VN = lim?.VN,
+                Min = lim?.Min,
+                Max = lim?.Max,
+                MotivoMancanza = (lim is null) ? "Strumento non trovato in ArcLab." : lim.MotivoMancanza
+            });
+        }
+        return risultato;
+    }
+
+    // ── Mappatura canale ↔ strumento ────────────────────────────────
+    [HttpGet("api/templog/mappatura")]
+    public async Task<IActionResult> Mappatura(CancellationToken ct)
+    {
+        var righe = await _ctx.MappatureCanaliTempLog.AsNoTracking()
+            .Where(m => m.DataCancellazione == null)
+            .OrderBy(m => m.Canale)
+            .Select(m => new { m.IdMappatura, m.Canale, m.IdStrumento, m.Sonda, m.Note, m.Attivo, m.ValidaDal, m.ValidaAl })
+            .ToListAsync(ct);
+        return Json(righe);
+    }
+
+    [HttpPost("api/templog/mappatura")]
+    [RichiedePermesso(Permessi.TempLogMappatura)]
+    public async Task<IActionResult> SalvaMappatura([FromBody] RichiestaMappaturaTempLog req, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(req.Canale) || req.IdStrumento <= 0)
+            return BadRequest(new { messaggio = "Canale e IdStrumento sono obbligatori." });
+
+        var m = req.IdMappatura is int id and > 0
+            ? await _ctx.MappatureCanaliTempLog.FirstOrDefaultAsync(x => x.IdMappatura == id, ct)
+            : null;
+        if (m is null)
+        {
+            m = new MappaturaCanaleTempLog { DataCreazione = DateTime.UtcNow };
+            _ctx.MappatureCanaliTempLog.Add(m);
+        }
+        m.Canale = req.Canale.Trim().ToUpperInvariant();
+        m.IdStrumento = req.IdStrumento;
+        m.Sonda = string.IsNullOrWhiteSpace(req.Sonda) ? null : req.Sonda!.Trim();
+        m.Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note!.Trim();
+        m.Attivo = req.Attivo;
+        m.DataUltimaModifica = DateTime.UtcNow;
+        m.IdUtente = _utente.IdUtente;
+        await _ctx.SaveChangesAsync(ct);
+        return Json(new { m.IdMappatura });
+    }
+
+    [HttpPost("api/templog/mappatura/{id:int}/disattiva")]
+    [RichiedePermesso(Permessi.TempLogMappatura)]
+    public async Task<IActionResult> DisattivaMappatura(int id, CancellationToken ct)
+    {
+        var m = await _ctx.MappatureCanaliTempLog.FirstOrDefaultAsync(x => x.IdMappatura == id, ct);
+        if (m is null) return NotFound();
+        m.Attivo = false;
+        m.DataCancellazione = DateTime.UtcNow;
+        m.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        return Ok();
+    }
+
+    // ── Sincronizzazione da ArcLab (proposta mappatura) ─────────────
+    [HttpGet("api/templog/sonde")]
+    [RichiedePermesso(Permessi.TempLogMappatura)]
+    public async Task<IActionResult> Sonde(CancellationToken ct)
+    {
+        var sonde = await _repo.SondeEconormaAsync(ct);
+        _ctx.SincronizzazioniSondeTempLog.Add(new SincronizzazioneSondeTempLog
+        {
+            DataSincronizzazione = DateTime.UtcNow, NumeroSonde = sonde.Count, IdUtente = _utente.IdUtente
+        });
+        await _ctx.SaveChangesAsync(ct);
+
+        var esistenti = await _ctx.MappatureCanaliTempLog.AsNoTracking()
+            .Where(m => m.Attivo && m.DataCancellazione == null)
+            .Select(m => m.Canale).ToListAsync(ct);
+        var set = new HashSet<string>(esistenti, StringComparer.OrdinalIgnoreCase);
+        return Json(sonde.Select(s => new
+        {
+            s.CanaleIpotesi, s.IdStrumento, s.Sonda, s.Ambiente, s.VN, s.Min, s.Max, s.SondaNonInUso,
+            GiaMappato = s.CanaleIpotesi != null && set.Contains(s.CanaleIpotesi),
+            LimitiOk = s.Min.HasValue && s.Max.HasValue
+        }));
+    }
+
+    [HttpGet("api/templog/sonde/report")]
+    [RichiedePermesso(Permessi.TempLogMappatura)]
+    public async Task<IActionResult> ReportSonde([FromQuery] string formato = "pdf", CancellationToken ct = default)
+    {
+        var sonde = await _repo.SondeEconormaAsync(ct);
+        var ultima = await _ctx.SincronizzazioniSondeTempLog.AsNoTracking()
+            .OrderByDescending(s => s.DataSincronizzazione).Select(s => (DateTime?)s.DataSincronizzazione).FirstOrDefaultAsync(ct);
+        bool excel = string.Equals(formato, "excel", StringComparison.OrdinalIgnoreCase);
+        var bytes = excel ? _report.GeneraSondeExcel(sonde, ultima) : _report.GeneraSondePdf(sonde, ultima);
+        var nome = $"Sonde_ArcLab_{DateTime.Now:yyyyMMdd}." + (excel ? "xlsx" : "pdf");
+        return File(bytes, excel ? MimeXlsx : MimePdf, nome);
+    }
+
+    /// <summary>Crea automaticamente le mappature mancanti dalla proposta ArcLab (CanaleIpotesi → IdStrumento).</summary>
+    [HttpPost("api/templog/mappatura/proponi")]
+    [RichiedePermesso(Permessi.TempLogMappatura)]
+    public async Task<IActionResult> ProponiMappatura(CancellationToken ct)
+    {
+        var sonde = await _repo.SondeEconormaAsync(ct);
+        var esistenti = await _ctx.MappatureCanaliTempLog
+            .Where(m => m.Attivo && m.DataCancellazione == null).Select(m => m.Canale).ToListAsync(ct);
+        var set = new HashSet<string>(esistenti, StringComparer.OrdinalIgnoreCase);
+
+        int aggiunte = 0;
+        foreach (var s in sonde)
+        {
+            if (string.IsNullOrWhiteSpace(s.CanaleIpotesi) || s.SondaNonInUso || set.Contains(s.CanaleIpotesi!)) continue;
+            _ctx.MappatureCanaliTempLog.Add(new MappaturaCanaleTempLog
+            {
+                Canale = s.CanaleIpotesi!.ToUpperInvariant(),
+                IdStrumento = s.IdStrumento,
+                Sonda = s.Sonda,
+                Attivo = true,
+                DataCreazione = DateTime.UtcNow,
+                DataUltimaModifica = DateTime.UtcNow,
+                IdUtente = _utente.IdUtente
+            });
+            set.Add(s.CanaleIpotesi!);
+            aggiunte++;
+        }
+        if (aggiunte > 0) await _ctx.SaveChangesAsync(ct);
+        return Json(new { aggiunte });
+    }
+}
+
+public record RichiestaValidazioneTempLog
+{
+    public List<int> Ids { get; init; } = new();
+    public string Esito { get; init; } = "";
+    public string? Note { get; init; }
+}
+
+public record RichiestaCaricaCartella
+{
+    public string Cartella { get; init; } = "";
+    public string NomeFile { get; init; } = "";
+}
+
+public record RichiestaMappaturaTempLog
+{
+    public int? IdMappatura { get; init; }
+    public string Canale { get; init; } = "";
+    public int IdStrumento { get; init; }
+    public string? Sonda { get; init; }
+    public string? Note { get; init; }
+    public bool Attivo { get; init; } = true;
+}

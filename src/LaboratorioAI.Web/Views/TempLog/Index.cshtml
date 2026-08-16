@@ -1,0 +1,157 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Monitoraggio TempLog";
+    var puoMappare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TempLogMappatura);
+    var puoValidare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TempLogValidazione);
+    var nomeUtente = Utente.NomeCompleto;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Monitoraggio TempLog Econorma</h1>
+        <p class="sottotitolo">Carica il file dei registratori, applica i limiti di taratura da ArcLab, evidenzia le escursioni sopra il massimo (rosso) e sotto il minimo (blu)</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Carica file</h2></div>
+    <div class="azioni-filtri">
+        <input type="file" id="file-templog" accept=".xls,.xlsx" />
+        <label class="casella"><input type="checkbox" id="salva-caricamento" /> registra il caricamento</label>
+        <button type="button" class="pulsante" id="btn-monitora">Analizza</button>
+        <div style="flex:1"></div>
+        <span id="stato-caricamento" class="sottotesto"></span>
+    </div>
+    <h3 style="margin-top:0.6rem">Da cartella di rete</h3>
+    <div class="azioni-filtri">
+        <input type="text" id="cartella" style="flex:1;min-width:20rem" placeholder="percorso cartella" />
+        <button type="button" class="pulsante pulsante-tenue" id="btn-elenca">Elenca file</button>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:14rem">
+        <table class="tabella" id="tabella-file"><thead><tr><th>File</th><th>Modificato</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-sintesi">
+    <div class="barra-risultati"><h2>Esito</h2><span id="sintesi-periodo" class="sottotesto"></span></div>
+    <div id="sintesi-badge"></div>
+    <div class="azioni-filtri" style="margin-top:0.5rem">
+        <button type="button" class="pulsante pulsante-secondario" id="btn-export-pdf">Report PDF</button>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-export-excel">Report Excel</button>
+    </div>
+    @if (puoValidare)
+    {
+        <div id="riquadro-validazione" class="riquadro-tenue" style="margin-top:0.6rem">
+            <strong>Validazione</strong> <span class="sottotesto">controllato da @nomeUtente</span>
+            <div class="azioni-filtri" style="margin-top:0.4rem">
+                <input type="text" id="valida-note" placeholder="nota (facoltativa)" style="flex:1;min-width:16rem" />
+                <button type="button" class="pulsante" style="background:#1a7f37" data-esito="Conforme">Conforme</button>
+                <button type="button" class="pulsante" style="background:#b26a00" data-esito="Dubbio">Dubbio</button>
+                <button type="button" class="pulsante" style="background:#b3261e" data-esito="NonConforme">Non conforme</button>
+            </div>
+            <div id="valida-esito-corrente" class="sottotesto" style="margin-top:0.3rem"></div>
+        </div>
+    }
+</section>
+
+<section class="riquadro nascosto" id="pannello-dasistemare">
+    <div class="barra-risultati"><h2>Da sistemare</h2><span class="sottotesto">canali senza limiti risolvibili (traccia mostrata senza evidenziazione)</span></div>
+    <div id="lista-dasistemare"></div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-escursioni">
+    <div class="barra-risultati"><h2>Escursioni rilevate</h2><span id="conteggio-escursioni" class="sottotesto"></span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-escursioni">
+            <thead><tr><th>Data</th><th>Canale</th><th>Ambiente</th><th>Tipo</th><th>Dalle</th><th>Alle</th><th class="numerico">N.</th><th class="numerico">Valore peggiore</th><th class="numerico">Limite</th><th class="numerico">Scost.</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-canali">
+    <div class="barra-risultati"><h2>Canali</h2><span class="sottotesto">clicca un canale per il dettaglio e il grafico</span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-canali">
+            <thead><tr><th>Data</th><th>Canale</th><th>Ambiente</th><th class="numerico">VN</th><th class="numerico">Min</th><th class="numerico">Max</th><th class="numerico">Letture</th><th class="numerico">Sopra</th><th class="numerico">Sotto</th><th>Esito</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div id="dettaglio-canale" class="nascosto" style="margin-top:0.6rem">
+        <h3 id="dettaglio-titolo"></h3>
+        <canvas id="grafico-canale" width="900" height="260" style="max-width:100%;border:1px solid #ddd;border-radius:6px"></canvas>
+        <div class="tabella-scorrevole" style="margin-top:0.5rem">
+            <table class="tabella" id="tabella-letture"><thead><tr><th>Ora</th><th class="numerico">Valore</th><th>Stato</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-valori">
+    <div class="barra-risultati"><h2>Valori per orario</h2><span class="sottotesto">rosso = sopra il massimo, blu = sotto il minimo</span></div>
+    <div class="tabella-scorrevole" style="max-height:26rem">
+        <table class="tabella" id="tabella-valori"><thead></thead><tbody></tbody></table>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-monitor">
+    <div class="barra-risultati"><h2>Monitor</h2><span class="sottotesto">un grafico per canale, come nel foglio Econorma</span></div>
+    <div id="griglia-monitor" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0.6rem"></div>
+</section>
+
+<section class="riquadro" id="pannello-registro">
+    <div class="barra-risultati"><h2>Registro caricamenti</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+    @if (puoValidare)
+    {
+        <div class="azioni-filtri">
+            <span class="sottotesto">valida i selezionati:</span>
+            <input type="text" id="registro-note" placeholder="nota (facoltativa)" style="flex:1;min-width:12rem" />
+            <button type="button" class="pulsante pulsante-tenue" data-bulk="Conforme">Conforme</button>
+            <button type="button" class="pulsante pulsante-tenue" data-bulk="Dubbio">Dubbio</button>
+            <button type="button" class="pulsante pulsante-tenue" data-bulk="NonConforme">Non conforme</button>
+        </div>
+    }
+    <div class="tabella-scorrevole" style="max-height:20rem">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr>
+                @if (puoValidare) { <th><input type="checkbox" id="reg-tutti" /></th> }
+                <th>File</th><th>Giorno</th><th>Caricato</th><th class="numerico">Escursioni</th><th>Validazione</th><th>Validatore</th><th>Note</th>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@if (puoMappare)
+{
+    <section class="riquadro" id="pannello-mappatura">
+        <div class="barra-risultati"><h2>Mappatura canali → strumenti</h2><span id="conteggio-mappatura" class="sottotesto"></span></div>
+        <p class="sottotitolo">Collega ogni canale (T01, T02, …) allo strumento ArcLab. I limiti sono sempre riletti da ArcLab: qui si gestisce solo il legame. Per il turnover, disattiva la riga vecchia e aggiungi la nuova.</p>
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante pulsante-secondario" id="btn-sincronizza">Sincronizza sonde da ArcLab</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-proponi">Proponi mappature mancanti</button>
+            <div style="flex:1"></div>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-mappatura">
+                <thead><tr><th>Canale</th><th class="numerico">IdStrumento</th><th>Sonda</th><th>Note</th><th>Attivo</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="barra-risultati" style="margin-top:0.6rem"><h3>Sonde ArcLab</h3>
+            <div class="azioni-filtri" style="margin:0">
+                <button type="button" class="pulsante pulsante-secondario" id="btn-sonde-pdf">Sonde PDF</button>
+                <button type="button" class="pulsante pulsante-secondario" id="btn-sonde-excel">Sonde Excel</button>
+            </div>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-sonde">
+                <thead><tr><th>Canale</th><th class="numerico">IdStrumento</th><th>Sonda</th><th>Ambiente</th><th class="numerico">VN</th><th class="numerico">Min</th><th class="numerico">Max</th><th>Stato</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@section Script {
+    <script type="module" src="~/js/moduli/templog.js" asp-append-version="true"></script>
+}

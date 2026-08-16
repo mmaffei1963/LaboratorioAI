@@ -1,0 +1,150 @@
+@{
+    ViewData["Titolo"] = "Materie prime";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Materie prime</h1>
+        <p class="sottotitolo">
+            Archivio dei valori nutrizionali per 100 g. Fonte specifica (scheda
+            tecnica) o generica (CREA e simili). Solo database interno.
+        </p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-importa-crea">Importa CREA</button>
+        <input type="file" id="file-crea" accept=".xlsx" style="display:none" />
+        <button class="pulsante pulsante-secondario" id="btn-importa-usda">Importa USDA</button>
+        <button class="pulsante pulsante-secondario" id="btn-importa-cnf">Importa CNF (Canada)</button>
+        <button class="pulsante pulsante-secondario" id="btn-scheda-pdf">Da scheda PDF</button>
+        <input type="file" id="file-scheda" accept=".pdf" style="display:none" />
+        <button class="pulsante" id="btn-nuova">Nuova materia prima</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Cerca<input type="search" id="f-q" placeholder="denominazione, marca, fornitore" /></label>
+        <label>Tipo
+            <select id="f-tipo">
+                <option value="">Tutti</option>
+                <option value="1">Specifica (scheda tecnica)</option>
+                <option value="2">Generica (riferimento)</option>
+            </select>
+        </label>
+        <label>Provenienza
+            <select id="f-fonte">
+                <option value="">Tutte</option>
+                <option value="scheda">Schede tecniche</option>
+                <option value="crea">CREA (Italia)</option>
+                <option value="usda">USDA (USA)</option>
+                <option value="cnf">CNF (Canada)</option>
+            </select>
+        </label>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati">
+        <h2>Elenco</h2>
+        <span id="conteggio" class="sottotesto"></span>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-elenco">
+            <thead>
+                <tr>
+                    <th>Denominazione</th><th>Tipo</th><th>Marca / Fornitore</th>
+                    <th class="numerico">Grassi</th><th class="numerico">Carb.</th>
+                    <th class="numerico">Prot.</th><th class="numerico">Sale</th>
+                    <th>Fonte</th><th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati">
+        <h2 id="form-titolo">Nuova materia prima</h2>
+        <span class="sottotesto" id="form-somma"></span>
+    </div>
+
+    <input type="hidden" id="m-id" />
+
+    <div class="griglia-filtri">
+        <label>Denominazione<input type="text" id="m-denominazione" /></label>
+        <label>Tipo
+            <select id="m-tipo">
+                <option value="1">Specifica (scheda tecnica)</option>
+                <option value="2">Generica (riferimento)</option>
+            </select>
+        </label>
+        <label>Marca<input type="text" id="m-marca" /></label>
+        <label>Fornitore<input type="text" id="m-fornitore" /></label>
+        <label>Categoria<input type="text" id="m-categoria" /></label>
+        <label>Codice interno<input type="text" id="m-codice" /></label>
+    </div>
+
+    <h3>Valori per 100 g</h3>
+    <div class="griglia-filtri">
+        <label>Grassi (g)<input type="number" step="0.01" id="v-grassi" class="v-macro" /></label>
+        <label>di cui saturi (g)<input type="number" step="0.01" id="v-saturi" /></label>
+        <label>Carboidrati (g)<input type="number" step="0.01" id="v-carbo" class="v-macro" /></label>
+        <label>di cui zuccheri (g)<input type="number" step="0.01" id="v-zuccheri" /></label>
+        <label>Proteine (g)<input type="number" step="0.01" id="v-proteine" class="v-macro" /></label>
+        <label>Sale (g)<input type="number" step="0.001" id="v-sale" class="v-macro" /></label>
+        <label>Fibre (g)<input type="number" step="0.01" id="v-fibre" class="v-macro" /></label>
+        <label>Acqua (g)<input type="number" step="0.01" id="v-acqua" class="v-macro" /></label>
+        <label>Energia kJ (opz.)<input type="number" step="0.01" id="v-kj" /></label>
+        <label>Energia kcal (opz.)<input type="number" step="0.01" id="v-kcal" /></label>
+    </div>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-acqua-diff">Calcola acqua per differenza</button>
+        <span class="sottotesto">acqua = 100 − (grassi + carboidrati + proteine + sale + fibre)</span>
+    </div>
+
+    <h3>Nutrienti aggiuntivi <span class="sottotesto">(per etichette USA / Canada — opzionali)</span></h3>
+    <div class="griglia-filtri">
+        <label>Sodio (mg)<input type="number" step="0.1" id="v-sodio" /></label>
+        <label>Grassi trans (g)<input type="number" step="0.01" id="v-trans" /></label>
+        <label>Grassi monoinsaturi (g)<input type="number" step="0.01" id="v-mono" /></label>
+        <label>Grassi polinsaturi (g)<input type="number" step="0.01" id="v-poli" /></label>
+        <label>Colesterolo (mg)<input type="number" step="0.1" id="v-colesterolo" /></label>
+        <label>Vitamina D (µg)<input type="number" step="0.01" id="v-vitd" /></label>
+        <label>Calcio (mg)<input type="number" step="0.1" id="v-calcio" /></label>
+        <label>Ferro (mg)<input type="number" step="0.01" id="v-ferro" /></label>
+        <label>Potassio (mg)<input type="number" step="0.1" id="v-potassio" /></label>
+    </div>
+
+    <h3>Fonte</h3>
+    <div class="griglia-filtri">
+        <label>Fonte esistente
+            <select id="m-fonte-id"><option value="">— nuova fonte —</option></select>
+        </label>
+        <label>Tipo nuova fonte
+            <select id="m-fonte-tipo">
+                <option value="1">Scheda tecnica</option>
+                <option value="2">Database CREA</option>
+                <option value="3">Database EuroFIR</option>
+                <option value="4">Referto</option>
+                <option value="5">Bibliografia</option>
+                <option value="6">Calcolo</option>
+            </select>
+        </label>
+        <label>Descrizione fonte<input type="text" id="m-fonte-descr" placeholder="es. Scheda tecnica Eurovo rev.3" /></label>
+        <label>Riferimento / URL<input type="text" id="m-fonte-rif" /></label>
+        <label>Priorità (1 = alta)<input type="number" id="m-priorita" value="1" min="1" /></label>
+        <label>Riferimento documento<input type="text" id="m-rif-doc" placeholder="n° referto, file scheda" /></label>
+    </div>
+
+    <div class="azioni-filtri">
+        <div id="form-avviso" class="avviso nascosto"></div>
+        <div style="flex:1"></div>
+        <button class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
+        <button class="pulsante" id="btn-salva">Salva</button>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/materie-prime.js" asp-append-version="true"></script>
+}

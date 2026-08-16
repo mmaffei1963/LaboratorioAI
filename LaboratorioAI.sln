@@ -1,0 +1,67 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{11111111-1111-1111-1111-111111111111}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.Core", "src\LaboratorioAI.Core\LaboratorioAI.Core.csproj", "{AAAAAAAA-0001-0000-0000-000000000000}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.Dati", "src\LaboratorioAI.Dati\LaboratorioAI.Dati.csproj", "{AAAAAAAA-0002-0000-0000-000000000000}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.Web", "src\LaboratorioAI.Web\LaboratorioAI.Web.csproj", "{AAAAAAAA-0003-0000-0000-000000000000}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.IA", "src\LaboratorioAI.IA\LaboratorioAI.IA.csproj", "{AAAAAAAA-0004-0000-0000-000000000000}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.Documenti", "src\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj", "{AAAAAAAA-0005-0000-0000-000000000000}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LaboratorioAI.Portale", "src\LaboratorioAI.Portale\LaboratorioAI.Portale.csproj", "{AAAAAAAA-0006-0000-0000-000000000000}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{958158E9-7195-44CD-B5B9-67AA5F68777F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaboratorioAI.Core.Tests", "tests\LaboratorioAI.Core.Tests\LaboratorioAI.Core.Tests.csproj", "{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AAAAAAAA-0001-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0001-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0001-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0001-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-0002-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0002-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0002-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0002-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-0003-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0003-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0003-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0003-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-0004-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0004-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0004-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0004-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-0005-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0005-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0005-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0005-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-0006-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-0006-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-0006-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-0006-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AAAAAAAA-0001-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{AAAAAAAA-0002-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{AAAAAAAA-0003-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{AAAAAAAA-0004-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{AAAAAAAA-0005-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{AAAAAAAA-0006-0000-0000-000000000000} = {11111111-1111-1111-1111-111111111111}
+		{BDD8B27F-FA13-4CED-BCA4-F1E6C600A279} = {958158E9-7195-44CD-B5B9-67AA5F68777F}
+	EndGlobalSection
+EndGlobal

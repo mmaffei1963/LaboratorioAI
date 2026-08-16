@@ -1,0 +1,169 @@
+@{
+    Layout = "_Layout";
+}
+
+<!-- ═══════════ ACCESSO ═══════════ -->
+<div id="schermata-accesso" class="schermata-accesso">
+    <form class="riquadro-accesso" id="modulo-accesso" autocomplete="on">
+        <div class="marchio-accesso">
+            <span class="marchio-sigla">M·A</span>
+            <div>
+                <div class="marchio-nome">MARE.A srl</div>
+                <div class="marchio-sotto">Area Clienti</div>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="codice">Codice cliente</label>
+            <input type="text" id="codice" name="username" autocomplete="username"
+                   inputmode="text" required />
+        </div>
+
+        <div class="campo">
+            <label for="credenziale">Partita IVA</label>
+            <input type="password" id="credenziale" name="password"
+                   autocomplete="current-password" required />
+        </div>
+
+        <label class="ricorda">
+            <input type="checkbox" id="ricorda" /> Ricorda il codice cliente
+        </label>
+
+        <button type="submit" class="pulsante-accesso" id="btn-entra">Accedi</button>
+
+        <p class="errore-accesso nascosto" id="errore-accesso"></p>
+
+        <p class="nota-accesso">
+            MARE.A srl — Laboratorio accreditato ACCREDIA n° 00729<br />
+            ISO/IEC 17025:2018 · Cattolica (RN)
+        </p>
+    </form>
+</div>
+
+<!-- ═══════════ APPLICAZIONE ═══════════ -->
+<div id="applicazione" class="nascosto">
+
+    <header class="intestazione">
+        <div class="marchio">
+            <span class="marchio-sigla">M·A</span>
+            <div class="marchio-testo">
+                <strong>MARE.A srl</strong>
+                <small>Area Clienti</small>
+            </div>
+        </div>
+        <div class="intestazione-utente">
+            <span id="nome-cliente"></span>
+            <button class="pulsante-esci" id="btn-esci">Esci</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="barra-operatore" class="barra-operatore nascosto">
+            <label>Accesso operatore — cliente da visualizzare
+                <select id="scelta-cliente"><option value="">Tutti i clienti</option></select>
+            </label>
+        </div>
+
+        <div class="sintesi" id="sintesi">
+            <div class="sintesi-voce">
+                <span class="sintesi-etichetta">Campioni</span>
+                <strong id="s-totale">—</strong>
+            </div>
+            <div class="sintesi-voce verde">
+                <span class="sintesi-etichetta">Certificati</span>
+                <strong id="s-certificati">—</strong>
+            </div>
+            <div class="sintesi-voce arancio">
+                <span class="sintesi-etichetta">In corso</span>
+                <strong id="s-corso">—</strong>
+            </div>
+        </div>
+
+        <section class="riquadro">
+            <div class="griglia-filtri">
+                <label>Ricezione da<input type="date" id="f-da" /></label>
+                <label>Ricezione a<input type="date" id="f-a" /></label>
+                <label>Struttura
+                    <select id="f-insediamento"><option value="">Tutte</option></select>
+                </label>
+                <label>Matrice
+                    <select id="f-matrice"><option value="">Tutte</option></select>
+                </label>
+                <label>Tipo di controllo
+                    <select id="f-controllo"><option value="">Tutti</option></select>
+                </label>
+                <label>Stato
+                    <select id="f-stato">
+                        <option value="">Tutti</option>
+                        <option value="InCorso">In corso</option>
+                        <option value="Certificato">Certificato</option>
+                        <option value="SpeditoOriginale">Spedito in originale</option>
+                    </select>
+                </label>
+                <label>Luogo di prelievo<input type="text" id="f-luogo" /></label>
+                <label>Punto di prelievo<input type="text" id="f-punto" /></label>
+                <label>Verbale<input type="text" id="f-verbale" /></label>
+                <label>Ricerca libera<input type="text" id="f-testo" /></label>
+            </div>
+
+            <div class="azioni-filtri">
+                <button class="pulsante-tenue" id="btn-azzera">Azzera</button>
+                <button class="pulsante" id="btn-cerca">Cerca</button>
+            </div>
+        </section>
+
+        <section class="riquadro" id="pannello-risultati">
+            <div class="barra-risultati">
+                <span id="conteggio">Imposta i filtri e avvia la ricerca.</span>
+                <span class="avviso nascosto" id="avviso-troncato">
+                    Sono mostrati i primi risultati: affina i filtri per un elenco completo.
+                </span>
+            </div>
+
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-campioni">
+                    <thead>
+                        <tr>
+                            <th>Stato</th><th>N° campione</th><th>Ricezione</th><th>Prelievo</th>
+                            <th>Struttura</th><th>Denominazione</th><th>Matrice</th>
+                            <th>Controllo</th><th>Luogo</th><th>Punto</th><th>Verbale</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Dettaglio prove: riservato all'accesso operatore -->
+        <section class="riquadro nascosto" id="pannello-prove">
+            <div class="barra-risultati">
+                <h2 id="titolo-prove"></h2>
+                <button class="chiudi" id="chiudi-prove">&times;</button>
+            </div>
+
+            <div class="avvertenza">
+                <strong>Dati gestionali non validati.</strong>
+                I valori riportati sono estratti dal sistema informatico del laboratorio
+                prima dell'emissione del rapporto di prova. L'unico documento con valore
+                legale e tecnico è il <strong>Rapporto di Prova firmato da MARE.A srl</strong>.
+                Non utilizzare questi dati per scopi regolatori, legali o di conformità.
+            </div>
+
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-prove">
+                    <thead>
+                        <tr>
+                            <th>Parametro</th><th>Valore</th><th>U.M.</th>
+                            <th>Riferimento</th><th>Metodo</th><th>Esito</th><th>Eseguito da</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pie">
+        MARE.A srl — Via della Repubblica, 26 — 47841 Cattolica (RN) — Tel. 0541 963038
+    </footer>
+</div>

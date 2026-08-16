@@ -1,0 +1,176 @@
+using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Dati.ArcLab;
+using LaboratorioAI.Dati.ArcLab.Repository;
+using LaboratorioAI.Dati.LaboratorioAI;
+using LaboratorioAI.Dati.LaboratorioAI.DatiIniziali;
+using LaboratorioAI.Documenti;
+using LaboratorioAI.Documenti.Dvr;
+using LaboratorioAI.IA;
+using LaboratorioAI.Web.Autorizzazione;
+using LaboratorioAI.Web.Servizi;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ═══════════════════════════════════════════════════════════════════
+// LOGGING
+// ═══════════════════════════════════════════════════════════════════
+builder.Host.UseSerilog((contesto, servizi, config) => config
+    .ReadFrom.Configuration(contesto.Configuration)
+    .ReadFrom.Services(servizi)
+    .Enrich.FromLogContext());
+
+// ═══════════════════════════════════════════════════════════════════
+// ACCESSO AI DATI
+// ═══════════════════════════════════════════════════════════════════
+builder.Services.AddDbContext<ContestoLaboratorioAI>(opzioni =>
+    opzioni.UseSqlServer(
+        builder.Configuration.GetConnectionString("LaboratorioAI"),
+        sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)));
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTENTICAZIONE — Entra ID
+// ═══════════════════════════════════════════════════════════════════
+builder.Services
+    .AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "EntraId");
+
+builder.Services.AddScoped<ServizioProvisioningUtente>();
+
+// All'emissione del token: allinea l'utente applicativo e aggiunge i
+// claim di permesso. I claim vengono conservati nel cookie di sessione,
+// quindi una modifica ai permessi ha effetto al successivo accesso.
+builder.Services.Configure<OpenIdConnectOptions>(
+    OpenIdConnectDefaults.AuthenticationScheme, opzioni =>
+{
+    var precedente = opzioni.Events.OnTokenValidated;
+
+    opzioni.Events.OnTokenValidated = async contesto =>
+    {
+        if (precedente is not null) await precedente(contesto);
+
+        var provisioning = contesto.HttpContext.RequestServices
+            .GetRequiredService<ServizioProvisioningUtente>();
+
+        if (contesto.Principal?.Identity is System.Security.Claims.ClaimsIdentity identita)
+        {
+            await provisioning.AllineaAsync(identita);
+        }
+    };
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTORIZZAZIONE — a permessi
+// ═══════════════════════════════════════════════════════════════════
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, FornitorePolicyPermessi>();
+builder.Services.AddScoped<IAuthorizationHandler, GestorePermessi>();
+
+builder.Services.AddAuthorization(opzioni =>
+{
+    // Nessuna pagina è raggiungibile senza autenticazione,
+    // salvo esplicita eccezione con [AllowAnonymous].
+    opzioni.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// SERVIZI APPLICATIVI
+// ═══════════════════════════════════════════════════════════════════
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IServizioVersione, ServizioVersione>();
+builder.Services.AddScoped<IContestoUtente, ContestoUtenteHttp>();
+builder.Services.AddScoped<IServizioAudit, ServizioAudit>();
+
+// ── Accesso in sola lettura ad ArcLab ─────────────────────────────
+builder.Services.AddSingleton<IFabbricaConnessioniArcLab, FabbricaConnessioniArcLab>();
+builder.Services.AddScoped<IRepositoryCampioni, RepositoryCampioni>();
+builder.Services.AddScoped<IRepositoryCertificati, RepositoryCertificati>();
+builder.Services.AddScoped<IRepositoryAnagrafiche, RepositoryAnagrafiche>();
+builder.Services.AddScoped<IRepositoryMetodi, RepositoryMetodi>();
+builder.Services.AddScoped<IRepositoryCommesse, RepositoryCommesse>();
+builder.Services.AddScoped<IRepositoryLaboratoriEsterni, RepositoryLaboratoriEsterni>();
+
+// ── Generazione documenti ─────────────────────────────────────────
+builder.Services.AddSingleton<IEsportatoreLaboratoriEsterni, EsportatoreLaboratoriEsterni>();
+
+// ── DVR Legionellosi ──────────────────────────────────────────────
+builder.Services.Configure<OpzioniDvr>(builder.Configuration.GetSection(OpzioniDvr.Sezione));
+builder.Services.AddScoped<IRepositoryDvr, RepositoryDvr>();
+builder.Services.AddScoped<IGeneratoreDvr, GeneratoreDvr>();
+builder.Services.AddSingleton<IServizioLottiDvr, ServizioLottiDvr>();
+
+// ── Analisi AI ────────────────────────────────────────────────────
+builder.Services.Configure<OpzioniAnthropic>(
+    builder.Configuration.GetSection(OpzioniAnthropic.Sezione));
+
+builder.Services.AddHttpClient<IClientAnthropic, ClientAnthropic>((servizi, http) =>
+{
+    var opzioni = servizi.GetRequiredService<
+        Microsoft.Extensions.Options.IOptions<OpzioniAnthropic>>().Value;
+    http.Timeout = TimeSpan.FromSeconds(opzioni.TimeoutSecondi);
+});
+
+builder.Services.AddScoped<IServizioAnalisi, ServizioAnalisi>();
+
+builder.Services.AddControllersWithViews()
+    .AddMicrosoftIdentityUI();
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ContestoLaboratorioAI>("database");
+
+var app = builder.Build();
+
+// ═══════════════════════════════════════════════════════════════════
+// MIGRAZIONI E POPOLAMENTO INIZIALE
+// ═══════════════════════════════════════════════════════════════════
+using (var ambito = app.Services.CreateScope())
+{
+    var ctx = ambito.ServiceProvider.GetRequiredService<ContestoLaboratorioAI>();
+    var log = ambito.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        await ctx.Database.MigrateAsync();
+        await Popolamento.EseguiAsync(ctx);
+        log.LogInformation("Database allineato e popolamento iniziale completato.");
+    }
+    catch (Exception ex)
+    {
+        log.LogCritical(ex, "Allineamento del database non riuscito. L'applicazione non può avviarsi.");
+        throw;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PIPELINE
+// ═══════════════════════════════════════════════════════════════════
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Errore");
+    app.UseHsts();
+}
+
+app.UseSerilogRequestLogging(opzioni =>
+{
+    opzioni.MessageTemplate = "{RequestMethod} {RequestPath} → {StatusCode} in {Elapsed:0} ms";
+});
+
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapHealthChecks("/stato").AllowAnonymous();
+
+app.Run();

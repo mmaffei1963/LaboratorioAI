@@ -1,0 +1,82 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Metodi e Controlli";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Metodi e controlli</h1>
+        <p class="sottotitolo">
+            Ricerca bidirezionale: dai metodi ai controlli che li contengono,
+            o dal controllo ai metodi che lo compongono.
+        </p>
+    </div>
+</div>
+
+<div class="disposizione-doppia">
+
+    <div class="colonna-ricerche">
+
+        <section class="riquadro">
+            <h2>Dai metodi ai controlli</h2>
+            <p class="sottotitolo">Cerca per parametro o riferimento normativo.</p>
+
+            <div id="contenitore-scelte" class="contenitore-scelte">
+                <input type="text" id="ricerca-metodo" class="campo-interno"
+                       placeholder="Legionella, ISO 11731…" autocomplete="off" />
+            </div>
+            <div id="suggerimenti" class="suggerimenti nascosto"></div>
+
+            <fieldset class="scelta-logica">
+                <legend>Il controllo deve contenere</legend>
+                <label><input type="radio" name="logica" value="Tutti" checked /> tutti i metodi</label>
+                <label><input type="radio" name="logica" value="AlmenoUno" /> almeno uno</label>
+                <label><input type="radio" name="logica" value="Esattamente" /> esattamente questi</label>
+            </fieldset>
+
+            <div class="azioni-dettaglio">
+                <button class="pulsante" id="btn-cerca-controlli">Cerca controlli</button>
+                <button class="pulsante pulsante-tenue" id="btn-azzera-metodi">Azzera</button>
+            </div>
+        </section>
+
+        <section class="riquadro">
+            <h2>Dal controllo ai metodi</h2>
+            <div class="riga-lookup">
+                <label style="flex:1">Nome controllo
+                    <select id="scelta-controllo"><option value="">Seleziona…</option></select>
+                </label>
+                <label>ID<input type="number" id="id-controllo" placeholder="000" /></label>
+                <button class="pulsante pulsante-secondario" id="btn-esplodi">Esplodi</button>
+            </div>
+        </section>
+
+    </div>
+
+    <section id="pannello-esito" class="riquadro nascosto">
+        <div class="barra-risultati">
+            <h2 id="titolo-esito"></h2>
+            <span id="info-esito" class="sottotesto"></span>
+        </div>
+
+        <input type="search" id="filtro-esito" class="campo-ricerca nascosto"
+               placeholder="Filtra i risultati…" />
+
+        <div id="riquadro-prezzi" class="riquadro-prezzi nascosto"></div>
+
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-esito">
+                <thead></thead><tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="segnaposto-esito" class="riquadro segnaposto">
+        <p>Imposta una ricerca per vedere i risultati.</p>
+    </section>
+
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/metodi.js" asp-append-version="true"></script>
+}

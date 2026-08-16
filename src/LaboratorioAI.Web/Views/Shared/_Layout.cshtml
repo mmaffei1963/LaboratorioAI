@@ -1,0 +1,115 @@
+﻿@inject IServizioVersione Versione
+@inject IContestoUtente Utente
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Titolo"] â€” Laboratorio AI</title>
+    <link rel="stylesheet" href="~/css/sito.css" asp-append-version="true" />
+</head>
+<body>
+
+<header class="intestazione">
+    <a class="marchio" asp-controller="Home" asp-action="Index">
+        <span class="marchio-sigla">MÂ·A</span>
+        <span class="marchio-testo">
+            <strong>Laboratorio AI</strong>
+            <small>MARE.A srl</small>
+        </span>
+    </a>
+
+    @if (Utente.Autenticato)
+    {
+        <div class="intestazione-utente">
+            <span class="utente-nome">@Utente.NomeCompleto</span>
+            <a class="pulsante-esci" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Esci</a>
+        </div>
+    }
+</header>
+
+@{
+    bool gLab = Utente.HaPermesso(Permessi.ValidazioneVisualizza) || Utente.HaPermesso(Permessi.ConsultazioneCampioni)
+        || Utente.HaPermesso(Permessi.MetodiConsulta) || Utente.HaPermesso(Permessi.CommesseConsulta)
+        || Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta) || Utente.HaPermesso(Permessi.PrefatturatoTamponi)
+        || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare);
+    bool gMan = Utente.HaPermesso(Permessi.DvrGenera) || Utente.HaPermesso(Permessi.PiscineGenera);
+    bool gNut = Utente.HaPermesso(Permessi.NutrizionaleMateriePrime) || Utente.HaPermesso(Permessi.NutrizionaleRicette);
+    bool gStr = Utente.HaPermesso(Permessi.TaraturaEsegui) || Utente.HaPermesso(Permessi.IncubatoriEsegui)
+        || Utente.HaPermesso(Permessi.MappaturaEsegui) || Utente.HaPermesso(Permessi.BilanceEsegui)
+        || Utente.HaPermesso(Permessi.TempLogEsegui);
+}
+@if (Utente.Autenticato)
+{
+    <nav class="navigazione">
+        @if (gLab)
+        {
+            <div class="gruppo">
+                <span class="gruppo-testo">Laboratorio ▾</span>
+                <div class="menu">
+                    @if (Utente.HaPermesso(Permessi.ValidazioneVisualizza)) { <a href="/Validazione">Da Validare</a> }
+                    @if (Utente.HaPermesso(Permessi.ConsultazioneCampioni)) { <a href="/Consultazione">Consultazione</a> <a href="/Consultazione/Certificati">Certificati</a> }
+                    @if (Utente.HaPermesso(Permessi.MetodiConsulta)) { <a href="/Metodi">Metodi e Controlli</a> }
+                    @if (Utente.HaPermesso(Permessi.CommesseConsulta)) { <a href="/Commesse">Commesse</a> }
+                    @if (Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta)) { <a href="/LaboratoriEsterni">Laboratori Esterni</a> }
+                    @if (Utente.HaPermesso(Permessi.PrefatturatoTamponi)) { <a href="/TamponiContratto">Tamponi in contratto</a> }
+                    @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
+                </div>
+            </div>
+        }
+        @if (gMan)
+        {
+            <div class="gruppo">
+                <span class="gruppo-testo">Manualistica ▾</span>
+                <div class="menu">
+                    @if (Utente.HaPermesso(Permessi.DvrGenera)) { <a href="/Dvr">DVR Legionella</a> }
+                    @if (Utente.HaPermesso(Permessi.PiscineGenera)) { <a href="/Piscine">DVR Piscine</a> }
+                </div>
+            </div>
+        }
+        @if (gNut)
+        {
+            <div class="gruppo">
+                <span class="gruppo-testo">Nutrizionali ▾</span>
+                <div class="menu">
+                    @if (Utente.HaPermesso(Permessi.NutrizionaleMateriePrime)) { <a href="/MateriePrime">Materie prime</a> }
+                    @if (Utente.HaPermesso(Permessi.NutrizionaleRicette)) { <a href="/Ricette">Ricette nutrizionali</a> }
+                </div>
+            </div>
+        }
+        @if (gStr)
+        {
+            <div class="gruppo">
+                <span class="gruppo-testo">Strumenti ▾</span>
+                <div class="menu">
+                    @if (Utente.HaPermesso(Permessi.TaraturaEsegui)) { <a href="/Taratura">Taratura termometri</a> }
+                    @if (Utente.HaPermesso(Permessi.IncubatoriEsegui)) { <a href="/Incubatori">Taratura incubatori</a> }
+                    @if (Utente.HaPermesso(Permessi.MappaturaEsegui)) { <a href="/Mappatura">Mappatura incubatori</a> }
+                    @if (Utente.HaPermesso(Permessi.BilanceEsegui)) { <a href="/Bilance">Taratura bilance</a> }
+                    @if (Utente.HaPermesso(Permessi.TempLogEsegui)) { <a href="/TempLog">Monitoraggio TempLog</a> }
+                </div>
+            </div>
+        }
+    </nav>
+}
+
+<main class="contenuto">
+    @RenderBody()
+</main>
+
+<footer class="pie">
+    <span>MARE.A srl â€” Laboratorio Accreditato ACCREDIA nÂ° 00729</span>
+    <span class="versione">
+        v@Versione.Versione
+        @if (Versione.Ambiente != "Produzione")
+        {
+            <em class="ambiente">@Versione.Ambiente</em>
+        }
+    </span>
+</footer>
+
+<script src="~/js/comune.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Script", required: false)
+</body>
+</html>
+

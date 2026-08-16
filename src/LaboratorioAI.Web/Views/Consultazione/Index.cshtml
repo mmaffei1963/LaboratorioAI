@@ -1,0 +1,116 @@
+@{
+    ViewData["Titolo"] = "Consultazione";
+}
+
+<div class="barra-strumenti">
+    <h1>Ricerca campioni</h1>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Ricezione da<input type="date" id="f-ricezione-da" /></label>
+        <label>Ricezione a<input type="date" id="f-ricezione-a" /></label>
+        <label>Prelievo da<input type="date" id="f-prelievo-da" /></label>
+        <label>Prelievo a<input type="date" id="f-prelievo-a" /></label>
+
+        <label>Cliente
+            <select id="f-cliente"><option value="">Tutti</option></select>
+        </label>
+        <label>Insediamento
+            <select id="f-insediamento"><option value="">Tutti</option></select>
+        </label>
+        <label>Matrice
+            <select id="f-matrice"><option value="">Tutte</option></select>
+        </label>
+        <label>Controllo
+            <select id="f-controllo"><option value="">Tutti</option></select>
+        </label>
+
+        <label>Codice LIM<input type="text" id="f-codice" placeholder="4530 o 4530/01" /></label>
+        <label>Verbale<input type="text" id="f-verbale" /></label>
+        <label>Denominazione<input type="text" id="f-denominazione" /></label>
+        <label>Luogo prelievo<input type="text" id="f-luogo" /></label>
+        <label>Prelevatore<input type="text" id="f-prelevatore" /></label>
+        <label>Ricevitore<input type="text" id="f-ricevitore" /></label>
+        <label>Email<input type="text" id="f-email" placeholder="amministratore@@…" /></label>
+
+        <label>Laboratorio esterno
+            <select id="f-labesterno"><option value="">Tutti</option></select>
+        </label>
+        <label>Stato
+            <select id="f-stato">
+                <option value="">Tutti</option>
+                <option value="InCorso">In corso</option>
+                <option value="Certificato">Certificato</option>
+                <option value="SpeditoOriginale">Spedito originale</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="azioni-filtri">
+        <button class="pulsante pulsante-tenue" id="btn-azzera">Azzera</button>
+        <button class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-risultati">
+    <div class="barra-risultati">
+        <span id="conteggio"></span>
+        <span id="avviso-troncato" class="avviso nascosto">
+            Risultati troncati: affina i criteri per un elenco completo.
+        </span>
+        <button class="pulsante pulsante-secondario" id="btn-esporta">Esporta in Excel</button>
+    </div>
+
+    <div id="pannello-sintesi" class="griglia-schede"></div>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-risultati">
+            <thead>
+                <tr>
+                    <th>Stato</th><th>N° campione</th><th>Ricezione</th><th>Prelievo</th>
+                    <th>Cliente</th><th>Cod. contab.</th><th>Email</th><th>Insediamento</th><th>Denominazione</th>
+                    <th>Matrice</th><th>Controllo</th><th class="numerico">Id contr.</th>
+                    <th>Luogo</th><th>Verbale</th><th>Prelevatore</th><th class="numerico">Prezzo €</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro" id="pannello-lookup">
+    <h2>Identificativi tecnici</h2>
+    <p class="sottotitolo">
+        Dai codici di lotto e campione ricava gli identificativi interni,
+        utili per diagnosi e assistenza.
+    </p>
+    <div class="riga-lookup">
+        <label>Cod. lotto<input type="number" id="lk-lotto" /></label>
+        <label>Cod. campione<input type="number" id="lk-campione" /></label>
+        <button class="pulsante pulsante-secondario" id="btn-lookup">Cerca</button>
+    </div>
+    <div id="esito-lookup"></div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-prove">
+    <div class="barra-risultati">
+        <h2>Prove del campione</h2>
+        <span id="titolo-prove" class="sottotesto"></span>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-prove">
+            <thead>
+                <tr>
+                    <th>Metodo</th><th>Accreditamento</th><th>Laboratorio</th>
+                    <th class="numerico">IdProva</th><th class="numerico">IdRigaMetodo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/consultazione.js" asp-append-version="true"></script>
+}

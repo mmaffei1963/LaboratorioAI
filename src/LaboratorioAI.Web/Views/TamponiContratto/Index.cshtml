@@ -1,0 +1,113 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Tamponi in contratto";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Tamponi in contratto</h1>
+        <p class="sottotitolo">
+            Tamponi (controlli 180 e 203) fatturabili nel periodo, con verifica
+            del contratto di consulenza HACCP che li comprende (quindi non da
+            fatturare a parte). Solo lettura, nessuna scrittura su ArcLab.
+        </p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-esporta" disabled>
+            Esporta in Excel
+        </button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Data certificato da<input type="date" id="f-da" /></label>
+        <label>Data certificato a<input type="date" id="f-a" /></label>
+        <label>Fatturazione
+            <select id="f-fatturazione">
+                <option value="0" selected>Solo non fatturati</option>
+                <option value="1">Solo fatturati</option>
+                <option value="2">Tutti</option>
+            </select>
+        </label>
+        <label>Contratto HACCP
+            <select id="f-haccp">
+                <option value="">Tutti</option>
+                <option value="si">Sì</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+        <label>Prelevatore
+            <select id="f-prelevatore"><option value="">Tutti</option></select>
+        </label>
+        <label>Ricevitore
+            <select id="f-ricevitore"><option value="">Tutti</option></select>
+        </label>
+    </div>
+
+    <div class="azioni-filtri">
+        <span class="sottotesto">Controlli:</span>
+        <label class="casella"><input type="checkbox" id="c-180" checked /> 180</label>
+        <label class="casella"><input type="checkbox" id="c-203" checked /> 203</label>
+        <label class="casella"><input type="checkbox" id="c-2513" checked /> 2513</label>
+        <label class="casella">Altro IdControllo
+            <input type="number" id="c-altro" style="width:6rem" placeholder="opzionale" /></label>
+        <div style="flex:1"></div>
+        <button class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+</section>
+
+<div id="pannello-sintesi" class="griglia-schede nascosto"></div>
+
+<div id="pannello-esiti" style="display:none">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Riepilogo per insediamento</h2>
+            <span id="conteggio-riepilogo" class="sottotesto">clicca una riga per filtrare il dettaglio</span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-riepilogo">
+                <thead>
+                    <tr>
+                        <th>Cliente</th><th>Insediamento</th><th>Contratto HACCP</th>
+                        <th class="numerico">Inclusi</th><th class="numerico">Fatti</th>
+                        <th class="numerico">Differenza</th><th>Prelevatore/i</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Dettaglio tamponi</h2>
+            <span id="conteggio-dettaglio" class="sottotesto"></span>
+        </div>
+        <div class="azioni-filtri">
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-mostra-tutti">
+                Mostra tutti gli insediamenti
+            </button>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-dettaglio">
+                <thead>
+                    <tr>
+                        <th>Cliente</th><th>Insediamento</th><th>N° campione</th>
+                        <th>Controllo</th><th>N° certificato</th><th>Data cert.</th>
+                        <th>Prelevatore</th><th>Non fatturare</th><th>Contratto HACCP</th><th class="numerico">Inclusi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="avviso-troncato" class="avviso nascosto">
+            Elenco troncato a video: l'esportazione in Excel contiene comunque tutte le righe.
+        </div>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/tamponi-contratto.js" asp-append-version="true"></script>
+}

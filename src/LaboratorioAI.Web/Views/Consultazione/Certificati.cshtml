@@ -1,0 +1,52 @@
+@{
+    ViewData["Titolo"] = "Certificati emessi";
+}
+
+<div class="barra-strumenti">
+    <h1>Certificati emessi</h1>
+</div>
+
+<section class="riquadro">
+    <div class="riga-ricerca">
+        <input type="search" id="testo-ricerca" class="campo-ricerca"
+               placeholder="Numero certificato, cliente o denominazione campione…" />
+        <button class="pulsante" id="btn-cerca-cert">Cerca</button>
+    </div>
+</section>
+
+<div class="disposizione-doppia">
+    <section class="riquadro pannello-elenco">
+        <div id="elenco-certificati" class="elenco"></div>
+    </section>
+
+    <section id="pannello-dettaglio" class="riquadro nascosto">
+        <div id="intestazione-certificato"></div>
+
+        <table class="tabella" id="tabella-prove">
+            <thead>
+                <tr>
+                    <th>Parametro</th><th>Valore</th><th>U.M.</th>
+                    <th>Riferimento</th><th>Metodo</th><th>Esito</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="azioni-dettaglio">
+            <button class="pulsante" id="btn-analizza">Analizza con AI</button>
+            <button class="pulsante pulsante-secondario nascosto" id="btn-archivio">
+                Usa analisi archiviata
+            </button>
+        </div>
+
+        <div id="esito-analisi" class="esito nascosto"></div>
+    </section>
+
+    <section id="segnaposto-dettaglio" class="riquadro segnaposto">
+        <p>Cerca un certificato e selezionalo per vederne il dettaglio.</p>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/certificati.js" asp-append-version="true"></script>
+}

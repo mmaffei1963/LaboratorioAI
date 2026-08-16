@@ -1,0 +1,99 @@
+@inject IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Laboratori Esterni";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Analisi affidate all'esterno</h1>
+        <p class="sottotitolo">
+            Il periodo si riferisce alla data di analisi, cioè al giorno in cui
+            il campione deve essere consegnato al laboratorio esterno.
+        </p>
+    </div>
+    <div class="azioni">
+        @if (Utente.HaPermesso(Permessi.LaboratoriEsterniEsporta))
+        {
+            <button class="pulsante pulsante-secondario" id="btn-esporta" disabled>
+                Esporta in Excel
+            </button>
+        }
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Data analisi da<input type="date" id="f-da" /></label>
+        <label>Data analisi a<input type="date" id="f-a" /></label>
+        <label>Laboratorio
+            <select id="f-laboratorio"><option value="">Tutti</option></select>
+        </label>
+        <label>Matrice
+            <select id="f-matrice"><option value="">Tutte</option></select>
+        </label>
+        <label>Cliente
+            <select id="f-cliente"><option value="">Tutti</option></select>
+        </label>
+        <label>Insediamento
+            <select id="f-insediamento"><option value="">Tutti</option></select>
+        </label>
+        <label>Numero lotto
+            <input type="search" id="f-lotto" placeholder="es. 6341 o 6341/01" />
+        </label>
+    </div>
+
+    <div class="azioni-filtri">
+        <label class="casella"><input type="checkbox" id="f-non-certificati" />
+            Solo campioni non ancora certificati</label>
+        <div style="flex:1"></div>
+        <button class="pulsante pulsante-tenue" id="btn-azzera">Azzera</button>
+        <button class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+</section>
+
+<div id="pannello-sintesi" class="griglia-schede nascosto"></div>
+
+<div class="disposizione-doppia" id="pannello-esiti" style="display:none">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Riepilogo per metodo</h2>
+            <span id="conteggio-riepilogo" class="sottotesto"></span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-riepilogo">
+                <thead>
+                    <tr>
+                        <th>Laboratorio</th><th>Matrice</th><th>Metodo</th>
+                        <th class="numerico">Prove</th><th class="numerico">Cert.</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Elenco prove</h2>
+            <span id="conteggio-prove" class="sottotesto"></span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-prove">
+                <thead>
+                    <tr>
+                        <th>Stato</th><th>N° campione</th><th>Cliente</th>
+                        <th>Data analisi</th><th>Matrice</th><th>Metodo</th><th>Laboratorio</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="avviso-troncato" class="avviso nascosto">
+            Elenco troncato: l'esportazione in Excel contiene comunque tutte le righe.
+        </div>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/laboratori-esterni.js" asp-append-version="true"></script>
+}

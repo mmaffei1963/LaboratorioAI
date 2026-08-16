@@ -1,0 +1,13 @@
+@{
+    ViewData["Titolo"] = "Errore";
+    Layout = "_Layout";
+}
+
+<div class="riquadro riquadro-errore">
+    <h1>Si è verificato un errore</h1>
+    <p>
+        L'operazione non è stata completata. L'evento è stato registrato
+        ed è consultabile nei log applicativi.
+    </p>
+    <p><a asp-controller="Home" asp-action="Index">Torna alla home</a></p>
+</div>
