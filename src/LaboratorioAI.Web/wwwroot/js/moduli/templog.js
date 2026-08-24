@@ -144,7 +144,7 @@ async function esporta(formato) {
     if (!r.ok) { alert('Errore export.'); return; }
     const blob = await r.blob();
     const cd = r.headers.get('content-disposition') || '';
-    const nome = (cd.match(/filename="?([^"]+)"?/) || [])[1] || ('Report_TempLog.' + (formato === 'excel' ? 'xlsx' : 'pdf'));
+    const nome = (cd.match(/filename="?([^"]+)"?/) || [])[1] || ('Report_Econorma.' + (formato === 'excel' ? 'xlsx' : 'pdf'));
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click();
     URL.revokeObjectURL(a.href);
 }

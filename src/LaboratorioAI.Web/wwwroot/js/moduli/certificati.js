@@ -54,6 +54,7 @@ async function apri(idCertificato) {
     try {
         const dati = await chiamaApi(`/api/certificati/${idCertificato}`);
         selezionato = { idCertificato, idCampione: dati.campione.idCampione };
+        document.getElementById('btn-excel-cert').href = `/api/certificati/${idCertificato}/excel`;
 
         document.getElementById('intestazione-certificato').innerHTML = `
             <h2>${testo(dati.certificato.numeroCertificato)}</h2>

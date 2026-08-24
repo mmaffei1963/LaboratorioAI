@@ -314,9 +314,92 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   `bilance`, `templog`. Nuovi permessi: `templog.esegui`, `templog.mappatura`,
   `templog.validazione` (oltre a quelli dei moduli strumenti).
 
+### Fase 9 — Scadenziario tarature ed etichette (agosto 2026)
+
+- **Scadenziario tarature strumenti interni** (sola lettura ArcLab): piani
+  `IdAttività` 25/26, ultima taratura da `MAX(SchedeIntervento.DataInt)` per piano,
+  scadenza = ultima + `FreqGiorni`, apparecchiature in uso; raggruppamento per tipo
+  (Termometri; Incubatori/Termostati/Stufe; Frigoriferi/Congelatori; Altro).
+- **Archivio termometri clienti (esterni)**: import dal foglio «2011-2026»
+  (ExcelDataReader), solo tarature correnti (righe RINNOVATO/DISMESSO escluse);
+  flag `Fatturato` dalla colonna «Fatt», filtro «da fatturare», selezione cliente
+  da ArcLab, pulsante «svuota archivio importato». Le tarature dei termometri
+  cliente eseguite nel modulo Taratura confluiscono nell'elenco esterni.
+- **Etichette termometro** generate dal modulo Taratura: Excel nel formato del
+  blocchetto storico (foglio 2020), con sfondo colorato ciclico per anno di
+  taratura (rosso mattone, azzurro, blu, verde, arancione, viola) e testo a
+  contrasto; date scritte come testo per evitare il troncamento.
+- Rinominato il modulo TempLog in **«Monitoraggio Econorma»** (intestazione
+  «Visore Dati Econorma»); allineati i nomi dei file esportati.
+- Nuovo schema SQL `tarature` (tabella `TermometriEsterni`). Nuovi permessi:
+  `scadenziario.visualizza`, `scadenziario.gestione`.
+
+### Fase 10 — Accettazione, Proposta controlli, esterni non ricertificati (agosto 2026)
+
+- **Accettazione** (schema `app`, staging): maschera ottimizzata per smartphone con
+  sezioni «accessorie» apribili (registro accettazioni, verbale, dati facoltativi);
+  insediamento con città, commesse per insediamento con prezzo, prelevatori/ricevitori
+  attivi, tecniche/imballaggi, esploso del controllo, procedura automatica dalla
+  matrice, laboratorio esterno automatico, luogo prelievo. **Verbale di prelievo
+  con numero interno `VP-NNNNNN`** (contatore atomico `UPDLOCK, HOLDLOCK`,
+  modificabile). Data/ora ricezione attribuita alla sincronizzazione (non
+  compilabile). PDF: richiesta analisi e catena di custodia (lab esterno),
+  etichetta campione/lotto e scheda ricezione (campione). Verifica di importabilità.
+  La generazione del `CodLotto` e l'import in ArcLab **restano a Palomar**: nota di
+  mappatura XML→tabelle consegnata (`docs/Accettazione/`).
+- **Certificati esterni Non Ricertificati** («Solo esterni»): confronto tra i
+  certificati esterni presenti sul portale (`[Marea].dbo.Entries` via `IDCliente`
+  → `Clienti`) e i certificati interni; elenca i campioni con certificato esterno
+  ma senza ricertificazione MARE.A (originale spedito), con stato di fatturazione;
+  export Excel. Schema `app`, `AreaFunzionale.SoloEsterni = 18`,
+  permesso `soloesterni.visualizza`.
+- **Proposta controlli** (schema `app`, staging): catalogo dei metodi attivi
+  (`ProceduraMetodo.Attivo` ↔ `metodo`), prezzo sommato automaticamente, regola del
+  **lab esterno unico**, verifica **duplicati** (stesso insieme distinto di metodi)
+  con popup, **proposta del nome via AI** con le sigle di `Sigla_Metodo`, **modifica
+  di un controllo esistente** (ricerca per nome o `IdControllo`, precarica le righe)
+  con guardia server-side sul riutilizzo del nome, validazione di `Arrotonda`
+  (cifre significative) e `MaxDecimali`. Genera **XML per import supervisionato**:
+  nessuna scrittura diretta in ArcLab. `AreaFunzionale.Controlli = 19`, permessi
+  `controlli.proponi` / `controlli.approva`.
+- **Stato «Spedito originale»** in Consultazione e Laboratori esterni: quando il
+  certificato esterno è sul portale (Marea `Entries`) ma manca la ricertificazione
+  interna, lo stato diventa *Spedito originale*, con filtro dedicato. Distingue il
+  ritardo (IdCertificato nullo, nessun esterno) dal spedito-l'originale (esterno
+  presente e non ricertificato). Realizzato con una **CTE su Marea + LEFT JOIN**
+  (`CteEstPortale`/`JoinEstPortale` in `CostantiArcLab`) per evitare il timeout
+  (error −2) delle EXISTS correlate per riga; confronto cross-collation con
+  `COLLATE DATABASE_DEFAULT`.
+- **Schede di variabilità dei manuali** (docx): metodologia di apprendimento delle
+  parti fisse/variabili/condizionali applicata a DVR Sicurezza e Manuale HACCP
+  (`docs/Validazione/Modelli_Studio_Manuali/`), inviate ai consulenti per la
+  calibrazione. Base per il futuro modello dati + template.
+- **Contatore interno riusato** per il numero di verbale (rinuncia alla generazione
+  del `CodLotto`, lasciata a Palomar).
+- **Ricerca errori** (nuova pagina in area Laboratorio, sola lettura ArcLab): quattro
+  verifiche diagnostiche con export Excel — doppioni di parametro sui rapporti di
+  prova (selezione anni, esclusi microbiologici, eccezione valore energetico 236),
+  metodi attivi senza `Cifre_significative`/`Decimali_Max`, metodi con margine
+  `CostoMetodoEuro`/`CostoAnoi` sotto soglia % impostabile (o negativo), metodi doppi
+  per stesso `IdParametro` + `DettagliMetodo` + `RifMetodo` (al netto di spazi e
+  maiuscole/minuscole). Permesso `ricercaerrori.visualizza`, area 21; nessuna nuova
+  tabella (permesso popolato all'avvio).
+- **Audit trail esteso a tutti i moduli operatore**: le chiamate `IServizioAudit.
+  RegistraAsync` sono state aggiunte (oltre a DVR/Laboratori esterni/Tamponi già
+  coperti) ad Accettazione (salva/elimina/tracciato/PDF), Proposta controlli
+  (salva/elimina/XML), Certificati esterni Non Ricertificati e Non fatturare
+  (export), Piscine (salva/DVR/regolamento/manuale), Taratura/Incubatori/Mappatura/
+  Bilance (salva/validazione/analisi AI), Monitoraggio Econorma (validazioni/
+  mappatura), Da Validare (analisi AI singola e massiva), Scadenziario (salva/
+  elimina/svuota/import), Materie prime (import/estrazione AI/salva/elimina) e
+  Ricette (salva/verifica AI). Ogni voce registra utente, IP, area, azione, esito,
+  dettaglio JSON e versione dell'app. Aggiunta l'area funzionale `Mappatura = 20`.
+
 ### Note di schema ArcLab consolidate
 
 - `CodLotto`/`CodCampione` sono testo: confronto con interi via `TRY_CONVERT(int, …)`.
+- **Scadenziario**: «UltimiInterventi» (query Access) = `MAX(SchedeIntervento.DataInt)`
+  per `IdPianoInt`; attività di taratura = `IdAttività` 25/26.
 - **TempLog / Econorma**: la sonda ha in `apparecchiature.Associato1` il testo
   dell'ambiente con «Cod: <IdApparecchio>»; i limiti stanno nel `PianoInterventi`
   dell'ambiente con `NomePiano` «TARATURA» (mai «MAPPATURA»); `NonInUso` è `bit`.

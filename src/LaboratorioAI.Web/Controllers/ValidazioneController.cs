@@ -1,4 +1,5 @@
 using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -12,11 +13,13 @@ public class ValidazioneController : Controller
 {
     private readonly IRepositoryCampioni _campioni;
     private readonly IServizioAnalisi _analisi;
+    private readonly IServizioAudit _audit;
 
-    public ValidazioneController(IRepositoryCampioni campioni, IServizioAnalisi analisi)
+    public ValidazioneController(IRepositoryCampioni campioni, IServizioAnalisi analisi, IServizioAudit audit)
     {
         _campioni = campioni;
         _analisi = analisi;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -122,6 +125,11 @@ public class ValidazioneController : Controller
         {
             var esito = await _analisi.AnalizzaAsync(richiesta, ct);
 
+            if (!esito.DaArchivio)
+                await _audit.RegistraAsync(
+                    AreaFunzionale.Validazione, "analisi.eseguita", EsitoOperazione.Successo,
+                    tipoEntita: "Analisi", idEntita: esito.IdAnalisi.ToString(),
+                    dettaglio: new { Giudizio = esito.Giudizio.ToString(), esito.NumeroProve }, ct: ct);
             return Json(new
             {
                 esito.IdAnalisi,
@@ -150,6 +158,9 @@ public class ValidazioneController : Controller
 
         var esito = await _analisi.AnalizzaMassivoAsync(richiesta.IdCampioni, null, ct);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Validazione, "analisi.massiva.eseguita", EsitoOperazione.Successo,
+            dettaglio: new { Campioni = richiesta.IdCampioni.Count, esito.Conformi, esito.NonConformi, esito.Borderline, esito.NonRiusciti }, ct: ct);
         return Json(new
         {
             esito.Conformi,

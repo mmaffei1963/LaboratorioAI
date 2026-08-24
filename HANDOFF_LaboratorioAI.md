@@ -44,9 +44,16 @@ Affianca il gestionale ArcLab fornendo strumenti di consultazione, analisi e sup
 | **Strumenti · Taratura incubatori** | Modulo 04-02: correzione + deriva CDR, budget, rapporto, validazione, AI, duplica | Funzionante |
 | **Strumenti · Mappatura incubatori** | Modulo 04-03: correzione, budget, intervallo per ripiano, test F/Cochran/Kruskal-Wallis, rapporto, validazione, AI | Funzionante |
 | **Strumenti · Taratura bilance** | Modulo 45 (EURAMET cg-18): eccentricità/ripetibilità/linearità, budget d'incertezza, pesiere condivise, rapporto PDF/Word a due pagine con grafico, validazione, AI | Funzionante |
-| **Strumenti · Monitoraggio TempLog** | Carica il file notturno Econorma (.xls), applica i limiti di taratura letti da ArcLab (mappatura canale→sonda→PianoInterventi TARATURA), evidenzia escursioni rosso/blu, tabella valori per orario, monitor con grafici interattivi per canale, report escursioni Excel/PDF, export sonde ArcLab con data ultima sincronizzazione, validazione umana (conforme/dubbio/non conforme) singola e multipla con registro. **Non altera mai i dati.** | Funzionante — validato sul motore, in collaudo web |
+| **Strumenti · Monitoraggio Econorma** (Visore Dati Econorma) | Carica i file dei registratori Econorma (.xls), applica i limiti di taratura letti da ArcLab (mappatura canale→sonda→PianoInterventi TARATURA), evidenzia escursioni rosso/blu, tabella valori per orario, monitor con grafici interattivi per canale, report escursioni Excel/PDF, export sonde ArcLab con data ultima sincronizzazione, validazione umana (conforme/dubbio/non conforme) singola e multipla con registro, caricamento da cartella di rete con memoria dell'ultima usata. **Non altera mai i dati.** | Funzionante — validato sul motore, in collaudo web |
+| **Strumenti · Scadenziario tarature** | Scadenziario strumenti interni da ArcLab (IdAttività 25/26, ultima taratura da SchedeIntervento + FreqGiorni), raggruppato per tipo (Termometri; Incubatori/Termostati/Stufe; Frigoriferi/Congelatori; Altro); archivio/scadenziario dei termometri clienti (esterni) importato dal foglio «2011-2026» (solo tarature correnti, escluse RINNOVATO/DISMESSO), con flag «Fatturato» (colonna Fatt) e filtro «da fatturare», selezione cliente da ArcLab. Le tarature dei termometri cliente eseguite nel modulo Taratura confluiscono qui. Etichette termometro generate dal modulo **Taratura** (Excel formato foglio 2020, colore di sfondo per anno). | Funzionante — in collaudo web |
+| **Accettazione** | Accettazione campioni con maschera ottimizzata per smartphone (sezioni «accessorie» apribili): insediamento con città, commesse per insediamento con prezzo, prelevatori/ricevitori attivi, tecniche/imballaggi, esploso del controllo, procedura automatica dalla matrice, laboratorio esterno automatico, luogo prelievo. Verbale di prelievo con **numero interno VP-NNNNNN** (contatore atomico), modificabile. Data/ora ricezione attribuita alla sincronizzazione (non compilabile). PDF: richiesta analisi e catena di custodia (sezione lab esterno), etichetta campione/lotto e scheda ricezione (campione generale). Verifica di importabilità. I dati restano in **staging**: la generazione del `CodLotto` e l'import in ArcLab restano a **Palomar** (tracciato XML/mappatura). | In collaudo — mappatura consegnata a Palomar |
+| **Certificati esterni Non Ricertificati** | Confronto tra i certificati esterni emessi sul **portale** (Marea `Entries`) e i certificati interni: elenca i campioni per cui esiste il certificato esterno ma **non** la ricertificazione MARE.A (spedito l'originale), con stato di fatturazione; export Excel. | Funzionante |
+| **Proposta controlli** | Consulenti/clienti propongono nuovi controlli scegliendo i metodi dal **catalogo dei metodi attivi** (ProceduraMetodo.Attivo); prezzo sommato automaticamente; regola del **lab esterno unico**; verifica **duplicati** (stesso insieme di metodi) con popup; **proposta del nome via AI** usando le sigle (Sigla_Metodo); **modifica di un controllo esistente** (ricerca per nome o IdControllo) con guardia sul riutilizzo del nome; validazione di Cifre significative/MaxDecimali. Staging → **XML per import supervisionato**: nessuna scrittura diretta in ArcLab. | Funzionante |
+| **Ricerca errori** | Verifiche diagnostiche in sola lettura su ArcLab, con export Excel per sezione: (1) doppioni di parametro sui rapporti di prova con selezione anni (esclusi microbiologici ed eccezione valore energetico 236 kJ/kcal); (2) metodi attivi senza Cifre_significative/Decimali_Max; (3) metodi con margine (CostoMetodoEuro vs CostoAnoi) sotto soglia % impostabile o negativo; (4) metodi doppi per stesso IdParametro + DettagliMetodo + RifMetodo (normalizzati). Nessuna scrittura. | Funzionante — da collaudare in sviluppo |
 
-> **Menù per macroaree** (agosto 2026): la barra superiore è organizzata in tendine — **Laboratorio** (Da Validare, Consultazione, Certificati, Metodi e Controlli, Commesse, Laboratori Esterni, Tamponi, Non fatturare), **Manualistica** (DVR Legionella, DVR Piscine), **Nutrizionali**, **Strumenti** (le quattro tarature + Monitoraggio TempLog).
+> **Stato «Spedito originale»** (Consultazione e Laboratori esterni): quando il certificato esterno risulta emesso sul portale (Marea `Entries`) ma manca la ricertificazione interna, lo stato del campione/prova diventa *Spedito originale* (con filtro dedicato). Distingue il «ritardo» (IdCertificato nullo ma nessun esterno) dal «spedito l'originale» (esterno presente e non ricertificato). Realizzato con una CTE su Marea + LEFT JOIN per non degradare i tempi.
+
+> **Menù per macroaree** (agosto 2026): la barra superiore è organizzata in tendine — **Laboratorio** (Da Validare, Consultazione, Certificati, Metodi e Controlli, Commesse, Laboratori Esterni, Tamponi, Non fatturare, Certificati esterni Non Ricertificati, Accettazione, Proposta controlli), **Manualistica** (DVR Legionella, DVR Piscine), **Nutrizionali**, **Strumenti** (le quattro tarature + Monitoraggio Econorma + Scadenziario tarature).
 
 ### 2.2 Portale clienti
 
@@ -128,6 +135,7 @@ LaboratorioAI.sln
 | `taratura` / `incubatori` / `mappatura` | Tarature, ValidazioniCalcolo, Analisi dei moduli 04-01/04-02/04-03 |
 | `bilance` | Pesiere, MasseCampione, TaratureBilance, ValidazioniCalcoloBilance, AnalisiBilance |
 | `templog` | MappatureCanali, Caricamenti (con validazione umana), Sincronizzazioni |
+| `tarature` | TermometriEsterni (archivio/scadenziario termometri clienti, flag Fatturato, link a taratura d'origine) |
 | `portale` | SessioniPortale, TentativiAccesso |
 | `log` | Audit (append-only) |
 
@@ -151,6 +159,12 @@ LaboratorioAI.sln
 - `CaricamentoTempLog` — storico dei file analizzati con esiti (escursioni), cartella d'origine (per riproporre l'ultima), e **validazione umana**: `EsitoValidazione` (Conforme/Dubbio/NonConforme), `Validatore`, `DataValidazione`, `NoteValidazione`
 - `SincronizzazioneSondeTempLog` — registra ogni sincronizzazione delle sonde da ArcLab (data «ultima sincronizzazione»)
 - Risoluzione limiti (sola lettura ArcLab): sonda → `apparecchiature.Associato1` (testo con «Cod: <IdApparecchio ambiente>») → `PianoInterventi` con `NomePiano` contenente «TARATURA» (mai «MAPPATURA»), match `CodPiano` tollerante ai separatori → `ValTeorico`, `LimInfInt`, `LimSupInt`. Lettura file .xls via ExcelDataReader.
+
+**Scadenziario tarature** (schema `tarature`)
+- `TermometroEsterno` — termometro cliente non in ArcLab: N° rapporto, tipologia, date, cliente, consegna, `Fatturato`, `IdTaraturaOrigine` (se generato da una taratura in app)
+- Scadenziario interni (sola lettura ArcLab): `PianoInterventi` con `IdAttività` 25/26, ultima taratura da `MAX(SchedeIntervento.DataInt)` per piano, scadenza = ultima + `FreqGiorni`, apparecchiature in uso; raggruppamento per tipo via parole chiave nel nome
+- Import esterni: foglio «2011-2026», mappatura colonne per intestazione, righe con RINNOVATO/DISMESSO escluse; colonna «Fatt» → `Fatturato`
+- Etichette: generate dal modulo Taratura (Excel, formato blocchetto 2020, sfondo colore per anno con testo a contrasto)
 
 **VoceAudit** — append-only, mai aggiornata né cancellata
 - `DataOra`, `IdUtente`, `EmailUtente`, `IndirizzoIp`
@@ -261,10 +275,20 @@ Il modello a ruoli (Amministratore, Responsabile, Operatore, Consultazione) è d
 - [x] **Tarature strumenti** (04-01, 04-02, 04-03, bilance 45): motori validati con test xUnit, rapporti PDF/Word, validazione del calcolo con registro/avviso, analisi AI, duplica; piani di validazione formule (docx) per bilance e mappatura
 - [x] **Monitoraggio TempLog Econorma**: motore validato sul file reale; lettura `.xls`, limiti da ArcLab (mappatura canale→sonda→PianoInterventi TARATURA), evidenziazione escursioni, valori per orario, monitor interattivo, report Excel/PDF, export sonde, validazione umana singola/multipla con registro (**in collaudo web**)
 - [x] **Menù riorganizzato per macroaree** (Laboratorio, Manualistica, Nutrizionali, Strumenti)
+- [x] **Scadenziario tarature**: interni da ArcLab raggruppati per tipo; archivio esterni importato dal foglio «2011-2026» (solo correnti), flag Fatturato + filtro; cliente da ArcLab; etichette termometro generate dal modulo Taratura (Excel, colore per anno)
+- [x] **Accettazione** (staging): maschera mobile con sezioni apribili, città/commesse/prezzo per insediamento, prelevatori/ricevitori attivi, tecniche/imballaggi, esploso controllo, procedura da matrice, lab esterno automatico, luogo prelievo; **verbale VP-NNNNNN** con contatore atomico; data ricezione alla sincro; PDF richiesta/catena custodia (lab esterno) ed etichetta/scheda ricezione (campione); verifica importabilità. `CodLotto` e import lasciati a **Palomar** (mappatura consegnata)
+- [x] **Certificati esterni Non Ricertificati**: confronto portale (Marea `Entries`) ↔ certificati interni, stato fatturazione, Excel
+- [x] **Proposta controlli**: catalogo metodi attivi, prezzo automatico, lab esterno unico, verifica duplicati con popup, proposta nome via AI con sigle, modifica di controllo esistente con guardia sul nome, validazione Cifre/MaxDecimali; **XML per import supervisionato** (nessuna scrittura ArcLab)
+- [x] **Stato «Spedito originale»** in Consultazione e Laboratori esterni (CTE su Marea + LEFT JOIN) con filtro dedicato
+- [x] **Schede di variabilità manuali** (docx) per DVR Sicurezza e Manuale HACCP: analisi parti fisse/variabili/condizionali, inviate ai consulenti per calibrazione
 
 ### 7.2 Aperti (sviluppo/collaudo)
 
-Nessuno bloccante. Lo sviluppo è concluso.
+Nessuno bloccante allo sviluppo. Da completare **prima/subito dopo** la messa in esercizio:
+
+- **Copertura audit trail — estesa (agosto 2026)**: le chiamate `RegistraAsync` sono ora presenti, oltre a DVR/Laboratori esterni/Tamponi, anche in **Accettazione** (salva/elimina/tracciato XML/PDF), **Proposta controlli** (salva/elimina/XML), **Certificati esterni Non Ricertificati** (export), **Non fatturare** (export), **Piscine** (salva/DVR/regolamento/manuale), **Taratura/Incubatori/Mappatura/Bilance** (salva/validazione/analisi AI), **Monitoraggio Econorma** (validazioni/mappatura), **Da Validare** (analisi AI singola/massiva), **Scadenziario** (salva/elimina/svuota/import), **Materie prime** (import/estrazione AI/salva/elimina), **Ricette** (salva/verifica AI). Aree loggate: 17/18/19/… (aggiunta `Mappatura=20`). Restano non loggate solo le schermate di sola lettura (Consultazione, Metodi, Commesse). *Da ricompilare e provare.*
+- **Collaudo Accettazione con Palomar** sul tracciato XML/mappatura reale.
+- **Manuali**: dopo il riscontro dei consulenti sulle due schede, costruire modello dati + template per Sicurezza e HACCP (hotel entro gennaio).
 
 ### 7.3 Da fare — messa in produzione (con il sistemista)
 

@@ -1,0 +1,3 @@
+per ripristinare tutto basta digitare in power shell 
+
+git clone D:\Backup\LaboratorioAI.bundle C:\Sviluppo\LaboratorioAI_ripristino

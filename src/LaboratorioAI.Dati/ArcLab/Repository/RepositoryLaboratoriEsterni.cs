@@ -58,6 +58,7 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
     /// in cui l'analisi viene effettivamente avviata.
     /// </remarks>
     private static string SqlProve(string dove) => $"""
+        WITH {CostantiArcLab.CteEstPortale}
         SELECT TOP (@Limite)
             ca.IdCampione,
             CAST(lo.CodLotto AS VARCHAR) + '/' + CAST(ca.CodCampione AS VARCHAR) AS NumeroCampione,
@@ -74,13 +75,15 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
             CASE WHEN EXISTS (SELECT 1 FROM labEstMetodo lem
                               WHERE lem.IdMetodo = m.IdMetodo
                                 AND lem.AccrLabEsterno = 1) THEN 1 ELSE 0 END AS AccreditatoEsterno,
-            NULLIF(ca.IdCertificato, 0) AS IdCertificato
+            NULLIF(ca.IdCertificato, 0) AS IdCertificato,
+            CASE WHEN ep.Anno IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS EsternoPresente
         {DalleTabelle()}
         WHERE {dove}
         ORDER BY DATEADD(day, ISNULL(ca.RitardoAnalisi, 0), lo.DataRic), lo.CodLotto
         """;
 
     private static string SqlRiepilogo(string dove) => $"""
+        WITH {CostantiArcLab.CteEstPortale}
         SELECT
             le.LabEsterno        AS LaboratorioEsterno,
             mx.Matrice,
@@ -107,7 +110,7 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
         INNER JOIN Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
         INNER JOIN Clienti cl         ON cl.IDCliente = i.IDCliente
         LEFT  JOIN matrice mx         ON mx.IdMatrice = ca.IdMatrice
-        """;
+        """ + "\n        " + CostantiArcLab.JoinEstPortale;
 
     private static (string Dove, DynamicParameters Parametri) ComponiFiltri(
         CriteriLaboratoriEsterni c)
@@ -154,8 +157,9 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
             }
         }
 
+        // "Solo spediti in originale": senza nostro certificato MA con certificato esterno nel portale.
         if (c.SoloNonCertificati)
-            condizioni.Add("(ca.IdCertificato IS NULL OR ca.IdCertificato = 0)");
+            condizioni.Add("(ca.IdCertificato IS NULL OR ca.IdCertificato = 0) AND ep.Anno IS NOT NULL");
 
         return (string.Join("\n          AND ", condizioni), p);
     }

@@ -46,9 +46,15 @@ public record ProvaEsterna
     public bool AccreditatoEsterno { get; init; }
 
     public int? IdCertificato { get; init; }
+    /// <summary>Esiste un certificato esterno caricato nel portale per questo campione.</summary>
+    public bool EsternoPresente { get; init; }
 
+    // IdCertificato nullo da solo può essere solo un ritardo: è "spedito in originale" solo
+    // se esiste già il certificato esterno nel portale ma non il nostro (EsternoPresente).
     public StatoCampione Stato =>
-        IdCertificato is not null ? StatoCampione.Certificato : StatoCampione.InCorso;
+        IdCertificato is not null ? StatoCampione.Certificato
+        : EsternoPresente         ? StatoCampione.SpeditoOriginale
+        :                           StatoCampione.InCorso;
 }
 
 /// <summary>Conteggio delle prove per laboratorio, matrice e metodo.</summary>

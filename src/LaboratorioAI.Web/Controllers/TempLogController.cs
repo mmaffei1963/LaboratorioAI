@@ -1,6 +1,7 @@
 using System.Text.Json;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -32,14 +33,15 @@ public class TempLogController : Controller
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
     private readonly IConfiguration _config;
+    private readonly IServizioAudit _audit;
 
     public TempLogController(
         ContestoLaboratorioAI ctx, ILettoreFileTempLog lettore, IServizioMonitoraggioTempLog monitor,
         IRepositoryTempLog repo, IGeneratoreReportTempLog report, IContestoUtente utente,
-        IServizioVersione versione, IConfiguration config)
+        IServizioVersione versione, IConfiguration config, IServizioAudit audit)
     {
         _ctx = ctx; _lettore = lettore; _monitor = monitor; _repo = repo; _report = report;
-        _utente = utente; _versione = versione; _config = config;
+        _utente = utente; _versione = versione; _config = config; _audit = audit;
     }
 
     private string CartellaPredefinita => _config["TempLog:CartellaScarico"]
@@ -47,7 +49,7 @@ public class TempLogController : Controller
 
     public IActionResult Index()
     {
-        ViewData["Titolo"] = "Monitoraggio TempLog";
+        ViewData["Titolo"] = "Monitoraggio Econorma";
         return View();
     }
 
@@ -215,6 +217,10 @@ public class TempLogController : Controller
         c.NoteValidazione = string.IsNullOrWhiteSpace(note) ? null : note!.Trim();
         _ctx.CaricamentiTempLog.Add(c);
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.TempLog, "templog.validazione.corrente", EsitoOperazione.Successo,
+            tipoEntita: "CaricamentoTempLog", idEntita: c.IdCaricamento.ToString(),
+            dettaglio: new { c.NomeFile, c.EsitoValidazione }, ct: ct);
         return Json(new { c.IdCaricamento, c.EsitoValidazione, c.Validatore, c.DataValidazione });
     }
 
@@ -249,6 +255,9 @@ public class TempLogController : Controller
             if (!string.IsNullOrWhiteSpace(req.Note)) c.NoteValidazione = req.Note!.Trim();
         }
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.TempLog, "templog.validazione.multipla", EsitoOperazione.Successo,
+            dettaglio: new { Validati = righe.Count, req.Esito }, ct: ct);
         return Json(new { validati = righe.Count });
     }
 
@@ -337,6 +346,10 @@ public class TempLogController : Controller
         m.DataUltimaModifica = DateTime.UtcNow;
         m.IdUtente = _utente.IdUtente;
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.TempLog, "templog.mappatura.salvata", EsitoOperazione.Successo,
+            tipoEntita: "MappaturaCanaleTempLog", idEntita: m.IdMappatura.ToString(),
+            dettaglio: new { m.Canale, m.IdStrumento }, ct: ct);
         return Json(new { m.IdMappatura });
     }
 
@@ -350,6 +363,10 @@ public class TempLogController : Controller
         m.DataCancellazione = DateTime.UtcNow;
         m.DataUltimaModifica = DateTime.UtcNow;
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.TempLog, "templog.mappatura.disattivata", EsitoOperazione.Successo,
+            tipoEntita: "MappaturaCanaleTempLog", idEntita: id.ToString(),
+            dettaglio: new { m.Canale }, ct: ct);
         return Ok();
     }
 
@@ -386,7 +403,7 @@ public class TempLogController : Controller
             .OrderByDescending(s => s.DataSincronizzazione).Select(s => (DateTime?)s.DataSincronizzazione).FirstOrDefaultAsync(ct);
         bool excel = string.Equals(formato, "excel", StringComparison.OrdinalIgnoreCase);
         var bytes = excel ? _report.GeneraSondeExcel(sonde, ultima) : _report.GeneraSondePdf(sonde, ultima);
-        var nome = $"Sonde_ArcLab_{DateTime.Now:yyyyMMdd}." + (excel ? "xlsx" : "pdf");
+        var nome = $"Sonde_Econorma_{DateTime.Now:yyyyMMdd}." + (excel ? "xlsx" : "pdf");
         return File(bytes, excel ? MimeXlsx : MimePdf, nome);
     }
 

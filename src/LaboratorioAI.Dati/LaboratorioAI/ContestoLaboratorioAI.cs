@@ -62,6 +62,17 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<CaricamentoTempLog> CaricamentiTempLog => Set<CaricamentoTempLog>();
     public DbSet<SincronizzazioneSondeTempLog> SincronizzazioniSondeTempLog => Set<SincronizzazioneSondeTempLog>();
 
+    // ── Scadenziario tarature ──────────────────────────────────────
+    public DbSet<TermometroEsterno> TermometriEsterni => Set<TermometroEsterno>();
+
+    // ── Accettazione campioni (staging) ────────────────────────────
+    public DbSet<AccettazioneLotto> AccettazioneLotti => Set<AccettazioneLotto>();
+    public DbSet<AccettazioneCampione> AccettazioneCampioni => Set<AccettazioneCampione>();
+    public DbSet<AccettazioneProva> AccettazioneProve => Set<AccettazioneProva>();
+    public DbSet<ContatoreAccettazione> ContatoriAccettazione => Set<ContatoreAccettazione>();
+    public DbSet<PropostaControllo> ProposteControllo => Set<PropostaControllo>();
+    public DbSet<PropostaRigaMetodo> ProposteRigheMetodo => Set<PropostaRigaMetodo>();
+
     // ── Portale ────────────────────────────────────────────────────
     public DbSet<SessionePortale> SessioniPortale => Set<SessionePortale>();
     public DbSet<TentativoAccesso> TentativiAccesso => Set<TentativoAccesso>();

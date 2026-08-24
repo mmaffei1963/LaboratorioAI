@@ -29,8 +29,9 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
     public async Task<IReadOnlyList<VoceInsediamento>> InsediamentiAsync(
         int? idCliente = null, CancellationToken ct = default)
     {
+        // Nome insediamento + città. NB: la colonna città è [CittàInsed] (con accento).
         const string sql = """
-            SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.IDCliente
+            SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.[CittàInsed] AS Citta, i.IDCliente
             FROM Insediamento i
             WHERE i.NomeInsed IS NOT NULL
               AND (@IdCliente IS NULL OR i.IDCliente = @IdCliente)
@@ -38,8 +39,14 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
             """;
 
         using var cn = await _fabbrica.ApriAsync(ct);
-        return (await cn.QueryAsync<VoceInsediamento>(
-            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct))).ToList();
+        var righe = await cn.QueryAsync(
+            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
+        return righe.Select(r =>
+        {
+            string nome = (string?)r.Nome ?? "";
+            string citta = ((string?)r.Citta ?? "").Trim();
+            return new VoceInsediamento((int)r.Id, citta.Length > 0 ? $"{nome} - {citta}" : nome, (int)r.IDCliente);
+        }).ToList();
     }
 
     public async Task<IReadOnlyList<VoceAnagrafica>> MatriciAsync(CancellationToken ct = default)

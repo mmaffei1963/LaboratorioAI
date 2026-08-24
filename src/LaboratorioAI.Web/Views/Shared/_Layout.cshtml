@@ -32,12 +32,14 @@
     bool gLab = Utente.HaPermesso(Permessi.ValidazioneVisualizza) || Utente.HaPermesso(Permessi.ConsultazioneCampioni)
         || Utente.HaPermesso(Permessi.MetodiConsulta) || Utente.HaPermesso(Permessi.CommesseConsulta)
         || Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta) || Utente.HaPermesso(Permessi.PrefatturatoTamponi)
-        || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare);
+        || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare) || Utente.HaPermesso(Permessi.AccettazioneEsegui)
+        || Utente.HaPermesso(Permessi.SoloEsterniVisualizza) || Utente.HaPermesso(Permessi.ControlliProponi)
+        || Utente.HaPermesso(Permessi.RicercaErroriVisualizza);
     bool gMan = Utente.HaPermesso(Permessi.DvrGenera) || Utente.HaPermesso(Permessi.PiscineGenera);
     bool gNut = Utente.HaPermesso(Permessi.NutrizionaleMateriePrime) || Utente.HaPermesso(Permessi.NutrizionaleRicette);
     bool gStr = Utente.HaPermesso(Permessi.TaraturaEsegui) || Utente.HaPermesso(Permessi.IncubatoriEsegui)
         || Utente.HaPermesso(Permessi.MappaturaEsegui) || Utente.HaPermesso(Permessi.BilanceEsegui)
-        || Utente.HaPermesso(Permessi.TempLogEsegui);
+        || Utente.HaPermesso(Permessi.TempLogEsegui) || Utente.HaPermesso(Permessi.ScadenziarioVisualizza);
 }
 @if (Utente.Autenticato)
 {
@@ -54,6 +56,10 @@
                     @if (Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta)) { <a href="/LaboratoriEsterni">Laboratori Esterni</a> }
                     @if (Utente.HaPermesso(Permessi.PrefatturatoTamponi)) { <a href="/TamponiContratto">Tamponi in contratto</a> }
                     @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
+                    @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Accettazione">Accettazione campioni</a> }
+                    @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/SoloEsterni">Certificati esterni Non Ricertificati</a> }
+                    @if (Utente.HaPermesso(Permessi.ControlliProponi)) { <a href="/Controlli">Proposta controlli</a> }
+                    @if (Utente.HaPermesso(Permessi.RicercaErroriVisualizza)) { <a href="/RicercaErrori">Ricerca errori</a> }
                 </div>
             </div>
         }
@@ -86,7 +92,8 @@
                     @if (Utente.HaPermesso(Permessi.IncubatoriEsegui)) { <a href="/Incubatori">Taratura incubatori</a> }
                     @if (Utente.HaPermesso(Permessi.MappaturaEsegui)) { <a href="/Mappatura">Mappatura incubatori</a> }
                     @if (Utente.HaPermesso(Permessi.BilanceEsegui)) { <a href="/Bilance">Taratura bilance</a> }
-                    @if (Utente.HaPermesso(Permessi.TempLogEsegui)) { <a href="/TempLog">Monitoraggio TempLog</a> }
+                    @if (Utente.HaPermesso(Permessi.TempLogEsegui)) { <a href="/TempLog">Monitoraggio Econorma</a> }
+                    @if (Utente.HaPermesso(Permessi.ScadenziarioVisualizza)) { <a href="/Scadenziario">Scadenziario tarature</a> }
                 </div>
             </div>
         }

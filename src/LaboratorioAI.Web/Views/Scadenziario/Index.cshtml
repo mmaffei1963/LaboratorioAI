@@ -1,0 +1,78 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Scadenziario tarature";
+    var puoGestire = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ScadenziarioGestione);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Scadenziario tarature</h1>
+        <p class="sottotitolo">Strumenti interni in scadenza da ArcLab (raggruppati per tipo), archivio dei termometri clienti e generazione delle etichette.</p>
+    </div>
+</div>
+
+<!-- ══ Interni (ArcLab) ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Interni (ArcLab)</h2><span id="conteggio-interni" class="sottotesto"></span></div>
+    <div class="azioni-filtri">
+        <label>Preavviso (giorni)<input type="number" id="giorni" value="30" min="0" style="width:6rem" /></label>
+        <button type="button" class="pulsante" id="btn-interni">Aggiorna</button>
+        <div style="flex:1"></div>
+    </div>
+    <div id="gruppi-interni"></div>
+</section>
+
+<!-- ══ Esterni (clienti) ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Esterni (clienti)</h2><span id="conteggio-esterni" class="sottotesto"></span>
+        <label class="casella"><input type="checkbox" id="filtro-fatturare" /> solo da fatturare</label>
+    </div>
+    @if (puoGestire)
+    {
+        <div class="azioni-filtri">
+            <input type="file" id="file-import" accept=".xls,.xlsx" />
+            <button type="button" class="pulsante pulsante-tenue" id="btn-importa">Importa storico da Excel</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-svuota-importati">Svuota archivio importato</button>
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-nuovo-esterno">Nuovo termometro</button>
+        </div>
+    }
+    <div class="tabella-scorrevole" style="max-height:26rem">
+        <table class="tabella" id="tabella-esterni">
+            <thead><tr>
+                <th class="numerico">N° Rapporto</th><th>Tipologia</th><th>Taratura</th><th>Scadenza</th><th>Cliente</th><th>Rif.</th><th>Consegna</th><th>Fatt.</th><th></th>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@if (puoGestire)
+{
+    <section class="riquadro nascosto" id="pannello-esterno">
+        <div class="barra-risultati"><h2 id="esterno-titolo">Nuovo termometro esterno</h2></div>
+        <input type="hidden" id="e-id" />
+        <div class="griglia-filtri">
+            <label>N° Rapporto<input type="number" id="e-numero" /></label>
+            <label>Tipologia<input type="text" id="e-tipologia" /></label>
+            <label>Data taratura<input type="date" id="e-taratura" /></label>
+            <label>Data scadenza<input type="date" id="e-scadenza" /></label>
+            <label>Cliente<input type="text" id="e-cliente" list="lista-clienti" placeholder="scegli da ArcLab o digita" /><datalist id="lista-clienti"></datalist></label>
+            <label>Riferimento<input type="text" id="e-rif" /></label>
+            <label>Data consegna<input type="date" id="e-consegna" /></label>
+            <label>Operatore consegna<input type="text" id="e-operatore" /></label>
+            <label>Rif. fattura<input type="text" id="e-fattura" /></label>
+            <label>Note<input type="text" id="e-note" /></label>
+            <label class="casella"><input type="checkbox" id="e-fatturare" /> fatturato</label>
+        </div>
+        <div class="azioni-filtri">
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-esterno-annulla">Annulla</button>
+            <button type="button" class="pulsante" id="btn-esterno-salva">Salva</button>
+        </div>
+    </section>
+}
+
+@section Script {
+    <script type="module" src="~/js/moduli/scadenziario.js" asp-append-version="true"></script>
+}

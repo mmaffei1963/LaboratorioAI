@@ -24,3 +24,7 @@ appsettings.Local.json
 # Log
 log/
 *.log
+
+# Copia dati ArcLab (Access) e corpus manuali clienti: pesanti/riservati, fuori dal repo
+docs/Validazione/LabAnalisi.accdb
+docs/Validazione/Modelli_Studio_Manuali/

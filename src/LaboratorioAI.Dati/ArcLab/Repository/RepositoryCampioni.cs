@@ -162,6 +162,7 @@ public class RepositoryCampioni : IRepositoryCampioni
         var (dove, parametri) = ComponiFiltri(criteri);
 
         var sql = $"""
+            WITH {CostantiArcLab.CteEstPortale}
             SELECT TOP (@Limite)
                 ca.IdCampione,
                 CAST(lo.CodLotto AS VARCHAR) + '/' + CAST(ca.CodCampione AS VARCHAR) AS NumeroCampione,
@@ -186,7 +187,8 @@ public class RepositoryCampioni : IRepositoryCampioni
                 DATEDIFF(day, lo.DataRic, GETDATE()) AS GiorniInLaboratorio,
                 (SELECT COUNT(*) FROM prove pr
                   WHERE pr.IdCampione = ca.IdCampione
-                    AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}) AS NumeroProve
+                    AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}) AS NumeroProve,
+                CASE WHEN ep.Anno IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS EsternoPresente
             FROM Campione ca
             INNER JOIN Lotto lo           ON lo.IdLotto = ca.IdLotto
             INNER JOIN commessa cm        ON cm.IdCommessa = lo.IdCommessa
@@ -199,6 +201,7 @@ public class RepositoryCampioni : IRepositoryCampioni
             LEFT  JOIN Organico org       ON org.IdOrganico = msp.IdOrganico
             LEFT  JOIN mansione msr       ON msr.IdMansione = lo.IdRicevitore
             LEFT  JOIN Organico orgr      ON orgr.IdOrganico = msr.IdOrganico
+            {CostantiArcLab.JoinEstPortale}
             WHERE {dove}
             ORDER BY lo.DataRic DESC, lo.CodLotto DESC
             """;
@@ -222,6 +225,7 @@ public class RepositoryCampioni : IRepositoryCampioni
         var (dove, parametri) = ComponiFiltri(criteri);
 
         var sql = $"""
+            WITH {CostantiArcLab.CteEstPortale}
             SELECT COUNT(*) AS Totale, SUM(cm.PrezzoControllo) AS TotalePrezzo
             FROM Campione ca
             INNER JOIN Lotto lo           ON lo.IdLotto = ca.IdLotto
@@ -235,6 +239,7 @@ public class RepositoryCampioni : IRepositoryCampioni
             LEFT  JOIN Organico org       ON org.IdOrganico = msp.IdOrganico
             LEFT  JOIN mansione msr       ON msr.IdMansione = lo.IdRicevitore
             LEFT  JOIN Organico orgr      ON orgr.IdOrganico = msr.IdOrganico
+            {CostantiArcLab.JoinEstPortale}
             WHERE {dove}
             """;
 
@@ -328,10 +333,11 @@ public class RepositoryCampioni : IRepositoryCampioni
                 condizioni.Add($"""
                     (ca.IdCertificato IS NULL OR ca.IdCertificato = 0)
                     AND NOT (
-                        DATEDIFF(day, lo.DataRic, GETDATE()) > {CostantiArcLab.GiorniPerSpeditoOriginale}
-                        AND NOT EXISTS (SELECT 1 FROM prove pr3
-                                        WHERE pr3.IdCampione = ca.IdCampione
-                                          AND pr3.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere})
+                        ( DATEDIFF(day, lo.DataRic, GETDATE()) > {CostantiArcLab.GiorniPerSpeditoOriginale}
+                          AND NOT EXISTS (SELECT 1 FROM prove pr3
+                                          WHERE pr3.IdCampione = ca.IdCampione
+                                            AND pr3.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}) )
+                        OR ep.Anno IS NOT NULL
                     )
                     """);
                 break;
@@ -339,10 +345,13 @@ public class RepositoryCampioni : IRepositoryCampioni
             case StatoCampione.SpeditoOriginale:
                 condizioni.Add($"""
                     (ca.IdCertificato IS NULL OR ca.IdCertificato = 0)
-                    AND DATEDIFF(day, lo.DataRic, GETDATE()) > {CostantiArcLab.GiorniPerSpeditoOriginale}
-                    AND NOT EXISTS (SELECT 1 FROM prove pr4
-                                    WHERE pr4.IdCampione = ca.IdCampione
-                                      AND pr4.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere})
+                    AND (
+                        ( DATEDIFF(day, lo.DataRic, GETDATE()) > {CostantiArcLab.GiorniPerSpeditoOriginale}
+                          AND NOT EXISTS (SELECT 1 FROM prove pr4
+                                          WHERE pr4.IdCampione = ca.IdCampione
+                                            AND pr4.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}) )
+                        OR ep.Anno IS NOT NULL
+                    )
                     """);
                 break;
         }

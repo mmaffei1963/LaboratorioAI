@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -37,6 +38,7 @@ public class RicetteController : Controller
     private readonly IClientAnthropic _ia;
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
+    private readonly IServizioAudit _audit;
 
     public RicetteController(
         ContestoLaboratorioAI ctx,
@@ -49,7 +51,8 @@ public class RicetteController : Controller
         IGeneratoreEtichettaCanada generatoreCanada,
         IClientAnthropic ia,
         IContestoUtente utente,
-        IServizioVersione versione)
+        IServizioVersione versione,
+        IServizioAudit audit)
     {
         _ctx = ctx;
         _calcolo = calcolo;
@@ -62,6 +65,7 @@ public class RicetteController : Controller
         _ia = ia;
         _utente = utente;
         _versione = versione;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -214,6 +218,10 @@ public class RicetteController : Controller
         }
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Nutrizionale, "ricetta.salvata", EsitoOperazione.Successo,
+            tipoEntita: "Ricetta", idEntita: r.IdRicetta.ToString(),
+            dettaglio: new { r.Denominazione, Righe = r.Righe.Count }, ct: ct);
         return Json(new { r.IdRicetta });
     }
 
@@ -595,6 +603,10 @@ public class RicetteController : Controller
         });
         await _ctx.SaveChangesAsync(ct);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Nutrizionale, "ricetta.verifica.ai", EsitoOperazione.Successo,
+            tipoEntita: "Ricetta", idEntita: id.ToString(),
+            dettaglio: new { Esito = esito, r.Denominazione }, ct: ct);
         return Json(new { esito, testo, dataVerifica = DateTime.Now.ToString("dd/MM/yyyy HH:mm"), daArchivio = false });
     }
 

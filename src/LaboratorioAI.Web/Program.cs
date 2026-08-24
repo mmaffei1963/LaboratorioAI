@@ -132,13 +132,19 @@ builder.Services.AddScoped<IRepositoryMetodi, RepositoryMetodi>();
 builder.Services.AddScoped<IRepositoryCommesse, RepositoryCommesse>();
 builder.Services.AddScoped<IRepositoryLaboratoriEsterni, RepositoryLaboratoriEsterni>();
 builder.Services.AddScoped<IRepositoryTamponiContratto, RepositoryTamponiContratto>();
+builder.Services.AddScoped<IRepositorySoloEsterni, RepositorySoloEsterni>();
+builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
+builder.Services.AddScoped<IRepositoryRicercaErrori, RepositoryRicercaErrori>();
 builder.Services.AddScoped<IRepositoryNonFatturare, RepositoryNonFatturare>();
 
 // â”€â”€ Generazione documenti â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddSingleton<IEsportatoreLaboratoriEsterni, EsportatoreLaboratoriEsterni>();
 builder.Services.AddSingleton<IEsportatoreTamponiContratto, EsportatoreTamponiContratto>();
+builder.Services.AddSingleton<IEsportatoreSoloEsterni, EsportatoreSoloEsterni>();
+builder.Services.AddSingleton<IEsportatoreRicercaErrori, EsportatoreRicercaErrori>();
 builder.Services.AddSingleton<IEsportatoreNonFatturare, EsportatoreNonFatturare>();
 builder.Services.AddSingleton<IEsportatoreConsultazione, EsportatoreConsultazione>();
+builder.Services.AddSingleton<IEsportatoreCertificato, EsportatoreCertificato>();
 
 // â”€â”€ DVR Legionellosi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.Configure<OpzioniDvr>(builder.Configuration.GetSection(OpzioniDvr.Sezione));
@@ -184,6 +190,17 @@ builder.Services.AddSingleton<IServizioMonitoraggioTempLog, ServizioMonitoraggio
 builder.Services.AddSingleton<ILettoreFileTempLog, LaboratorioAI.Dati.Import.LettoreFileTempLog>();
 builder.Services.AddScoped<IRepositoryTempLog, RepositoryTempLog>();
 builder.Services.AddSingleton<IGeneratoreReportTempLog, GeneratoreReportTempLog>();
+
+// ── Scadenziario tarature ──────────────────────────────────────
+builder.Services.AddScoped<IRepositoryScadenziario, RepositoryScadenziario>();
+builder.Services.AddScoped<LaboratorioAI.Dati.Import.IImportatoreTermometriEsterni, LaboratorioAI.Dati.Import.ImportatoreTermometriEsterni>();
+builder.Services.AddSingleton<IGeneratoreEtichetteTermometri, GeneratoreEtichetteTermometri>();
+
+// ── Accettazione campioni fuori sede ───────────────────────────
+builder.Services.AddScoped<IRepositoryAccettazione, RepositoryAccettazione>();
+builder.Services.AddSingleton<IGeneratoreTracciatoAccettazione, GeneratoreTracciatoAccettazione>();
+builder.Services.AddSingleton<IGeneratoreDocumentiAccettazione, GeneratoreDocumentiAccettazione>();
+builder.Services.AddSingleton<IGeneratoreTracciatoControllo, GeneratoreTracciatoControllo>();
 
 builder.Services.AddScoped<LaboratorioAI.Dati.LaboratorioAI.Import.IImportatoreUsda,
     LaboratorioAI.Dati.LaboratorioAI.Import.ImportatoreUsda>();

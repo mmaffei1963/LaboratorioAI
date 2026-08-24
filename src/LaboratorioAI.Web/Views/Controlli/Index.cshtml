@@ -1,0 +1,98 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Proposta controlli";
+    var puoApprovare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ControlliApprova);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Proposta controlli</h1>
+        <p class="sottotitolo">Proponi un nuovo controllo scegliendo i metodi dal catalogo. I dati restano in staging e generano un tracciato XML per l'import supervisionato in ArcLab: nessuna scrittura diretta sul gestionale.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante" id="btn-nuova">Nuova proposta</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <details id="dett-registro">
+        <summary style="cursor:pointer;font-weight:600">Registro proposte <span id="conteggio" class="sottotesto"></span></summary>
+        <div class="tabella-scorrevole" style="max-height:20rem;margin-top:0.5rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>Stato</th><th>Controllo</th><th class="numerico">Metodi</th><th class="numerico">Prezzo €</th><th>Origine</th><th>Creata</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati"><h2 id="form-titolo">Nuova proposta</h2><span id="form-stato" class="sottotesto"></span></div>
+    <input type="hidden" id="p-id" />
+    <input type="hidden" id="p-codice" />
+    <input type="hidden" id="p-id-esistente" />
+    <details class="accessori" style="margin-bottom:0.4rem">
+        <summary style="cursor:pointer;font-weight:600">Modifica un controllo esistente (attivo)</summary>
+        <div class="griglia-filtri" style="margin-top:0.4rem">
+            <label style="grid-column:1/-1">Cerca per nome o codice e caricalo
+                <input type="text" id="c-esistente" list="lista-controlli-attivi" placeholder="es. 142  oppure  Legionella acque…" />
+                <datalist id="lista-controlli-attivi"></datalist>
+            </label>
+        </div>
+        <p class="sottotesto" id="c-esistente-info"></p>
+    </details>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Nome controllo
+            <span style="display:flex;gap:0.3rem">
+                <input type="text" id="p-nome" style="flex:1" />
+                <button type="button" class="pulsante pulsante-tenue" id="btn-nome-ai" title="Proponi un nome in base ai metodi scelti">Proponi nome</button>
+            </span>
+        </label>
+        <label style="grid-column:1/-1">Note<input type="text" id="p-note" /></label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Metodi del controllo</h3></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Aggiungi metodo
+            <input type="text" id="m-input" list="lista-metodi" placeholder="scegli un metodo dalla tendina…" />
+            <datalist id="lista-metodi"></datalist>
+        </label>
+    </div>
+
+    <div class="tabella-scorrevole" style="margin-top:0.6rem">
+        <table class="tabella" id="tabella-metodi">
+            <thead><tr><th>Metodo</th><th>Denominazione riga</th><th>Rif. biblio</th><th>Unità</th><th>Lab esterno</th><th class="numerico">Cifre sign.</th><th class="numerico">Max dec.</th><th class="numerico">Costo €</th><th class="numerico">Sconto %</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><th colspan="7" style="text-align:right">Totale prezzo</th><th class="numerico" id="totale-prezzo">0,00</th><th colspan="2"></th></tr></tfoot>
+        </table>
+    </div>
+
+    <div class="azioni-filtri" style="margin-top:0.8rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
+        <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
+        @if (puoApprovare)
+        {
+            <button type="button" class="pulsante pulsante-secondario" id="btn-tracciato">Approva e genera XML</button>
+        }
+    </div>
+</section>
+
+<template id="tpl-metodo">
+    <tr class="metodo">
+        <td class="m-descr"></td>
+        <td class="m-denom"></td>
+        <td class="m-biblio"></td>
+        <td class="m-unita"></td>
+        <td class="m-lab"></td>
+        <td class="numerico m-cifre"></td>
+        <td class="numerico m-maxdec"></td>
+        <td class="numerico m-costo"></td>
+        <td class="numerico m-sconto">0</td>
+        <td><button type="button" class="pulsante pulsante-tenue m-rimuovi">✕</button></td>
+    </tr>
+</template>
+
+@section Script {
+    <script type="module" src="~/js/moduli/controlli.js" asp-append-version="true"></script>
+}

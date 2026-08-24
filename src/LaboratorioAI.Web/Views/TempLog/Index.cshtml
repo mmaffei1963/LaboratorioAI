@@ -1,6 +1,6 @@
 @inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
 @{
-    ViewData["Titolo"] = "Monitoraggio TempLog";
+    ViewData["Titolo"] = "Monitoraggio Econorma";
     var puoMappare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TempLogMappatura);
     var puoValidare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TempLogValidazione);
     var nomeUtente = Utente.NomeCompleto;
@@ -8,8 +8,8 @@
 
 <div class="barra-strumenti">
     <div>
-        <h1>Monitoraggio TempLog Econorma</h1>
-        <p class="sottotitolo">Carica il file dei registratori, applica i limiti di taratura da ArcLab, evidenzia le escursioni sopra il massimo (rosso) e sotto il minimo (blu)</p>
+        <h1>Visore Dati Econorma</h1>
+        <p class="sottotitolo">Carica i file registrati da Econorma, applica i limiti di taratura da ArcLab, evidenzia le escursioni sopra il massimo (rosso) e sotto il minimo (blu)</p>
     </div>
 </div>
 

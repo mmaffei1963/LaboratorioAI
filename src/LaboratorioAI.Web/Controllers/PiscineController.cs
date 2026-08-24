@@ -31,19 +31,22 @@ public class PiscineController : Controller
     private readonly ContestoLaboratorioAI _ctx;
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
+    private readonly IServizioAudit _audit;
 
     public PiscineController(
         IRepositoryPiscine arclab,
         IGeneratorePiscine generatore,
         ContestoLaboratorioAI ctx,
         IContestoUtente utente,
-        IServizioVersione versione)
+        IServizioVersione versione,
+        IServizioAudit audit)
     {
         _arclab = arclab;
         _generatore = generatore;
         _ctx = ctx;
         _utente = utente;
         _versione = versione;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -148,6 +151,10 @@ public class PiscineController : Controller
         dvr.VersioneApplicazione = _versione.Versione;
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Piscine, "piscina.salvata", EsitoOperazione.Successo,
+            tipoEntita: "DvrPiscina", idEntita: dvr.IdDvrPiscina.ToString(),
+            dettaglio: new { dvr.RagioneSociale, dvr.Regione, Stato = dvr.Stato.ToString() }, ct: ct);
         return Json(new { dvr.IdDvrPiscina });
     }
 
@@ -214,6 +221,10 @@ public class PiscineController : Controller
         if (!string.IsNullOrWhiteSpace(esito.PercorsoArchiviato))
             Response.Headers["X-Piscine-Archivio"] = Uri.EscapeDataString(esito.PercorsoArchiviato);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Piscine, "piscina.dvr.generato", EsitoOperazione.Successo,
+            tipoEntita: "DvrPiscina", idEntita: id.ToString(),
+            dettaglio: new { dvr.RagioneSociale, NomeFile = nome }, ct: ct);
         return File(esito.Documento, MimeDocx, nome);
     }
 
@@ -236,6 +247,10 @@ public class PiscineController : Controller
             Response.Headers["X-Piscine-Archivio"] = Uri.EscapeDataString(esito.PercorsoArchiviato);
 
         var nome = $"Regolamento_Piscine_{PulisciNomeFile(dvr.RagioneSociale)}_{DateTime.Today:yyyyMMdd}.docx";
+        await _audit.RegistraAsync(
+            AreaFunzionale.Piscine, "piscina.regolamento.generato", EsitoOperazione.Successo,
+            tipoEntita: "DvrPiscina", idEntita: id.ToString(),
+            dettaglio: new { dvr.RagioneSociale, NomeFile = nome }, ct: ct);
         return File(esito.Documento, MimeDocx, nome);
     }
 
@@ -267,6 +282,10 @@ public class PiscineController : Controller
         // Nelle Marche il documento è un «Registro tecnico funzionale», non un «Manuale».
         var tipo = (scheda.Anagrafica.Regione ?? "").ToLowerInvariant().Contains("march") ? "Registro" : "Manuale";
         var nome = $"{tipo}_Piscine_{PulisciNomeFile(etichetta)}_{DateTime.Today:yyyyMMdd}.docx";
+        await _audit.RegistraAsync(
+            AreaFunzionale.Piscine, "piscina.manuale.generato", EsitoOperazione.Successo,
+            tipoEntita: "DvrPiscina", idEntita: id.ToString(),
+            dettaglio: new { dvr.RagioneSociale, dvr.Regione, NomeFile = nome }, ct: ct);
         return File(esito.Documento, MimeDocx, nome);
     }
 

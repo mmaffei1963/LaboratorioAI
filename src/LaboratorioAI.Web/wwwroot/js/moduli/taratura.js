@@ -435,6 +435,11 @@ $('btn-taratura-salva')?.addEventListener('click', (e) => salvaTaratura(e.curren
 $('btn-taratura-duplica')?.addEventListener('click', duplica);
 $('btn-taratura-pdf')?.addEventListener('click', (e) => scaricaRapporto(e.currentTarget, 'pdf'));
 $('btn-taratura-word')?.addEventListener('click', (e) => scaricaRapporto(e.currentTarget, 'word'));
+$('btn-taratura-etichetta')?.addEventListener('click', () => {
+    const id = $('t-id').value;
+    if (!id) { alert('Salva prima la taratura per generare l\'etichetta.'); return; }
+    window.open(`/api/taratura/${id}/etichetta`, '_blank');
+});
 $('btn-taratura-analizza')?.addEventListener('click', (e) => analizza(e.currentTarget));
 $('btn-valida')?.addEventListener('click', (e) => valida(e.currentTarget));
 

@@ -28,7 +28,7 @@ public class GeneratoreReportTempLog : IGeneratoreReportTempLog
     public string NomeFile(RisultatoMonitoraggio r, string estensione)
     {
         var g = r.DataDal?.ToString("yyyyMMdd") ?? DateTime.Now.ToString("yyyyMMdd");
-        return $"Report_TempLog_{g}.{estensione}";
+        return $"Report_Econorma_{g}.{estensione}";
     }
 
     // ── Excel ───────────────────────────────────────────────────────

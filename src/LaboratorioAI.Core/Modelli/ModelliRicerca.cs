@@ -10,8 +10,9 @@ public enum StatoCampione
     Certificato = 2,
 
     /// <summary>
-    /// Campione inviato a laboratorio esterno senza ricertificazione:
-    /// privo di prove e giacente da oltre dieci giorni.
+    /// Campione inviato in originale a laboratorio esterno senza ricertificazione:
+    /// privo di prove e giacente da oltre dieci giorni, OPPURE con un certificato
+    /// esterno caricato nel portale ma senza nostro certificato.
     /// </summary>
     SpeditoOriginale = 3
 }
@@ -80,11 +81,13 @@ public record RisultatoRicercaCampione
     public int? IdCertificato { get; init; }
     public int GiorniInLaboratorio { get; init; }
     public int NumeroProve { get; init; }
+    /// <summary>Esiste un certificato esterno caricato nel portale per questo campione (non ricertificato).</summary>
+    public bool EsternoPresente { get; init; }
 
     public StatoCampione Stato =>
-        IdCertificato is not null                            ? StatoCampione.Certificato
-        : NumeroProve == 0 && GiorniInLaboratorio > 10       ? StatoCampione.SpeditoOriginale
-        :                                                      StatoCampione.InCorso;
+        IdCertificato is not null                                        ? StatoCampione.Certificato
+        : (NumeroProve == 0 && GiorniInLaboratorio > 10) || EsternoPresente ? StatoCampione.SpeditoOriginale
+        :                                                                  StatoCampione.InCorso;
 }
 
 /// <summary>Totali complessivi di una ricerca (sull'intero risultato, non solo le righe mostrate).</summary>

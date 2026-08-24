@@ -1,0 +1,68 @@
+@{
+    ViewData["Titolo"] = "Certificati esterni Non Ricertificati";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Certificati esterni Non Ricertificati</h1>
+        <p class="sottotitolo">Ricerca certificati esterni caricati nel portale e non ricertificati da ArcLab; con stato di fatturazione. Aggancio per anno + lotto/campione + cliente. Sola lettura.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Anno<input type="number" id="f-anno" placeholder="es. 2026" /></label>
+        <label>Mese
+            <select id="f-mese">
+                <option value="">— tutto l'anno —</option>
+                <option value="1">Gennaio</option><option value="2">Febbraio</option><option value="3">Marzo</option>
+                <option value="4">Aprile</option><option value="5">Maggio</option><option value="6">Giugno</option>
+                <option value="7">Luglio</option><option value="8">Agosto</option><option value="9">Settembre</option>
+                <option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
+            </select>
+        </label>
+        <label>Data da<input type="date" id="f-da" /></label>
+        <label>Data a<input type="date" id="f-a" /></label>
+        <label>Ragione sociale<input type="text" id="f-rag" placeholder="contiene…" /></label>
+        <label>Stato fattura
+            <select id="f-fatt">
+                <option value="">Tutti</option>
+                <option value="fatturati">Fatturati</option>
+                <option value="nonfatturati">Non fatturati</option>
+            </select>
+        </label>
+        <label>Corrispondenza Campione
+            <select id="f-camp">
+                <option value="">Tutti</option>
+                <option value="con">Solo con Campione ArcLab</option>
+                <option value="senza">Solo senza Campione ArcLab</option>
+            </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.4rem;margin-top:1.2rem">
+            <input type="checkbox" id="f-senza" /> Solo senza certificato interno
+        </label>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.6rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-esporta">Esporta Excel</button>
+        <button type="button" class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+    <div id="riepilogo" class="sottotesto" style="margin-top:0.4rem"></div>
+</section>
+
+<section class="riquadro">
+    <div class="tabella-scorrevole" style="max-height:34rem">
+        <table class="tabella" id="tab-esterni">
+            <thead><tr>
+                <th>Anno</th><th>Lotto</th><th>Campione</th><th>Cliente</th><th>Upload</th>
+                <th>Nome file</th><th>Interno</th><th>Camp. ArcLab</th><th>N° certificato</th><th>Data fattura</th><th>Fatturato</th>
+                <th>Id contr.</th><th>Controllo</th><th class="numerico">Prezzo €</th>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/solo-esterni.js" asp-append-version="true"></script>
+}

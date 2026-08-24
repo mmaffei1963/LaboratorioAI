@@ -20,6 +20,7 @@ public class ConsultazioneController : Controller
     private readonly IServizioAnalisi _analisi;
     private readonly IContestoUtente _utente;
     private readonly IEsportatoreConsultazione _esportatore;
+    private readonly IEsportatoreCertificato _esportatoreCert;
 
     public ConsultazioneController(
         IRepositoryCampioni campioni,
@@ -27,7 +28,8 @@ public class ConsultazioneController : Controller
         IRepositoryAnagrafiche anagrafiche,
         IServizioAnalisi analisi,
         IContestoUtente utente,
-        IEsportatoreConsultazione esportatore)
+        IEsportatoreConsultazione esportatore,
+        IEsportatoreCertificato esportatoreCert)
     {
         _campioni = campioni;
         _certificati = certificati;
@@ -35,6 +37,7 @@ public class ConsultazioneController : Controller
         _analisi = analisi;
         _utente = utente;
         _esportatore = esportatore;
+        _esportatoreCert = esportatoreCert;
     }
 
     public IActionResult Index()
@@ -208,31 +211,16 @@ public class ConsultazioneController : Controller
     [RichiedePermesso(Permessi.ConsultazioneCertificati)]
     public async Task<IActionResult> Certificato(int idCertificato, CancellationToken ct)
     {
-        var completo = await _certificati.CompletoAsync(idCertificato, ct);
-        if (completo is null) return NotFound(new { messaggio = "Certificato non trovato." });
-
-        var ultima = await _analisi.UltimaAsync(completo.Campione.IdCampione, ct);
-
-        return Json(new
+        try
         {
-            Certificato = new
-            {
-                completo.Certificato.IdCertificato,
-                completo.Certificato.NumeroCertificato,
-                DataCertificato = completo.Certificato.DataCertificato?.ToString("dd/MM/yyyy"),
-                completo.Certificato.GiorniRisposta
-            },
-            Campione = new
-            {
-                completo.Campione.IdCampione,
-                completo.Campione.NumeroCampione,
-                completo.Campione.RagioneSociale,
-                completo.Campione.NomeInsediamento,
-                completo.Campione.DenominazioneCampione,
-                completo.Campione.Matrice,
-                completo.Campione.Controllo
-            },
-            Prove = completo.Prove.Select(p => new
+            var completo = await _certificati.CompletoAsync(idCertificato, ct);
+            if (completo is null) return NotFound(new { messaggio = "Certificato non trovato." });
+
+            var ultima = await _analisi.UltimaAsync(completo.Campione.IdCampione, ct);
+
+            // Materializzo qui le prove: eventuali errori emergono PRIMA di iniziare la
+            // risposta (messaggio leggibile) e non a metà stream (che darebbe "failed to fetch").
+            var prove = completo.Prove.Select(p => new
             {
                 Parametro = p.DenominazioneRiga ?? p.Parametro,
                 p.RiferimentoNormativo,
@@ -244,13 +232,50 @@ public class ConsultazioneController : Controller
                 p.NumeroLaboratorioEsterno,
                 p.Accreditato,
                 p.AccreditatoEsterno
-            }),
-            AnalisiArchiviata = ultima is null ? null : new
+            }).ToList();
+
+            return Json(new
             {
-                ultima.IdAnalisi,
-                Data = ultima.DataAnalisi.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
-                Giudizio = ultima.Giudizio.ToString()
-            }
-        });
+                Certificato = new
+                {
+                    completo.Certificato.IdCertificato,
+                    completo.Certificato.NumeroCertificato,
+                    DataCertificato = completo.Certificato.DataCertificato?.ToString("dd/MM/yyyy"),
+                    completo.Certificato.GiorniRisposta
+                },
+                Campione = new
+                {
+                    completo.Campione.IdCampione,
+                    completo.Campione.NumeroCampione,
+                    completo.Campione.RagioneSociale,
+                    completo.Campione.NomeInsediamento,
+                    completo.Campione.DenominazioneCampione,
+                    completo.Campione.Matrice,
+                    completo.Campione.Controllo
+                },
+                Prove = prove,
+                Nutrizionale = prove.Count == 0,   // certificato senza prove analitiche (es. rapporto nutrizionale)
+                AnalisiArchiviata = ultima is null ? null : new
+                {
+                    ultima.IdAnalisi,
+                    Data = ultima.DataAnalisi.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+                    Giudizio = ultima.Giudizio.ToString()
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { messaggio = "Errore nel caricamento del certificato: " + ex.Message });
+        }
+    }
+
+    [HttpGet("api/certificati/{idCertificato:int}/excel")]
+    [RichiedePermesso(Permessi.ConsultazioneCertificati)]
+    public async Task<IActionResult> CertificatoExcel(int idCertificato, CancellationToken ct)
+    {
+        var completo = await _certificati.CompletoAsync(idCertificato, ct);
+        if (completo is null) return NotFound(new { messaggio = "Certificato non trovato." });
+        var bytes = _esportatoreCert.Genera(completo);
+        return File(bytes, MimeXlsx, _esportatoreCert.NomeFile(completo));
     }
 }

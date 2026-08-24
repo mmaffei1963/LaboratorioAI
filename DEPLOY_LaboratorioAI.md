@@ -78,11 +78,34 @@ dotnet ef migrations script --project src\LaboratorioAI.Dati --startup-project s
 > **Chiarimento sul ruolo del server.** Il server di produzione **non** richiede l'SDK .NET (il compilatore) e **non** compila nulla. La compilazione avviene **una sola volta** sulla macchina di sviluppo, che ha già l'SDK, tramite `dotnet publish`. Il risultato sono due cartelle già eseguibili. Al server serve **solo** il runtime, cioè l'**ASP.NET Core 8 Hosting Bundle** (vedi sezione 2): è il pacchetto standard per eseguire siti .NET su IIS, non è il compilatore.
 >
 > **Da rifare prima del passaggio su server (agosto 2026).** Dopo la prima
-> pubblicazione sono state aggiunte le funzioni di prefatturazione (Tamponi in
-> contratto, Non fatturare), l'accreditamento esterno nei certificati, i filtri
-> prelevatore/ricevitore e il launcher desktop. Le cartelle di produzione vanno
-> quindi **ripubblicate** con i due comandi qui sotto, sulla macchina di sviluppo,
-> prima di consegnare le cartelle al sistemista.
+> pubblicazione sono stati aggiunti molti moduli: prefatturazione (Tamponi in
+> contratto, Non fatturare), accreditamento esterno nei certificati, filtri
+> prelevatore/ricevitore, launcher desktop, **Nutrizionali** (materie prime +
+> ricette), **tarature strumenti** (termometri 04-01, incubatori 04-02, mappatura
+> 04-03, bilance 45), **Monitoraggio Econorma** (ex TempLog), **Scadenziario
+> tarature** con etichette, e il **menù per macroaree**. Le cartelle di produzione
+> vanno quindi **ripubblicate** con i due comandi qui sotto, sulla macchina di
+> sviluppo, prima di consegnare le cartelle al sistemista.
+>
+> Questi moduli introducono **nuovi schemi SQL** (`nutrizionale`, `taratura`,
+> `incubatori`, `mappatura`, `bilance`, `templog`, `tarature`), creati
+> automaticamente dalle migrazioni EF Core al primo avvio (serve `db_ddladmin` su
+> `LaboratorioAI`, già previsto in sez. 3). I **permessi** dei nuovi moduli sono
+> popolati automaticamente all'avvio. Nessun pacchetto aggiuntivo da installare sul
+> server: ExcelDataReader/ClosedXML/SkiaSharp sono inclusi nella pubblicazione.
+>
+> **Aggiornamento agosto 2026 (2ª tornata).** Dopo lo Scadenziario sono stati
+> aggiunti tre moduli in **staging**: **Accettazione** (verbale interno VP-NNNNNN,
+> PDF, verifica importabilità — `CodLotto` e import lasciati a **Palomar**),
+> **Certificati esterni Non Ricertificati** (confronto con il portale Marea) e
+> **Proposta controlli** (catalogo metodi, duplicati, nome AI, XML per import
+> supervisionato). In più lo stato **«Spedito originale»** in Consultazione e
+> Laboratori esterni. Anche questi sono coperti dalle migrazioni EF automatiche e
+> dai permessi popolati all'avvio (aree 17/18/19; permessi `soloesterni.visualizza`,
+> `controlli.proponi`, `controlli.approva`). Al 22/08/2026 le migrazioni EF sono
+> **31**, applicate automaticamente al primo avvio (o via script per il DBA, sez.
+> 3.3). Nessuna scrittura su ArcLab: i tre moduli producono XML/staging per l'import
+> supervisionato di Palomar.
 
 Comando (eseguire sulla macchina di sviluppo, **non** sul server):
 
@@ -119,6 +142,14 @@ D:\LaboratorioAI\Archivio\Piscine\ -> (vuota)
 ```
 
 L'account `MAREA\svc_labai` deve avere permessi di **lettura** sui Modelli e **scrittura** sugli Archivi.
+
+**Share di rete per Monitoraggio Econorma.** Il modulo Econorma può caricare i file
+dei registratori direttamente dalla cartella di rete
+`\\SRVMAREA\marea\ArcLab\Archivio_TempLog\ARCHIVIO\Scarico_Dati`. Perché funzioni,
+l'account `MAREA\svc_labai` deve avere **lettura** su quello share. Il percorso è
+configurabile con la chiave `TempLog:CartellaScarico` in `appsettings.Production.json`
+(se assente, vale il percorso predefinito). Se non si concede l'accesso, il
+caricamento da file dell'utente resta comunque disponibile.
 
 ---
 
@@ -176,6 +207,9 @@ Per **ciascuna** delle due app:
 - [ ] **Analisi AI** funzionante (conferma che `Anthropic__ChiaveApi` è valida).
 - [ ] Portale: **login cliente** (codice contabilità + P.IVA) → vede solo i propri campioni.
 - [ ] Portale: **login operatore** (codice `MAREA` + credenziale) → vede tutti i clienti e il dettaglio prove.
+- [ ] **Strumenti**: una **taratura** (termometri/incubatori/mappatura/bilance) con rapporto PDF e «Valida calcoli» = VALIDATO; **etichetta** termometro generata dal modulo Taratura.
+- [ ] **Monitoraggio Econorma**: sincronizzazione sonde da ArcLab, mappatura canali, caricamento di un file e verifica escursioni; se previsto, caricamento dallo share di rete.
+- [ ] **Scadenziario tarature**: scheda Interni popolata da ArcLab (raggruppata per tipo); import esterni dal foglio «2011-2026».
 - [ ] **Log** scritti in `.\log\` di ciascuna app senza errori critici.
 
 ## 10. Controlli di sicurezza (checklist invarianti)

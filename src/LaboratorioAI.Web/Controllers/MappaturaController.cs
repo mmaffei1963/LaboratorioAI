@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -38,16 +39,18 @@ public class MappaturaController : Controller
     private readonly IRepositoryAnagrafiche _anagrafiche;
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
+    private readonly IServizioAudit _audit;
 
     public MappaturaController(
         ContestoLaboratorioAI ctx, IServizioMappaturaIncubatori calcolo, IServizioValidazioneMappatura validazione,
         IServizioControlliMappatura controlli, IGeneratoreRapportoMappatura generatore,
         IGeneratoreRapportoValidazione generatoreValidazione, IClientAnthropic ia,
-        IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione)
+        IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
+        IServizioAudit audit)
     {
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
         _generatore = generatore; _generatoreValidazione = generatoreValidazione; _ia = ia;
-        _anagrafiche = anagrafiche; _utente = utente; _versione = versione;
+        _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
     }
 
     public IActionResult Index()
@@ -160,6 +163,10 @@ public class MappaturaController : Controller
             t.NumeroRapporto = string.IsNullOrWhiteSpace(req.NumeroRapporto) ? await NumeroAsync(req.DataMappatura, ct) : req.NumeroRapporto.Trim();
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Mappatura, "mappatura.salvata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaMappatura", idEntita: t.IdMappatura.ToString(),
+            dettaglio: new { t.ApparecchiaturaIdentificazione, t.NumeroRapporto }, ct: ct);
         return Json(new { t.IdMappatura, t.NumeroRapporto });
     }
 
@@ -243,6 +250,11 @@ public class MappaturaController : Controller
         };
         _ctx.ValidazioniCalcoloMappatura.Add(riga);
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Mappatura, "mappatura.validazione.eseguita",
+            esito.Validato ? EsitoOperazione.Successo : EsitoOperazione.Errore,
+            tipoEntita: "EsitoValidazioneMappatura", idEntita: riga.IdEsito.ToString(),
+            dettaglio: new { esito.Validato, esito.NumeroOk, esito.NumeroKo, esito.VersioneSet }, ct: ct);
         return Json(new
         {
             riga.IdEsito, esito.Validato, esito.NumeroOk, esito.NumeroKo,
@@ -324,6 +336,10 @@ public class MappaturaController : Controller
         });
         await _ctx.SaveChangesAsync(ct);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Mappatura, "mappatura.analisi.ai", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaMappatura", idEntita: id.ToString(),
+            dettaglio: new { Esito = esito, Anomalie = anomalie.Count }, ct: ct);
         return Json(new
         {
             esito, testo, anomalieDeterministiche = anomalie.Count > 0,

@@ -45,7 +45,13 @@ public enum AreaFunzionale
     Taratura          = 12,
     Incubatori        = 13,
     Bilance           = 14,
-    TempLog           = 15
+    TempLog           = 15,
+    Scadenziario      = 16,
+    Accettazione      = 17,
+    SoloEsterni       = 18,
+    Controlli         = 19,
+    Mappatura         = 20,
+    RicercaErrori     = 21
 }
 
 /// <summary>Stato di un DVR piscina salvato nel database.</summary>

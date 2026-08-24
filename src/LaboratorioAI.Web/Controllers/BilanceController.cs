@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -38,16 +39,18 @@ public class BilanceController : Controller
     private readonly IRepositoryAnagrafiche _anagrafiche;
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
+    private readonly IServizioAudit _audit;
 
     public BilanceController(
         ContestoLaboratorioAI ctx, IServizioBilancia calcolo, IServizioValidazioneBilancia validazione,
         IServizioControlliBilancia controlli, IGeneratoreRapportoBilancia generatore,
         IGeneratoreRapportoValidazione generatoreValidazione, IClientAnthropic ia,
-        IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione)
+        IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
+        IServizioAudit audit)
     {
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
         _generatore = generatore; _generatoreValidazione = generatoreValidazione; _ia = ia;
-        _anagrafiche = anagrafiche; _utente = utente; _versione = versione;
+        _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
     }
 
     public IActionResult Index()
@@ -128,6 +131,10 @@ public class BilanceController : Controller
             });
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.pesiera.salvata", EsitoOperazione.Successo,
+            tipoEntita: "Pesiera", idEntita: p.IdPesiera.ToString(),
+            dettaglio: new { p.Identificazione, Masse = p.Masse.Count }, ct: ct);
         return Json(new { p.IdPesiera });
     }
 
@@ -221,6 +228,10 @@ public class BilanceController : Controller
             t.NumeroRapporto = string.IsNullOrWhiteSpace(req.NumeroRapporto) ? await NumeroAsync(req.DataTaratura, ct) : req.NumeroRapporto.Trim();
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.salvata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaBilancia", idEntita: t.IdTaratura.ToString(),
+            dettaglio: new { t.BilanciaIdentificazione, t.NumeroRapporto }, ct: ct);
         return Json(new { t.IdTaratura, t.NumeroRapporto });
     }
 
@@ -327,6 +338,11 @@ public class BilanceController : Controller
         };
         _ctx.ValidazioniCalcoloBilance.Add(riga);
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.validazione.eseguita",
+            esito.Validato ? EsitoOperazione.Successo : EsitoOperazione.Errore,
+            tipoEntita: "EsitoValidazioneBilancia", idEntita: riga.IdEsito.ToString(),
+            dettaglio: new { esito.Validato, esito.NumeroOk, esito.NumeroKo, esito.VersioneSet }, ct: ct);
         return Json(new
         {
             riga.IdEsito, esito.Validato, esito.NumeroOk, esito.NumeroKo,
@@ -396,6 +412,10 @@ public class BilanceController : Controller
             TokenInput = risposta.TokenInput, TokenOutput = risposta.TokenOutput, VersioneApplicazione = _versione.Versione, IdUtente = _utente.IdUtente
         });
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.analisi.ai", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaBilancia", idEntita: id.ToString(),
+            dettaglio: new { Esito = esito, Anomalie = anomalie.Count }, ct: ct);
         return Json(new
         {
             esito, testo, anomalieDeterministiche = anomalie.Count > 0,

@@ -1,0 +1,113 @@
+@{
+    ViewData["Titolo"] = "Ricerca errori";
+    var oggi = DateTime.Today.Year;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Ricerca errori</h1>
+        <p class="sottotitolo">Verifiche diagnostiche in sola lettura su ArcLab: nessuna modifica ai dati. Ogni sezione produce un elenco da correggere a mano nel gestionale.</p>
+    </div>
+</div>
+
+<!-- 1. Doppioni sui rapporti di prova -->
+<section class="riquadro">
+    <details open>
+        <summary style="cursor:pointer;font-weight:600">1 · Doppioni di parametro sui rapporti di prova</summary>
+        <p class="sottotesto">Stesso IdParametro ripetuto sullo stesso campione con la stessa denominazione riga. Esclusi i microbiologici e la coppia legittima del valore energetico (kJ/kcal).</p>
+        <div class="griglia-filtri">
+            <label>Anno da<input type="number" id="d-da" value="@(oggi - 1)" /></label>
+            <label>Anno a<input type="number" id="d-a" value="@oggi" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="d-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="d-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="d-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="d-tab">
+                <thead><tr>
+                    <th>Id cert.</th><th>N° cert.</th><th>Data</th><th>Id camp.</th><th>Cod camp.</th>
+                    <th>Id par.</th><th>Parametro</th><th>Id riga met.</th><th>Denominazione riga</th>
+                    <th>Id prova</th><th class="numerico">Valore</th><th class="numerico">Occ.</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 2. Metodi senza arrotondamento -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">2 · Metodi attivi senza cifre significative / decimali max</summary>
+        <p class="sottotesto">Metodi attivi (ProceduraMetodo.Attivo = Sì) con Cifre_significative e/o Decimali_Max non compilati.</p>
+        <div class="azioni-filtri" style="margin-top:0.4rem">
+            <span id="a-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="a-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="a-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="a-tab">
+                <thead><tr>
+                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th>
+                    <th>Cifre sign.</th><th>Decimali max</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 3. Margine metodo -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">3 · Metodi con margine sotto soglia</summary>
+        <p class="sottotesto">Metodi attivi in cui (CostoMetodoEuro − CostoAnoi)/CostoMetodoEuro è sotto la soglia impostata. Include i casi con CostoAnoi superiore al prezzo (margine negativo).</p>
+        <div class="griglia-filtri">
+            <label>Soglia margine %<input type="number" id="m-soglia" value="15" min="0" max="100" step="0.5" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="m-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="m-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="m-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="m-tab">
+                <thead><tr>
+                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th>
+                    <th class="numerico">Costo a noi €</th><th class="numerico">Costo metodo €</th><th class="numerico">Margine %</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 4. Metodi doppi -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">4 · Metodi potenzialmente doppi</summary>
+        <p class="sottotesto">Metodi attivi con stesso IdParametro, stessa DettagliMetodo e stessa RifMetodo (al netto di spazi e maiuscole/minuscole).</p>
+        <div class="azioni-filtri" style="margin-top:0.4rem">
+            <span id="p-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="p-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="p-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="p-tab">
+                <thead><tr>
+                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th><th class="numerico">N° nel gruppo</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/ricerca-errori.js" asp-append-version="true"></script>
+}

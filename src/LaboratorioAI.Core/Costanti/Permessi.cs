@@ -80,6 +80,24 @@ public static class Permessi
     public const string TempLogMappatura = "templog.mappatura";
     public const string TempLogValidazione = "templog.validazione";
 
+    // ── Scadenziario tarature ──────────────────────────────────────
+    public const string ScadenziarioVisualizza = "scadenziario.visualizza";
+    public const string ScadenziarioGestione   = "scadenziario.gestione";
+
+    // ── Accettazione campioni (fuori sede) ─────────────────────────
+    public const string AccettazioneEsegui    = "accettazione.esegui";
+    public const string AccettazioneTrasmetti  = "accettazione.trasmetti";
+
+    // ── Solo esterni (confronto certificati esterni/interni + fatturazione) ──
+    public const string SoloEsterniVisualizza = "soloesterni.visualizza";
+
+    // ── Proposta controlli (consulenti/clienti → import supervisionato) ──
+    public const string ControlliProponi = "controlli.proponi";
+    public const string ControlliApprova = "controlli.approva";
+
+    // ── Ricerca errori (diagnostica sola lettura su ArcLab) ─────────
+    public const string RicercaErroriVisualizza = "ricercaerrori.visualizza";
+
     // ── Amministrazione ────────────────────────────────────────────
     public const string AmministrazioneUtenti         = "amministrazione.utenti";
     public const string AmministrazioneConfigurazioni = "amministrazione.configurazioni";
@@ -102,6 +120,11 @@ public static class Permessi
         MappaturaEsegui, MappaturaValidazione,
         BilanceEsegui, BilanceValidazione,
         TempLogEsegui, TempLogMappatura, TempLogValidazione,
+        ScadenziarioVisualizza, ScadenziarioGestione,
+        AccettazioneEsegui, AccettazioneTrasmetti,
+        SoloEsterniVisualizza,
+        ControlliProponi, ControlliApprova,
+        RicercaErroriVisualizza,
         AmministrazioneUtenti, AmministrazioneConfigurazioni, AmministrazioneAudit
     };
 }

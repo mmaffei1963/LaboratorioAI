@@ -22,6 +22,284 @@ namespace LaboratorioAI.Dati.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneCampione", b =>
+                {
+                    b.Property<int>("IdAccettazioneCampione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAccettazioneCampione"));
+
+                    b.Property<string>("CameraLegionella")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("CertificatoNonRichiesto")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CondizioniTrasporto")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("ConsegnaPrevistaLabEstGiorni")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DataInvioLab")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataPrelievo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataPrevistaConsegna")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descrizione")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EtichettaCliente")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("IdAccettazioneLotto")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdLabEsternoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdMatriceArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTermometroArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Identificativo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Imballaggio")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("LabEsterno")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("LuogoPrelievo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Matrice")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("NoteLabEsterno")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("OraPrelievo")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ProceduraPrelievo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Progressivo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PuntoPrelievo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("RitardoAnalisiGiorni")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SiglaCliente")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TempRicezione")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<double?>("Temperatura")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Termometro")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("IdAccettazioneCampione");
+
+                    b.HasIndex("IdAccettazioneLotto");
+
+                    b.ToTable("Campioni", "accettazione");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneLotto", b =>
+                {
+                    b.Property<int>("IdAccettazioneLotto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAccettazioneLotto"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Cliente")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CodLotto")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("CodiceLocale")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Commessa")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("DataCancellazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataConferimento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataTrasmissione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int?>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdCommessaArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdInsediamentoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdPrelevatore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdRicevitore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Insediamento")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("NomeFileTracciato")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Origine")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Prelevatore")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Ricevitore")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Stato")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VerbalePrelievo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Vettore")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("IdAccettazioneLotto");
+
+                    b.HasIndex("CodLotto");
+
+                    b.HasIndex("CodiceLocale")
+                        .IsUnique();
+
+                    b.HasIndex("Stato", "Attivo");
+
+                    b.ToTable("Lotti", "accettazione");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneProva", b =>
+                {
+                    b.Property<int>("IdAccettazioneProva")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAccettazioneProva"));
+
+                    b.Property<string>("Controllo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("IdAccettazioneCampione")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdControlloArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdMetodoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdRigaMetodoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LaboratorioEsterno")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Metodo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Parametro")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("IdAccettazioneProva");
+
+                    b.HasIndex("IdAccettazioneCampione");
+
+                    b.ToTable("Prove", "accettazione");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AnalisiAi", b =>
                 {
                     b.Property<int>("IdAnalisi")
@@ -533,6 +811,26 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsUnique();
 
                     b.ToTable("Configurazioni", "app");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ContatoreAccettazione", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<long>("ProssimoValore")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contatori", "accettazione");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ProssimoValore = 0L
+                        });
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.DvrPiscina", b =>
@@ -1114,6 +1412,135 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("Identificazione");
 
                     b.ToTable("Pesiere", "bilance");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaControllo", b =>
+                {
+                    b.Property<int>("IdPropostaControllo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPropostaControllo"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CodiceLocale")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Controllo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("DataCancellazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataTrasmissione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int?>("IdControlloEsistenteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NomeFileTracciato")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Origine")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Stato")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdPropostaControllo");
+
+                    b.HasIndex("CodiceLocale")
+                        .IsUnique();
+
+                    b.HasIndex("Stato", "Attivo");
+
+                    b.ToTable("Proposte", "controlli");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaRigaMetodo", b =>
+                {
+                    b.Property<int>("IdPropostaRigaMetodo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPropostaRigaMetodo"));
+
+                    b.Property<int?>("CifreSignificative")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("CostoMetodoEuro")
+                        .HasColumnType("money");
+
+                    b.Property<string>("DenominazioneRiga")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("IdLabEsternoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdMetodoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPropostaControllo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUnitaArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LabEsterno")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("MaxDecimali")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Metodo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Progressivo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RifBiblio")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<double>("ScontoRiga")
+                        .HasColumnType("float");
+
+                    b.Property<string>("UnitaMisura")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IdPropostaRigaMetodo");
+
+                    b.HasIndex("IdPropostaControllo");
+
+                    b.ToTable("RigheMetodo", "controlli");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.PuntoCertificato", b =>
@@ -1958,6 +2385,86 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("TentativiAccesso", "portale");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.TermometroEsterno", b =>
+                {
+                    b.Property<int>("IdTermometroEsterno")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTermometroEsterno"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Cliente")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("DataCancellazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataConsegna")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataScadenza")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataTaratura")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<bool>("Fatturato")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("IdTaraturaOrigine")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("NumeroRapporto")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OperatoreConsegna")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RifFattura")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Riferimento")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Tipologia")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("IdTermometroEsterno");
+
+                    b.HasIndex("DataScadenza");
+
+                    b.HasIndex("IdTaraturaOrigine");
+
+                    b.HasIndex("NumeroRapporto");
+
+                    b.ToTable("TermometriEsterni", "tarature");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Utente", b =>
                 {
                     b.Property<int>("IdUtente")
@@ -2353,6 +2860,28 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("RegistroDvr", "app");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneCampione", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.AccettazioneLotto", "Lotto")
+                        .WithMany("Campioni")
+                        .HasForeignKey("IdAccettazioneLotto")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lotto");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneProva", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.AccettazioneCampione", "Campione")
+                        .WithMany("Prove")
+                        .HasForeignKey("IdAccettazioneCampione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campione");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AnalisiAi", b =>
                 {
                     b.HasOne("LaboratorioAI.Core.Entita.Utente", "Utente")
@@ -2494,6 +3023,17 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsRequired();
 
                     b.Navigation("Pesiera");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaRigaMetodo", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.PropostaControllo", "Proposta")
+                        .WithMany("Righe")
+                        .HasForeignKey("IdPropostaControllo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proposta");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.PuntoCertificato", b =>
@@ -2699,6 +3239,16 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("Utente");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneCampione", b =>
+                {
+                    b.Navigation("Prove");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.AccettazioneLotto", b =>
+                {
+                    b.Navigation("Campioni");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.CampioneRiferimento", b =>
                 {
                     b.Navigation("Punti");
@@ -2722,6 +3272,11 @@ namespace LaboratorioAI.Dati.Migrations
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Pesiera", b =>
                 {
                     b.Navigation("Masse");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaControllo", b =>
+                {
+                    b.Navigation("Righe");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Ricetta", b =>

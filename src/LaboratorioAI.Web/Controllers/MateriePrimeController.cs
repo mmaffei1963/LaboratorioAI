@@ -2,6 +2,7 @@ using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
+using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.LaboratorioAI;
 using LaboratorioAI.Dati.LaboratorioAI.Import;
 using LaboratorioAI.Documenti;
@@ -24,15 +25,17 @@ public class MateriePrimeController : Controller
     private readonly IEstrattoreSchedaNutrizionale _estrattore;
     private readonly IImportatoreUsda _usda;
     private readonly IImportatoreCnf _cnf;
+    private readonly IServizioAudit _audit;
 
     public MateriePrimeController(
         ContestoLaboratorioAI ctx, IEstrattoreSchedaNutrizionale estrattore,
-        IImportatoreUsda usda, IImportatoreCnf cnf)
+        IImportatoreUsda usda, IImportatoreCnf cnf, IServizioAudit audit)
     {
         _ctx = ctx;
         _estrattore = estrattore;
         _usda = usda;
         _cnf = cnf;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -253,6 +256,9 @@ public class MateriePrimeController : Controller
         }
 
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Nutrizionale, "materieprime.import.crea", EsitoOperazione.Successo,
+            dettaglio: new { Lette = righe.Count, Nuove = nuove, Aggiornate = aggiornate }, ct: ct);
         return Json(new EsitoImportCrea { Lette = righe.Count, Nuove = nuove, Aggiornate = aggiornate });
     }
 
@@ -309,6 +315,9 @@ public class MateriePrimeController : Controller
         try
         {
             var esito = await _estrattore.EstraiAsync(pdf, ct);
+            await _audit.RegistraAsync(
+                AreaFunzionale.Nutrizionale, "materieprime.estrazione.ai", EsitoOperazione.Successo,
+                dettaglio: new { File = file.FileName }, ct: ct);
             return Json(esito);
         }
         catch (Exception ex)
@@ -328,6 +337,10 @@ public class MateriePrimeController : Controller
         m.DataCancellazione = DateTime.UtcNow;
         m.DataUltimaModifica = DateTime.UtcNow;
         await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Nutrizionale, "materieprime.eliminata", EsitoOperazione.Successo,
+            tipoEntita: "MateriaPrima", idEntita: id.ToString(),
+            dettaglio: new { m.Denominazione }, ct: ct);
         return Json(new { ok = true });
     }
 
@@ -411,6 +424,10 @@ public class MateriePrimeController : Controller
         if (somma > 0m && Math.Abs(somma - 100m) > 5m)
             avvisi.Add($"La somma dei componenti è {somma:0.#} g/100 g (attesa ~100): verifica i valori.");
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Nutrizionale, "materieprime.salvata", EsitoOperazione.Successo,
+            tipoEntita: "MateriaPrima", idEntita: m.IdMateriaPrima.ToString(),
+            dettaglio: new { m.Denominazione }, ct: ct);
         return Json(new { m.IdMateriaPrima, avvisi });
     }
 

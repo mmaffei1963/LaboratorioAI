@@ -1,6 +1,8 @@
 using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Documenti;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +21,14 @@ public class NonFatturareController : Controller
 
     private readonly IRepositoryNonFatturare _repository;
     private readonly IEsportatoreNonFatturare _esportatore;
+    private readonly IServizioAudit _audit;
 
     public NonFatturareController(
-        IRepositoryNonFatturare repository, IEsportatoreNonFatturare esportatore)
+        IRepositoryNonFatturare repository, IEsportatoreNonFatturare esportatore, IServizioAudit audit)
     {
         _repository = repository;
         _esportatore = esportatore;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -85,6 +89,9 @@ public class NonFatturareController : Controller
             .ToList();
 
         var contenuto = _esportatore.Genera(campioni, criteriEstesi);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Prefatturato, "nonfatturare.esportazione.excel", EsitoOperazione.Successo,
+            dettaglio: new { Campioni = campioni.Count }, ct: ct);
         return File(contenuto, MimeXlsx, _esportatore.NomeFile(criteriEstesi));
     }
 }

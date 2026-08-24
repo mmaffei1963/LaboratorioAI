@@ -85,6 +85,17 @@ public static class Popolamento
         (Permessi.TempLogEsegui,        "Caricare e monitorare i file TempLog Econorma", AreaFunzionale.TempLog),
         (Permessi.TempLogMappatura,     "Gestire la mappatura canali TempLog",           AreaFunzionale.TempLog),
         (Permessi.TempLogValidazione,   "Validare i file TempLog (conforme/dubbio/non conforme)", AreaFunzionale.TempLog),
+        (Permessi.ScadenziarioVisualizza, "Consultare lo scadenziario delle tarature",   AreaFunzionale.Scadenziario),
+        (Permessi.ScadenziarioGestione,   "Gestire termometri esterni e generare etichette", AreaFunzionale.Scadenziario),
+        (Permessi.AccettazioneEsegui,   "Accettare campioni fuori sede (bozze)",         AreaFunzionale.Accettazione),
+        (Permessi.AccettazioneTrasmetti, "Generare il tracciato e trasmettere l'accettazione", AreaFunzionale.Accettazione),
+
+        (Permessi.SoloEsterniVisualizza, "Confrontare i certificati esterni con gli interni", AreaFunzionale.SoloEsterni),
+
+        (Permessi.ControlliProponi, "Proporre nuovi controlli (bozze)",                    AreaFunzionale.Controlli),
+        (Permessi.ControlliApprova, "Approvare e generare il tracciato dei controlli",     AreaFunzionale.Controlli),
+
+        (Permessi.RicercaErroriVisualizza, "Eseguire le verifiche diagnostiche (ricerca errori)", AreaFunzionale.RicercaErrori),
 
         (Permessi.AmministrazioneUtenti,         "Gestire utenti e ruoli",                      AreaFunzionale.Amministrazione),
         (Permessi.AmministrazioneConfigurazioni, "Modificare le configurazioni applicative",    AreaFunzionale.Amministrazione),

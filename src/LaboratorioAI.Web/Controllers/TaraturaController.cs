@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -25,6 +26,7 @@ public class TaraturaController : Controller
 {
     private const string MimePdf = "application/pdf";
     private const string MimeRtf = "application/rtf";
+    private const string MimeXlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     /// <summary>Mesi oltre i quali la validazione dei calcoli è considerata scaduta.</summary>
     private const int MesiValiditaValidazione = 12;
@@ -37,20 +39,23 @@ public class TaraturaController : Controller
     private readonly IServizioControlliTaratura _controlli;
     private readonly IGeneratoreRapportoTaratura _generatore;
     private readonly IGeneratoreRapportoValidazione _generatoreValidazione;
+    private readonly IGeneratoreEtichetteTermometri _etichette;
     private readonly IClientAnthropic _ia;
     private readonly IRepositoryAnagrafiche _anagrafiche;
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
+    private readonly IServizioAudit _audit;
 
     public TaraturaController(
         ContestoLaboratorioAI ctx, IServizioTaratura calcolo, IServizioValidazioneTaratura validazione,
         IServizioControlliTaratura controlli, IGeneratoreRapportoTaratura generatore,
-        IGeneratoreRapportoValidazione generatoreValidazione, IClientAnthropic ia,
-        IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione)
+        IGeneratoreRapportoValidazione generatoreValidazione, IGeneratoreEtichetteTermometri etichette,
+        IClientAnthropic ia, IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
+        IServizioAudit audit)
     {
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
-        _generatore = generatore; _generatoreValidazione = generatoreValidazione; _ia = ia;
-        _anagrafiche = anagrafiche; _utente = utente; _versione = versione;
+        _generatore = generatore; _generatoreValidazione = generatoreValidazione; _etichette = etichette; _ia = ia;
+        _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
     }
 
     public IActionResult Index()
@@ -240,6 +245,33 @@ public class TaraturaController : Controller
             t.NumeroRapporto = string.IsNullOrWhiteSpace(req.NumeroRapporto) ? await NumeroAsync(req.DataTaratura, ct) : req.NumeroRapporto.Trim();
 
         await _ctx.SaveChangesAsync(ct);
+
+        // Taratura di un termometro CLIENTE (esterno): compare anche nell'elenco esterni dello scadenziario,
+        // già segnata «da fatturare». Le tarature di strumenti interni (senza committente) non vi finiscono.
+        bool esterna = t.IdClienteArcLab.HasValue || !string.IsNullOrWhiteSpace(t.Committente);
+        if (esterna)
+        {
+            var te = await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTaraturaOrigine == t.IdTaratura, ct);
+            bool nuovo = te is null;
+            if (nuovo)
+            {
+                te = new TermometroEsterno { IdTaraturaOrigine = t.IdTaratura, DataCreazione = ora, Fatturato = false };
+                _ctx.TermometriEsterni.Add(te);
+            }
+            te!.NumeroRapporto = int.TryParse(t.NumeroRapporto, out var nr) ? nr : te.NumeroRapporto;
+            te.Tipologia = t.StrumentoIdentificazione;
+            te.DataTaratura = t.DataTaratura;
+            te.DataScadenza = t.DataScadenza;
+            te.Cliente = t.Committente;
+            te.DataUltimaModifica = ora;
+            te.IdUtente = _utente.IdUtente;
+            await _ctx.SaveChangesAsync(ct);
+        }
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Taratura, "taratura.salvata", EsitoOperazione.Successo,
+            tipoEntita: "Taratura", idEntita: t.IdTaratura.ToString(),
+            dettaglio: new { t.StrumentoIdentificazione, t.NumeroRapporto, Esterna = esterna }, ct: ct);
         return Json(new { t.IdTaratura, t.NumeroRapporto });
     }
 
@@ -302,6 +334,28 @@ public class TaraturaController : Controller
         return File(contenuto, mime, _generatore.NomeFile(datiRapporto, estensione));
     }
 
+    // ── Etichetta termometro (Excel, formato foglio 2020, colore per anno) ──
+    [HttpGet("api/taratura/{id:int}/etichetta")]
+    public async Task<IActionResult> Etichetta(int id, CancellationToken ct)
+    {
+        var t = await _ctx.Tarature.AsNoTracking().FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
+
+        var riga = new LaboratorioAI.Core.Modelli.RigaEtichetta
+        {
+            Codice = string.IsNullOrWhiteSpace(t.StrumentoCodice) ? t.StrumentoIdentificazione : t.StrumentoCodice!,
+            RigaRapportoEtichetta = "N°Rapporto taratura:",
+            RigaRapportoValore = t.NumeroRapporto ?? "",
+            DataTaratura = t.DataTaratura,
+            Scadenza = t.DataScadenza,
+            AnnoColore = t.DataTaratura.Year
+        };
+        var bytes = _etichette.Genera(new[] { riga });
+        var nome = new string((t.StrumentoCodice ?? t.StrumentoIdentificazione ?? "termometro")
+            .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
+        return File(bytes, MimeXlsx, $"Etichetta_{nome}.xlsx");
+    }
+
     // ═══════════════ Validazione del motore di calcolo ═════════════
     [HttpGet("api/taratura/validazione/stato")]
     [RichiedePermesso(Permessi.TaraturaValidazione)]
@@ -346,6 +400,11 @@ public class TaraturaController : Controller
         _ctx.ValidazioniCalcolo.Add(riga);
         await _ctx.SaveChangesAsync(ct);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Taratura, "taratura.validazione.eseguita",
+            esito.Validato ? EsitoOperazione.Successo : EsitoOperazione.Errore,
+            tipoEntita: "EsitoValidazioneTaratura", idEntita: riga.IdEsito.ToString(),
+            dettaglio: new { esito.Validato, esito.NumeroOk, esito.NumeroKo, esito.VersioneSet }, ct: ct);
         return Json(new
         {
             riga.IdEsito,
@@ -449,6 +508,10 @@ public class TaraturaController : Controller
         });
         await _ctx.SaveChangesAsync(ct);
 
+        await _audit.RegistraAsync(
+            AreaFunzionale.Taratura, "taratura.analisi.ai", EsitoOperazione.Successo,
+            tipoEntita: "Taratura", idEntita: id.ToString(),
+            dettaglio: new { Esito = esito, Anomalie = anomalie.Count }, ct: ct);
         return Json(new
         {
             esito, testo,

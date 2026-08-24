@@ -1,0 +1,179 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Accettazione campioni";
+    var puoTrasmettere = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.AccettazioneTrasmetti);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Accettazione campioni</h1>
+        <p class="sottotitolo">Accettazione fuori sede (consulenti/clienti). I dati restano in staging e generano un tracciato XML per l'import controllato in ArcLab: nessuna scrittura diretta sul gestionale.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante" id="btn-nuova">Nuova accettazione</button>
+    </div>
+</div>
+
+<datalist id="lista-matrici"></datalist>
+<datalist id="lista-controlli"></datalist>
+<datalist id="lista-tecniche"></datalist>
+<datalist id="lista-imballaggi"></datalist>
+
+<section class="riquadro">
+    <details id="dett-registro">
+        <summary style="cursor:pointer;font-weight:600">Registro accettazioni <span id="conteggio" class="sottotesto"></span></summary>
+        <div class="tabella-scorrevole" style="max-height:22rem;margin-top:0.5rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>Stato</th><th>Verbale</th><th>Cliente</th><th>Commessa</th><th>Conferimento</th><th class="numerico">Campioni</th><th>Origine</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati"><h2 id="form-titolo">Nuova accettazione</h2><span id="form-stato" class="sottotesto"></span></div>
+    <input type="hidden" id="a-id" />
+    <input type="hidden" id="a-codice" />
+    <div class="griglia-filtri">
+        <label>Cliente<input type="text" id="a-cliente" list="lista-clienti" /><datalist id="lista-clienti"></datalist></label>
+        <label>Insediamento<select id="a-insediamento"></select></label>
+        <label>Commessa (controllo)<select id="a-commessa"></select></label>
+        <label>&nbsp;<button type="button" class="pulsante pulsante-tenue" id="btn-esploso" style="width:100%" title="Mostra le prove del controllo">Esploso controllo</button></label>
+        <label>Prelevatore<select id="a-prelevatore"></select></label>
+        <label>Ricevitore<select id="a-ricevitore"></select></label>
+    </div>
+    <details class="accessori" style="margin-top:0.3rem">
+        <summary style="cursor:pointer;font-weight:600">Altri dati del lotto</summary>
+        <div class="griglia-filtri" style="margin-top:0.4rem">
+            <label>Verbale di prelievo<input type="text" id="a-verbale" placeholder="automatico (numero interno), modificabile" /></label>
+            <label>Vettore (auto)<input type="text" id="a-vettore" readonly /></label>
+            <label style="grid-column:1/-1">Note<input type="text" id="a-note" /></label>
+        </div>
+    </details>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Campioni</h3>
+        <span style="display:flex;gap:0.3rem">
+            <button type="button" class="pulsante pulsante-tenue" id="btn-etichette-lotto">Etichette lotto</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-schede-lotto">Schede ricezione lotto</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-campione">Aggiungi campione</button>
+        </span>
+    </div>
+    <div id="campioni"></div>
+
+    <div class="azioni-filtri" style="margin-top:0.8rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-verifica">Verifica importabilità</button>
+        <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
+        @if (puoTrasmettere)
+        {
+            <button type="button" class="pulsante pulsante-secondario" id="btn-tracciato">Genera tracciato XML</button>
+        }
+    </div>
+    <div id="esito-verifica" style="margin-top:0.4rem"></div>
+</section>
+
+<dialog id="dlg-esploso" style="max-width:46rem;width:90%;border:1px solid var(--bordo,#ccc);border-radius:0.4rem;padding:1rem">
+    <div class="barra-risultati"><h3 style="margin:0" id="dlg-esploso-titolo">Esploso controllo</h3>
+        <button type="button" class="pulsante pulsante-tenue" id="dlg-esploso-chiudi">Chiudi</button>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:24rem;margin-top:0.5rem">
+        <table class="tabella"><thead><tr><th>Parametro</th><th>Metodo (riga)</th><th>Lab esterno</th></tr></thead>
+            <tbody id="dlg-esploso-corpo"></tbody>
+        </table>
+    </div>
+</dialog>
+
+<template id="tpl-campione">
+    <div class="riquadro-tenue campione" style="margin-bottom:0.6rem;padding:0.6rem">
+        <div class="barra-risultati"><strong class="campione-titolo">Campione</strong>
+            <span style="display:flex;gap:0.3rem">
+                <button type="button" class="pulsante pulsante-tenue c-duplica">Duplica</button>
+                <button type="button" class="pulsante pulsante-tenue c-rimuovi">Rimuovi campione</button>
+            </span>
+        </div>
+        <!-- Vista principale: solo i campi ricorrenti di inserimento -->
+        <div class="griglia-filtri">
+            <label>Denominazione campione<input type="text" class="c-descrizione" /></label>
+            <label>Matrice<input type="text" class="c-matrice" list="lista-matrici" /></label>
+            <label>Imballaggio<input type="text" class="c-imballaggio" list="lista-imballaggi" /></label>
+            <label>Data/ora prelievo<input type="datetime-local" class="c-dataora" /></label>
+            <label>Punto di prelievo<input type="text" class="c-punto" /></label>
+            <label>Temperatura prelievo °C<input type="text" inputmode="decimal" class="c-temp" placeholder="es. -18 o 4" /></label>
+            <label>Temp. ricezione<select class="c-tricez"></select></label>
+        </div>
+
+        <label style="display:flex;align-items:center;gap:0.4rem;margin-top:0.4rem">
+            <input type="checkbox" class="c-shelf-flag" /> Shelf life / inizio posticipato
+        </label>
+        <div class="griglia-filtri c-shelf-box nascosto" style="margin-top:0.3rem">
+            <label>Ritardo analisi (gg)<input type="text" inputmode="numeric" class="c-ritardo" placeholder="0" /></label>
+            <label>Inizio analisi (indicativo)<input type="text" class="c-inizio" readonly /></label>
+        </div>
+
+        <!-- Parametri / prove -->
+        <details class="c-parametri-box" style="margin-top:0.5rem">
+            <summary style="cursor:pointer;font-weight:600">Parametri / prove richieste</summary>
+            <div class="azioni-filtri" style="margin-top:0.3rem">
+                <span class="sottotesto">Caricati in automatico dal controllo della commessa.</span>
+            </div>
+            <div class="tabella-scorrevole">
+                <table class="tabella c-prove"><thead><tr><th>Parametro</th><th>Metodo</th><th>Lab esterno</th><th>Note</th><th></th></tr></thead><tbody></tbody></table>
+            </div>
+        </details>
+
+        <!-- Campi accessori: dati automatici e di inserimento raro -->
+        <details class="c-accessori-box" style="margin-top:0.4rem">
+            <summary style="cursor:pointer;font-weight:600">Campi accessori</summary>
+            <div class="griglia-filtri" style="margin-top:0.4rem">
+                <label>Etichetta cliente<input type="text" class="c-etichetta" /></label>
+                <label>Sigla cliente<input type="text" class="c-sigla" /></label>
+                <label>Identificativo<input type="text" class="c-identificativo" /></label>
+                <label>Luogo di prelievo se diverso da insediamento<input type="text" class="c-luogo" /></label>
+                <label>N. camera Legionella<input type="text" class="c-legio" /></label>
+                <label>Procedura di prelievo (auto da matrice)<input type="text" class="c-procedura" readonly /></label>
+                <label>Ora prel. (auto)<input type="text" class="c-ora" readonly /></label>
+                <label>Termometro (auto)<input type="text" class="c-termometro" readonly /></label>
+                <label>Condizioni trasporto (auto)<input type="text" class="c-condizioni" readonly /></label>
+                <label>Data prevista consegna<input type="date" class="c-consegna" /></label>
+                <label style="grid-column:1/-1">Note<input type="text" class="c-note" /></label>
+            </div>
+        </details>
+
+        <!-- Laboratorio esterno -->
+        <details class="c-labest-box" style="margin-top:0.4rem">
+            <summary style="cursor:pointer;font-weight:600">Laboratorio esterno</summary>
+            <div style="margin-top:0.4rem">Laboratorio esterno: <strong class="c-labest-nome">—</strong><input type="hidden" class="c-labest" /></div>
+            <div class="griglia-filtri" style="margin-top:0.4rem">
+                <label>Data invio lab<input type="date" class="c-datainvio" /></label>
+                <label>Consegnare entro (gg)<input type="text" inputmode="numeric" class="c-consegnalab" placeholder="0" /></label>
+                <label style="grid-column:1/-1">Note per il lab esterno<input type="text" class="c-notelab" /></label>
+            </div>
+            <div class="azioni-filtri" style="margin-top:0.4rem">
+                <button type="button" class="pulsante pulsante-tenue c-pdf-richiesta">PDF richiesta analisi</button>
+                <button type="button" class="pulsante pulsante-tenue c-pdf-catena">PDF catena di custodia</button>
+            </div>
+        </details>
+
+        <div class="azioni-filtri c-azioni-doc" style="margin-top:0.4rem">
+            <span class="sottotesto">Documenti:</span>
+            <button type="button" class="pulsante pulsante-tenue c-pdf-etichetta">Etichetta campione</button>
+            <button type="button" class="pulsante pulsante-tenue c-pdf-scheda">Scheda ricezione</button>
+        </div>
+    </div>
+</template>
+
+<template id="tpl-prova">
+    <tr class="prova">
+        <td><input type="text" class="p-parametro" /></td>
+        <td><input type="text" class="p-metodo" /></td>
+        <td><input type="text" class="p-lab" /></td>
+        <td><input type="text" class="p-note" /></td>
+        <td><button type="button" class="pulsante pulsante-tenue p-rimuovi">✕</button></td>
+    </tr>
+</template>
+
+@section Script {
+    <script type="module" src="~/js/moduli/accettazione.js" asp-append-version="true"></script>
+}

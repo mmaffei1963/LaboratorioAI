@@ -93,7 +93,7 @@ function disegna(esito) {
     sintesi.innerHTML = `
         <div class="scheda scheda-dato"><h2>${esito.totaleProve}</h2><p>Prove nel periodo</p></div>
         <div class="scheda scheda-dato"><h2>${esito.certificate}</h2><p>Certificate</p></div>
-        <div class="scheda scheda-dato"><h2>${esito.inCorso}</h2><p>In corso</p></div>
+        <div class="scheda scheda-dato"><h2>${esito.inCorso}</h2><p>Non certificati</p></div>
         <div class="scheda scheda-dato"><h2>${esito.laboratoriDistinti}</h2><p>Laboratori coinvolti</p></div>`;
 
     document.getElementById('pannello-esiti').style.display = 'grid';
