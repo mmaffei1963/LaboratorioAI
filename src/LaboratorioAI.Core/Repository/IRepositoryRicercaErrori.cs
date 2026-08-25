@@ -29,6 +29,19 @@ public interface IRepositoryRicercaErrori
     /// stessa RifMetodo (al netto di spazi iniziali/finali e maiuscole/minuscole).
     /// </summary>
     Task<IReadOnlyList<RigaMetodoDoppio>> MetodiDoppiAsync(CancellationToken ct = default);
+
+    /// <summary>Lotti (per anno di ricezione) con IdRicevitore non valorizzato.</summary>
+    Task<IReadOnlyList<RigaLottoErrore>> LottiSenzaRicevitoreAsync(int annoDa, int annoA, CancellationToken ct = default);
+
+    /// <summary>Lotti (per anno di ricezione) con IdVettore non valorizzato.</summary>
+    Task<IReadOnlyList<RigaLottoErrore>> LottiSenzaVettoreAsync(int annoDa, int annoA, CancellationToken ct = default);
+
+    /// <summary>
+    /// Campioni con prelevatore INTERNO MARE.A (IdPrelevatore ≠ 19 «Cliente») in cui il
+    /// vettore del lotto è una persona diversa dal prelevatore, e/o è presente un verbale di
+    /// prelievo (Lotto.BuonoPrelievo) che per un prelievo interno non dovrebbe esserci.
+    /// </summary>
+    Task<IReadOnlyList<RigaCoerenzaPrelevatore>> CoerenzaPrelevatoreVettoreAsync(int annoDa, int annoA, CancellationToken ct = default);
 }
 
 /// <summary>Una prova che concorre a un doppione di parametro sullo stesso campione.</summary>
@@ -91,4 +104,33 @@ public record RigaMetodoDoppio
     public string? RifBiblio { get; init; }
     public int? IdUnita { get; init; }
     public int NMetodi { get; init; }
+}
+
+/// <summary>Lotto con un riferimento anagrafico mancante (ricevitore o vettore).</summary>
+public record RigaLottoErrore
+{
+    public int IdLotto { get; init; }
+    public string? CodLotto { get; init; }
+    public DateTime? DataRic { get; init; }
+    public int? IdCommessa { get; init; }
+    public string? RagioneSociale { get; init; }
+}
+
+/// <summary>Campione a prelevatore interno con incoerenza su vettore e/o verbale.</summary>
+public record RigaCoerenzaPrelevatore
+{
+    public int IdLotto { get; init; }
+    public string? CodLotto { get; init; }
+    public DateTime? DataRic { get; init; }
+    public int IdCampione { get; init; }
+    public string? CodCampione { get; init; }
+    public int? IdPrelevatore { get; init; }
+    public string? Prelevatore { get; init; }
+    public int? IdVettore { get; init; }
+    public string? Vettore { get; init; }
+    public string? BuonoPrelievo { get; init; }
+    /// <summary>Il vettore è una persona diversa dal prelevatore interno.</summary>
+    public bool AnomaliaVettore { get; init; }
+    /// <summary>È presente un verbale di prelievo che per un prelievo interno non dovrebbe esserci.</summary>
+    public bool AnomaliaVerbale { get; init; }
 }

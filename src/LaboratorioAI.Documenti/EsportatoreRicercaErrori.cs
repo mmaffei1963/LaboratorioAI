@@ -10,6 +10,8 @@ public interface IEsportatoreRicercaErrori
     byte[] Arrotondamento(IReadOnlyList<RigaMetodoArrotondamento> righe);
     byte[] Margine(IReadOnlyList<RigaMetodoMargine> righe, decimal sogliaPct);
     byte[] Doppi(IReadOnlyList<RigaMetodoDoppio> righe);
+    byte[] Lotti(IReadOnlyList<RigaLottoErrore> righe, string titolo, int annoDa, int annoA);
+    byte[] Coerenza(IReadOnlyList<RigaCoerenzaPrelevatore> righe, int annoDa, int annoA);
     string NomeFile(string sezione);
 }
 
@@ -136,6 +138,62 @@ public class EsportatoreRicercaErrori : IEsportatoreRicercaErrori
                 f.Cell(r, 8).Value = x.NMetodi;
                 r++;
             }
+        });
+    }
+
+    public byte[] Lotti(IReadOnlyList<RigaLottoErrore> righe, string titolo, int annoDa, int annoA)
+    {
+        string[] intest = { "Id lotto", "Cod lotto", "Data ricezione", "Id commessa", "Cliente" };
+        return Costruisci(titolo,
+            $"Anni {annoDa}–{annoA} · {righe.Count} lotti · estratto il {DateTime.Now:dd/MM/yyyy HH:mm}",
+            intest, righe.Count, (f, r0) =>
+        {
+            int r = r0;
+            foreach (var x in righe)
+            {
+                f.Cell(r, 1).Value = x.IdLotto;
+                f.Cell(r, 2).Value = x.CodLotto;
+                if (x.DataRic is DateTime d) f.Cell(r, 3).Value = d;
+                f.Cell(r, 4).Value = x.IdCommessa;
+                f.Cell(r, 5).Value = x.RagioneSociale;
+                r++;
+            }
+            f.Column(3).Style.DateFormat.Format = "dd/MM/yyyy";
+        });
+    }
+
+    public byte[] Coerenza(IReadOnlyList<RigaCoerenzaPrelevatore> righe, int annoDa, int annoA)
+    {
+        string[] intest =
+        {
+            "Id lotto", "Cod lotto", "Data ricezione", "Id campione", "Cod campione",
+            "Id prelevatore", "Prelevatore", "Id vettore", "Vettore", "Verbale prelievo", "Anomalia"
+        };
+        return Costruisci("Coerenza prelevatore interno / vettore / verbale",
+            $"Anni {annoDa}–{annoA} · {righe.Count} campioni · estratto il {DateTime.Now:dd/MM/yyyy HH:mm}",
+            intest, righe.Count, (f, r0) =>
+        {
+            int r = r0;
+            foreach (var x in righe)
+            {
+                f.Cell(r, 1).Value = x.IdLotto;
+                f.Cell(r, 2).Value = x.CodLotto;
+                if (x.DataRic is DateTime d) f.Cell(r, 3).Value = d;
+                f.Cell(r, 4).Value = x.IdCampione;
+                f.Cell(r, 5).Value = x.CodCampione;
+                f.Cell(r, 6).Value = x.IdPrelevatore;
+                f.Cell(r, 7).Value = x.Prelevatore;
+                f.Cell(r, 8).Value = x.IdVettore;
+                f.Cell(r, 9).Value = x.Vettore;
+                f.Cell(r, 10).Value = x.BuonoPrelievo;
+                f.Cell(r, 11).Value = string.Join(" + ", new[]
+                {
+                    x.AnomaliaVettore ? "categoria vettore diversa dal prelevatore" : null,
+                    x.AnomaliaVerbale ? "verbale non ammesso (prelievo cliente/terza parte)" : null
+                }.Where(s => s != null));
+                r++;
+            }
+            f.Column(3).Style.DateFormat.Format = "dd/MM/yyyy";
         });
     }
 

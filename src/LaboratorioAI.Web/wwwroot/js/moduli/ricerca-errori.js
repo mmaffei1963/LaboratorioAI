@@ -101,3 +101,42 @@ $('d-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/dup
 $('a-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/arrotondamento/esporta', 'POST', {}, 'RicercaErrori_Arrotondamento.xlsx'));
 $('m-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/margine/esporta', 'POST', soglia(), 'RicercaErrori_Margine.xlsx'));
 $('p-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/doppi/esporta', 'POST', {}, 'RicercaErrori_MetodiDoppi.xlsx'));
+
+// ── 5/6. Lotti senza ricevitore / vettore ──────────────────────
+const anniR = () => ({ annoDa: +$('r-da').value || 0, annoA: +$('r-a').value || 0 });
+const anniV = () => ({ annoDa: +$('v-da').value || 0, annoA: +$('v-a').value || 0 });
+const anniC = () => ({ annoDa: +$('c-da').value || 0, annoA: +$('c-a').value || 0 });
+
+const mappaLotto = r => `<tr>
+    <td>${esc(r.idLotto)}</td><td>${esc(r.codLotto)}</td><td>${esc(r.dataRic)}</td>
+    <td>${esc(r.idCommessa)}</td><td>${esc(r.ragioneSociale)}</td>
+</tr>`;
+
+function cercaRicevitore() {
+    esegui($('r-cerca'), $('r-info'), $('r-tab'), '/api/ricerca-errori/lotti-senza-ricevitore', 'POST', anniR(),
+        mappaLotto, d => `${d.totale} lotti senza ricevitore`, 5);
+}
+function cercaVettore() {
+    esegui($('v-cerca'), $('v-info'), $('v-tab'), '/api/ricerca-errori/lotti-senza-vettore', 'POST', anniV(),
+        mappaLotto, d => `${d.totale} lotti senza vettore`, 5);
+}
+
+// ── 7. Coerenza prelevatore / vettore / verbale ─────────────────
+function cercaCoerenza() {
+    esegui($('c-cerca'), $('c-info'), $('c-tab'), '/api/ricerca-errori/coerenza-prelevatore', 'POST', anniC(),
+        r => `<tr>
+            <td>${esc(r.idLotto)}</td><td>${esc(r.codLotto)}</td><td>${esc(r.dataRic)}</td>
+            <td>${esc(r.idCampione)}</td><td>${esc(r.codCampione)}</td>
+            <td>${esc(r.idPrelevatore)}</td><td>${esc(r.prelevatore)}</td>
+            <td>${esc(r.idVettore)}</td><td>${esc(r.vettore)}</td><td>${esc(r.buonoPrelievo)}</td>
+            <td style="color:#b21a1a;font-weight:600">${[r.anomaliaVettore ? 'categoria vettore diversa dal prelevatore' : null, r.anomaliaVerbale ? 'verbale non ammesso (prelievo esterno)' : null].filter(Boolean).join(' + ')}</td>
+        </tr>`,
+        d => `${d.totale} campioni · ${d.vettore} categoria incoerente · ${d.verbale} verbale non ammesso`, 11);
+}
+
+$('r-cerca')?.addEventListener('click', cercaRicevitore);
+$('v-cerca')?.addEventListener('click', cercaVettore);
+$('c-cerca')?.addEventListener('click', cercaCoerenza);
+$('r-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/lotti-senza-ricevitore/esporta', 'POST', anniR(), 'RicercaErrori_LottiSenzaRicevitore.xlsx'));
+$('v-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/lotti-senza-vettore/esporta', 'POST', anniV(), 'RicercaErrori_LottiSenzaVettore.xlsx'));
+$('c-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/coerenza-prelevatore/esporta', 'POST', anniC(), 'RicercaErrori_CoerenzaPrelevatore.xlsx'));

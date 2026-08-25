@@ -108,6 +108,78 @@
     </details>
 </section>
 
+<!-- 5. Lotti senza ricevitore -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">5 · Lotti senza ricevitore</summary>
+        <p class="sottotesto">Lotti (per anno di ricezione) con IdRicevitore non valorizzato.</p>
+        <div class="griglia-filtri">
+            <label>Anno da<input type="number" id="r-da" value="@(oggi - 1)" /></label>
+            <label>Anno a<input type="number" id="r-a" value="@oggi" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="r-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="r-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="r-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="r-tab">
+                <thead><tr><th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id commessa</th><th>Cliente</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 6. Lotti senza vettore -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">6 · Lotti senza vettore</summary>
+        <p class="sottotesto">Lotti (per anno di ricezione) con IdVettore non valorizzato.</p>
+        <div class="griglia-filtri">
+            <label>Anno da<input type="number" id="v-da" value="@(oggi - 1)" /></label>
+            <label>Anno a<input type="number" id="v-a" value="@oggi" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="v-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="v-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="v-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="v-tab">
+                <thead><tr><th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id commessa</th><th>Cliente</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 7. Coerenza prelevatore / vettore / verbale -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">7 · Coerenza prelevatore interno / vettore / verbale</summary>
+        <p class="sottotesto">Incoerenza di categoria fra prelevatore e vettore (decisa dai nomi): se il prelevatore è interno anche il vettore deve esserlo, se è cliente/terza parte anche il vettore deve esserlo. Inoltre, se il prelevatore è cliente/terza parte, il verbale di prelievo (Lotto.BuonoPrelievo) non deve esserci.</p>
+        <div class="griglia-filtri">
+            <label>Anno da<input type="number" id="c-da" value="@(oggi - 1)" /></label>
+            <label>Anno a<input type="number" id="c-a" value="@oggi" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="c-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="c-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="c-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="c-tab">
+                <thead><tr>
+                    <th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id camp.</th><th>Cod camp.</th>
+                    <th>Id prel.</th><th>Prelevatore</th><th>Id vett.</th><th>Vettore</th><th>Verbale</th><th>Anomalia</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
 @section Script {
     <script type="module" src="~/js/moduli/ricerca-errori.js" asp-append-version="true"></script>
 }

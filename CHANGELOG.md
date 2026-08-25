@@ -382,8 +382,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   metodi attivi senza `Cifre_significative`/`Decimali_Max`, metodi con margine
   `CostoMetodoEuro`/`CostoAnoi` sotto soglia % impostabile (o negativo), metodi doppi
   per stesso `IdParametro` + `DettagliMetodo` + `RifMetodo` (al netto di spazi e
-  maiuscole/minuscole). Permesso `ricercaerrori.visualizza`, area 21; nessuna nuova
-  tabella (permesso popolato all'avvio).
+  maiuscole/minuscole); **lotti senza ricevitore** e **senza vettore** (per anno di
+  ricezione); **coerenza di categoria prelevatore/vettore** (decisa dai nomi:
+  interno vs cliente/terza parte devono coincidere; se il prelevatore è cliente/terza
+  parte il verbale `Lotto.BuonoPrelievo` non deve esserci). Permesso
+  `ricercaerrori.visualizza`, area 21; nessuna nuova tabella (permesso popolato
+  all'avvio).
 - **Audit trail esteso a tutti i moduli operatore**: le chiamate `IServizioAudit.
   RegistraAsync` sono state aggiunte (oltre a DVR/Laboratori esterni/Tamponi già
   coperti) ad Accettazione (salva/elimina/tracciato/PDF), Proposta controlli
