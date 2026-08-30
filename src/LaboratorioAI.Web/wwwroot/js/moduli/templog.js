@@ -20,6 +20,7 @@ function stato(c, l) {
 }
 
 let ultimo = null;
+let canaleCorrente = -1;
 
 // ══ Monitoraggio ══
 async function monitora() {
@@ -37,6 +38,8 @@ async function monitora() {
 }
 
 function renderRisultato(r) {
+    canaleCorrente = -1;
+    $('dettaglio-canale')?.classList.add('nascosto');
     const periodo = (r.dataDal ? new Date(r.dataDal).toLocaleString('it-IT') : '') +
         (r.dataAl ? ' → ' + new Date(r.dataAl).toLocaleString('it-IT') : '');
     $('sintesi-periodo').textContent = (r.nomeFile || '') + (periodo ? '  ·  ' + periodo : '');
@@ -149,6 +152,26 @@ async function esporta(formato) {
     URL.revokeObjectURL(a.href);
 }
 
+// ══ Export PDF mirati (dal risultato già in memoria) ══
+async function scaricaPdf(url, body, nomeDefault) {
+    if (!ultimo || !ultimo.canali || !ultimo.canali.length) { alert('Analizza prima un file.'); return; }
+    const r = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    if (!r.ok) { let m = 'Errore export.'; try { m = (await r.json()).messaggio || m; } catch { } alert(m); return; }
+    const blob = await r.blob();
+    const cd = r.headers.get('content-disposition') || '';
+    const nome = (cd.match(/filename="?([^"]+)"?/) || [])[1] || nomeDefault;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click();
+    URL.revokeObjectURL(a.href);
+}
+const pdfGrafici = () => scaricaPdf('/api/templog/pdf/grafici', ultimo, 'Grafici_Econorma.pdf');
+const pdfValori = () => scaricaPdf('/api/templog/pdf/valori', ultimo, 'Valori_Econorma.pdf');
+const pdfCanale = () => {
+    if (canaleCorrente < 0) { alert('Apri prima un canale cliccando una riga della tabella Canali.'); return; }
+    scaricaPdf('/api/templog/pdf/canale', { risultato: ultimo, indice: canaleCorrente }, 'Canale_Econorma.pdf');
+};
+
 // ══ Caricamento da cartella ══
 async function elencaCartella() {
     const percorso = $('cartella').value.trim();
@@ -179,6 +202,7 @@ async function caricaDaCartella(cartella, nomeFile) {
 }
 
 function dettaglioCanale(i) {
+    canaleCorrente = i;
     const c = ultimo.canali[i];
     $('dettaglio-titolo').textContent = `${c.canale} — ${c.ambiente || c.sonda || ''}` +
         (c.limitiDisponibili ? `  (limiti ${num(c.min)} … ${num(c.max)})` : '  (senza limiti)');
@@ -394,6 +418,9 @@ $('btn-sincronizza')?.addEventListener('click', sincronizza);
 $('btn-proponi')?.addEventListener('click', proponi);
 $('btn-export-pdf')?.addEventListener('click', () => esporta('pdf'));
 $('btn-export-excel')?.addEventListener('click', () => esporta('excel'));
+$('btn-pdf-grafici')?.addEventListener('click', pdfGrafici);
+$('btn-pdf-valori')?.addEventListener('click', pdfValori);
+$('btn-pdf-canale')?.addEventListener('click', pdfCanale);
 $('btn-sonde-pdf')?.addEventListener('click', () => window.open('/api/templog/sonde/report?formato=pdf', '_blank'));
 $('btn-sonde-excel')?.addEventListener('click', () => window.open('/api/templog/sonde/report?formato=excel', '_blank'));
 $('btn-elenca')?.addEventListener('click', elencaCartella);

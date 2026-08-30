@@ -10,6 +10,38 @@
     </div>
 </div>
 
+<!-- Cruscotto controlli -->
+<section class="riquadro" id="cruscotto">
+    <div class="barra-risultati"><h2>Cruscotto controlli</h2><span id="k-info" class="sottotesto"></span></div>
+    <p class="sottotesto">Spunta i controlli da eseguire e premi «Esegui selezionati» per il colpo d'occhio; «Esporta tutto» genera un unico Excel con un foglio per controllo. Il filtro anni e la soglia valgono per i controlli che li usano.</p>
+    <div class="griglia-filtri">
+        <label>Anno da<input type="number" id="k-da" value="@(oggi - 1)" /></label>
+        <label>Anno a<input type="number" id="k-a" value="@oggi" /></label>
+        <label>Soglia margine %<input type="number" id="k-soglia" value="15" min="0" max="100" step="0.5" /></label>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.4rem;margin-top:0.6rem">
+        <label><input type="checkbox" class="k-chk" data-chiave="duplicati" checked /> 1 · Doppioni rapporti</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="arrotondamento" checked /> 2 · Metodi senza cifre/decimali</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="margine" checked /> 3 · Margine sotto soglia</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="doppi" checked /> 4 · Metodi doppi</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="ricevitore" checked /> 5 · Lotti senza ricevitore</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="vettore" checked /> 6 · Lotti senza vettore</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="coerenza" checked /> 7 · Coerenza prelevatore/vettore</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="stampa" checked /> 8 · Campioni non pronti stampa</label>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.8rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="k-esporta">Esporta tutto (Excel)</button>
+        <button type="button" class="pulsante" id="k-esegui">Esegui selezionati</button>
+    </div>
+    <div class="tabella-scorrevole" style="margin-top:0.6rem">
+        <table class="tabella" id="k-tab">
+            <thead><tr><th>Controllo</th><th class="numerico">Anomalie</th><th>Stato</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
 <!-- 1. Doppioni sui rapporti di prova -->
 <section class="riquadro">
     <details open>
@@ -50,7 +82,7 @@
         <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
             <table class="tabella" id="a-tab">
                 <thead><tr>
-                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Id metodo</th><th>Id par.</th><th>Parametro</th><th>Id tipo met.</th><th>Rif. metodo</th>
                     <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th>
                     <th>Cifre sign.</th><th>Decimali max</th>
                 </tr></thead>
@@ -76,7 +108,7 @@
         <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
             <table class="tabella" id="m-tab">
                 <thead><tr>
-                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Id metodo</th><th>Id par.</th><th>Parametro</th><th>Id tipo met.</th><th>Rif. metodo</th>
                     <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th>
                     <th class="numerico">Costo a noi €</th><th class="numerico">Costo metodo €</th><th class="numerico">Margine %</th>
                 </tr></thead>
@@ -99,7 +131,7 @@
         <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
             <table class="tabella" id="p-tab">
                 <thead><tr>
-                    <th>Id metodo</th><th>Id par.</th><th>Id tipo met.</th><th>Rif. metodo</th>
+                    <th>Id metodo</th><th>Id par.</th><th>Parametro</th><th>Id tipo met.</th><th>Rif. metodo</th>
                     <th>Dettagli metodo</th><th>Rif. biblio</th><th>Id unità</th><th class="numerico">N° nel gruppo</th>
                 </tr></thead>
                 <tbody></tbody>
@@ -173,6 +205,35 @@
                 <thead><tr>
                     <th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id camp.</th><th>Cod camp.</th>
                     <th>Id prel.</th><th>Prelevatore</th><th>Id vett.</th><th>Vettore</th><th>Verbale</th><th>Anomalia</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 8. Campioni pronti per la stampa -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">8 · Campioni «chiusi» non pronti alla stampa</summary>
+        <p class="sottotesto">Campioni con AnalisiChiusa spuntato ma con almeno una condizione non rispettata: prova con VerificaValore non spuntato, DataInizioProva/DataFineProva mancanti, oppure rigametodo collegata senza Arrotonda/MaxDecimali. Ricerca per data (ricevimento lotto) oppure per singolo lotto/campione (in tal caso le date sono ignorate).</p>
+        <div class="griglia-filtri">
+            <label>Data da<input type="date" id="s-da" /></label>
+            <label>Data a<input type="date" id="s-a" /></label>
+            <label>Lotto (CodLotto)<input type="text" id="s-lotto" placeholder="es. 5298" /></label>
+            <label>Campione (CodCampione)<input type="text" id="s-campione" placeholder="es. 01" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="s-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="s-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="s-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.6rem">
+            <table class="tabella" id="s-tab">
+                <thead><tr>
+                    <th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id camp.</th><th>Cod camp.</th><th>Cliente</th>
+                    <th>Id prova</th><th>Id riga met.</th><th>Denominazione riga</th><th>Parametro</th>
+                    <th>Verifica</th><th>Inizio</th><th>Fine</th><th>Arrot.</th><th>MaxDec.</th><th>Anomalia</th>
                 </tr></thead>
                 <tbody></tbody>
             </table>

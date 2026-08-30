@@ -37,11 +37,19 @@ public interface IRepositoryRicercaErrori
     Task<IReadOnlyList<RigaLottoErrore>> LottiSenzaVettoreAsync(int annoDa, int annoA, CancellationToken ct = default);
 
     /// <summary>
-    /// Campioni con prelevatore INTERNO MARE.A (IdPrelevatore ≠ 19 «Cliente») in cui il
-    /// vettore del lotto è una persona diversa dal prelevatore, e/o è presente un verbale di
-    /// prelievo (Lotto.BuonoPrelievo) che per un prelievo interno non dovrebbe esserci.
+    /// Coerenza di categoria (interno vs cliente/terza parte, decisa dai nomi) fra prelevatore
+    /// del campione e vettore del lotto, più presenza indebita del verbale per prelievi esterni.
     /// </summary>
     Task<IReadOnlyList<RigaCoerenzaPrelevatore>> CoerenzaPrelevatoreVettoreAsync(int annoDa, int annoA, CancellationToken ct = default);
+
+    /// <summary>
+    /// Campioni con AnalisiChiusa spuntato ma non pronti alla stampa: prove con VerificaValore
+    /// non spuntato, DataInizioProva/DataFineProva mancanti, oppure rigametodo collegata senza
+    /// Arrotonda/MaxDecimali. Ricerca per intervallo di date (Lotto.DataRic) oppure per singolo
+    /// lotto/campione (in tal caso le date sono ignorate).
+    /// </summary>
+    Task<IReadOnlyList<RigaCampioneStampa>> CampioniProntiStampaAsync(
+        DateOnly? da, DateOnly? a, string? codLotto, string? codCampione, CancellationToken ct = default);
 }
 
 /// <summary>Una prova che concorre a un doppione di parametro sullo stesso campione.</summary>
@@ -74,6 +82,7 @@ public record RigaMetodoArrotondamento
     public string? DettagliMetodo { get; init; }
     public string? RifBiblio { get; init; }
     public int? IdUnita { get; init; }
+    public string? NomeParametro { get; init; }
     public int? CifreSignificative { get; init; }
     public int? DecimaliMax { get; init; }
 }
@@ -88,6 +97,7 @@ public record RigaMetodoMargine
     public string? DettagliMetodo { get; init; }
     public string? RifBiblio { get; init; }
     public int? IdUnita { get; init; }
+    public string? NomeParametro { get; init; }
     public decimal? CostoAnoi { get; init; }
     public decimal? CostoMetodoEuro { get; init; }
     public decimal? MarginePct { get; init; }
@@ -103,6 +113,7 @@ public record RigaMetodoDoppio
     public string? DettagliMetodo { get; init; }
     public string? RifBiblio { get; init; }
     public int? IdUnita { get; init; }
+    public string? NomeParametro { get; init; }
     public int NMetodi { get; init; }
 }
 
@@ -114,6 +125,26 @@ public record RigaLottoErrore
     public DateTime? DataRic { get; init; }
     public int? IdCommessa { get; init; }
     public string? RagioneSociale { get; init; }
+}
+
+/// <summary>Prova di un campione «chiuso» che non è pronta alla stampa (una o più condizioni non rispettate).</summary>
+public record RigaCampioneStampa
+{
+    public int IdLotto { get; init; }
+    public string? CodLotto { get; init; }
+    public DateTime? DataRic { get; init; }
+    public int IdCampione { get; init; }
+    public string? CodCampione { get; init; }
+    public string? RagioneSociale { get; init; }
+    public int IdProva { get; init; }
+    public int IdRigaMetodo { get; init; }
+    public string? DenominazioneRiga { get; init; }
+    public string? NomeParametro { get; init; }
+    public bool VerificaValore { get; init; }
+    public DateTime? DataInizioProva { get; init; }
+    public DateTime? DataFineProva { get; init; }
+    public int? Arrotonda { get; init; }
+    public int? MaxDecimali { get; init; }
 }
 
 /// <summary>Campione a prelevatore interno con incoerenza su vettore e/o verbale.</summary>

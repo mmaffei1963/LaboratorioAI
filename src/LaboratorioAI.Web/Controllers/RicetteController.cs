@@ -25,6 +25,7 @@ public class RicetteController : Controller
 {
     private const string MimePdf = "application/pdf";
     private const string MimeRtf = "application/rtf";
+    private const string MimeXlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
     private readonly ContestoLaboratorioAI _ctx;
@@ -33,6 +34,7 @@ public class RicetteController : Controller
     private readonly IServizioEtichettaCanada _canada;
     private readonly IRepositoryAnagrafiche _anagrafiche;
     private readonly IGeneratoreRapportoNutrizionale _generatore;
+    private readonly IEsportatoreRapportoNutrizionale _esportatoreRapporto;
     private readonly IGeneratoreEtichettaUsa _generatoreUsa;
     private readonly IGeneratoreEtichettaCanada _generatoreCanada;
     private readonly IClientAnthropic _ia;
@@ -47,6 +49,7 @@ public class RicetteController : Controller
         IServizioEtichettaCanada canada,
         IRepositoryAnagrafiche anagrafiche,
         IGeneratoreRapportoNutrizionale generatore,
+        IEsportatoreRapportoNutrizionale esportatoreRapporto,
         IGeneratoreEtichettaUsa generatoreUsa,
         IGeneratoreEtichettaCanada generatoreCanada,
         IClientAnthropic ia,
@@ -60,6 +63,7 @@ public class RicetteController : Controller
         _canada = canada;
         _anagrafiche = anagrafiche;
         _generatore = generatore;
+        _esportatoreRapporto = esportatoreRapporto;
         _generatoreUsa = generatoreUsa;
         _generatoreCanada = generatoreCanada;
         _ia = ia;
@@ -268,13 +272,26 @@ public class RicetteController : Controller
             DataRapporto = DateOnly.FromDateTime(DateTime.Today),
             UnitaConsumoG = r.UnitaConsumoG,
             UnitaConsumoPezzi = r.UnitaConsumoPezzi,
-            Risultato = risultato
+            Risultato = risultato,
+            Ingredienti = await IngredientiRapportoAsync(righe, ct),
+            MassaTotaleKg = righe.Sum(x => x.QuantitaKg),
+            MassaCottaKg = r.PesoCottoKg
+                ?? (r.CaloPesoPercentuale is decimal calo
+                        ? Math.Round(righe.Sum(x => x.QuantitaKg) * (1 - calo / 100m), 3)
+                        : null)
         };
 
-        bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
-        var contenuto = word ? _generatore.GeneraWord(datiRapporto) : _generatore.GeneraPdf(datiRapporto);
-        var estensione = word ? "rtf" : "pdf";
-        var mime = word ? MimeRtf : MimePdf;
+        var formato = (req?.Formato ?? "pdf").ToLowerInvariant();
+        byte[] contenuto; string estensione; string mime;
+        switch (formato)
+        {
+            case "word":
+                contenuto = _generatore.GeneraWord(datiRapporto); estensione = "rtf"; mime = MimeRtf; break;
+            case "excel":
+                contenuto = _esportatoreRapporto.Genera(datiRapporto); estensione = "xlsx"; mime = MimeXlsx; break;
+            default:
+                contenuto = _generatore.GeneraPdf(datiRapporto); estensione = "pdf"; mime = MimePdf; break;
+        }
         var nomeFile = _generatore.NomeFile(datiRapporto, estensione);
 
         // Tracciabilità: snapshot riproducibile del rapporto.
@@ -656,6 +673,53 @@ public class RicetteController : Controller
     }
 
     // ── Costruzione dati di calcolo dai valori correnti del catalogo ─
+    /// <summary>Ingredienti con quantità, percentuale e fonte dei valori, per la scheda di verifica.</summary>
+    private async Task<List<IngredienteRapporto>> IngredientiRapportoAsync(
+        IReadOnlyList<RigaRicettaDto> righe, CancellationToken ct)
+    {
+        var ids = righe.Select(r => r.IdMateriaPrima).Distinct().ToList();
+        var mp = await _ctx.MateriePrime.AsNoTracking()
+            .Where(m => ids.Contains(m.IdMateriaPrima))
+            .Select(m => new
+            {
+                m.IdMateriaPrima,
+                m.Denominazione,
+                F = m.Valori.Where(v => v.Corrente)
+                     .Select(v => new { v.IdFonte, v.RiferimentoDocumento })
+                     .FirstOrDefault()
+            })
+            .ToDictionaryAsync(x => x.IdMateriaPrima, ct);
+
+        var idFonti = mp.Values.Where(x => x.F != null && x.F.IdFonte != null)
+            .Select(x => x.F!.IdFonte!.Value).Distinct().ToList();
+        var fonti = await _ctx.Fonti.AsNoTracking()
+            .Where(f => idFonti.Contains(f.IdFonte))
+            .ToDictionaryAsync(f => f.IdFonte, f => new { f.Descrizione, f.Riferimento, f.Url }, ct);
+
+        decimal totale = righe.Sum(r => r.QuantitaKg);
+        var lista = new List<IngredienteRapporto>();
+        foreach (var r in righe)
+        {
+            mp.TryGetValue(r.IdMateriaPrima, out var m);
+            string? fonteDescr = null, rif = null;
+            if (m?.F?.IdFonte is int idf && fonti.TryGetValue(idf, out var fo))
+            {
+                fonteDescr = fo.Descrizione;
+                rif = !string.IsNullOrWhiteSpace(fo.Riferimento) ? fo.Riferimento : fo.Url;
+            }
+            if (string.IsNullOrWhiteSpace(rif)) rif = m?.F?.RiferimentoDocumento;
+            lista.Add(new IngredienteRapporto
+            {
+                Denominazione = m?.Denominazione ?? "",
+                QuantitaKg = r.QuantitaKg,
+                Percentuale = totale > 0 ? Math.Round(r.QuantitaKg / totale * 100m, 2) : 0m,
+                Fonte = fonteDescr,
+                Riferimento = rif
+            });
+        }
+        return lista;
+    }
+
     private async Task<DatiCalcoloNutrizionale?> ComponiDatiAsync(
         IReadOnlyList<RigaRicettaDto>? righe, decimal unitaConsumoG,
         decimal? caloPesoPercentuale, decimal? pesoCottoKg, CancellationToken ct)

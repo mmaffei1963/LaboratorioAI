@@ -78,7 +78,10 @@
         </table>
     </div>
     <div id="dettaglio-canale" class="nascosto" style="margin-top:0.6rem">
-        <h3 id="dettaglio-titolo"></h3>
+        <div class="barra-risultati">
+            <h3 id="dettaglio-titolo" style="margin:0"></h3>
+            <button type="button" class="pulsante pulsante-secondario" id="btn-pdf-canale">PDF grafico</button>
+        </div>
         <canvas id="grafico-canale" width="900" height="260" style="max-width:100%;border:1px solid #ddd;border-radius:6px"></canvas>
         <div class="tabella-scorrevole" style="margin-top:0.5rem">
             <table class="tabella" id="tabella-letture"><thead><tr><th>Ora</th><th class="numerico">Valore</th><th>Stato</th></tr></thead><tbody></tbody></table>
@@ -87,14 +90,22 @@
 </section>
 
 <section class="riquadro nascosto" id="pannello-valori">
-    <div class="barra-risultati"><h2>Valori per orario</h2><span class="sottotesto">rosso = sopra il massimo, blu = sotto il minimo</span></div>
+    <div class="barra-risultati">
+        <h2>Valori per orario</h2><span class="sottotesto">rosso = sopra il massimo, blu = sotto il minimo</span>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-pdf-valori">PDF tabella</button>
+    </div>
     <div class="tabella-scorrevole" style="max-height:26rem">
         <table class="tabella" id="tabella-valori"><thead></thead><tbody></tbody></table>
     </div>
 </section>
 
 <section class="riquadro nascosto" id="pannello-monitor">
-    <div class="barra-risultati"><h2>Monitor</h2><span class="sottotesto">un grafico per canale, come nel foglio Econorma</span></div>
+    <div class="barra-risultati">
+        <h2>Monitor</h2><span class="sottotesto">un grafico per canale, come nel foglio Econorma</span>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-pdf-grafici">PDF grafici</button>
+    </div>
     <div id="griglia-monitor" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0.6rem"></div>
 </section>
 

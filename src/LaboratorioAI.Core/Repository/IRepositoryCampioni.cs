@@ -26,6 +26,13 @@ public interface IRepositoryCampioni
     Task<EsitoRicerca<RisultatoRicercaCampione>> CercaAsync(
         CriteriRicercaCampioni criteri, CancellationToken ct = default);
 
+    /// <summary>
+    /// Risultati completi (dati rapporto di prova) per i campioni filtrati, solo certificati:
+    /// una riga per prova. Passthrough dinamico (le colonne del SELECT sono le colonne dell'export).
+    /// </summary>
+    Task<IReadOnlyList<IDictionary<string, object>>> RisultatiRdpAsync(
+        CriteriRicercaCampioni criteri, CancellationToken ct = default);
+
     /// <summary>Totali complessivi (conteggio e somma prezzo) sull'intero risultato della ricerca.</summary>
     Task<TotaliRicerca> TotaliRicercaAsync(
         CriteriRicercaCampioni criteri, CancellationToken ct = default);

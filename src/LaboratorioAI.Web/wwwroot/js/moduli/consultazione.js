@@ -144,12 +144,12 @@ function disegnaRisultati(esito) {
 
 // ── Esportazione in Excel ──────────────────────────────────
 
-async function esporta(pulsante) {
+async function esporta(pulsante, url = '/api/consultazione/esporta', nomeDefault = 'Consultazione.xlsx') {
     const criteri = leggiCriteri();
     const libera = occupa(pulsante, 'Generazione…');
 
     try {
-        const risposta = await fetch('/api/consultazione/esporta', {
+        const risposta = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(criteri)
@@ -160,7 +160,7 @@ async function esporta(pulsante) {
         }
 
         const intestazione = risposta.headers.get('content-disposition') ?? '';
-        const nome = intestazione.match(/filename=([^;]+)/)?.[1]?.trim() ?? 'Consultazione.xlsx';
+        const nome = intestazione.match(/filename=([^;]+)/)?.[1]?.trim() ?? nomeDefault;
         const blob = await risposta.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -259,6 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-azzera').addEventListener('click', azzera);
     document.getElementById('btn-lookup').addEventListener('click', e => lookup(e.currentTarget));
     document.getElementById('btn-esporta').addEventListener('click', e => esporta(e.currentTarget));
+    document.getElementById('btn-esporta-risultati')?.addEventListener('click',
+        e => esporta(e.currentTarget, '/api/consultazione/esporta-risultati', 'RisultatiRDP.xlsx'));
 
     // Invio nei campi di testo avvia la ricerca
     document.querySelectorAll('.griglia-filtri input').forEach(campo =>

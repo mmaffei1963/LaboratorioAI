@@ -208,9 +208,11 @@ public class RepositoryCampioni : IRepositoryCampioni
 
         parametri.Add("Limite", criteri.Limite);
 
+        // Timeout più ampio: sull'export (limite alto) la CTE cross-database su Marea è pesante.
+        // La ricerca interattiva è veloce e non lo raggiunge.
         using var cn = await _fabbrica.ApriAsync(ct);
         var righe = (await cn.QueryAsync<RisultatoRicercaCampione>(
-            new CommandDefinition(sql, parametri, cancellationToken: ct))).ToList();
+            new CommandDefinition(sql, parametri, commandTimeout: 180, cancellationToken: ct))).ToList();
 
         return new EsitoRicerca<RisultatoRicercaCampione>
         {
@@ -252,6 +254,115 @@ public class RepositoryCampioni : IRepositoryCampioni
     /// Compone dinamicamente la clausola WHERE. Ogni filtro è parametrizzato:
     /// nessuna concatenazione di valori nella stringa SQL.
     /// </summary>
+    // ═══════════════════════════════════════════════════════════════
+    // RISULTATI COMPLETI (dati RDP) — una riga per prova
+    // ═══════════════════════════════════════════════════════════════
+    /// <summary>
+    /// Risultati completi (come sul rapporto di prova) per i campioni che soddisfano i filtri di
+    /// ricerca, SOLO certificati. Una riga per prova (con eventuale sotto-riga analita). Passthrough
+    /// dinamico: le colonne del SELECT diventano le colonne dell'export.
+    /// </summary>
+    public async Task<IReadOnlyList<IDictionary<string, object>>> RisultatiRdpAsync(
+        CriteriRicercaCampioni criteri, CancellationToken ct = default)
+    {
+        // Export solo certificati: forzo lo stato a Certificato così ComponiFiltri NON usa la CTE
+        // cross-database su [Marea].dbo.Entries (necessaria solo agli stati In corso/Spedito originale),
+        // che è la causa principale del timeout su questa query pesante.
+        var (dove, parametri) = ComponiFiltri(criteri with { Stato = StatoCampione.Certificato });
+
+        var sql = $"""
+            SELECT TOP (@LimiteRdp)
+                ce.NCertificato                                   AS [N° certificato],
+                ce.DataCertificato                                AS [Data certificato],
+                ce.NotaCertificato                                AS [Nota certificato],
+                LTRIM(RTRIM(CONCAT(cl.RagioneSociale, ' ', cl.IndirizzoFatt, ' ', cl.CapFatt, ' ', cl.[CittàFatt], ' ', cl.ProvinciaFatt))) AS [Cliente],
+                cl.CODContabilita                                 AS [Codice cliente],
+                LTRIM(RTRIM(CONCAT(i.NomeInsed, ' ', i.IndirizzoInsed, ' ', i.CapInsed, ' ', i.[CittàInsed], ' ', i.ProvinciaInsed))) AS [Insediamento],
+                CONCAT(lo.CodLotto, '/', ca.CodCampione)          AS [N° ricezione],
+                ca.DenomCampione                                  AS [Denominazione campione],
+                mx.Matrice                                        AS [Matrice],
+                LTRIM(RTRIM(CONCAT(ca.RepartoProvenienza, ' ', ca.PuntoPrelievo))) AS [Punto campionato],
+                ca.LuogoPrelievo                                  AS [Luogo prelievo],
+                tec.Tecnica                                       AS [Istruzione operativa],
+                lo.DataPrelievo                                   AS [Data prelievo],
+                ca.OraPrelievo                                    AS [Ora prelievo],
+                ca.TempPrelievo                                   AS [Temp. prelievo],
+                lo.DataRic                                        AS [Data ricezione],
+                ca.TempRic                                        AS [Temp. ricezione],
+                LTRIM(RTRIM(CONCAT(org.CognomeOrg, ' ', org.NomeOrg)))  AS [Prelevatore],
+                LTRIM(RTRIM(CONCAT(orgv.CognomeOrg, ' ', orgv.NomeOrg))) AS [Vettore/trasporto],
+                CASE WHEN lo.BuonoPrelievo IS NOT NULL THEN CONCAT('Verb. prel. N. ', lo.BuonoPrelievo) ELSE '' END AS [Verbale prelievo],
+                imb.Imballaggio                                   AS [Imballaggio/contenitore],
+                tpar.TipoParametro                                AS [Tipo parametro],
+                p.NomeParametro                                   AS [Parametro],
+                m.DettagliMetodo                                  AS [Denominazione],
+                pr.AliquotaProva                                  AS [Aliquota],
+                CASE
+                    -- Solo i metodi QUALITATIVI danno R / NR (esito in NotaProva)
+                    WHEN tm.TipoMetodo LIKE '%qualitativ%' THEN
+                        CASE WHEN pr.NotaProva LIKE '%non rilevabile%' THEN 'NR'
+                             WHEN pr.NotaProva LIKE '%rilevabile%'     THEN 'R'
+                             ELSE '' END
+                    -- Metodi quantitativi: segno + valore calcolato
+                    ELSE LTRIM(RTRIM(CONCAT(
+                        CASE WHEN pr.MaggioreDi <> 0 THEN '>'
+                             WHEN pr.MinoreDi   <> 0 THEN '<'
+                             ELSE '' END,
+                        ' ',
+                        CONVERT(varchar(50), pr.ValoreCalcolato)
+                    )))
+                END                                               AS [Risultato],
+                u.UnitaMisura                                     AS [Unità],
+                rm.Come                                           AS [Espr. come],
+                pr.LimFidInf                                      AS [Lim. fiducia inf.],
+                pr.LimFidSup                                      AS [Lim. fiducia sup.],
+                m.RifBiblio                                       AS [Metodo / Rif. biblio],
+                LTRIM(RTRIM(CONCAT('(', tpr.TitoloProf, ' ', orgresp.NomeOrg, ' ', orgresp.CognomeOrg, ')'))) AS [Responsabile],
+                pr.DataInizioProva                                AS [Data inizio prova],
+                pr.DataFineProva                                  AS [Data fine prova],
+                pr.NotaProva                                      AS [Nota prova],
+                le.LabEsterno                                     AS [Laboratorio esterno],
+                le.Frase                                          AS [Frase lab esterno]
+            FROM Campione ca
+                INNER JOIN Lotto lo             ON lo.IdLotto = ca.IdLotto
+                INNER JOIN commessa cm          ON cm.IdCommessa = lo.IdCommessa
+                INNER JOIN ContattoCliente cc   ON cc.IDContatto = cm.IDContatto
+                INNER JOIN Insediamento i       ON i.IDInsediamento = cc.IDInsediamento
+                INNER JOIN Clienti cl           ON cl.IDCliente = i.IDCliente
+                INNER JOIN certificato ce       ON ce.IdCertificato = ca.IdCertificato
+                INNER JOIN matrice mx           ON mx.IdMatrice = ca.IdMatrice
+                LEFT  JOIN Imballaggio imb      ON imb.IdImballaggio = ca.IdImballaggio
+                LEFT  JOIN TecnicaPrelievo tec  ON tec.IdTecnica = ca.IdTecnica
+                INNER JOIN prove pr             ON pr.IdCampione = ca.IdCampione
+                INNER JOIN rigametodo rm        ON rm.IdRigametodo = pr.IdRigaMetodo
+                INNER JOIN metodo m             ON m.IdMetodo = rm.IdMetodo
+                INNER JOIN Parametro p          ON p.IdParametro = m.IdParametro
+                LEFT  JOIN TipoParametro tpar   ON tpar.IdTipoParametro = p.IdTipoParametro
+                LEFT  JOIN TipoMetodo tm        ON tm.IdTipoMetodo = m.IdTipoMetodo
+                LEFT  JOIN Unitadimisura u      ON u.IdUnita = rm.IdUnita
+                LEFT  JOIN mansione msp         ON msp.IdMansione = ca.IdPrelevatore
+                LEFT  JOIN Organico org         ON org.IdOrganico = msp.IdOrganico
+                LEFT  JOIN mansione msr         ON msr.IdMansione = lo.IdRicevitore
+                LEFT  JOIN Organico orgr        ON orgr.IdOrganico = msr.IdOrganico
+                LEFT  JOIN mansione msv         ON msv.IdMansione = lo.IdVettore
+                LEFT  JOIN Organico orgv        ON orgv.IdOrganico = msv.IdOrganico
+                LEFT  JOIN mansione msresp      ON msresp.IdMansione = pr.IdResponsabile
+                LEFT  JOIN Organico orgresp     ON orgresp.IdOrganico = msresp.IdOrganico
+                LEFT  JOIN TitoloProfessionale tpr ON tpr.IdTitoloProf = orgresp.IdTitoloProf
+                LEFT  JOIN LabEsterno le        ON le.IdLabEsterno = rm.IdLabEsterno
+            WHERE {dove}
+              AND pr.EsclusodaRdp = 0
+              AND ca.IdCertificato IS NOT NULL AND ca.IdCertificato <> 0
+            ORDER BY ce.NCertificato, lo.CodLotto, ca.CodCampione, pr.IdProva
+            """;
+
+        parametri.Add("LimiteRdp", 50000);
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        var righe = await cn.QueryAsync(new CommandDefinition(sql, parametri, commandTimeout: 300, cancellationToken: ct));
+        return righe.Cast<IDictionary<string, object>>().ToList();
+    }
+
     private static (string Dove, DynamicParameters Parametri) ComponiFiltri(CriteriRicercaCampioni c)
     {
         var condizioni = new List<string> { "1 = 1" };

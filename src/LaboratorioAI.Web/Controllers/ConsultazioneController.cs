@@ -21,6 +21,7 @@ public class ConsultazioneController : Controller
     private readonly IContestoUtente _utente;
     private readonly IEsportatoreConsultazione _esportatore;
     private readonly IEsportatoreCertificato _esportatoreCert;
+    private readonly IEsportatoreRisultatiRdp _esportatoreRdp;
 
     public ConsultazioneController(
         IRepositoryCampioni campioni,
@@ -29,7 +30,8 @@ public class ConsultazioneController : Controller
         IServizioAnalisi analisi,
         IContestoUtente utente,
         IEsportatoreConsultazione esportatore,
-        IEsportatoreCertificato esportatoreCert)
+        IEsportatoreCertificato esportatoreCert,
+        IEsportatoreRisultatiRdp esportatoreRdp)
     {
         _campioni = campioni;
         _certificati = certificati;
@@ -38,6 +40,7 @@ public class ConsultazioneController : Controller
         _utente = utente;
         _esportatore = esportatore;
         _esportatoreCert = esportatoreCert;
+        _esportatoreRdp = esportatoreRdp;
     }
 
     public IActionResult Index()
@@ -149,6 +152,19 @@ public class ConsultazioneController : Controller
         var esito = await _campioni.CercaAsync(criteriEstesi, ct);
         var contenuto = _esportatore.Genera(esito.Elementi, criteriEstesi);
         return File(contenuto, MimeXlsx, _esportatore.NomeFile(criteriEstesi));
+    }
+
+    /// <summary>Esporta i risultati completi (dati rapporto di prova) dei campioni filtrati, solo certificati.</summary>
+    [HttpPost("api/consultazione/esporta-risultati")]
+    public async Task<IActionResult> EsportaRisultati(
+        [FromBody] CriteriRicercaCampioni criteri, CancellationToken ct)
+    {
+        if (criteri.Vuoto)
+            return BadRequest(new { messaggio = "Impostare almeno un criterio di ricerca." });
+
+        var righe = await _campioni.RisultatiRdpAsync(criteri, ct);
+        var contenuto = _esportatoreRdp.Genera(righe);
+        return File(contenuto, MimeXlsx, _esportatoreRdp.NomeFile());
     }
 
     /// <summary>Identificativi tecnici a partire dai codici lotto e campione.</summary>

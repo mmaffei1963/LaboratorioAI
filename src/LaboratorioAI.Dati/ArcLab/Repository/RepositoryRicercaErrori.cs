@@ -98,11 +98,12 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
     // ── 2. Metodi attivi senza cifre significative / decimali max ───
     private const string SqlSenzaArrotondamento = """
         SELECT
-            m.IdMetodo, m.IdParametro, m.IdTipoMetodo,
+            m.IdMetodo, m.IdParametro, p.NomeParametro, m.IdTipoMetodo,
             m.RifMetodo, m.DettagliMetodo, m.RifBiblio, m.IdUnita,
             m.Cifre_significative AS CifreSignificative,
             m.Decimali_Max        AS DecimaliMax
         FROM metodo m
+            LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
         WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
           AND (m.Cifre_significative IS NULL OR m.Decimali_Max IS NULL)
         ORDER BY m.IdParametro, m.IdMetodo
@@ -118,11 +119,12 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
     // ── 3. Metodi attivi con margine sotto soglia (o negativo) ──────
     private const string SqlMargine = """
         SELECT
-            m.IdMetodo, m.IdParametro, m.IdTipoMetodo,
+            m.IdMetodo, m.IdParametro, p.NomeParametro, m.IdTipoMetodo,
             m.RifMetodo, m.DettagliMetodo, m.RifBiblio, m.IdUnita,
             m.CostoAnoi, m.CostoMetodoEuro,
             CAST(100.0 * (m.CostoMetodoEuro - m.CostoAnoi) / NULLIF(m.CostoMetodoEuro, 0) AS DECIMAL(9,2)) AS MarginePct
         FROM metodo m
+            LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
         WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
           AND m.CostoAnoi IS NOT NULL
           AND m.CostoMetodoEuro IS NOT NULL AND m.CostoMetodoEuro <> 0
@@ -139,15 +141,16 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
 
     // ── 4. Metodi attivi potenzialmente doppi ───────────────────────
     private const string SqlDoppi = """
-        SELECT x.IdMetodo, x.IdParametro, x.IdTipoMetodo,
+        SELECT x.IdMetodo, x.IdParametro, x.NomeParametro, x.IdTipoMetodo,
                x.RifMetodo, x.DettagliMetodo, x.RifBiblio, x.IdUnita, x.NMetodi
         FROM (
-            SELECT m.IdMetodo, m.IdParametro, m.IdTipoMetodo,
+            SELECT m.IdMetodo, m.IdParametro, p.NomeParametro, m.IdTipoMetodo,
                    m.RifMetodo, m.DettagliMetodo, m.RifBiblio, m.IdUnita,
                    COUNT(*) OVER (PARTITION BY m.IdParametro,
                                   LOWER(LTRIM(RTRIM(m.DettagliMetodo))),
                                   LOWER(LTRIM(RTRIM(m.RifMetodo)))) AS NMetodi
             FROM metodo m
+                LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
             WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
         ) x
         WHERE x.NMetodi > 1
@@ -250,5 +253,67 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
     {
         if (annoA < annoDa) (annoDa, annoA) = (annoA, annoDa);
         return (new DateTime(annoDa, 1, 1), new DateTime(annoA, 1, 1).AddYears(1));
+    }
+
+    // ── 8. Campioni «chiusi» non pronti alla stampa ─────────────────
+    public async Task<IReadOnlyList<RigaCampioneStampa>> CampioniProntiStampaAsync(
+        DateOnly? da, DateOnly? a, string? codLotto, string? codCampione, CancellationToken ct = default)
+    {
+        bool perChiave = !string.IsNullOrWhiteSpace(codLotto) || !string.IsNullOrWhiteSpace(codCampione);
+
+        var cond = new List<string> { "ca.AnalisiChiusa = 1", "pr.IdRigaMetodo <> 18963" };
+        var par = new DynamicParameters();
+
+        if (perChiave)
+        {
+            // Ricerca per singolo lotto/campione: le date sono ignorate.
+            if (!string.IsNullOrWhiteSpace(codLotto)) { cond.Add("lo.CodLotto = @CodLotto"); par.Add("CodLotto", codLotto!.Trim()); }
+            if (!string.IsNullOrWhiteSpace(codCampione)) { cond.Add("ca.CodCampione = @CodCampione"); par.Add("CodCampione", codCampione!.Trim()); }
+        }
+        else
+        {
+            // Ricerca per data sul ricevimento del lotto (default: ultimi 30 giorni).
+            var dda = (da ?? DateOnly.FromDateTime(DateTime.Today).AddDays(-30)).ToDateTime(TimeOnly.MinValue);
+            var daa = (a ?? DateOnly.FromDateTime(DateTime.Today)).AddDays(1).ToDateTime(TimeOnly.MinValue);
+            cond.Add("lo.DataRic >= @Da AND lo.DataRic < @A");
+            par.Add("Da", dda); par.Add("A", daa);
+        }
+
+        // La riga è segnalata se ANCHE UNA sola condizione di completezza non è rispettata.
+        cond.Add("""
+            (
+                ISNULL(pr.VerificaValore, 0) = 0
+                OR pr.DataInizioProva IS NULL
+                OR pr.DataFineProva  IS NULL
+                OR rm.Arrotonda   IS NULL
+                OR rm.MaxDecimali IS NULL
+            )
+            """);
+
+        var sql = $"""
+            SELECT
+                lo.IdLotto, lo.CodLotto, lo.DataRic,
+                ca.IdCampione, ca.CodCampione,
+                cl.RagioneSociale,
+                pr.IdProva, pr.IdRigaMetodo, rm.DenominazioneRiga, p.NomeParametro,
+                pr.VerificaValore, pr.DataInizioProva, pr.DataFineProva,
+                rm.Arrotonda, rm.MaxDecimali
+            FROM Campione ca
+                INNER JOIN Lotto           lo ON lo.IdLotto        = ca.IdLotto
+                LEFT  JOIN commessa        cm ON cm.IdCommessa     = lo.IdCommessa
+                LEFT  JOIN ContattoCliente cc ON cc.IDContatto     = cm.IDContatto
+                LEFT  JOIN Insediamento    i  ON i.IDInsediamento  = cc.IDInsediamento
+                LEFT  JOIN Clienti         cl ON cl.IDCliente      = i.IDCliente
+                INNER JOIN prove           pr ON pr.IdCampione     = ca.IdCampione
+                INNER JOIN rigametodo      rm ON rm.IdRigametodo   = pr.IdRigaMetodo
+                INNER JOIN metodo          m  ON m.IdMetodo        = rm.IdMetodo
+                LEFT  JOIN Parametro       p  ON p.IdParametro     = m.IdParametro
+            WHERE {string.Join("\n              AND ", cond)}
+            ORDER BY lo.DataRic DESC, lo.CodLotto, ca.CodCampione, pr.IdProva
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<RigaCampioneStampa>(
+            new CommandDefinition(sql, par, commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
     }
 }

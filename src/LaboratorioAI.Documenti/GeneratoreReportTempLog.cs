@@ -16,6 +16,13 @@ public interface IGeneratoreReportTempLog
     byte[] GeneraPdf(RisultatoMonitoraggio r);
     string NomeFile(RisultatoMonitoraggio r, string estensione);
 
+    /// <summary>PDF della sola pagina dei grafici (un grafico per canale).</summary>
+    byte[] GeneraPdfGrafici(RisultatoMonitoraggio r);
+    /// <summary>PDF di un singolo canale: grafico grande + tabella delle letture orarie.</summary>
+    byte[] GeneraPdfCanale(RisultatoMonitoraggio r, int indiceCanale);
+    /// <summary>PDF della tabella dei valori per orario (matrice ore × canali).</summary>
+    byte[] GeneraPdfValori(RisultatoMonitoraggio r);
+
     byte[] GeneraSondeExcel(IReadOnlyList<SondaEconorma> sonde, DateTime? ultimaSincronizzazione);
     byte[] GeneraSondePdf(IReadOnlyList<SondaEconorma> sonde, DateTime? ultimaSincronizzazione);
 }
@@ -169,6 +176,152 @@ public class GeneratoreReportTempLog : IGeneratoreReportTempLog
         finally { foreach (var f in temp) if (File.Exists(f)) File.Delete(f); }
     }
 
+    // ── PDF: sola pagina dei grafici (un grafico per canale) ────────
+    public byte[] GeneraPdfGrafici(RisultatoMonitoraggio r)
+    {
+        var temp = new List<string>();
+        var doc = new Document();
+        var normale = doc.Styles["Normal"]!; normale.Font.Name = "Arial"; normale.Font.Size = 9;
+        var sec = doc.AddSection();
+        sec.PageSetup.PageFormat = PageFormat.A4;
+        sec.PageSetup.TopMargin = Unit.FromCentimeter(1); sec.PageSetup.BottomMargin = Unit.FromCentimeter(1);
+        sec.PageSetup.LeftMargin = Unit.FromCentimeter(1.4); sec.PageSetup.RightMargin = Unit.FromCentimeter(1.4);
+        Intestazione(sec, r, "GRAFICI PER CANALE");
+
+        var griglia = sec.AddTable(); griglia.Borders.Width = 0;
+        griglia.AddColumn(Unit.FromCentimeter(9)); griglia.AddColumn(Unit.FromCentimeter(9));
+        Row? riga = null;
+        int col = 0;
+        foreach (var c in r.Canali)
+        {
+            if (col == 0) riga = griglia.AddRow();
+            var png = DisegnaCanale(c);
+            if (png != null)
+            {
+                temp.Add(png);
+                var img = riga!.Cells[col].AddImage(png);
+                img.LockAspectRatio = true; img.Width = Unit.FromCentimeter(8.5);
+            }
+            riga!.Cells[col].AddParagraph($"{c.Canale} — {c.Ambiente ?? c.Sonda ?? ""}").Format.Font.Size = 7;
+            col = (col + 1) % 2;
+        }
+        return Rendi(doc, temp);
+    }
+
+    // ── PDF: singolo canale (grafico grande + letture orarie) ───────
+    public byte[] GeneraPdfCanale(RisultatoMonitoraggio r, int indiceCanale)
+    {
+        if (indiceCanale < 0 || indiceCanale >= r.Canali.Count)
+            throw new ArgumentOutOfRangeException(nameof(indiceCanale));
+        var c = r.Canali[indiceCanale];
+        var temp = new List<string>();
+        var doc = new Document();
+        var normale = doc.Styles["Normal"]!; normale.Font.Name = "Arial"; normale.Font.Size = 9;
+        var sec = doc.AddSection();
+        sec.PageSetup.PageFormat = PageFormat.A4;
+        sec.PageSetup.TopMargin = Unit.FromCentimeter(1); sec.PageSetup.BottomMargin = Unit.FromCentimeter(1);
+        sec.PageSetup.LeftMargin = Unit.FromCentimeter(1.4); sec.PageSetup.RightMargin = Unit.FromCentimeter(1.4);
+        Intestazione(sec, r, "CANALE " + c.Canale);
+
+        var sottot = sec.AddParagraph($"{c.Canale} — {c.Ambiente ?? c.Sonda ?? ""}" +
+            (c.LimitiDisponibili ? $"   (limiti {Num(c.Min!.Value)} … {Num(c.Max!.Value)})" : "   (senza limiti)"));
+        sottot.Format.Font.Bold = true; sottot.Format.SpaceAfter = "0.2cm";
+
+        var png = DisegnaCanale(c, 1000, 380, etichetteOrarie: true);
+        if (png != null)
+        {
+            temp.Add(png);
+            var img = sec.AddImage(png); img.LockAspectRatio = true; img.Width = Unit.FromCentimeter(18);
+        }
+
+        Titolo(sec, "Letture orarie");
+        var t = sec.AddTable(); t.Borders.Width = 0.5; t.Borders.Color = new Color(0xFFBBBBBB); t.Format.Font.Size = 8;
+        foreach (var w in new[] { 3.0, 3.0, 3.0 }) t.AddColumn(Unit.FromCentimeter(w));
+        var hr = t.AddRow(); hr.Format.Font.Bold = true; hr.Shading.Color = new Color(0xFFF3F3F3);
+        foreach (var (h, i) in new[] { "Ora", "Valore", "Stato" }.Select((x, i) => (x, i))) hr.Cells[i].AddParagraph(h);
+        foreach (var l in c.Letture)
+        {
+            var row = t.AddRow();
+            row.Cells[0].AddParagraph(l.Ora);
+            row.Cells[1].AddParagraph(l.Valore.HasValue ? Num(l.Valore.Value, 2) : "—");
+            var (et, colore) = EtichettaStato(l.Stato);
+            var pc = row.Cells[2].AddParagraph(et);
+            if (colore.HasValue) { row.Cells[1].Format.Font.Color = colore.Value; pc.Format.Font.Color = colore.Value; }
+        }
+        return Rendi(doc, temp);
+    }
+
+    // ── PDF: valori per orario (matrice ore × canali) ───────────────
+    public byte[] GeneraPdfValori(RisultatoMonitoraggio r)
+    {
+        var doc = new Document();
+        var normale = doc.Styles["Normal"]!; normale.Font.Name = "Arial"; normale.Font.Size = 7;
+        var sec = doc.AddSection();
+        sec.PageSetup.PageFormat = PageFormat.A4; sec.PageSetup.Orientation = Orientation.Landscape;
+        sec.PageSetup.TopMargin = Unit.FromCentimeter(1); sec.PageSetup.BottomMargin = Unit.FromCentimeter(1);
+        sec.PageSetup.LeftMargin = Unit.FromCentimeter(1); sec.PageSetup.RightMargin = Unit.FromCentimeter(1);
+        Intestazione(sec, r, "VALORI PER ORARIO");
+
+        var baseC = r.Canali.OrderByDescending(c => c.Letture.Count).FirstOrDefault();
+        var ore = baseC?.Letture.Select(x => x.Ora).ToList() ?? new List<string>();
+
+        var t = sec.AddTable(); t.Borders.Width = 0.4; t.Borders.Color = new Color(0xFFCCCCCC); t.Format.Font.Size = 7;
+        // larghezza utile in landscape ≈ 27,7 cm; ripartisci fra colonna Ora e i canali
+        const double utile = 27.5, oraW = 1.6;
+        double colW = r.Canali.Count > 0 ? Math.Max(0.9, Math.Min(2.2, (utile - oraW) / r.Canali.Count)) : 2.0;
+        t.AddColumn(Unit.FromCentimeter(oraW));
+        foreach (var _ in r.Canali) t.AddColumn(Unit.FromCentimeter(colW));
+        var hr = t.AddRow(); hr.Format.Font.Bold = true; hr.Shading.Color = new Color(0xFFF3F3F3); hr.HeadingFormat = true;
+        hr.Cells[0].AddParagraph("Ora");
+        for (int j = 0; j < r.Canali.Count; j++) hr.Cells[j + 1].AddParagraph(r.Canali[j].Canale);
+        for (int i = 0; i < ore.Count; i++)
+        {
+            var row = t.AddRow();
+            row.Cells[0].AddParagraph(ore[i]);
+            for (int j = 0; j < r.Canali.Count; j++)
+            {
+                var lt = r.Canali[j].Letture;
+                if (i >= lt.Count || lt[i].Valore is null) { row.Cells[j + 1].AddParagraph("—"); continue; }
+                var p = row.Cells[j + 1].AddParagraph(Num(lt[i].Valore!.Value, 1));
+                if (lt[i].Stato == StatoLettura.SopraMax) p.Format.Font.Color = new Color(0xFFB3261E);
+                else if (lt[i].Stato == StatoLettura.SottoMin) p.Format.Font.Color = new Color(0xFF1741B3);
+            }
+        }
+        var renderer = new PdfDocumentRenderer { Document = doc }; renderer.RenderDocument();
+        using var ms = new MemoryStream(); renderer.PdfDocument.Save(ms, false); return ms.ToArray();
+    }
+
+    private static void Intestazione(Section sec, RisultatoMonitoraggio r, string titolo)
+    {
+        var tit = sec.AddParagraph(titolo); tit.Format.Font.Bold = true; tit.Format.Font.Size = 14;
+        sec.AddParagraph($"File: {r.NomeFile}    Periodo: {Data(r.DataDal)} → {Data(r.DataAl)}").Format.Font.Size = 8;
+        var esito = sec.AddParagraph(r.TuttoConforme ? "TUTTO NEI LIMITI"
+            : $"{r.NumeroCanaliConEscursioni} canali con escursioni — {r.Escursioni.Count} escursioni totali");
+        esito.Format.Font.Bold = true; esito.Format.Font.Color = r.TuttoConforme ? new Color(0xFF1A7F37) : new Color(0xFFB3261E);
+        esito.Format.SpaceAfter = "0.25cm";
+    }
+
+    private static (string, Color?) EtichettaStato(StatoLettura s) => s switch
+    {
+        StatoLettura.SopraMax => ("sopra max", new Color(0xFFB3261E)),
+        StatoLettura.SottoMin => ("sotto min", new Color(0xFF1741B3)),
+        StatoLettura.InRange => ("ok", null),
+        StatoLettura.Vuota => ("—", null),
+        _ => ("n/d", null)
+    };
+
+    private static byte[] Rendi(Document doc, List<string> temp)
+    {
+        try
+        {
+            var renderer = new PdfDocumentRenderer { Document = doc };
+            renderer.RenderDocument();
+            using var ms = new MemoryStream(); renderer.PdfDocument.Save(ms, false);
+            return ms.ToArray();
+        }
+        finally { foreach (var f in temp) if (File.Exists(f)) File.Delete(f); }
+    }
+
     // ── Report sonde ArcLab ─────────────────────────────────────────
     public byte[] GeneraSondeExcel(IReadOnlyList<SondaEconorma> sonde, DateTime? ultimaSync)
     {
@@ -224,11 +377,11 @@ public class GeneratoreReportTempLog : IGeneratoreReportTempLog
         using var ms = new MemoryStream(); renderer.PdfDocument.Save(ms, false); return ms.ToArray();
     }
 
-    private static string? DisegnaCanale(EsitoCanale c)
+    private static string? DisegnaCanale(EsitoCanale c, int W = 520, int H = 200, bool etichetteOrarie = false)
     {
         var vals = c.Letture.Where(x => x.Valore.HasValue).Select(x => x.Valore!.Value).ToList();
         if (vals.Count == 0) return null;
-        int W = 520, H = 200, ml = 44, mr = 12, mt = 22, mb = 22;
+        int ml = 44, mr = 12, mt = 22, mb = etichetteOrarie ? 34 : 22;
         double lo = vals.Min(), hi = vals.Max();
         if (c.LimitiDisponibili) { lo = Math.Min(lo, c.Min!.Value); hi = Math.Max(hi, c.Max!.Value); }
         double pad = (hi - lo) * 0.1; if (pad <= 0) pad = 1; lo -= pad; hi += pad;
@@ -252,6 +405,19 @@ public class GeneratoreReportTempLog : IGeneratoreReportTempLog
         }
         g.DrawLine(ml, mt, ml, H - mb, axis); g.DrawLine(ml, H - mb, W - mr, H - mb, axis);
         g.DrawText(hi.ToString("0.0", It), 2, PY(hi) + 4, testo); g.DrawText(lo.ToString("0.0", It), 2, PY(lo) + 4, testo);
+
+        if (etichetteOrarie && n > 1)
+        {
+            using var ora = new SKPaint { Color = SKColors.DimGray, IsAntialias = true, TextSize = 10, TextAlign = SKTextAlign.Center };
+            using var griglia = new SKPaint { Color = new SKColor(0xEE, 0xEE, 0xEE), StrokeWidth = 1 };
+            int maxLab = Math.Max(3, (W - ml - mr) / 70);
+            int step = Math.Max(1, (int)Math.Ceiling((double)n / maxLab));
+            for (int i = 0; i < n; i += step)
+            {
+                g.DrawLine(PX(i), mt, PX(i), H - mb, griglia);
+                g.DrawText(c.Letture[i].Ora ?? "", PX(i), H - mb + 14, ora);
+            }
+        }
 
         using var linea = new SKPaint { Color = new SKColor(0x17, 0x41, 0xB3), StrokeWidth = 1.4f, IsAntialias = true, Style = SKPaintStyle.Stroke };
         SKPoint? prev = null;

@@ -96,6 +96,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   e «Da Validare» mantengono l'esclusione. Formattazione con `>`/`<` già gestita
   da `ProvaCampione.ValoreFormattato`.
 
+### Correzioni — Agosto 2026
+
+- Taratura incubatori/celle/frigoriferi (Modulo 04-02): l'incertezza del campione
+  di riferimento u(CR) è ora **interpolata** linearmente tra i due punti di
+  certificato che racchiudono la temperatura di esercizio (prima: valore del punto
+  più vicino), coerente con la correzione già interpolata. Rilevato confrontando la
+  taratura di un frigorifero (esercizio 5 °C) con il foglio storico: al punto più
+  vicino il motore usava l'incertezza del solo punto a 0 °C. Il set di riferimento
+  di validazione resta uniforme a 0,06 come il foglio storico, quindi i casi VAL e
+  i valori attesi non cambiano (validazione superata). Il Piano di Validazione
+  Calcolo Incubatori va aggiornato (u(CR) interpolata) e ri-approvato dal RSQ.
+
 ### Fase 6 — DVR Piscine (integrazione componente)
 
 - Componente DVR Piscine integrato nella soluzione: precompilazione da ArcLab
@@ -385,9 +397,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   maiuscole/minuscole); **lotti senza ricevitore** e **senza vettore** (per anno di
   ricezione); **coerenza di categoria prelevatore/vettore** (decisa dai nomi:
   interno vs cliente/terza parte devono coincidere; se il prelevatore è cliente/terza
-  parte il verbale `Lotto.BuonoPrelievo` non deve esserci). Permesso
-  `ricercaerrori.visualizza`, area 21; nessuna nuova tabella (permesso popolato
-  all'avvio).
+  parte il verbale `Lotto.BuonoPrelievo` non deve esserci); **campioni «chiusi» non
+  pronti alla stampa** (`Campione.AnalisiChiusa` = Sì ma con prove senza
+  `VerificaValore`, senza `DataInizioProva`/`DataFineProva`, o rigametodo senza
+  `Arrotonda`/`MaxDecimali`), con ricerca per data (Lotto.DataRic) o per singolo
+  lotto/campione. In cima alla pagina un **cruscotto** con spunte per eseguire i
+  controlli selezionati (riepilogo con semafori e «Apri» che apre e lancia la sezione
+  di dettaglio) e **«Esporta tutto»** in un unico Excel con un foglio per controllo.
+  Permesso `ricercaerrori.visualizza`, area 21; nessuna nuova tabella (permesso
+  popolato all'avvio).
 - **Audit trail esteso a tutti i moduli operatore**: le chiamate `IServizioAudit.
   RegistraAsync` sono state aggiunte (oltre a DVR/Laboratori esterni/Tamponi già
   coperti) ad Accettazione (salva/elimina/tracciato/PDF), Proposta controlli
@@ -398,6 +416,32 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
   elimina/svuota/import), Materie prime (import/estrazione AI/salva/elimina) e
   Ricette (salva/verifica AI). Ogni voce registra utente, IP, area, azione, esito,
   dettaglio JSON e versione dell'app. Aggiunta l'area funzionale `Mappatura = 20`.
+
+### Consultazione — Esporta risultati (RDP) (agosto 2026)
+
+- Nuovo export **«Esporta risultati (RDP)»** in Ricerca campioni: i risultati completi
+  come sul rapporto di prova, **una riga per prova** (con eventuali sotto-righe
+  analita), sui campioni filtrati e **solo certificati**. Traduzione in T-SQL della
+  storica query Access del rapporto (`IIf`→`CASE`, `&`→`CONCAT`, `maggioredi=-1`→`<>0`),
+  con `certificato` in INNER JOIN; riusa gli stessi filtri di ricerca (`ComponiFiltri`)
+  e la CTE portale. Passthrough dinamico: le colonne del SELECT diventano le colonne
+  del foglio (`IEsportatoreRisultatiRdp`). Colonne: n° certificato/data, cliente,
+  insediamento, n° ricezione, denominazione/matrice, **punto campionato**, date e
+  temperature, prelevatore/verbale; per prova: parametro/denominazione, **risultato**
+  con segno, unità, limiti di fiducia, analita e relativi limiti, metodo/rif. biblio,
+  **accreditamento** (asterisco), responsabile, date prova, laboratorio esterno.
+
+### Nutrizionali — Scheda di verifica per il committente (agosto 2026)
+
+- Il **rapporto nutrizionale** diventa anche **scheda di verifica dati**: include la
+  tabella **ingredienti** (denominazione, quantità kg, %, **fonte dei valori** con
+  riferimento/URL) e una **clausola di responsabilità** (`TestiRapportoNutrizionale.
+  ClausolaResponsabilita`) con cui il committente, usando i dati per l'etichettatura,
+  si assume la verifica della corretta trascrizione di ricetta/quantità e dell'idoneità
+  delle fonti; per dubbi deve contattare il laboratorio. Obiettivo: condividere il
+  rischio di errore con il cliente.
+- Il rapporto è ora esportabile anche in **Excel** (oltre a PDF/Word): stessa scheda
+  con ingredienti/fonti/clausola. Nuovo pulsante «Rapporto Excel» in Ricette.
 
 ### Note di schema ArcLab consolidate
 

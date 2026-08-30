@@ -234,7 +234,7 @@ async function generaRapporto(pulsante, formato) {
         const blob = await risposta.blob();
         const cd = risposta.headers.get('Content-Disposition') || '';
         const m = cd.match(/filename="?([^"]+)"?/);
-        const nome = m ? m[1] : (formato === 'word' ? 'Rapporto_Nutrizionale.rtf' : 'Rapporto_Nutrizionale.pdf');
+        const nome = m ? m[1] : (formato === 'word' ? 'Rapporto_Nutrizionale.rtf' : formato === 'excel' ? 'Rapporto_Nutrizionale.xlsx' : 'Rapporto_Nutrizionale.pdf');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url; a.download = nome; document.body.appendChild(a); a.click();
@@ -436,6 +436,7 @@ $('btn-usa-pdf').addEventListener('click', (e) => scaricaEtichettaUsa(e.currentT
 $('btn-usa-word').addEventListener('click', (e) => scaricaEtichettaUsa(e.currentTarget, 'word'));
 $('btn-pdf').addEventListener('click', (e) => generaRapporto(e.currentTarget, 'pdf'));
 $('btn-word').addEventListener('click', (e) => generaRapporto(e.currentTarget, 'word'));
+$('btn-excel')?.addEventListener('click', (e) => generaRapporto(e.currentTarget, 'excel'));
 $('f-q').addEventListener('input', debounce(carica, 300));
 $('i-cerca').addEventListener('input', debounce(cercaIngredienti, 300));
 ['r-unita', 'r-calo', 'r-peso-cotto'].forEach(id => $(id).addEventListener('input', ricalcolaDeb));

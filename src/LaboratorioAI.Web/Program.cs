@@ -142,6 +142,7 @@ builder.Services.AddSingleton<IEsportatoreLaboratoriEsterni, EsportatoreLaborato
 builder.Services.AddSingleton<IEsportatoreTamponiContratto, EsportatoreTamponiContratto>();
 builder.Services.AddSingleton<IEsportatoreSoloEsterni, EsportatoreSoloEsterni>();
 builder.Services.AddSingleton<IEsportatoreRicercaErrori, EsportatoreRicercaErrori>();
+builder.Services.AddSingleton<IEsportatoreRisultatiRdp, EsportatoreRisultatiRdp>();
 builder.Services.AddSingleton<IEsportatoreNonFatturare, EsportatoreNonFatturare>();
 builder.Services.AddSingleton<IEsportatoreConsultazione, EsportatoreConsultazione>();
 builder.Services.AddSingleton<IEsportatoreCertificato, EsportatoreCertificato>();
@@ -163,6 +164,7 @@ builder.Services.AddSingleton<IServizioCalcoloNutrizionale, ServizioCalcoloNutri
 builder.Services.AddSingleton<IServizioEtichettaUsa, ServizioEtichettaUsa>();
 builder.Services.AddSingleton<IServizioEtichettaCanada, ServizioEtichettaCanada>();
 builder.Services.AddSingleton<IGeneratoreRapportoNutrizionale, GeneratoreRapportoNutrizionale>();
+builder.Services.AddSingleton<IEsportatoreRapportoNutrizionale, EsportatoreRapportoNutrizionale>();
 builder.Services.AddSingleton<IGeneratoreEtichettaUsa, GeneratoreEtichettaUsa>();
 builder.Services.AddSingleton<IGeneratoreEtichettaCanada, GeneratoreEtichettaCanada>();
 

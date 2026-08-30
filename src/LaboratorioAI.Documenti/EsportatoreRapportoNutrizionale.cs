@@ -128,9 +128,6 @@ public class EsportatoreRapportoNutrizionale : IEsportatoreRapportoNutrizionale
         ws.Cell(rf, LabelDx).Style.Font.Bold = true;
         ws.Cell(rf + 1, LabelDx).Value = "MARE.A s.r.l — Responsabile di Laboratorio";
         ws.Cell(rf + 1, LabelDx).Style.Font.FontSize = 9;
-        ws.Cell(rf + 2, LabelDx).Value = "Documento firmato digitalmente.";
-        ws.Cell(rf + 2, LabelDx).Style.Font.FontSize = 9;
-        ws.Cell(rf + 2, LabelDx).Style.Font.Italic = true;
 
         // ── Impostazioni di stampa (A4, per PDF) ───────────────────
         ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
@@ -140,6 +137,74 @@ public class EsportatoreRapportoNutrizionale : IEsportatoreRapportoNutrizionale
         ws.PageSetup.Margins.Left = 0.5;
         ws.PageSetup.Margins.Right = 0.5;
         ws.PageSetup.PagesWide = 1;
+
+        // ── Secondo foglio: scheda di verifica ingredienti e fonti ─
+        if (d.Ingredienti.Count > 0)
+        {
+            var wv = wb.Worksheets.Add("Verifica dati");
+            wv.Style.Font.FontName = "Calibri";
+            wv.Style.Font.FontSize = 10;
+            wv.Column(1).Width = 2.5;
+            wv.Column(2).Width = 40;
+            wv.Column(3).Width = 14;
+            wv.Column(4).Width = 8;
+            wv.Column(5).Width = 45;
+
+            int rv = 2;
+            wv.Cell(rv, 2).Value = "SCHEDA DI VERIFICA DATI — INGREDIENTI E FONTI";
+            wv.Cell(rv, 2).Style.Font.Bold = true;
+            wv.Cell(rv, 2).Style.Font.FontSize = 12;
+            rv += 2;
+            wv.Cell(rv, 2).Value = "Ingrediente";
+            wv.Cell(rv, 3).Value = "Quantità (kg)";
+            wv.Cell(rv, 4).Value = "%";
+            wv.Cell(rv, 5).Value = "Fonte dei valori";
+            wv.Range(rv, 2, rv, 5).Style.Font.Bold = true;
+            rv++;
+            foreach (var ing in d.Ingredienti)
+            {
+                wv.Cell(rv, 2).Value = ing.Denominazione;
+                wv.Cell(rv, 3).Value = Fmt(ing.QuantitaKg, 3);
+                wv.Cell(rv, 4).Value = Fmt(ing.Percentuale, 1);
+                var f = string.IsNullOrWhiteSpace(ing.Fonte) ? "—" : ing.Fonte!;
+                if (!string.IsNullOrWhiteSpace(ing.Riferimento)) f += " (" + ing.Riferimento + ")";
+                wv.Cell(rv, 5).Value = f;
+                rv++;
+            }
+            rv++;
+            wv.Cell(rv, 2).Value = "Arrotondati per etichetta (100 g):";
+            wv.Cell(rv, 2).Style.Font.Bold = true;
+            rv++;
+            wv.Range(rv, 2, rv, 5).Merge();
+            wv.Cell(rv, 2).Value = RigaValori(r.Per100gArrotondato);
+            wv.Cell(rv, 2).Style.Alignment.WrapText = true;
+            rv++;
+            wv.Cell(rv, 2).Value = "Non arrotondati (calcolati, 100 g):";
+            wv.Cell(rv, 2).Style.Font.Bold = true;
+            rv++;
+            wv.Range(rv, 2, rv, 5).Merge();
+            wv.Cell(rv, 2).Value = RigaValori(r.Per100g);
+            wv.Cell(rv, 2).Style.Alignment.WrapText = true;
+            rv++;
+            var mt2 = d.MassaTotaleKg is decimal mm1 ? Fmt(mm1, 3) + " kg" : "—";
+            var mc2 = d.MassaCottaKg is decimal mm2 ? " · massa cotta " + Fmt(mm2, 3) + " kg" : "";
+            var rid2 = d.MassaTotaleKg is decimal mtot2 && mtot2 > 0 && d.MassaCottaKg is decimal mcot2
+                ? " · calo peso " + Fmt((mtot2 - mcot2) / mtot2 * 100m, 1) + " %"
+                : "";
+            wv.Range(rv, 2, rv, 5).Merge();
+            wv.Cell(rv, 2).Value = "Massa totale " + mt2 + mc2 + rid2;
+            rv += 2;
+            wv.Cell(rv, 2).Value = "Responsabilità del committente:";
+            wv.Cell(rv, 2).Style.Font.Bold = true;
+            rv++;
+            wv.Range(rv, 2, rv, 5).Merge();
+            wv.Cell(rv, 2).Value = TestiRapportoNutrizionale.ClausolaResponsabilita;
+            wv.Cell(rv, 2).Style.Alignment.WrapText = true;
+            wv.Row(rv).Height = 60;
+
+            wv.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            wv.PageSetup.PaperSize = XLPaperSize.A4Paper;
+        }
 
         using var flusso = new MemoryStream();
         wb.SaveAs(flusso);
@@ -198,6 +263,10 @@ public class EsportatoreRapportoNutrizionale : IEsportatoreRapportoNutrizionale
         ws.Cell(riga, ValDx).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
         return riga + 1;
     }
+
+    private static string RigaValori(Dichiarazione x) =>
+        $"Energia {Fmt(x.EnergiaKcal, 0)} kcal / {Fmt(x.EnergiaKj, 0)} kJ · Grassi {Fmt(x.Grassi, 2)} · di cui saturi {Fmt(x.GrassiSaturi, 2)} · " +
+        $"Carboidrati {Fmt(x.Carboidrati, 2)} · zuccheri {Fmt(x.Zuccheri, 2)} · Proteine {Fmt(x.Proteine, 2)} · Sale {Fmt(x.Sale, 2)} · Fibre {Fmt(x.Fibre, 2)}";
 
     private static void Nota(IXLWorksheet ws, int riga, string testo, bool grassetto = false)
     {

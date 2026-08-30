@@ -137,10 +137,60 @@ public class GeneratoreRapportoNutrizionale : IGeneratoreRapportoNutrizionale
         firma.Format.SpaceBefore = "0.8cm";
         firma.Format.Alignment = ParagraphAlignment.Right;
         firma.Format.RightIndent = Unit.FromCentimeter(1.5);
-        var digitale = sec.AddParagraph("Documento firmato digitalmente");
-        digitale.Format.Font.Italic = true;
-        digitale.Format.Alignment = ParagraphAlignment.Right;
-        digitale.Format.RightIndent = Unit.FromCentimeter(1.5);
+        var nomeRed = sec.AddParagraph(RedattoDa(d.RedattoDa));
+        nomeRed.Format.Font.Bold = true;
+        nomeRed.Format.Alignment = ParagraphAlignment.Right;
+        nomeRed.Format.RightIndent = Unit.FromCentimeter(1.5);
+
+        // ── Seconda pagina: scheda di verifica ingredienti e fonti ──
+        if (d.Ingredienti.Count > 0)
+        {
+            var tit2 = sec.AddParagraph("SCHEDA DI VERIFICA DATI — INGREDIENTI E FONTI");
+            tit2.Format.PageBreakBefore = true;
+            tit2.Format.Font.Bold = true;
+            tit2.Format.Font.Size = 12;
+            tit2.Format.SpaceAfter = "0.3cm";
+            var sub = sec.AddParagraph("Dati da verificare a cura del committente.");
+            sub.Format.Font.Size = 9;
+            sub.Format.SpaceAfter = "0.2cm";
+
+            var tab = sec.AddTable();
+            tab.Borders.Width = 0.5;
+            tab.AddColumn(Unit.FromCentimeter(6.5));
+            tab.AddColumn(Unit.FromCentimeter(2.5));
+            tab.AddColumn(Unit.FromCentimeter(1.5));
+            tab.AddColumn(Unit.FromCentimeter(6.5));
+            var h = tab.AddRow();
+            h.Format.Font.Bold = true;
+            h.Format.Shading.Color = new Color(0xFFEEEEEE);
+            h.Cells[0].AddParagraph("Ingrediente");
+            h.Cells[1].AddParagraph("Quantità (kg)");
+            h.Cells[2].AddParagraph("%");
+            h.Cells[3].AddParagraph("Fonte dei valori");
+            foreach (var ing in d.Ingredienti)
+            {
+                var row = tab.AddRow();
+                row.Cells[0].AddParagraph(ing.Denominazione);
+                row.Cells[1].AddParagraph(Fmt(ing.QuantitaKg, 3));
+                row.Cells[2].AddParagraph(Fmt(ing.Percentuale, 1));
+                var f = string.IsNullOrWhiteSpace(ing.Fonte) ? "—" : ing.Fonte!;
+                if (!string.IsNullOrWhiteSpace(ing.Riferimento)) f += " (" + ing.Riferimento + ")";
+                row.Cells[3].AddParagraph(f);
+            }
+
+            // Riepilogo valori (arrotondati per etichetta e non arrotondati) + masse
+            Nota(sec, "Arrotondati per etichetta (100 g): " + RigaValoriTesto(a), spazioPrima: true, grassetto: true);
+            Nota(sec, "Non arrotondati (calcolati, 100 g): " + RigaValoriTesto(r.Per100g));
+            var mt = d.MassaTotaleKg is decimal m1 ? Fmt(m1, 3) + " kg" : "—";
+            var mc = d.MassaCottaKg is decimal m2 ? " · massa cotta " + Fmt(m2, 3) + " kg" : "";
+            var rid = d.MassaTotaleKg is decimal mtot && mtot > 0 && d.MassaCottaKg is decimal mcot
+                ? " · calo peso " + Fmt((mtot - mcot) / mtot * 100m, 1) + " %"
+                : "";
+            Nota(sec, "Massa totale " + mt + mc + rid);
+
+            Nota(sec, "Responsabilità del committente:", spazioPrima: true, grassetto: true);
+            Nota(sec, TestiRapportoNutrizionale.ClausolaResponsabilita);
+        }
 
         return doc;
     }
@@ -221,6 +271,10 @@ public class GeneratoreRapportoNutrizionale : IGeneratoreRapportoNutrizionale
 
     private static string G(decimal v, int dec) => Fmt(v, dec) + " g";
     private static string Fmt(decimal v, int dec) => v.ToString("N" + dec, It);
+
+    private static string RigaValoriTesto(Dichiarazione x) =>
+        $"Energia {Fmt(x.EnergiaKcal, 0)} kcal / {Fmt(x.EnergiaKj, 0)} kJ · Grassi {Fmt(x.Grassi, 2)} · di cui saturi {Fmt(x.GrassiSaturi, 2)} · " +
+        $"Carboidrati {Fmt(x.Carboidrati, 2)} · zuccheri {Fmt(x.Zuccheri, 2)} · Proteine {Fmt(x.Proteine, 2)} · Sale {Fmt(x.Sale, 2)} · Fibre {Fmt(x.Fibre, 2)}";
     private static string Pct(decimal frazione) => (frazione * 100m).ToString("N1", It) + " %";
 
     // ── Note esplicative — VERBATIM dal documento originale MARE.A ──

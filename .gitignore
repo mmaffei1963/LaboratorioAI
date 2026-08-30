@@ -28,3 +28,6 @@ log/
 # Copia dati ArcLab (Access) e corpus manuali clienti: pesanti/riservati, fuori dal repo
 docs/Validazione/LabAnalisi.accdb
 docs/Validazione/Modelli_Studio_Manuali/
+
+# Certificati clienti usati come riferimento (dati personali) — non versionare
+docs/Validazione/pdf_rapporti/

@@ -121,6 +121,34 @@ public class TempLogController : Controller
         return File(bytes, excel ? MimeXlsx : MimePdf, _report.NomeFile(risultato, excel ? "xlsx" : "pdf"));
     }
 
+    // ── Export PDF mirati (dal risultato già calcolato lato client) ──
+    [HttpPost("api/templog/pdf/grafici")]
+    [RequestSizeLimit(30_000_000)]
+    public IActionResult PdfGrafici([FromBody] RisultatoMonitoraggio? r)
+    {
+        if (r is null || r.Canali.Count == 0) return BadRequest(new { messaggio = "Nessun dato da esportare." });
+        return File(_report.GeneraPdfGrafici(r), MimePdf, _report.NomeFile(r, "grafici.pdf"));
+    }
+
+    [HttpPost("api/templog/pdf/canale")]
+    [RequestSizeLimit(30_000_000)]
+    public IActionResult PdfCanale([FromBody] RichiestaPdfCanale? req)
+    {
+        var r = req?.Risultato;
+        if (r is null || r.Canali.Count == 0) return BadRequest(new { messaggio = "Nessun dato da esportare." });
+        if (req!.Indice < 0 || req.Indice >= r.Canali.Count) return BadRequest(new { messaggio = "Canale non valido." });
+        var canale = r.Canali[req.Indice].Canale;
+        return File(_report.GeneraPdfCanale(r, req.Indice), MimePdf, _report.NomeFile(r, $"canale_{canale}.pdf"));
+    }
+
+    [HttpPost("api/templog/pdf/valori")]
+    [RequestSizeLimit(30_000_000)]
+    public IActionResult PdfValori([FromBody] RisultatoMonitoraggio? r)
+    {
+        if (r is null || r.Canali.Count == 0) return BadRequest(new { messaggio = "Nessun dato da esportare." });
+        return File(_report.GeneraPdfValori(r), MimePdf, _report.NomeFile(r, "valori.pdf"));
+    }
+
     // ── Caricamento da cartella di rete (ricorda l'ultima usata) ────
     [HttpGet("api/templog/cartella")]
     public async Task<IActionResult> Cartella([FromQuery] string? percorso, CancellationToken ct)
@@ -450,6 +478,12 @@ public record RichiestaCaricaCartella
 {
     public string Cartella { get; init; } = "";
     public string NomeFile { get; init; } = "";
+}
+
+public record RichiestaPdfCanale
+{
+    public RisultatoMonitoraggio? Risultato { get; init; }
+    public int Indice { get; init; }
 }
 
 public record RichiestaMappaturaTempLog
