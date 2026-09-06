@@ -167,7 +167,9 @@ async function salvaRiga(tr, idx) {
             j = await rr.json().catch(() => ({}));
             if (!rr.ok) throw new Error(j.messaggio || 'Errore');
         }
-        esito.innerHTML = '<span style="color:#1a7f37">salvato</span>' + (j.originaleSpostato ? ' · originale spostato' : '');
+        esito.innerHTML = '<span style="color:#1a7f37">salvato</span>'
+            + (j.originaleSpostato ? ' · originale spostato' : '')
+            + (j.avviso ? ' · <span style="color:#b26a00">' + esc(j.avviso) + '</span>' : '');
         tr.querySelector('.salva').disabled = true;
         return true;
     } catch (e) { esito.textContent = e.message; return false; }
@@ -203,3 +205,12 @@ $('btn-elenca')?.addEventListener('click', elencaCartella);
 $('btn-analizza-tutti')?.addEventListener('click', analizzaTuttiCartella);
 $('btn-salva-tutti')?.addEventListener('click', salvaTutti);
 $('btn-svuota')?.addEventListener('click', svuota);
+
+// Memoria dei percorsi (localStorage): ricorda l'ultimo valore usato; se assente,
+// resta il default proposto da appsettings (già nel value del campo).
+const CHIAVI = { 'cartella': 'ce_arrivo', 'cartella-palomar': 'ce_palomar', 'cartella-archivio': 'ce_archivio' };
+for (const [id, key] of Object.entries(CHIAVI)) {
+    const el = $(id); if (!el) continue;
+    try { const v = localStorage.getItem(key); if (v) el.value = v; } catch { }
+    el.addEventListener('change', () => { try { localStorage.setItem(key, el.value.trim()); } catch { } });
+}

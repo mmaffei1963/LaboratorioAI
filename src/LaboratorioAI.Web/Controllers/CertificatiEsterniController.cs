@@ -1,4 +1,5 @@
 using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +12,18 @@ namespace LaboratorioAI.Web.Controllers;
 /// conferma avviso → deposito nella cartella di prelievo Palomar e smistamento.
 /// Due sorgenti: caricamento dal browser e cartella di rete (PDF già sul server).
 /// </summary>
-[RichiedePermesso(Permessi.SoloEsterniVisualizza)]
+[RichiedePermesso(Permessi.CertificatiEsterniGestione)]
 public class CertificatiEsterniController : Controller
 {
     private readonly IServizioCertificatiEsterni _servizio;
     private readonly IConfiguration _config;
+    private readonly IServizioAudit _audit;
 
-    public CertificatiEsterniController(IServizioCertificatiEsterni servizio, IConfiguration config)
+    public CertificatiEsterniController(IServizioCertificatiEsterni servizio, IConfiguration config, IServizioAudit audit)
     {
         _servizio = servizio;
         _config = config;
+        _audit = audit;
     }
 
     public IActionResult Index()
@@ -92,6 +95,8 @@ public class CertificatiEsterniController : Controller
             await SalvaRinominatoAsync(pdf, nome, labAcronimo, data, cartellaPalomar, cartellaArchivio, percorsi, ct);
             if (percorsi.Count == 0)
                 return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
+            await _audit.RegistraAsync(AreaFunzionale.CertificatiEsterni, "certificatiesterni.salva", EsitoOperazione.Successo,
+                tipoEntita: "CertificatoEsterno", idEntita: nome, dettaglio: new { nome, percorsi, sorgente = "upload" }, ct: ct);
             return Json(new { nome, percorsi });
         }
         catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
@@ -112,15 +117,27 @@ public class CertificatiEsterniController : Controller
             if (percorsi.Count == 0)
                 return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
 
-            // Sposta l'originale in una sottocartella "processati" accanto ad esso.
-            var dirOrig = Path.GetDirectoryName(req.Percorso)!;
-            var processati = Path.Combine(dirOrig, "processati");
-            Directory.CreateDirectory(processati);
-            var destOrig = Path.Combine(processati, Path.GetFileName(req.Percorso));
-            if (System.IO.File.Exists(destOrig)) System.IO.File.Delete(destOrig);
-            System.IO.File.Move(req.Percorso, destOrig);
+            // Sposta l'originale in "processati" (best-effort: se non riesce, il salvataggio resta valido).
+            string? originaleSpostato = null, avviso = null;
+            try
+            {
+                var dirOrig = Path.GetDirectoryName(req.Percorso)!;
+                var processati = Path.Combine(dirOrig, "processati");
+                Directory.CreateDirectory(processati);
+                var destOrig = Path.Combine(processati, Path.GetFileName(req.Percorso));
+                if (System.IO.File.Exists(destOrig)) System.IO.File.Delete(destOrig);
+                System.IO.File.Move(req.Percorso, destOrig);
+                originaleSpostato = destOrig;
+            }
+            catch (Exception exMove)
+            {
+                avviso = "Salvato, ma originale non spostato (permessi cartella?): " + exMove.Message;
+            }
 
-            return Json(new { nome, percorsi, originaleSpostato = destOrig });
+            await _audit.RegistraAsync(AreaFunzionale.CertificatiEsterni, "certificatiesterni.salva", EsitoOperazione.Successo,
+                tipoEntita: "CertificatoEsterno", idEntita: nome,
+                dettaglio: new { nome, percorsi, originaleSpostato, sorgente = "cartella" }, ct: ct);
+            return Json(new { nome, percorsi, originaleSpostato, avviso });
         }
         catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
     }

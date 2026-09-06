@@ -91,6 +91,9 @@ public static class Permessi
     // ── Solo esterni (confronto certificati esterni/interni + fatturazione) ──
     public const string SoloEsterniVisualizza = "soloesterni.visualizza";
 
+    // ── Certificati esterni (triage e rinomina per Palomar) ──
+    public const string CertificatiEsterniGestione = "certificatiesterni.gestione";
+
     // ── Proposta controlli (consulenti/clienti → import supervisionato) ──
     public const string ControlliProponi = "controlli.proponi";
     public const string ControlliApprova = "controlli.approva";
@@ -123,6 +126,7 @@ public static class Permessi
         ScadenziarioVisualizza, ScadenziarioGestione,
         AccettazioneEsegui, AccettazioneTrasmetti,
         SoloEsterniVisualizza,
+        CertificatiEsterniGestione,
         ControlliProponi, ControlliApprova,
         RicercaErroriVisualizza,
         AmministrazioneUtenti, AmministrazioneConfigurazioni, AmministrazioneAudit

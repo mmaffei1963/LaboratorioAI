@@ -92,6 +92,8 @@ public static class Popolamento
 
         (Permessi.SoloEsterniVisualizza, "Confrontare i certificati esterni con gli interni", AreaFunzionale.SoloEsterni),
 
+        (Permessi.CertificatiEsterniGestione, "Rinominare e smistare i certificati dei laboratori esterni", AreaFunzionale.CertificatiEsterni),
+
         (Permessi.ControlliProponi, "Proporre nuovi controlli (bozze)",                    AreaFunzionale.Controlli),
         (Permessi.ControlliApprova, "Approvare e generare il tracciato dei controlli",     AreaFunzionale.Controlli),
 

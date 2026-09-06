@@ -34,7 +34,7 @@
         || Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta) || Utente.HaPermesso(Permessi.PrefatturatoTamponi)
         || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare) || Utente.HaPermesso(Permessi.AccettazioneEsegui)
         || Utente.HaPermesso(Permessi.SoloEsterniVisualizza) || Utente.HaPermesso(Permessi.ControlliProponi)
-        || Utente.HaPermesso(Permessi.RicercaErroriVisualizza);
+        || Utente.HaPermesso(Permessi.RicercaErroriVisualizza) || Utente.HaPermesso(Permessi.CertificatiEsterniGestione);
     bool gMan = Utente.HaPermesso(Permessi.DvrGenera) || Utente.HaPermesso(Permessi.PiscineGenera);
     bool gNut = Utente.HaPermesso(Permessi.NutrizionaleMateriePrime) || Utente.HaPermesso(Permessi.NutrizionaleRicette);
     bool gStr = Utente.HaPermesso(Permessi.TaraturaEsegui) || Utente.HaPermesso(Permessi.IncubatoriEsegui)
@@ -58,7 +58,7 @@
                     @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
                     @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Accettazione">Accettazione campioni</a> }
                     @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/SoloEsterni">Certificati esterni Non Ricertificati</a> }
-                    @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/CertificatiEsterni">Certificati esterni · rinomina</a> }
+                    @if (Utente.HaPermesso(Permessi.CertificatiEsterniGestione)) { <a href="/CertificatiEsterni">Certificati esterni · rinomina</a> }
                     @if (Utente.HaPermesso(Permessi.ControlliProponi)) { <a href="/Controlli">Proposta controlli</a> }
                     @if (Utente.HaPermesso(Permessi.RicercaErroriVisualizza)) { <a href="/RicercaErrori">Ricerca errori</a> }
                 </div>
@@ -95,6 +95,15 @@
                     @if (Utente.HaPermesso(Permessi.BilanceEsegui)) { <a href="/Bilance">Taratura bilance</a> }
                     @if (Utente.HaPermesso(Permessi.TempLogEsegui)) { <a href="/TempLog">Monitoraggio Econorma</a> }
                     @if (Utente.HaPermesso(Permessi.ScadenziarioVisualizza)) { <a href="/Scadenziario">Scadenziario tarature</a> }
+                </div>
+            </div>
+        }
+        @if (Utente.HaPermesso(Permessi.AmministrazioneAudit))
+        {
+            <div class="gruppo">
+                <span class="gruppo-testo">Amministrazione ▾</span>
+                <div class="menu">
+                    <a href="/Audit">Registro attività (audit)</a>
                 </div>
             </div>
         }

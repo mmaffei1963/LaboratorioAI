@@ -1,0 +1,43 @@
+@using LaboratorioAI.Core.Enumerazioni
+@{
+    ViewData["Titolo"] = "Registro attività";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Registro attività (audit)</h1>
+        <p class="sottotitolo">Operazioni tracciate dall'applicativo: chi ha fatto cosa e quando.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="azioni-filtri">
+        <select id="area">
+            <option value="">— tutte le aree —</option>
+            @foreach (var a in Enum.GetValues<AreaFunzionale>())
+            {
+                <option value="@((int)a)">@a</option>
+            }
+        </select>
+        <input type="text" id="utente" placeholder="utente (email)" />
+        <input type="text" id="azione" placeholder="azione" />
+        <label>dal <input type="date" id="dal" /></label>
+        <label>al <input type="date" id="al" /></label>
+        <button type="button" class="pulsante" id="btn-cerca">Cerca</button>
+        <div style="flex:1"></div>
+        <span id="conteggio" class="sottotesto"></span>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:34rem">
+        <table class="tabella" id="tabella-audit">
+            <thead><tr>
+                <th>Data/ora</th><th>Utente</th><th>Area</th><th>Azione</th>
+                <th>Entità</th><th>Esito</th><th>Dettaglio</th>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/audit.js" asp-append-version="true"></script>
+}
