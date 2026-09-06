@@ -222,6 +222,7 @@ builder.Services.AddHttpClient<IClientAnthropic, ClientAnthropic>((servizi, http
 
 builder.Services.AddScoped<IServizioAnalisi, ServizioAnalisi>();
 builder.Services.AddScoped<IEstrattoreSchedaNutrizionale, EstrattoreSchedaNutrizionale>();
+builder.Services.AddScoped<IEstrattoreCertificatoEsterno, EstrattoreCertificatoEsterno>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
