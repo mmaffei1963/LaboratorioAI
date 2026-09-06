@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
@@ -50,11 +51,18 @@ public class ServizioCertificatiEsterni : IServizioCertificatiEsterni
         var acronimo = CostruttoreNomeCertificatoEsterno.AcronimoDa(est.Laboratorio);
 
         string? nomeStd = null, nomeAvv = null;
+        string? dataNome = null;
         if (camp is not null)
         {
+            // Data del nome = emissione del certificato: prima deterministica (regex sul PDF),
+            // poi quella del modello, infine la ricezione del campione.
+            var data = ParseData(EstrattoreDataEmissione.Estrai(pdf))
+                       ?? ParseData(est.DataEmissione)
+                       ?? DateOnly.FromDateTime(camp.DataRicezione);
+            dataNome = data.ToString("yyyy-MM-dd");
             var dati = new DatiNomeCertificatoEsterno
             {
-                Data = DateOnly.FromDateTime(camp.DataRicezione),
+                Data = data,
                 Lotto = camp.Lotto,
                 Campione = camp.Campione,
                 IdInsediamento = camp.IdInsediamento.ToString(),
@@ -79,6 +87,15 @@ public class ServizioCertificatiEsterni : IServizioCertificatiEsterni
             Avvertenze = avvertenze,
             AvvisoSuggerito = est.NonConforme || est.Criticita.Count > 0,
             DaCache = daCache,
+            DataNome = dataNome,
         };
+    }
+
+    private static DateOnly? ParseData(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt)) return DateOnly.FromDateTime(dt);
+        if (DateTime.TryParse(s, new CultureInfo("it-IT"), DateTimeStyles.None, out var dt2)) return DateOnly.FromDateTime(dt2);
+        return null;
     }
 }

@@ -23,7 +23,7 @@ function aggiungiRiga(sorgente, etichetta) {
     const tr = document.createElement('tr');
     tr.dataset.idx = idx;
     tr.innerHTML = `<td>${esc(etichetta)}</td><td colspan="7" class="sottotesto">analisi…</td>`;
-    $('tabella-cert').tBodies[0].appendChild(tr);
+    $('tabella-cert').tBodies[0].prepend(tr); // i più recenti in cima
     return { idx, tr };
 }
 
@@ -148,7 +148,8 @@ async function salvaRiga(tr, idx) {
     const esito = tr.querySelector('.esito');
     if (!nome) { esito.textContent = 'Nome mancante.'; return false; }
     const c = r.ant.campione;
-    const data = c?.dataRicezione ? new Date(c.dataRicezione).toISOString().slice(0, 10) : '';
+    // data del nome/smistamento = emissione del certificato (dataNome), fallback ricezione
+    const data = r.ant.dataNome || (c?.dataRicezione ? new Date(c.dataRicezione).toISOString().slice(0, 10) : '');
     const palomar = $('cartella-palomar')?.value.trim() || '';
     const archivio = $('cartella-archivio')?.value.trim() || '';
     esito.textContent = 'salvataggio…';
@@ -182,6 +183,15 @@ async function salvaTutti() {
 }
 
 function contatore() { $('conteggio').textContent = righe.length + ' certificati'; }
+
+function svuota() {
+    righe = [];
+    $('tabella-cert').tBodies[0].innerHTML = '';
+    $('conteggio').textContent = '';
+    $('stato').textContent = '';
+    $('pannello-esito').classList.add('nascosto');
+    $('btn-salva-tutti').classList.add('nascosto');
+}
 function completamento(azione) {
     const tot = righe.length, ok = righe.filter(r => r.ant).length, ko = tot - ok;
     $('conteggio').textContent = tot + ' certificati';
@@ -192,3 +202,4 @@ $('btn-analizza')?.addEventListener('click', analizzaUpload);
 $('btn-elenca')?.addEventListener('click', elencaCartella);
 $('btn-analizza-tutti')?.addEventListener('click', analizzaTuttiCartella);
 $('btn-salva-tutti')?.addEventListener('click', salvaTutti);
+$('btn-svuota')?.addEventListener('click', svuota);

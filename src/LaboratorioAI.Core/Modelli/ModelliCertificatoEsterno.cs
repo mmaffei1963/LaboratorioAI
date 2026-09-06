@@ -18,6 +18,9 @@ public record EstrazioneCertificatoEsterno
     /// <summary>Numero di Rapporto di Prova del laboratorio esterno (sua identità documentale).</summary>
     public string? RdPEsterno { get; init; }
 
+    /// <summary>Data di emissione del certificato esterno (yyyy-MM-dd), usata per il nome file.</summary>
+    public string? DataEmissione { get; init; }
+
     /// <summary>True se il certificato dichiara una non conformità o un superamento di limite.</summary>
     public bool NonConforme { get; init; }
 
@@ -98,4 +101,7 @@ public record AnteprimaCertificatoEsterno
 
     /// <summary>True se l'estrazione è stata riusata dalla cache (nessuna nuova chiamata AI).</summary>
     public bool DaCache { get; init; }
+
+    /// <summary>Data usata nel nome file (yyyy-MM-dd): emissione del certificato o, in mancanza, ricezione.</summary>
+    public string? DataNome { get; init; }
 }

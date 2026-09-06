@@ -37,6 +37,7 @@ public class EstrattoreCertificatoEsterno : IEstrattoreCertificatoEsterno
           "lotto": string,
           "campione": string,
           "rdpEsterno": string,
+          "dataEmissione": string,
           "nonConforme": true/false,
           "criticita": [string],
           "valutazione": string,
@@ -52,6 +53,14 @@ public class EstrattoreCertificatoEsterno : IEstrattoreCertificatoEsterno
           laboratorio (è un codice diverso). Se non è presente, lascia lotto e campione a
           null e segnalalo in "note".
         - "rdpEsterno": il numero di Rapporto di Prova del laboratorio (es. 26LA17574).
+        - "dataEmissione": la data di EMISSIONE del Rapporto di Prova, in formato yyyy-MM-dd.
+          È la data in cui il laboratorio ha emesso il certificato: di solito è etichettata
+          "Data Emissione" / "Data di emissione" / "Date of issue", oppure compare accanto al
+          numero del rapporto come "Rapporto di prova n° XXXX del GG/MM/AAAA". NON usare, per
+          questo campo, la "Data accettazione" / "Data di accettazione" / "Data di ricevimento"
+          / "Data campionamento" / "Campionato il": quelle sono date diverse e vanno ignorate.
+          Se sono presenti più date, scegli quella di emissione del referto (in genere la più
+          recente e vicina alla firma).
         - "nonConforme": true se il certificato dichiara una non conformità o un
           superamento di limite di legge.
         - "criticita": elenca qualunque cosa fuori specifica — non conformità dichiarate,
