@@ -22,9 +22,18 @@
 
     <h3 style="margin-top:0.6rem">Da cartella di rete</h3>
     <div class="azioni-filtri">
-        <input type="text" id="cartella" style="flex:1;min-width:22rem" placeholder="percorso cartella originali" />
+        <label style="min-width:9rem">Originali</label>
+        <input type="text" id="cartella" style="flex:1;min-width:22rem" placeholder="percorso cartella originali" value="@ViewData["CartellaArrivo"]" />
         <button type="button" class="pulsante pulsante-tenue" id="btn-elenca">Elenca file</button>
         <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-analizza-tutti">Analizza tutti</button>
+    </div>
+    <div class="azioni-filtri">
+        <label style="min-width:9rem">Rinominati (Palomar)</label>
+        <input type="text" id="cartella-palomar" style="flex:1;min-width:22rem" placeholder="cartella di prelievo Palomar (file rinominati)" value="@ViewData["CartellaPalomar"]" />
+    </div>
+    <div class="azioni-filtri">
+        <label style="min-width:9rem">Archivio smistato</label>
+        <input type="text" id="cartella-archivio" style="flex:1;min-width:22rem" placeholder="base archivio &lt;Lab&gt;\&lt;data&gt; (facoltativa)" value="@ViewData["CartellaArchivio"]" />
     </div>
     <div class="tabella-scorrevole" style="max-height:14rem">
         <table class="tabella" id="tabella-file"><thead><tr><th>File</th><th>Percorso</th><th></th></tr></thead><tbody></tbody></table>

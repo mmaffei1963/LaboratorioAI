@@ -45,8 +45,7 @@ async function analizzaUpload() {
             righe[idx].ant = j; renderRiga(tr, idx, f.name, j);
         } catch (e) { erroreRiga(tr, f.name, e.message); }
     }
-    $('stato').textContent = '';
-    aggiornaConteggio();
+    completamento('Analisi');
 }
 
 // ── Da cartella di rete ──
@@ -75,11 +74,12 @@ async function analizzaPercorso(percorso, name) {
             { percorso, rianalizza: $('rianalizza')?.checked || false });
         righe[idx].ant = j; renderRiga(tr, idx, name || percorso, j);
     } catch (e) { erroreRiga(tr, name || percorso, e.message); }
-    aggiornaConteggio();
+    contatore();
 }
 
 async function analizzaTuttiCartella() {
     for (const f of filesCartella) await analizzaPercorso(f.percorso, f.name);
+    completamento('Analisi');
 }
 
 // ── Rendering riga risultato ──
@@ -95,9 +95,9 @@ function renderRiga(tr, idx, etichetta, a) {
     const avv = !!a.avvisoSuggerito;
     const nome = (avv ? a.nomeConAvviso : a.nomeStandard) || '';
 
-    const critCell = crit.length
-        ? `<span style="color:#b3261e;font-weight:600" title="${esc(crit.join(' · '))}">▲ ${crit.length}</span>`
-        : `<span style="color:#1a7f37">ok</span>`;
+    const critCell = `<a href="#" class="dett" style="text-decoration:none">`
+        + (crit.length ? `<span style="color:#b3261e;font-weight:600">▲ ${crit.length}</span>` : `<span style="color:#1a7f37">ok</span>`)
+        + ` <span class="sottotesto">dettagli</span></a>`;
     const avvert = avvertenze.length ? `<div class="sottotesto" style="color:#b26a00">${esc(avvertenze.join(' · '))}</div>` : '';
     const cache = a.daCache ? ' <span class="etichetta" title="estrazione riusata dalla cache">cache</span>' : '';
 
@@ -120,42 +120,73 @@ function renderRiga(tr, idx, etichetta, a) {
         if (nuovo) tr.querySelector('.nome').value = nuovo;
     }));
     tr.querySelector('.salva').addEventListener('click', () => salvaRiga(tr, idx));
+    tr.querySelector('.dett').addEventListener('click', ev => { ev.preventDefault(); toggleDettaglio(tr, a); });
+}
+
+function toggleDettaglio(tr, a) {
+    const next = tr.nextElementSibling;
+    if (next && next.classList.contains('dettaglio-ai')) { next.remove(); return; }
+    const e = a.estrazione || {};
+    const crit = a.criticita || [];
+    const motivo = a.avvisoSuggerito
+        ? 'AVVISO suggerito' + (e.nonConforme ? ' — non conformità dichiarata' : (crit.length ? ` — ${crit.length} criticità` : ''))
+        : 'Avviso non necessario';
+    const tr2 = document.createElement('tr');
+    tr2.className = 'dettaglio-ai';
+    tr2.innerHTML = `<td colspan="8" style="background:#f7f7f7">
+        <div><strong>Giudizio avviso:</strong> ${esc(motivo)}</div>
+        ${e.valutazione ? `<div style="margin-top:.3rem"><strong>Valutazione AI:</strong> ${esc(e.valutazione)}</div>` : ''}
+        ${crit.length ? `<div style="margin-top:.3rem"><strong>Criticità:</strong><ul style="margin:.2rem 0">${crit.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>` : ''}
+        ${e.note ? `<div style="margin-top:.3rem" class="sottotesto"><strong>Note:</strong> ${esc(e.note)}</div>` : ''}
+    </td>`;
+    tr.after(tr2);
 }
 
 async function salvaRiga(tr, idx) {
-    const r = righe[idx]; if (!r || !r.ant) return;
+    const r = righe[idx]; if (!r || !r.ant) return false;
     const nome = tr.querySelector('.nome').value.trim();
     const esito = tr.querySelector('.esito');
-    if (!nome) { esito.textContent = 'Nome mancante.'; return; }
+    if (!nome) { esito.textContent = 'Nome mancante.'; return false; }
     const c = r.ant.campione;
     const data = c?.dataRicezione ? new Date(c.dataRicezione).toISOString().slice(0, 10) : '';
+    const palomar = $('cartella-palomar')?.value.trim() || '';
+    const archivio = $('cartella-archivio')?.value.trim() || '';
     esito.textContent = 'salvataggio…';
     try {
         let j;
         if (r.percorso) {
             j = await analizzaJson('/api/certificati-esterni/conferma-percorso',
-                { percorso: r.percorso, nomeFinale: nome, labAcronimo: r.ant.labAcronimo || '', data });
+                { percorso: r.percorso, nomeFinale: nome, labAcronimo: r.ant.labAcronimo || '', data, cartellaPalomar: palomar, cartellaArchivio: archivio });
         } else {
             const fd = new FormData();
             fd.append('file', r.file); fd.append('nomeFinale', nome);
             fd.append('labAcronimo', r.ant.labAcronimo || ''); fd.append('data', data);
+            fd.append('cartellaPalomar', palomar); fd.append('cartellaArchivio', archivio);
             const rr = await fetch('/api/certificati-esterni/conferma', { method: 'POST', body: fd });
             j = await rr.json().catch(() => ({}));
             if (!rr.ok) throw new Error(j.messaggio || 'Errore');
         }
         esito.innerHTML = '<span style="color:#1a7f37">salvato</span>' + (j.originaleSpostato ? ' · originale spostato' : '');
         tr.querySelector('.salva').disabled = true;
-    } catch (e) { esito.textContent = e.message; }
+        return true;
+    } catch (e) { esito.textContent = e.message; return false; }
 }
 
 async function salvaTutti() {
+    let daFare = 0, fatti = 0;
     for (const tr of [...$('tabella-cert').tBodies[0].querySelectorAll('tr')]) {
         const btn = tr.querySelector('.salva');
-        if (btn && !btn.disabled) await salvaRiga(tr, +tr.dataset.idx);
+        if (btn && !btn.disabled) { daFare++; if (await salvaRiga(tr, +tr.dataset.idx)) fatti++; }
     }
+    $('stato').textContent = daFare ? `Salvataggio completato: ${fatti}/${daFare} salvati` : 'Niente da salvare.';
 }
 
-function aggiornaConteggio() { $('conteggio').textContent = righe.length + ' certificati'; }
+function contatore() { $('conteggio').textContent = righe.length + ' certificati'; }
+function completamento(azione) {
+    const tot = righe.length, ok = righe.filter(r => r.ant).length, ko = tot - ok;
+    $('conteggio').textContent = tot + ' certificati';
+    $('stato').textContent = `${azione} completata: ${tot} certificati` + (ko ? ` (${ok} ok, ${ko} con errore)` : ' — tutti analizzati');
+}
 
 $('btn-analizza')?.addEventListener('click', analizzaUpload);
 $('btn-elenca')?.addEventListener('click', elencaCartella);

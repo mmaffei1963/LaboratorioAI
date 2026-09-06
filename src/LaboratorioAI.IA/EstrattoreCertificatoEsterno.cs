@@ -39,6 +39,7 @@ public class EstrattoreCertificatoEsterno : IEstrattoreCertificatoEsterno
           "rdpEsterno": string,
           "nonConforme": true/false,
           "criticita": [string],
+          "valutazione": string,
           "note": string
         }
 
@@ -56,6 +57,10 @@ public class EstrattoreCertificatoEsterno : IEstrattoreCertificatoEsterno
         - "criticita": elenca qualunque cosa fuori specifica — non conformità dichiarate,
           parametri fuori limite, e valori elevati/anomali per il tipo di prodotto anche se
           non regolamentati da norme specifiche. Lista vuota se non ci sono criticità.
+        - "valutazione": 1-3 frasi in italiano che spiegano il tuo giudizio complessivo sul
+          certificato e, in particolare, SE conviene inviarlo al cliente con lettera di
+          avviso e PERCHÉ (es. presenza di non conformità o valori anomali). Se non ci sono
+          criticità, dillo esplicitamente.
         - Non inventare dati.
         """;
 

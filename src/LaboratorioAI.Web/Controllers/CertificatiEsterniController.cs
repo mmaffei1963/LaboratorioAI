@@ -26,6 +26,9 @@ public class CertificatiEsterniController : Controller
     public IActionResult Index()
     {
         ViewData["Titolo"] = "Certificati esterni";
+        ViewData["CartellaArrivo"] = _config["CertificatiEsterni:CartellaArrivo"] ?? "";
+        ViewData["CartellaPalomar"] = _config["CertificatiEsterni:CartellaPalomar"] ?? "";
+        ViewData["CartellaArchivio"] = _config["CertificatiEsterni:CartellaArchivio"] ?? "";
         return View();
     }
 
@@ -75,7 +78,8 @@ public class CertificatiEsterniController : Controller
     [HttpPost("api/certificati-esterni/conferma")]
     [RequestSizeLimit(30_000_000)]
     public async Task<IActionResult> Conferma(IFormFile? file, [FromForm] string? nomeFinale,
-        [FromForm] string? labAcronimo, [FromForm] string? data, CancellationToken ct)
+        [FromForm] string? labAcronimo, [FromForm] string? data,
+        [FromForm] string? cartellaPalomar, [FromForm] string? cartellaArchivio, CancellationToken ct)
     {
         if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file." });
         if (string.IsNullOrWhiteSpace(nomeFinale)) return BadRequest(new { messaggio = "Nome file mancante." });
@@ -85,7 +89,7 @@ public class CertificatiEsterniController : Controller
         var percorsi = new List<string>();
         try
         {
-            await SalvaRinominatoAsync(pdf, nome, labAcronimo, data, percorsi, ct);
+            await SalvaRinominatoAsync(pdf, nome, labAcronimo, data, cartellaPalomar, cartellaArchivio, percorsi, ct);
             if (percorsi.Count == 0)
                 return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
             return Json(new { nome, percorsi });
@@ -104,7 +108,7 @@ public class CertificatiEsterniController : Controller
         var percorsi = new List<string>();
         try
         {
-            await SalvaRinominatoAsync(pdf, nome, req.LabAcronimo, req.Data, percorsi, ct);
+            await SalvaRinominatoAsync(pdf, nome, req.LabAcronimo, req.Data, req.CartellaPalomar, req.CartellaArchivio, percorsi, ct);
             if (percorsi.Count == 0)
                 return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
 
@@ -123,9 +127,9 @@ public class CertificatiEsterniController : Controller
 
     // ── Helper ──────────────────────────────────────────────────────
     private async Task SalvaRinominatoAsync(byte[] pdf, string nome, string? labAcronimo, string? data,
-        List<string> percorsi, CancellationToken ct)
+        string? palomarOverride, string? archivioOverride, List<string> percorsi, CancellationToken ct)
     {
-        var palomar = _config["CertificatiEsterni:CartellaPalomar"];
+        var palomar = string.IsNullOrWhiteSpace(palomarOverride) ? _config["CertificatiEsterni:CartellaPalomar"] : palomarOverride;
         if (!string.IsNullOrWhiteSpace(palomar))
         {
             Directory.CreateDirectory(palomar);
@@ -134,7 +138,7 @@ public class CertificatiEsterniController : Controller
             percorsi.Add(dest);
         }
 
-        var archivio = _config["CertificatiEsterni:CartellaArchivio"];
+        var archivio = string.IsNullOrWhiteSpace(archivioOverride) ? _config["CertificatiEsterni:CartellaArchivio"] : archivioOverride;
         if (!string.IsNullOrWhiteSpace(archivio))
         {
             var lab = string.IsNullOrWhiteSpace(labAcronimo) ? "ALTRO" : PulisciNomeFile(labAcronimo!);
@@ -179,4 +183,6 @@ public record RichiestaConfermaPercorso
     public string NomeFinale { get; init; } = "";
     public string? LabAcronimo { get; init; }
     public string? Data { get; init; }
+    public string? CartellaPalomar { get; init; }
+    public string? CartellaArchivio { get; init; }
 }

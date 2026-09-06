@@ -24,6 +24,9 @@ public record EstrazioneCertificatoEsterno
     /// <summary>Criticità rilevate: risultati fuori specifica, valori anomali, non conformità.</summary>
     public IReadOnlyList<string> Criticita { get; init; } = new List<string>();
 
+    /// <summary>Valutazione discorsiva dell'AI: sintesi e motivo del giudizio per l'avviso al cliente.</summary>
+    public string? Valutazione { get; init; }
+
     /// <summary>Note/avvertenze dell'estrazione (es. codice nostro non trovato).</summary>
     public string? Note { get; init; }
 
