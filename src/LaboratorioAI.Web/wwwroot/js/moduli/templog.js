@@ -181,7 +181,7 @@ async function elencaCartella() {
     const tb = $('tabella-file').tBodies[0];
     if (!r.accessibile) { tb.innerHTML = `<tr><td colspan="3">Cartella non accessibile${r.errore ? ': ' + esc(r.errore) : ''}.</td></tr>`; return; }
     tb.innerHTML = (r.files || []).map(f => `<tr>
-        <td>${esc(f.name)}</td><td>${new Date(f.data).toLocaleString('it-IT')}</td>
+        <td>${esc(f.name)}</td><td class="sottotesto">${esc(f.percorso)}</td>
         <td><button class="pulsante pulsante-tenue" data-file="${esc(f.name)}">Analizza</button></td></tr>`).join('')
         || '<tr><td colspan="3">Nessun file.</td></tr>';
     tb.querySelectorAll('[data-file]').forEach(b =>

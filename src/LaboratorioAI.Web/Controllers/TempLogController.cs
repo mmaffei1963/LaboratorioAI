@@ -45,7 +45,7 @@ public class TempLogController : Controller
     }
 
     private string CartellaPredefinita => _config["TempLog:CartellaScarico"]
-        ?? @"\\SRVMAREA\marea\ArcLab\Archivio_TempLog\ARCHIVIO\Scarico_Dati";
+        ?? @"\\SRVMAREA\marea\ArcLab\ECONORMA_DATI\DATI_LETTURE";
 
     public IActionResult Index()
     {
@@ -153,17 +153,16 @@ public class TempLogController : Controller
     [HttpGet("api/templog/cartella")]
     public async Task<IActionResult> Cartella([FromQuery] string? percorso, CancellationToken ct)
     {
-        var cartella = !string.IsNullOrWhiteSpace(percorso) ? percorso!
-            : (await _ctx.CaricamentiTempLog.AsNoTracking().Where(c => c.CartellaOrigine != null)
-                   .OrderByDescending(c => c.DataCreazione).Select(c => c.CartellaOrigine).FirstOrDefaultAsync(ct))
-              ?? CartellaPredefinita;
+        // Propone SEMPRE la cartella predefinita configurata (Econorma DATI_LETTURE);
+        // l'utente può comunque digitare un altro percorso ed elencarlo manualmente.
+        var cartella = !string.IsNullOrWhiteSpace(percorso) ? percorso! : CartellaPredefinita;
         try
         {
             var files = Directory.Exists(cartella)
                 ? new DirectoryInfo(cartella).GetFiles("*.xls*")
                     .OrderByDescending(f => f.LastWriteTime)
                     .Take(50)
-                    .Select(f => new { f.Name, Data = f.LastWriteTime, f.Length }).ToList()
+                    .Select(f => new { f.Name, Data = f.LastWriteTime, f.Length, Percorso = f.FullName }).ToList()
                 : null;
             return Json(new { cartella, accessibile = files != null, files });
         }

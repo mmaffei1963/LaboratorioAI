@@ -31,3 +31,6 @@ docs/Validazione/Modelli_Studio_Manuali/
 
 # Certificati clienti usati come riferimento (dati personali) — non versionare
 docs/Validazione/pdf_rapporti/
+
+# Certificati laboratori esterni (dati clienti) — non versionare
+docs/RDP/
