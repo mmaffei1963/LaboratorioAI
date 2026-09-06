@@ -134,6 +134,7 @@ builder.Services.AddScoped<IRepositoryLaboratoriEsterni, RepositoryLaboratoriEst
 builder.Services.AddScoped<IRepositoryTamponiContratto, RepositoryTamponiContratto>();
 builder.Services.AddScoped<IRepositorySoloEsterni, RepositorySoloEsterni>();
 builder.Services.AddScoped<IRepositoryCertificatiEsterni, RepositoryCertificatiEsterni>();
+builder.Services.AddScoped<IArchivioEstrazioniCertificato, ArchivioEstrazioniCertificato>();
 builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
 builder.Services.AddScoped<IRepositoryRicercaErrori, RepositoryRicercaErrori>();
 builder.Services.AddScoped<IRepositoryNonFatturare, RepositoryNonFatturare>();

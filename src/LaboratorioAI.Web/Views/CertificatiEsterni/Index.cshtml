@@ -5,46 +5,44 @@
 <div class="barra-strumenti">
     <div>
         <h1>Certificati esterni · triage e rinomina</h1>
-        <p class="sottotitolo">Carica il Rapporto di Prova PDF di un laboratorio esterno: estraggo il vostro lotto/campione, aggancio ArcLab, segnalo le criticità e propongo il nome per il caricamento Palomar.</p>
+        <p class="sottotitolo">Carica uno o più Rapporti di Prova PDF dei laboratori esterni: estraggo il vostro lotto/campione, aggancio ArcLab, segnalo le criticità e propongo il nome per il caricamento Palomar.</p>
     </div>
 </div>
 
 <section class="riquadro">
-    <div class="barra-risultati"><h2>Carica certificato</h2></div>
+    <div class="barra-risultati"><h2>Carica certificati</h2></div>
     <div class="azioni-filtri">
-        <input type="file" id="file-cert" accept=".pdf" />
+        <input type="file" id="file-cert" accept=".pdf" multiple />
         <button type="button" class="pulsante" id="btn-analizza">Analizza</button>
+        <label class="casella"><input type="checkbox" id="rianalizza" /> rianalizza (ignora cache)</label>
+        <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-salva-tutti">Salva tutti</button>
         <div style="flex:1"></div>
         <span id="stato" class="sottotesto"></span>
+    </div>
+
+    <h3 style="margin-top:0.6rem">Da cartella di rete</h3>
+    <div class="azioni-filtri">
+        <input type="text" id="cartella" style="flex:1;min-width:22rem" placeholder="percorso cartella originali" />
+        <button type="button" class="pulsante pulsante-tenue" id="btn-elenca">Elenca file</button>
+        <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-analizza-tutti">Analizza tutti</button>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:14rem">
+        <table class="tabella" id="tabella-file"><thead><tr><th>File</th><th>Percorso</th><th></th></tr></thead><tbody></tbody></table>
     </div>
 </section>
 
 <section class="riquadro nascosto" id="pannello-esito">
-    <div class="barra-risultati"><h2>Esito</h2><span id="lab" class="sottotesto"></span></div>
-
-    <div id="avvertenze"></div>
-    <div id="criticita"></div>
-
-    <div class="tabella-scorrevole" style="margin-top:0.5rem">
-        <table class="tabella">
-            <tbody id="dati-campione"></tbody>
+    <div class="barra-risultati"><h2>Esito</h2><span id="conteggio" class="sottotesto"></span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-cert">
+            <thead>
+                <tr>
+                    <th>File</th><th>Laboratorio</th><th>Nostro cod.</th><th>Cliente / prodotto</th>
+                    <th>Criticità</th><th>Avviso</th><th>Nome file proposto</th><th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
-    </div>
-
-    <div class="riquadro-tenue" style="margin-top:0.6rem">
-        <strong>Avviso al cliente</strong>
-        <div class="azioni-filtri" style="margin-top:0.3rem">
-            <label class="casella"><input type="radio" name="avviso" value="avv" /> Con avviso (-AVV)</label>
-            <label class="casella"><input type="radio" name="avviso" value="std" /> Standard (-STD)</label>
-        </div>
-        <div class="azioni-filtri" style="margin-top:0.4rem">
-            <input type="text" id="nome-file" style="flex:1;min-width:34rem" placeholder="nome file proposto" />
-            <span class="sottotesto">.pdf</span>
-        </div>
-        <div class="azioni-filtri" style="margin-top:0.4rem">
-            <button type="button" class="pulsante" id="btn-conferma">Conferma e salva</button>
-            <span id="esito-salva" class="sottotesto"></span>
-        </div>
     </div>
 </section>
 

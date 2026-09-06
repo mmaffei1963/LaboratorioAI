@@ -1130,6 +1130,46 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("ValidazioniCalcolo", "taratura");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.EstrazioneCertificatoArchiviata", b =>
+                {
+                    b.Property<int>("IdEstrazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEstrazione"));
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("EstrazioneJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModelloAi")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NomeFileOriginale")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("IdEstrazione");
+
+                    b.HasIndex("Hash");
+
+                    b.ToTable("EstrazioniEsterni", "certificati");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Fonte", b =>
                 {
                     b.Property<int>("IdFonte")

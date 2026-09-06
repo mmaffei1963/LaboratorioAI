@@ -92,4 +92,7 @@ public record AnteprimaCertificatoEsterno
 
     /// <summary>True se il modulo suggerisce l'avviso (per default proposto quando ci sono criticità).</summary>
     public bool AvvisoSuggerito { get; init; }
+
+    /// <summary>True se l'estrazione è stata riusata dalla cache (nessuna nuova chiamata AI).</summary>
+    public bool DaCache { get; init; }
 }

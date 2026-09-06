@@ -9,6 +9,7 @@ namespace LaboratorioAI.Web.Controllers;
 /// Triage e rinomina dei certificati (Rapporti di Prova) dei laboratori esterni:
 /// estrazione AI → aggancio ArcLab (sola lettura) → nome proposto + criticità →
 /// conferma avviso → deposito nella cartella di prelievo Palomar e smistamento.
+/// Due sorgenti: caricamento dal browser e cartella di rete (PDF già sul server).
 /// </summary>
 [RichiedePermesso(Permessi.SoloEsterniVisualizza)]
 public class CertificatiEsterniController : Controller
@@ -28,24 +29,49 @@ public class CertificatiEsterniController : Controller
         return View();
     }
 
-    /// <summary>Analizza il PDF: estrazione + aggancio ArcLab + nomi proposti + criticità.</summary>
-    [HttpPost("api/certificati-esterni/analizza")]
-    [RequestSizeLimit(30_000_000)]
-    public async Task<IActionResult> Analizza(IFormFile? file, CancellationToken ct)
+    // ── Cartella di rete (PDF originali) ────────────────────────────
+    [HttpGet("api/certificati-esterni/cartella")]
+    public IActionResult Cartella([FromQuery] string? percorso)
     {
-        if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file caricato." });
-        var pdf = await LeggiAsync(file, ct);
+        var cartella = string.IsNullOrWhiteSpace(percorso)
+            ? (_config["CertificatiEsterni:CartellaArrivo"] ?? "")
+            : percorso!;
         try
         {
-            return Json(await _servizio.AnalizzaAsync(pdf, ct));
+            var files = Directory.Exists(cartella)
+                ? new DirectoryInfo(cartella).GetFiles("*.pdf")
+                    .OrderByDescending(f => f.LastWriteTime).Take(200)
+                    .Select(f => new { f.Name, Percorso = f.FullName }).ToList()
+                : null;
+            return Json(new { cartella, accessibile = files != null, files });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { messaggio = "Analisi non riuscita: " + ex.Message });
+            return Json(new { cartella, accessibile = false, errore = ex.Message, files = (object?)null });
         }
     }
 
-    /// <summary>Salva il file rinominato nella cartella di prelievo Palomar e nell'archivio smistato.</summary>
+    // ── Analisi ─────────────────────────────────────────────────────
+    [HttpPost("api/certificati-esterni/analizza")]
+    [RequestSizeLimit(30_000_000)]
+    public async Task<IActionResult> Analizza(IFormFile? file, [FromForm] bool rianalizza, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file caricato." });
+        var pdf = await LeggiAsync(file, ct);
+        try { return Json(await _servizio.AnalizzaAsync(pdf, file.FileName, rianalizza, ct)); }
+        catch (Exception ex) { return BadRequest(new { messaggio = "Analisi non riuscita: " + ex.Message }); }
+    }
+
+    [HttpPost("api/certificati-esterni/analizza-percorso")]
+    public async Task<IActionResult> AnalizzaPercorso([FromBody] RichiestaPercorso req, CancellationToken ct)
+    {
+        if (!ValidoPdf(req.Percorso)) return BadRequest(new { messaggio = "File non trovato o non è un PDF." });
+        var pdf = await System.IO.File.ReadAllBytesAsync(req.Percorso, ct);
+        try { return Json(await _servizio.AnalizzaAsync(pdf, Path.GetFileName(req.Percorso), req.Rianalizza, ct)); }
+        catch (Exception ex) { return BadRequest(new { messaggio = "Analisi non riuscita: " + ex.Message }); }
+    }
+
+    // ── Conferma (scrittura file rinominato) ────────────────────────
     [HttpPost("api/certificati-esterni/conferma")]
     [RequestSizeLimit(30_000_000)]
     public async Task<IActionResult> Conferma(IFormFile? file, [FromForm] string? nomeFinale,
@@ -57,38 +83,67 @@ public class CertificatiEsterniController : Controller
         var nome = PulisciNomeFile(nomeFinale!) + ".pdf";
         var pdf = await LeggiAsync(file, ct);
         var percorsi = new List<string>();
-
         try
         {
-            var palomar = _config["CertificatiEsterni:CartellaPalomar"];
-            if (!string.IsNullOrWhiteSpace(palomar))
-            {
-                Directory.CreateDirectory(palomar);
-                var dest = Path.Combine(palomar, nome);
-                await System.IO.File.WriteAllBytesAsync(dest, pdf, ct);
-                percorsi.Add(dest);
-            }
-
-            var archivio = _config["CertificatiEsterni:CartellaArchivio"];
-            if (!string.IsNullOrWhiteSpace(archivio))
-            {
-                var lab = string.IsNullOrWhiteSpace(labAcronimo) ? "ALTRO" : PulisciNomeFile(labAcronimo!);
-                var giorno = string.IsNullOrWhiteSpace(data) ? DateTime.Now.ToString("yyyy-MM-dd") : PulisciNomeFile(data!);
-                var dir = Path.Combine(archivio, lab, giorno);
-                Directory.CreateDirectory(dir);
-                var dest = Path.Combine(dir, nome);
-                await System.IO.File.WriteAllBytesAsync(dest, pdf, ct);
-                percorsi.Add(dest);
-            }
-
+            await SalvaRinominatoAsync(pdf, nome, labAcronimo, data, percorsi, ct);
             if (percorsi.Count == 0)
-                return BadRequest(new { messaggio = "Nessuna cartella configurata (CertificatiEsterni:CartellaPalomar / CartellaArchivio)." });
-
+                return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
             return Json(new { nome, percorsi });
         }
-        catch (Exception ex)
+        catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
+    }
+
+    [HttpPost("api/certificati-esterni/conferma-percorso")]
+    public async Task<IActionResult> ConfermaPercorso([FromBody] RichiestaConfermaPercorso req, CancellationToken ct)
+    {
+        if (!ValidoPdf(req.Percorso)) return BadRequest(new { messaggio = "File originale non trovato." });
+        if (string.IsNullOrWhiteSpace(req.NomeFinale)) return BadRequest(new { messaggio = "Nome file mancante." });
+
+        var nome = PulisciNomeFile(req.NomeFinale) + ".pdf";
+        var pdf = await System.IO.File.ReadAllBytesAsync(req.Percorso, ct);
+        var percorsi = new List<string>();
+        try
         {
-            return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message });
+            await SalvaRinominatoAsync(pdf, nome, req.LabAcronimo, req.Data, percorsi, ct);
+            if (percorsi.Count == 0)
+                return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
+
+            // Sposta l'originale in una sottocartella "processati" accanto ad esso.
+            var dirOrig = Path.GetDirectoryName(req.Percorso)!;
+            var processati = Path.Combine(dirOrig, "processati");
+            Directory.CreateDirectory(processati);
+            var destOrig = Path.Combine(processati, Path.GetFileName(req.Percorso));
+            if (System.IO.File.Exists(destOrig)) System.IO.File.Delete(destOrig);
+            System.IO.File.Move(req.Percorso, destOrig);
+
+            return Json(new { nome, percorsi, originaleSpostato = destOrig });
+        }
+        catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
+    }
+
+    // ── Helper ──────────────────────────────────────────────────────
+    private async Task SalvaRinominatoAsync(byte[] pdf, string nome, string? labAcronimo, string? data,
+        List<string> percorsi, CancellationToken ct)
+    {
+        var palomar = _config["CertificatiEsterni:CartellaPalomar"];
+        if (!string.IsNullOrWhiteSpace(palomar))
+        {
+            Directory.CreateDirectory(palomar);
+            var dest = Path.Combine(palomar, nome);
+            await System.IO.File.WriteAllBytesAsync(dest, pdf, ct);
+            percorsi.Add(dest);
+        }
+
+        var archivio = _config["CertificatiEsterni:CartellaArchivio"];
+        if (!string.IsNullOrWhiteSpace(archivio))
+        {
+            var lab = string.IsNullOrWhiteSpace(labAcronimo) ? "ALTRO" : PulisciNomeFile(labAcronimo!);
+            var giorno = string.IsNullOrWhiteSpace(data) ? DateTime.Now.ToString("yyyy-MM-dd") : PulisciNomeFile(data!);
+            var dir = Path.Combine(archivio, lab, giorno);
+            Directory.CreateDirectory(dir);
+            var dest = Path.Combine(dir, nome);
+            await System.IO.File.WriteAllBytesAsync(dest, pdf, ct);
+            percorsi.Add(dest);
         }
     }
 
@@ -100,9 +155,28 @@ public class CertificatiEsterniController : Controller
         return ms.ToArray();
     }
 
+    private static bool ValidoPdf(string? percorso) =>
+        !string.IsNullOrWhiteSpace(percorso)
+        && percorso!.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+        && System.IO.File.Exists(percorso);
+
     private static string PulisciNomeFile(string s)
     {
         foreach (var c in Path.GetInvalidFileNameChars()) s = s.Replace(c, '-');
         return s.Trim().Trim('.');
     }
+}
+
+public record RichiestaPercorso
+{
+    public string Percorso { get; init; } = "";
+    public bool Rianalizza { get; init; }
+}
+
+public record RichiestaConfermaPercorso
+{
+    public string Percorso { get; init; } = "";
+    public string NomeFinale { get; init; } = "";
+    public string? LabAcronimo { get; init; }
+    public string? Data { get; init; }
 }

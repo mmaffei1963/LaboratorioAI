@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
@@ -9,16 +10,29 @@ public class ServizioCertificatiEsterni : IServizioCertificatiEsterni
 {
     private readonly IEstrattoreCertificatoEsterno _estrattore;
     private readonly IRepositoryCertificatiEsterni _repo;
+    private readonly IArchivioEstrazioniCertificato _archivio;
 
-    public ServizioCertificatiEsterni(IEstrattoreCertificatoEsterno estrattore, IRepositoryCertificatiEsterni repo)
+    public ServizioCertificatiEsterni(IEstrattoreCertificatoEsterno estrattore, IRepositoryCertificatiEsterni repo,
+        IArchivioEstrazioniCertificato archivio)
     {
         _estrattore = estrattore;
         _repo = repo;
+        _archivio = archivio;
     }
 
-    public async Task<AnteprimaCertificatoEsterno> AnalizzaAsync(byte[] pdf, CancellationToken ct = default)
+    public async Task<AnteprimaCertificatoEsterno> AnalizzaAsync(byte[] pdf, string? nomeFileOriginale = null,
+        bool forza = false, CancellationToken ct = default)
     {
-        var est = await _estrattore.EstraiAsync(pdf, ct);
+        // Cache per impronta del PDF: riusa l'estrazione se già presente (salvo forza).
+        var hash = Convert.ToHexString(SHA256.HashData(pdf));
+        EstrazioneCertificatoEsterno? est = forza ? null : await _archivio.LeggiPerHashAsync(hash, ct);
+        bool daCache = est is not null;
+        if (est is null)
+        {
+            est = await _estrattore.EstraiAsync(pdf, ct);
+            await _archivio.SalvaAsync(hash, nomeFileOriginale, est, null, ct);
+        }
+
         var avvertenze = new List<string>();
 
         CampioneArcLab? camp = null;
@@ -64,6 +78,7 @@ public class ServizioCertificatiEsterni : IServizioCertificatiEsterni
             Criticita = est.Criticita,
             Avvertenze = avvertenze,
             AvvisoSuggerito = est.NonConforme || est.Criticita.Count > 0,
+            DaCache = daCache,
         };
     }
 }

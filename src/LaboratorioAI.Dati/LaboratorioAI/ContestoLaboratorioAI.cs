@@ -24,6 +24,7 @@ public class ContestoLaboratorioAI : DbContext
 
     // ── Dominio ────────────────────────────────────────────────────
     public DbSet<AnalisiAi> Analisi => Set<AnalisiAi>();
+    public DbSet<EstrazioneCertificatoArchiviata> EstrazioniCertificato => Set<EstrazioneCertificatoArchiviata>();
     public DbSet<VoceRegistroDvr> RegistroDvr => Set<VoceRegistroDvr>();
     public DbSet<DvrPiscina> DvrPiscine => Set<DvrPiscina>();
     public DbSet<Configurazione> Configurazioni => Set<Configurazione>();

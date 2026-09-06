@@ -8,5 +8,9 @@ namespace LaboratorioAI.Core.Servizi;
 /// </summary>
 public interface IServizioCertificatiEsterni
 {
-    Task<AnteprimaCertificatoEsterno> AnalizzaAsync(byte[] pdf, CancellationToken ct = default);
+    /// <param name="pdf">Contenuto del certificato PDF.</param>
+    /// <param name="nomeFileOriginale">Nome del file caricato (per l'archivio).</param>
+    /// <param name="forza">Se true ignora la cache e riesegue l'estrazione AI.</param>
+    Task<AnteprimaCertificatoEsterno> AnalizzaAsync(byte[] pdf, string? nomeFileOriginale = null,
+        bool forza = false, CancellationToken ct = default);
 }
