@@ -58,6 +58,7 @@
                     @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
                     @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Accettazione">Accettazione campioni</a> }
                     @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/SoloEsterni">Certificati esterni Non Ricertificati</a> }
+                    @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/CertificatiEsterni">Certificati esterni · rinomina</a> }
                     @if (Utente.HaPermesso(Permessi.ControlliProponi)) { <a href="/Controlli">Proposta controlli</a> }
                     @if (Utente.HaPermesso(Permessi.RicercaErroriVisualizza)) { <a href="/RicercaErrori">Ricerca errori</a> }
                 </div>

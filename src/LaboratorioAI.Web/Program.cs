@@ -133,6 +133,7 @@ builder.Services.AddScoped<IRepositoryCommesse, RepositoryCommesse>();
 builder.Services.AddScoped<IRepositoryLaboratoriEsterni, RepositoryLaboratoriEsterni>();
 builder.Services.AddScoped<IRepositoryTamponiContratto, RepositoryTamponiContratto>();
 builder.Services.AddScoped<IRepositorySoloEsterni, RepositorySoloEsterni>();
+builder.Services.AddScoped<IRepositoryCertificatiEsterni, RepositoryCertificatiEsterni>();
 builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
 builder.Services.AddScoped<IRepositoryRicercaErrori, RepositoryRicercaErrori>();
 builder.Services.AddScoped<IRepositoryNonFatturare, RepositoryNonFatturare>();
@@ -223,6 +224,7 @@ builder.Services.AddHttpClient<IClientAnthropic, ClientAnthropic>((servizi, http
 builder.Services.AddScoped<IServizioAnalisi, ServizioAnalisi>();
 builder.Services.AddScoped<IEstrattoreSchedaNutrizionale, EstrattoreSchedaNutrizionale>();
 builder.Services.AddScoped<IEstrattoreCertificatoEsterno, EstrattoreCertificatoEsterno>();
+builder.Services.AddScoped<IServizioCertificatiEsterni, ServizioCertificatiEsterni>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();

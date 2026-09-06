@@ -43,7 +43,6 @@ public record DatiNomeCertificatoEsterno
     public string Lotto { get; init; } = "";
     public string Campione { get; init; } = "";
     public string? IdInsediamento { get; init; }
-    public string? Accettazione { get; init; }
     public string? Cliente { get; init; }
     public string? Prodotto { get; init; }
     public string? Matrice { get; init; }
@@ -51,4 +50,46 @@ public record DatiNomeCertificatoEsterno
     public string RdPEsterno { get; init; } = "";
     /// <summary>True → suffisso "-AVV" (lettera di avviso al cliente); False → "-STD".</summary>
     public bool ConAvviso { get; init; }
+}
+
+/// <summary>Dati del campione letti da ArcLab (sola lettura) tramite lotto/campione.</summary>
+public record CampioneArcLab
+{
+    public int IdCampione { get; init; }
+    public int Anno { get; init; }
+    public string Lotto { get; init; } = "";
+    public string Campione { get; init; } = "";
+    public string? RagioneSociale { get; init; }
+    public int IdInsediamento { get; init; }
+    public string? NomeInsediamento { get; init; }
+    public string? DenominazioneProdotto { get; init; }
+    public string? Matrice { get; init; }
+    public DateTime DataRicezione { get; init; }
+}
+
+/// <summary>
+/// Anteprima di un certificato esterno pronta per la conferma dell'operatore:
+/// dati estratti dal PDF, campione ArcLab agganciato, nomi proposti e criticità.
+/// </summary>
+public record AnteprimaCertificatoEsterno
+{
+    public EstrazioneCertificatoEsterno Estrazione { get; init; } = new();
+    public CampioneArcLab? Campione { get; init; }
+    public bool TrovatoInArcLab => Campione is not null;
+
+    /// <summary>Acronimo laboratorio ricavato dall'estrazione.</summary>
+    public string LabAcronimo { get; init; } = "";
+
+    /// <summary>Nome proposto senza avviso (…-STD).</summary>
+    public string? NomeStandard { get; init; }
+    /// <summary>Nome proposto con avviso (…-AVV).</summary>
+    public string? NomeConAvviso { get; init; }
+
+    /// <summary>Criticità rilevate (dal PDF).</summary>
+    public IReadOnlyList<string> Criticita { get; init; } = new List<string>();
+    /// <summary>Avvertenze di processo (codice non trovato, campione non in archivio, ecc.).</summary>
+    public IReadOnlyList<string> Avvertenze { get; init; } = new List<string>();
+
+    /// <summary>True se il modulo suggerisce l'avviso (per default proposto quando ci sono criticità).</summary>
+    public bool AvvisoSuggerito { get; init; }
 }

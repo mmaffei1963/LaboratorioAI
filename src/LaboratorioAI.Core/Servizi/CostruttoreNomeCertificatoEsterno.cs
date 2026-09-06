@@ -59,7 +59,6 @@ public static class CostruttoreNomeCertificatoEsterno
             Pulisci(d.Lotto),
             Pulisci(d.Campione),
             Pulisci(d.IdInsediamento),
-            Pulisci(d.Accettazione),
             Pulisci(d.Cliente),
             Pulisci(d.Prodotto),
             Pulisci(d.Matrice),

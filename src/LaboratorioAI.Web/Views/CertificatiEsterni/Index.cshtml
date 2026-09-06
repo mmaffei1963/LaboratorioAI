@@ -1,0 +1,53 @@
+@{
+    ViewData["Titolo"] = "Certificati esterni · rinomina";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Certificati esterni · triage e rinomina</h1>
+        <p class="sottotitolo">Carica il Rapporto di Prova PDF di un laboratorio esterno: estraggo il vostro lotto/campione, aggancio ArcLab, segnalo le criticità e propongo il nome per il caricamento Palomar.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Carica certificato</h2></div>
+    <div class="azioni-filtri">
+        <input type="file" id="file-cert" accept=".pdf" />
+        <button type="button" class="pulsante" id="btn-analizza">Analizza</button>
+        <div style="flex:1"></div>
+        <span id="stato" class="sottotesto"></span>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-esito">
+    <div class="barra-risultati"><h2>Esito</h2><span id="lab" class="sottotesto"></span></div>
+
+    <div id="avvertenze"></div>
+    <div id="criticita"></div>
+
+    <div class="tabella-scorrevole" style="margin-top:0.5rem">
+        <table class="tabella">
+            <tbody id="dati-campione"></tbody>
+        </table>
+    </div>
+
+    <div class="riquadro-tenue" style="margin-top:0.6rem">
+        <strong>Avviso al cliente</strong>
+        <div class="azioni-filtri" style="margin-top:0.3rem">
+            <label class="casella"><input type="radio" name="avviso" value="avv" /> Con avviso (-AVV)</label>
+            <label class="casella"><input type="radio" name="avviso" value="std" /> Standard (-STD)</label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.4rem">
+            <input type="text" id="nome-file" style="flex:1;min-width:34rem" placeholder="nome file proposto" />
+            <span class="sottotesto">.pdf</span>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.4rem">
+            <button type="button" class="pulsante" id="btn-conferma">Conferma e salva</button>
+            <span id="esito-salva" class="sottotesto"></span>
+        </div>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/certificati-esterni.js" asp-append-version="true"></script>
+}

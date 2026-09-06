@@ -24,10 +24,10 @@ Il nome ricostruisce lo standard dei rapporti interni (dati presi da ArcLab tram
 ## 2. Convenzione del nome file
 
 ```
-GG-MM-AA-<lotto>-<campione>-<idInsediamento>-<accettazione>-<cliente>-<prodotto>-<matrice>-EST-<LAB>-<RdP_esterno>-<AVV|STD>
+GG-MM-AA-<lotto>-<campione>-<idInsediamento>-<cliente>-<prodotto>-<matrice>-EST-<LAB>-<RdP_esterno>-<AVV|STD>
 ```
 
-- **Blocco chiave** `GG-MM-AA-<lotto>-<campione>-<idInsediamento>-<accettazione>-<cliente>-<prodotto>-<matrice>`: identico ai certificati interni; è la parte su cui **Palomar aggancia** cliente e dati. I campi provengono da **ArcLab** (vedi §5).
+- **Blocco chiave** `GG-MM-AA-<lotto>-<campione>-<idInsediamento>-<cliente>-<prodotto>-<matrice>`: è la parte su cui **Palomar aggancia** cliente e dati. I campi provengono da **ArcLab** (vedi §5). *(Il riferimento del report Access "71A26" del nome interno NON è incluso: non serve.)*
 - **`<idInsediamento>`**: id insediamento dal DB, così **Palomar carica direttamente nel giusto insediamento**. Posizione fissa (subito dopo lotto/campione).
 - **`EST`**: marca "certificato esterno". Posizionato **prima del codice esterno**, così il blocco iniziale resta identico agli interni.
 - **`<LAB>`**: acronimo del laboratorio esterno, per capire subito di chi è (vedi tabella acronimi). Es. `SIC` (Sicural), `EP` (Epta Nord), `CRM` (Centro Ricerche Marine), `CSA`.
@@ -81,7 +81,7 @@ il modulo li segnala e chiede inserimento manuale (non esclusi a priori).
 
 Dal `lotto/campione` estratto si recuperano da ArcLab i campi per comporre il nome,
 riusando le query già esistenti (sezione Lab esterno / Consultazione):
-data accettazione, codice accettazione/commessa, cliente, descrizione prodotto, matrice.
+data ricezione (per la data del nome), idInsediamento, cliente, descrizione prodotto, matrice.
 Se il codice non trova riscontro in ArcLab → criticità "campione non trovato in archivio".
 
 ---
@@ -148,7 +148,7 @@ dei vari laboratori: la routine §7.6 automatizza proprio questo passaggio.
    Servono: cartella di prelievo Palomar e cartella base per lo smistamento
    `<base>\<Laboratorio>\<data>\` (§7.6). Oggi arrivo via e-mail.
 4. Campi ArcLab: **si riusano le query esistenti** (Lab esterno / Consultazione) per
-   `<idInsediamento>` / `<accettazione>` / `<cliente>` / `<prodotto>` / `<matrice>`.
+   `<idInsediamento>` / `<cliente>` / `<prodotto>` / `<matrice>`.
 5. **Lotti senza campione** e **certificati multi-campione** (un PDF con più campioni):
    rinomina **manuale assistita** — il modulo **pre-compila le parti fisse** (data,
    idInsediamento, ragione sociale, ecc.) e propone la coda già pronta

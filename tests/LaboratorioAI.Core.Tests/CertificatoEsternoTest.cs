@@ -18,12 +18,12 @@ public class CertificatoEsternoTest
         {
             Data = new DateOnly(2026, 8, 19),
             Lotto = "7183", Campione = "02",
-            IdInsediamento = "1234", Accettazione = "71A26",
+            IdInsediamento = "1234",
             Cliente = "I.C.I.", Prodotto = "integratori", Matrice = "integratore",
             LabAcronimo = "SIC", RdPEsterno = "26LA17574", ConAvviso = false
         };
         Assert.Equal(
-            "19-08-26-7183-02-1234-71A26-I.C.I.-integratori-integratore-EST-SIC-26LA17574-STD",
+            "19-08-26-7183-02-1234-I.C.I.-integratori-integratore-EST-SIC-26LA17574-STD",
             CostruttoreNomeCertificatoEsterno.Componi(d));
     }
 
@@ -34,13 +34,13 @@ public class CertificatoEsternoTest
         {
             Data = new DateOnly(2026, 8, 21),
             Lotto = "7113", Campione = "02",
-            IdInsediamento = "77", Accettazione = "70A26",
+            IdInsediamento = "77",
             Cliente = "ALIMENTA", Prodotto = "saltimbocca", Matrice = "panespeciale",
             LabAcronimo = "EP", RdPEsterno = "26LB0112156", ConAvviso = true
         };
         var nome = CostruttoreNomeCertificatoEsterno.Componi(d);
         Assert.Equal(
-            "21-08-26-7113-02-77-70A26-ALIMENTA-saltimbocca-panespeciale-EST-EP-26LB0112156-AVV",
+            "21-08-26-7113-02-77-ALIMENTA-saltimbocca-panespeciale-EST-EP-26LB0112156-AVV",
             nome);
     }
 
