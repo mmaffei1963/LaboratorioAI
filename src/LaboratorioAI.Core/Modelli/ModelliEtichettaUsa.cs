@@ -42,5 +42,14 @@ public record DatiEtichettaUsa
 {
     public string Denominazione { get; init; } = "";
     public decimal? PorzioniPerConfezione { get; init; }
+
+    /// <summary>Descrizione testuale della porzione (misura casalinga), es. "1/4 crust". Mostrata come "1/4 crust (45g)".</summary>
+    public string? PorzioneDescrizione { get; init; }
+
     public NutrizioneUsa Facts { get; init; } = new();
+
+    // ── Scheda di verifica dati (approvazione committente) ──────────
+    public IReadOnlyList<IngredienteRapporto> Ingredienti { get; init; } = new List<IngredienteRapporto>();
+    public decimal? MassaTotaleKg { get; init; }
+    public decimal? MassaCottaKg { get; init; }
 }

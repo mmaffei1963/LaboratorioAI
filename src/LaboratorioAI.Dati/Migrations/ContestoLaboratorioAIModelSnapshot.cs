@@ -1751,6 +1751,10 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasPrecision(10, 4)
                         .HasColumnType("decimal(10,4)");
 
+                    b.Property<string>("PorzioneDescrizioneUsa")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.Property<string>("RedattoDa")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");

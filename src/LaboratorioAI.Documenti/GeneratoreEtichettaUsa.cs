@@ -91,7 +91,10 @@ public class GeneratoreEtichettaUsa : IGeneratoreEtichettaUsa
         if (d.PorzioniPerConfezione is decimal n && n > 0)
             cell.AddParagraph($"{Num(n)} servings per container");
 
-        Riga(cell, "Serving size", "", $"{Num(f.PorzioneG)} g", true, 0, RegolaSpessa);
+        var testoPorzione = string.IsNullOrWhiteSpace(d.PorzioneDescrizione)
+            ? $"{Num(f.PorzioneG)} g"
+            : $"{d.PorzioneDescrizione} ({Num(f.PorzioneG)}g)";
+        Riga(cell, "Serving size", "", testoPorzione, true, 0, RegolaSpessa);
 
         cell.AddParagraph("Amount per serving").Format.Font.Size = 7;
 
@@ -131,6 +134,9 @@ public class GeneratoreEtichettaUsa : IGeneratoreEtichettaUsa
             + "to a daily diet. 2,000 calories a day is used for general nutrition advice.");
         nota.Format.Font.Size = 6.5;
         nota.Format.SpaceBefore = "2pt";
+
+        // Scheda di verifica dati (pagina 2), per l'approvazione del committente.
+        SchedaVerificaEtichetta.Aggiungi(sec, d.Ingredienti, d.MassaTotaleKg, d.MassaCottaKg);
 
         return doc;
     }

@@ -34,6 +34,13 @@ public static class TestiRapportoNutrizionale
         "Utilizzando questi dati per l'etichettatura, il committente si assume la responsabilità di verificare " +
         "la corretta trascrizione della ricetta e delle quantità e l'idoneità delle fonti impiegate. In caso di " +
         "dubbi è tenuto a contattare il laboratorio per chiarimenti prima dell'utilizzo del dato.";
+
+    /// <summary>Clausola di condivisione del rischio (inglese, per pannelli USA/Canada).</summary>
+    public const string ClausolaResponsabilitaEn =
+        "The nutritional values were calculated from the recipe, the quantities declared by the customer " +
+        "and the source values indicated for each ingredient. By using these data for labelling, the customer " +
+        "takes responsibility for verifying the correct transcription of the recipe and quantities and the " +
+        "suitability of the sources used, and must contact the laboratory for clarification before use in case of doubt.";
 }
 
 /// <summary>Riga ingrediente della scheda di verifica: quantità, percentuale e fonte dei valori.</summary>

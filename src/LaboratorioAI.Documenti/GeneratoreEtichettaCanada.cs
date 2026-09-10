@@ -123,6 +123,9 @@ public class GeneratoreEtichettaCanada : IGeneratoreEtichettaCanada
         nota.Format.Font.Size = 6.5;
         nota.Format.SpaceBefore = "2pt";
 
+        // Scheda di verifica dati (pagina 2), per l'approvazione del committente.
+        SchedaVerificaEtichetta.Aggiungi(sec, d.Ingredienti, d.MassaTotaleKg, d.MassaCottaKg);
+
         return doc;
     }
 

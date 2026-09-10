@@ -96,6 +96,7 @@ public class ConfigurazioneRicetta : IEntityTypeConfiguration<Ricetta>
         e.Property(x => x.Lotto).HasMaxLength(100);
         e.Property(x => x.Note).HasMaxLength(1000);
         e.Property(x => x.RedattoDa).HasMaxLength(255);
+        e.Property(x => x.PorzioneDescrizioneUsa).HasMaxLength(120);
 
         e.Property(x => x.UnitaConsumoG).HasPrecision(9, 3);
         e.Property(x => x.UnitaConsumoPezzi).HasPrecision(9, 3);

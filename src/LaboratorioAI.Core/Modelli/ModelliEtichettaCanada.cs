@@ -36,4 +36,9 @@ public record DatiEtichettaCanada
     public string Denominazione { get; init; } = "";
     public decimal? PorzioniPerConfezione { get; init; }
     public NutrizioneCanada Facts { get; init; } = new();
+
+    // ── Scheda di verifica dati (approvazione committente) ──────────
+    public IReadOnlyList<IngredienteRapporto> Ingredienti { get; init; } = new List<IngredienteRapporto>();
+    public decimal? MassaTotaleKg { get; init; }
+    public decimal? MassaCottaKg { get; init; }
 }

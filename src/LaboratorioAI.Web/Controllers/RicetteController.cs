@@ -118,6 +118,7 @@ public class RicetteController : Controller
         {
             r.IdRicetta, r.Denominazione, r.IdClienteArcLab, r.Committente, r.Lotto,
             r.UnitaConsumoG, r.UnitaConsumoPezzi, r.CaloPesoPercentuale, r.PesoCottoKg, r.Note, r.RedattoDa,
+            r.PorzioneDescrizioneUsa,
             Righe = r.Righe.OrderBy(x => x.Ordine).Select(x => new
             {
                 x.IdMateriaPrima,
@@ -208,6 +209,7 @@ public class RicetteController : Controller
         r.PesoCottoKg = req.PesoCottoKg;
         r.Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim();
         r.RedattoDa = string.IsNullOrWhiteSpace(req.RedattoDa) ? null : req.RedattoDa.Trim();
+        r.PorzioneDescrizioneUsa = string.IsNullOrWhiteSpace(req.PorzioneDescrizioneUsa) ? null : req.PorzioneDescrizioneUsa.Trim();
 
         int ordine = 1;
         foreach (var riga in req.Righe ?? new List<RigaRicettaDto>())
@@ -361,7 +363,14 @@ public class RicetteController : Controller
         {
             Denominazione = r.Denominazione,
             PorzioniPerConfezione = req?.PorzioniPerConfezione ?? r.UnitaConsumoPezzi,
-            Facts = facts
+            PorzioneDescrizione = !string.IsNullOrWhiteSpace(req?.PorzioneDescrizione) ? req!.PorzioneDescrizione!.Trim() : r.PorzioneDescrizioneUsa,
+            Facts = facts,
+            Ingredienti = await IngredientiRapportoAsync(righe, ct),
+            MassaTotaleKg = righe.Sum(x => x.QuantitaKg),
+            MassaCottaKg = r.PesoCottoKg
+                ?? (r.CaloPesoPercentuale is decimal caloU
+                        ? Math.Round(righe.Sum(x => x.QuantitaKg) * (1 - caloU / 100m), 3)
+                        : null)
         };
 
         bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
@@ -388,11 +397,21 @@ public class RicetteController : Controller
         if (errore is not null) return errore;
 
         var facts = _canada.Calcola(risultato!.Per100g, porzione);
+        var righe = await _ctx.RigheRicetta.AsNoTracking()
+            .Where(x => x.IdRicetta == id).OrderBy(x => x.Ordine)
+            .Select(x => new RigaRicettaDto { IdMateriaPrima = x.IdMateriaPrima, QuantitaKg = x.QuantitaKg })
+            .ToListAsync(ct);
         var dati = new DatiEtichettaCanada
         {
             Denominazione = r!.Denominazione,
             PorzioniPerConfezione = req?.PorzioniPerConfezione ?? r.UnitaConsumoPezzi,
-            Facts = facts
+            Facts = facts,
+            Ingredienti = await IngredientiRapportoAsync(righe, ct),
+            MassaTotaleKg = righe.Sum(x => x.QuantitaKg),
+            MassaCottaKg = r.PesoCottoKg
+                ?? (r.CaloPesoPercentuale is decimal caloC
+                        ? Math.Round(righe.Sum(x => x.QuantitaKg) * (1 - caloC / 100m), 3)
+                        : null)
         };
         bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
         var contenuto = word ? _generatoreCanada.GeneraWord(dati) : _generatoreCanada.GeneraPdf(dati);
@@ -787,6 +806,9 @@ public record RichiestaNutritionFacts
     public decimal? ZuccheriAggiuntiPer100g { get; init; }
     public decimal? PorzioniPerConfezione { get; init; }
 
+    /// <summary>Descrizione testuale della porzione (misura casalinga), es. "1/4 crust".</summary>
+    public string? PorzioneDescrizione { get; init; }
+
     /// <summary>"pdf" (predefinito) o "word".</summary>
     public string? Formato { get; init; }
 
@@ -828,5 +850,6 @@ public record RichiestaSalvaRicetta
     public decimal? PesoCottoKg { get; init; }
     public string? Note { get; init; }
     public string? RedattoDa { get; init; }
+    public string? PorzioneDescrizioneUsa { get; init; }
     public List<RigaRicettaDto>? Righe { get; init; }
 }

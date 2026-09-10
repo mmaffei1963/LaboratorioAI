@@ -30,6 +30,9 @@ public class Ricetta
     /// <summary>Responsabile del rapporto (può differire dall'utente che redige).</summary>
     public string? RedattoDa { get; set; }
 
+    /// <summary>Descrizione testuale della porzione per l'etichetta USA (misura casalinga), es. "1/4 crust".</summary>
+    public string? PorzioneDescrizioneUsa { get; set; }
+
     public bool Attivo { get; set; } = true;
     public DateTime? DataCancellazione { get; set; }
 

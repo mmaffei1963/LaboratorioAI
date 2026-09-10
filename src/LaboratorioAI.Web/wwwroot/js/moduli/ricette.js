@@ -45,7 +45,7 @@ async function caricaClienti() {
 
 // ── Apertura form ──────────────────────────────────────────────
 function pulisci() {
-    ['r-id','r-denominazione','r-committente','r-lotto','r-pezzi','r-calo','r-peso-cotto','r-redatto'].forEach(id => $(id).value = '');
+    ['r-id','r-denominazione','r-committente','r-lotto','r-pezzi','r-calo','r-peso-cotto','r-redatto','r-porzione-desc'].forEach(id => $(id).value = '');
     $('r-unita').value = '100';
     righe = [];
     renderRighe();
@@ -78,6 +78,7 @@ async function apri(id) {
         $('r-calo').value = r.caloPesoPercentuale ?? '';
         $('r-peso-cotto').value = r.pesoCottoKg ?? '';
         $('r-redatto').value = r.redattoDa ?? '';
+        $('r-porzione-desc').value = r.porzioneDescrizioneUsa ?? '';
         righe = (r.righe ?? []).map(x => ({ idMateriaPrima: x.idMateriaPrima, denominazione: x.denominazione, quantitaKg: x.quantitaKg }));
         renderRighe();
         $('form-titolo').textContent = 'Modifica ricetta';
@@ -202,6 +203,7 @@ async function salva(pulsante) {
         pesoCottoKg: numN('r-peso-cotto'),
         note: null,
         redattoDa: $('r-redatto').value || null,
+        porzioneDescrizioneUsa: ($('r-porzione-desc')?.value || '').trim() || null,
         righe: righe.filter(r => r.quantitaKg > 0).map(r => ({ idMateriaPrima: r.idMateriaPrima, quantitaKg: r.quantitaKg }))
     };
 
@@ -274,7 +276,8 @@ async function nutritionFacts(pulsante) {
         ];
         $('tabella-usa').querySelector('tbody').innerHTML = righe.map(r =>
             `<tr><td>${r[0]}</td><td class="numerico">${testo(r[1])}</td><td class="numerico">${r[2]}</td></tr>`).join('');
-        $('usa-porzione').textContent = `Porzione: ${f.porzioneG} g`;
+        const descPorz = ($('r-porzione-desc')?.value || '').trim();
+        $('usa-porzione').textContent = descPorz ? `Porzione: ${descPorz} (${f.porzioneG}g)` : `Porzione: ${f.porzioneG} g`;
         const avv = $('usa-avviso');
         if (f.avvisi && f.avvisi.length) { avv.textContent = f.avvisi.join(' '); avv.classList.remove('nascosto'); }
         else avv.classList.add('nascosto');
@@ -384,7 +387,7 @@ async function scaricaEtichettaUsa(pulsante, formato) {
         const risposta = await fetch(`/api/ricette/${id}/etichetta-usa`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ formato, porzioneG: numN('r-unita'), zuccheriAggiuntiPer100g: numN('r-zucc-agg') })
+            body: JSON.stringify({ formato, porzioneG: numN('r-unita'), zuccheriAggiuntiPer100g: numN('r-zucc-agg'), porzioneDescrizione: ($('r-porzione-desc')?.value || '').trim() })
         });
         if (!risposta.ok) {
             let msg = `Errore ${risposta.status}`;
