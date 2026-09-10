@@ -1,6 +1,7 @@
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Portale.Autenticazione;
+using LaboratorioAI.Portale.Servizi;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LaboratorioAI.Portale.Controllers;
@@ -82,6 +83,19 @@ public class CampioniController : ControllerBase
                 Stato = c.Stato.ToString()
             })
         });
+    }
+
+    /// <summary>Esporta in Excel i campioni corrispondenti ai criteri (stessa vista del cliente).</summary>
+    [HttpPost("esporta")]
+    public async Task<IActionResult> Esporta([FromBody] CriteriPortale criteri, CancellationToken ct)
+    {
+        var idCliente = ClienteDaUsare(criteri.IdCliente);
+        // L'export include TUTTI i campioni che corrispondono ai filtri, non solo i primi mostrati a video.
+        var criteriTutti = criteri with { Limite = 50000 };
+        var campioni = await _repository.CercaCampioniAsync(idCliente, criteriTutti, ct);
+        var bytes = EsportatoreCampioniPortale.Genera(campioni);
+        var nome = $"Campioni_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nome);
     }
 
     /// <summary>

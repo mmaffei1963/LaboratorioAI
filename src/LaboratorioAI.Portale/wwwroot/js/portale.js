@@ -222,6 +222,37 @@ async function cerca() {
     }
 }
 
+async function esporta() {
+    const pulsante = document.getElementById('btn-esporta');
+    pulsante.disabled = true;
+    try {
+        const token = sessionStorage.getItem(CHIAVE_TOKEN);
+        const risposta = await fetch('/api/campioni/esporta', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { [INTESTAZIONE]: token } : {})
+            },
+            body: JSON.stringify(leggiCriteri())
+        });
+        if (risposta.status === 401 && token) { esci(false); throw new Error('Sessione scaduta.'); }
+        if (!risposta.ok) throw new Error(`Errore ${risposta.status}`);
+
+        const blob = await risposta.blob();
+        const cd = risposta.headers.get('content-disposition') || '';
+        const nome = (cd.match(/filename="?([^"]+)"?/) || [])[1] || 'Campioni.xlsx';
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = nome;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    } catch (e) {
+        document.getElementById('conteggio').textContent = e.message;
+    } finally {
+        pulsante.disabled = false;
+    }
+}
+
 function disegna(campioni) {
     const cliccabile = sessione?.operatore === true;
 
@@ -302,6 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modulo-accesso').addEventListener('submit', entra);
     document.getElementById('btn-esci').addEventListener('click', () => esci(true));
     document.getElementById('btn-cerca').addEventListener('click', cerca);
+    document.getElementById('btn-esporta').addEventListener('click', esporta);
 
     document.getElementById('scelta-cliente')?.addEventListener('change', async () => {
         await caricaFiltri();
