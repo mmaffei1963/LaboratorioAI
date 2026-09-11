@@ -226,6 +226,7 @@ builder.Services.AddScoped<IServizioAnalisi, ServizioAnalisi>();
 builder.Services.AddScoped<IEstrattoreSchedaNutrizionale, EstrattoreSchedaNutrizionale>();
 builder.Services.AddScoped<IEstrattoreCertificatoEsterno, EstrattoreCertificatoEsterno>();
 builder.Services.AddScoped<IServizioCertificatiEsterni, ServizioCertificatiEsterni>();
+builder.Services.AddScoped<IServizioPreventivi, ServizioPreventivi>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();

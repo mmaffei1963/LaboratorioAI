@@ -10,6 +10,14 @@ public interface IRepositoryCommesse
     Task<IReadOnlyList<Commessa>> CercaAsync(
         CriteriRicercaCommesse criteri, CancellationToken ct = default);
 
+    /// <summary>
+    /// Prezzo del controllo applicato al cliente sulla commessa di laboratorio in vigore
+    /// (DataScadenzaInc IS NULL). Null se il cliente non ha una commessa attiva su quel controllo.
+    /// Usato come prezzo base preferenziale nei preventivi.
+    /// </summary>
+    Task<decimal?> PrezzoControlloClienteAsync(
+        int idCliente, int idControllo, CancellationToken ct = default);
+
     /// <summary>Campioni collegati a una commessa di laboratorio.</summary>
     Task<IReadOnlyList<CampioneDiCommessa>> CampioniAsync(
         int idCommessa, CancellationToken ct = default);

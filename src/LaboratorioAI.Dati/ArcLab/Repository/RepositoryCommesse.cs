@@ -106,6 +106,33 @@ public class RepositoryCommesse : IRepositoryCommesse
             string.IsNullOrWhiteSpace(valore) ? null : $"%{valore.Trim()}%";
     }
 
+    /// <remarks>
+    /// Solo commesse di laboratorio in vigore (DataScadenzaInc IS NULL) con prezzo valorizzato.
+    /// Se il cliente ha più commesse attive sullo stesso controllo si prende la più recente.
+    /// </remarks>
+    public async Task<decimal?> PrezzoControlloClienteAsync(
+        int idCliente, int idControllo, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT TOP 1 cm.PrezzoControllo
+            FROM commessa cm
+            INNER JOIN Insediamento i ON i.IDInsediamento = cm.IDInsediamento
+            WHERE cm.IdTipoCommessa = @IdTipo
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.PrezzoControllo IS NOT NULL
+              AND cm.PrezzoControllo > 0
+              AND i.IDCliente = @IdCliente
+              AND cm.IDControllo = @IdControllo
+            ORDER BY cm.DataCommessa DESC
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return await cn.QueryFirstOrDefaultAsync<decimal?>(
+            new CommandDefinition(sql,
+                new { IdTipo = CostantiArcLab.TipoCommessaLaboratorio, IdCliente = idCliente, IdControllo = idControllo },
+                cancellationToken: ct));
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // ESPLOSIONE
     // ═══════════════════════════════════════════════════════════════

@@ -108,5 +108,8 @@ public record EsitoRicerca<T>
 /// <summary>Voce di un elenco anagrafico usato per i filtri a tendina.</summary>
 public record VoceAnagrafica(int Id, string Nome);
 
+/// <summary>Laboratorio esterno con la frase da riportare in offerta per le prove in subappalto.</summary>
+public record VoceLaboratorioEsterno(int Id, string Nome, string? Frase);
+
 /// <summary>Insediamento, con il riferimento al cliente per i filtri a cascata.</summary>
 public record VoceInsediamento(int Id, string Nome, int IdCliente);

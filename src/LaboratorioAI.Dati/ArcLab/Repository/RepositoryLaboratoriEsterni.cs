@@ -26,6 +26,20 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
             new CommandDefinition(sql, cancellationToken: ct))).ToList();
     }
 
+    public async Task<IReadOnlyList<VoceLaboratorioEsterno>> LaboratoriConFraseAsync(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT le.IdLabEsterno AS Id, le.LabEsterno AS Nome, le.Frase
+            FROM LabEsterno le
+            WHERE le.LabEsterno IS NOT NULL
+            ORDER BY le.LabEsterno
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<VoceLaboratorioEsterno>(
+            new CommandDefinition(sql, cancellationToken: ct))).ToList();
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // INTERROGAZIONE
     // ═══════════════════════════════════════════════════════════════

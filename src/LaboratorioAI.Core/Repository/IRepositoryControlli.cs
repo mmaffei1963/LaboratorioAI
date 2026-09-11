@@ -40,4 +40,6 @@ public record VoceMetodo
     public string? LabEsterno { get; init; }
     public int? CifreSignificative { get; init; }// rigametodo.Arrotonda
     public int? MaxDecimali { get; init; }
+    public bool Accreditato { get; init; }       // metodo.Accreditato
+    public string? LabEsternoFrase { get; init; }// LabEsterno.Frase (per il subappalto)
 }

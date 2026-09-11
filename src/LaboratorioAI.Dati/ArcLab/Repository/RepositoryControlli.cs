@@ -104,7 +104,9 @@ public class RepositoryControlli : IRepositoryControlli
                    m.CostoMetodoEuro AS Costo,
                    rm.IdUnita, u.UnitaMisura,
                    rm.IdLabEsterno, le.LabEsterno,
-                   rm.Arrotonda AS CifreSignificative, rm.MaxDecimali
+                   rm.Arrotonda AS CifreSignificative, rm.MaxDecimali,
+                   ISNULL(m.Accreditato, 0) AS Accreditato,
+                   le.Frase AS LabEsternoFrase
             FROM rigametodo rm
                 INNER JOIN metodo m       ON m.IdMetodo = rm.IdMetodo
                 LEFT  JOIN Parametro p    ON p.IdParametro = m.IdParametro
