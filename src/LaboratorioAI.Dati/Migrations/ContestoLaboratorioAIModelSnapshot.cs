@@ -1454,6 +1454,121 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("Pesiere", "bilance");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Preventivo", b =>
+                {
+                    b.Property<int>("IdPreventivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPreventivo"));
+
+                    b.Property<decimal>("AliquotaIva")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int?>("Anno")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ClienteCap")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ClienteCitta")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ClienteEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ClienteIndirizzo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ClientePartitaIva")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ClienteProvincia")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("ClienteRagioneSociale")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CondizioniPagamento")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("DataApprovazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataCancellazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataOfferta")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int?>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtenteApprovatore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtenteCreatore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("Numero")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Oggetto")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RevisioneCondizioni")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<bool>("RichiedeApprovazione")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Stato")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotaleImponibile")
+                        .HasColumnType("money");
+
+                    b.Property<int>("ValiditaGiorni")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdPreventivo");
+
+                    b.HasIndex("IdClienteArcLab");
+
+                    b.HasIndex("Anno", "Numero");
+
+                    b.HasIndex("Stato", "Attivo");
+
+                    b.ToTable("Preventivi", "preventivi");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaControllo", b =>
                 {
                     b.Property<int>("IdPropostaControllo")
@@ -1774,6 +1889,128 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("IdClienteArcLab");
 
                     b.ToTable("Ricette", "nutri");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaMetodoPreventivo", b =>
+                {
+                    b.Property<int>("IdRigaMetodoPreventivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdRigaMetodoPreventivo"));
+
+                    b.Property<bool>("Accreditato")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("CifreSignificative")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("CostoMetodoEuro")
+                        .HasColumnType("money");
+
+                    b.Property<string>("DenominazioneRiga")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Descrizione")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("IdLabEsternoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdMetodoArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdRigaPreventivo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LabEsterno")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LabEsternoFrase")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("Libero")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MaxDecimali")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Progressivo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RiferimentoNormativo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("UnitaMisura")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IdRigaMetodoPreventivo");
+
+                    b.HasIndex("IdRigaPreventivo");
+
+                    b.ToTable("RigheMetodo", "preventivi");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaPreventivo", b =>
+                {
+                    b.Property<int>("IdRigaPreventivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdRigaPreventivo"));
+
+                    b.Property<string>("Descrizione")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("IdControlloArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPreventivo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdPropostaControllo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdVoceAccessorio")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("OriginePrezzo")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrezzoBase")
+                        .HasColumnType("money");
+
+                    b.Property<decimal>("PrezzoFinale")
+                        .HasColumnType("money");
+
+                    b.Property<int>("Progressivo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantita")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ScontoPercentuale")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdRigaPreventivo");
+
+                    b.HasIndex("IdPreventivo");
+
+                    b.ToTable("Righe", "preventivi");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaRicetta", b =>
@@ -2830,6 +3067,80 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("Audit", "log");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.VoceListinoAccessorio", b =>
+                {
+                    b.Property<int>("IdVoceAccessorio")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVoceAccessorio"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Codice")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Descrizione")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("Prezzo")
+                        .HasColumnType("money");
+
+                    b.Property<string>("UnitaMisura")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdVoceAccessorio");
+
+                    b.HasIndex("Codice")
+                        .IsUnique();
+
+                    b.ToTable("ListinoAccessori", "preventivi");
+
+                    b.HasData(
+                        new
+                        {
+                            IdVoceAccessorio = 1,
+                            Attivo = true,
+                            Codice = "GIUDIZIO_CONF",
+                            Descrizione = "Giudizio di conformità sul rapporto di prova",
+                            Prezzo = 10m,
+                            UnitaMisura = "cad"
+                        },
+                        new
+                        {
+                            IdVoceAccessorio = 2,
+                            Attivo = true,
+                            Codice = "RIEMISSIONE_RDP",
+                            Descrizione = "Riemissione rapporto di prova su richiesta del cliente",
+                            Prezzo = 20m,
+                            UnitaMisura = "cad"
+                        },
+                        new
+                        {
+                            IdVoceAccessorio = 3,
+                            Attivo = true,
+                            Codice = "CONSERVAZIONE",
+                            Descrizione = "Conservazione campione oltre 20 giorni per cause del cliente",
+                            Prezzo = 0.50m,
+                            UnitaMisura = "giorno"
+                        },
+                        new
+                        {
+                            IdVoceAccessorio = 4,
+                            Attivo = true,
+                            Codice = "CAMPIONAMENTO",
+                            Descrizione = "Campionamento eseguito da operatore MARE.A",
+                            Prezzo = 0m,
+                            UnitaMisura = "cad"
+                        });
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.VoceRegistroDvr", b =>
                 {
                     b.Property<int>("IdVoce")
@@ -3109,6 +3420,28 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("Utente");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaMetodoPreventivo", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.RigaPreventivo", "Riga")
+                        .WithMany("Metodi")
+                        .HasForeignKey("IdRigaPreventivo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Riga");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaPreventivo", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Preventivo", "Preventivo")
+                        .WithMany("Righe")
+                        .HasForeignKey("IdPreventivo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Preventivo");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaRicetta", b =>
                 {
                     b.HasOne("LaboratorioAI.Core.Entita.MateriaPrima", "MateriaPrima")
@@ -3318,6 +3651,11 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("Masse");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Preventivo", b =>
+                {
+                    b.Navigation("Righe");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.PropostaControllo", b =>
                 {
                     b.Navigation("Righe");
@@ -3326,6 +3664,11 @@ namespace LaboratorioAI.Dati.Migrations
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Ricetta", b =>
                 {
                     b.Navigation("Righe");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.RigaPreventivo", b =>
+                {
+                    b.Navigation("Metodi");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Ruolo", b =>

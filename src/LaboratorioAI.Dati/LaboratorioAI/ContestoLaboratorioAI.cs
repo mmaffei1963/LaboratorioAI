@@ -74,6 +74,12 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<PropostaControllo> ProposteControllo => Set<PropostaControllo>();
     public DbSet<PropostaRigaMetodo> ProposteRigheMetodo => Set<PropostaRigaMetodo>();
 
+    // ── Preventivi (schema preventivi) ─────────────────────────────
+    public DbSet<Preventivo> Preventivi => Set<Preventivo>();
+    public DbSet<RigaPreventivo> RighePreventivo => Set<RigaPreventivo>();
+    public DbSet<RigaMetodoPreventivo> RigheMetodoPreventivo => Set<RigaMetodoPreventivo>();
+    public DbSet<VoceListinoAccessorio> ListinoAccessori => Set<VoceListinoAccessorio>();
+
     // ── Portale ────────────────────────────────────────────────────
     public DbSet<SessionePortale> SessioniPortale => Set<SessionePortale>();
     public DbSet<TentativoAccesso> TentativiAccesso => Set<TentativoAccesso>();
