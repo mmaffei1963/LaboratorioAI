@@ -98,6 +98,11 @@ public static class Permessi
     public const string ControlliProponi = "controlli.proponi";
     public const string ControlliApprova = "controlli.approva";
 
+    // ── Preventivi / offerte commerciali ───────────────────────────
+    public const string PreventiviGestione = "preventivi.gestione";
+    /// <summary>Approvazione dei preventivi che applicano uno sconto.</summary>
+    public const string PreventiviApprova  = "preventivi.approva";
+
     // ── Ricerca errori (diagnostica sola lettura su ArcLab) ─────────
     public const string RicercaErroriVisualizza = "ricercaerrori.visualizza";
 
@@ -128,6 +133,7 @@ public static class Permessi
         SoloEsterniVisualizza,
         CertificatiEsterniGestione,
         ControlliProponi, ControlliApprova,
+        PreventiviGestione, PreventiviApprova,
         RicercaErroriVisualizza,
         AmministrazioneUtenti, AmministrazioneConfigurazioni, AmministrazioneAudit
     };

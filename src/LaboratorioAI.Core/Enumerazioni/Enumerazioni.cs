@@ -52,7 +52,8 @@ public enum AreaFunzionale
     Controlli         = 19,
     Mappatura         = 20,
     RicercaErrori     = 21,
-    CertificatiEsterni = 22
+    CertificatiEsterni = 22,
+    Preventivi        = 23
 }
 
 /// <summary>Stato di un DVR piscina salvato nel database.</summary>
