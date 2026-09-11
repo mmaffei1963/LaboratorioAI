@@ -97,6 +97,9 @@ public static class Popolamento
         (Permessi.ControlliProponi, "Proporre nuovi controlli (bozze)",                    AreaFunzionale.Controlli),
         (Permessi.ControlliApprova, "Approvare e generare il tracciato dei controlli",     AreaFunzionale.Controlli),
 
+        (Permessi.PreventiviGestione, "Comporre e gestire i preventivi/offerte",           AreaFunzionale.Preventivi),
+        (Permessi.PreventiviApprova,  "Approvare i preventivi che applicano uno sconto",   AreaFunzionale.Preventivi),
+
         (Permessi.RicercaErroriVisualizza, "Eseguire le verifiche diagnostiche (ricerca errori)", AreaFunzionale.RicercaErrori),
 
         (Permessi.AmministrazioneUtenti,         "Gestire utenti e ruoli",                      AreaFunzionale.Amministrazione),

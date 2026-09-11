@@ -1,0 +1,173 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Preventivi";
+    var puoApprovare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.PreventiviApprova);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Preventivi</h1>
+        <p class="sottotitolo">Componi le offerte a partire dai controlli e metodi già in archivio. I prezzi sono letti da ArcLab in sola lettura; nulla viene scritto sul gestionale. L'offerta richiama sempre le Condizioni Generali di Fornitura.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante" id="btn-nuovo">Nuovo preventivo</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <details id="dett-registro" open>
+        <summary style="cursor:pointer;font-weight:600">Registro preventivi <span id="conteggio" class="sottotesto"></span></summary>
+        <div class="tabella-scorrevole" style="max-height:20rem;margin-top:0.5rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>N°</th><th>Stato</th><th>Cliente</th><th>Oggetto</th><th>Data</th><th class="numerico">Imponibile €</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati">
+        <h2 id="form-titolo">Nuovo preventivo</h2>
+        <span id="form-stato" class="sottotesto"></span>
+    </div>
+    <input type="hidden" id="p-id" />
+    <input type="hidden" id="p-id-cliente" />
+
+    <div class="barra-risultati" style="margin-top:0.4rem"><h3>Cliente</h3></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Cerca cliente in archivio (se non c'è, compila i campi a mano)
+            <input type="text" id="c-cerca" list="lista-clienti" placeholder="ragione sociale…" />
+            <datalist id="lista-clienti"></datalist>
+        </label>
+        <label style="grid-column:1/-1">Ragione sociale<input type="text" id="c-ragione" /></label>
+        <label>Partita IVA<input type="text" id="c-piva" /></label>
+        <label>Indirizzo<input type="text" id="c-indirizzo" /></label>
+        <label>CAP<input type="text" id="c-cap" /></label>
+        <label>Città<input type="text" id="c-citta" /></label>
+        <label>Prov.<input type="text" id="c-prov" maxlength="3" /></label>
+        <label>Email<input type="email" id="c-email" /></label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Offerta</h3></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Oggetto<input type="text" id="p-oggetto" placeholder="es. Caratterizzazione rifiuto EER 15 02 03" /></label>
+        <label>Data offerta<input type="date" id="p-data" /></label>
+        <label>Validità (giorni)<input type="number" id="p-validita" value="60" min="1" /></label>
+        <label>Aliquota IVA %<input type="number" id="p-iva" value="22" min="0" step="0.5" /></label>
+        <label style="grid-column:1/-1">Condizioni di pagamento<input type="text" id="p-pagamento" placeholder="es. Bonifico bancario vista fattura" /></label>
+        <label style="grid-column:1/-1">Note<input type="text" id="p-note" /></label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Righe del preventivo</h3></div>
+
+    <div class="griglia-filtri">
+        <label>Aggiungi controllo esistente
+            <input type="text" id="ctrl-input" list="lista-controlli" placeholder="cerca un controllo…" />
+            <datalist id="lista-controlli"></datalist>
+        </label>
+        <label>Aggiungi voce accessoria
+            <select id="acc-input"><option value="">—</option></select>
+        </label>
+        <label style="align-self:end">
+            <button type="button" class="pulsante pulsante-tenue" id="btn-libero">+ Controllo in subappalto (campo libero)</button>
+        </label>
+    </div>
+
+    <div class="tabella-scorrevole" style="margin-top:0.6rem">
+        <table class="tabella" id="tabella-righe">
+            <thead><tr>
+                <th>Descrizione</th><th>Tipo</th><th>Prezzo</th>
+                <th class="numerico">Base €</th><th class="numerico">Sconto %</th><th class="numerico">Q.tà</th>
+                <th class="numerico">Totale €</th><th></th>
+            </tr></thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr><th colspan="6" style="text-align:right">Imponibile</th><th class="numerico" id="tot-imponibile">0,00</th><th></th></tr>
+                <tr><th colspan="6" style="text-align:right">IVA</th><th class="numerico" id="tot-iva">0,00</th><th></th></tr>
+                <tr><th colspan="6" style="text-align:right">Totale</th><th class="numerico" id="tot-totale">0,00</th><th></th></tr>
+            </tfoot>
+        </table>
+    </div>
+    <p class="sottotesto" id="avviso-approvazione"></p>
+
+    <div class="azioni-filtri" style="margin-top:0.8rem">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-elimina" style="margin-right:auto">Elimina</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
+        <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
+        <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-approvazione">Richiedi approvazione</button>
+        @if (puoApprovare)
+        {
+            <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-approva">Approva</button>
+        }
+    </div>
+</section>
+
+<!-- Editor riga "controllo libero" (subappalto) -->
+<section class="riquadro nascosto" id="pannello-libero">
+    <div class="barra-risultati"><h3>Controllo in subappalto (campo libero)</h3>
+        <button type="button" class="chiudi" id="lib-chiudi">&times;</button></div>
+    <p class="sottotesto">Usare solo per controlli/metodi non presenti in archivio, comunicati da un laboratorio esterno con cui collaboriamo. Il laboratorio esterno si sceglie dall'elenco dei nostri.</p>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Nome controllo<input type="text" id="lib-nome" /></label>
+        <label>Prezzo concordato €<input type="number" id="lib-prezzo" min="0" step="0.01" /></label>
+        <label>Sconto %<input type="number" id="lib-sconto" min="0" max="100" step="0.5" value="0" /></label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.5rem"><h4>Metodi</h4></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Verifica che il metodo non sia già nostro
+            <input type="text" id="lib-verifica" placeholder="cerca tra i nostri metodi…" />
+        </label>
+    </div>
+    <p class="sottotesto" id="lib-verifica-esito"></p>
+    <div class="griglia-filtri">
+        <label>Parametro / metodo<input type="text" id="lib-m-descr" /></label>
+        <label>Denominazione riga<input type="text" id="lib-m-denom" /></label>
+        <label>Riferimento normativo<input type="text" id="lib-m-rif" /></label>
+        <label>Unità<input type="text" id="lib-m-unita" /></label>
+        <label>Laboratorio esterno
+            <select id="lib-m-lab"><option value="">— (interno / nessuno)</option></select>
+        </label>
+        <label style="align-self:end"><button type="button" class="pulsante pulsante-tenue" id="lib-m-aggiungi">+ Aggiungi metodo</button></label>
+    </div>
+    <div class="tabella-scorrevole" style="margin-top:0.5rem">
+        <table class="tabella" id="lib-tabella-metodi">
+            <thead><tr><th>Parametro</th><th>Denominazione</th><th>Riferimento</th><th>Unità</th><th>Lab esterno</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.6rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="lib-annulla">Annulla</button>
+        <button type="button" class="pulsante" id="lib-conferma">Aggiungi al preventivo</button>
+    </div>
+</section>
+
+<template id="tpl-riga">
+    <tr class="riga">
+        <td class="r-descr"></td>
+        <td class="r-tipo"></td>
+        <td class="r-origine sottotesto"></td>
+        <td class="numerico r-base"></td>
+        <td class="numerico"><input type="number" class="r-sconto" min="0" max="100" step="0.5" style="width:5rem;text-align:right" /></td>
+        <td class="numerico"><input type="number" class="r-qta" min="1" step="1" style="width:4rem;text-align:right" /></td>
+        <td class="numerico r-tot"></td>
+        <td><button type="button" class="pulsante pulsante-tenue r-rimuovi">✕</button></td>
+    </tr>
+</template>
+
+<template id="tpl-lib-metodo">
+    <tr>
+        <td class="lm-descr"></td>
+        <td class="lm-denom"></td>
+        <td class="lm-rif"></td>
+        <td class="lm-unita"></td>
+        <td class="lm-lab"></td>
+        <td><button type="button" class="pulsante pulsante-tenue lm-rimuovi">✕</button></td>
+    </tr>
+</template>
+
+@section Script {
+    <script type="module" src="~/js/moduli/preventivi.js" asp-append-version="true"></script>
+}
