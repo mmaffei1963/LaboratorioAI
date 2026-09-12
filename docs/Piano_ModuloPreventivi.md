@@ -47,6 +47,9 @@ dai laboratori in subappalto, con prezzo concordato in base al costo del lab est
   esterno), così in offerta sono **indistinguibili** dai metodi interni.
 - Per le prove in subappalto l'offerta riporta **sempre** il riferimento al laboratorio esterno,
   tramite il campo `LabEsterno.Frase` (già disponibile in ArcLab).
+- Il **laboratorio esterno NON è libero**: si sceglie sempre dall'anagrafica dei lab esterni ArcLab
+  (`LaboratoriConFraseAsync`), perché le offerte arrivano solo dai laboratori con cui si lavora già.
+  Libero è solo il metodo/controllo.
 
 Modellato con `TipoRigaPreventivo.ControlloLibero` e con il dettaglio metodi per riga
 `RigaMetodoPreventivo` (usato per tutte le righe: snapshot dei metodi ArcLab per i controlli

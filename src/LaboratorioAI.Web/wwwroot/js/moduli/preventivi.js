@@ -24,6 +24,7 @@ let mapClienti = new Map();     // nome → {id, nome}
 let accessori = [];             // [{idVoceAccessorio, descrizione, prezzo, unitaMisura}]
 let labEsterni = [];            // [{id, nome, frase}]
 let libMetodi = [];             // metodi del controllo libero in composizione
+let revisioneDefault = '';      // revisione Condizioni Generali corrente (predefinita)
 
 function nuovoStato() {
     return {
@@ -71,6 +72,13 @@ async function caricaAccessori() {
         o.textContent = `${a.descrizione} — ${eur(a.prezzo)} €${a.unitaMisura ? '/' + a.unitaMisura : ''}`;
         sel.appendChild(o);
     }
+}
+
+async function caricaImpostazioni() {
+    try {
+        const i = await api('/api/preventivi/impostazioni');
+        revisioneDefault = i.revisioneCondizioni || '';
+    } catch { }
 }
 
 async function caricaLabEsterni() {
@@ -141,6 +149,21 @@ function aggiungiAccessorio() {
         originePrezzo: ORIGINE.LISTINO, prezzoBase: a.prezzo, scontoPercentuale: 0, quantita: 1,
         metodi: []
     });
+    renderRighe();
+}
+
+function aggiungiAccessorioLibero() {
+    const descr = $('acc-descr').value.trim();
+    if (!descr) { alert('Indica la descrizione della voce accessoria.'); return; }
+    const prezzo = +$('acc-prezzo').value || 0;
+    const qta = Math.max(1, +$('acc-qta').value || 1);
+    stato.righe.push({
+        progressivo: stato.righe.length + 1, tipo: TIPO.ACCESSORIO,
+        idVoceAccessorio: null, descrizione: descr,
+        originePrezzo: ORIGINE.MANUALE, prezzoBase: prezzo, scontoPercentuale: 0, quantita: qta,
+        metodi: []
+    });
+    $('acc-descr').value = ''; $('acc-prezzo').value = ''; $('acc-qta').value = 1;
     renderRighe();
 }
 
@@ -279,6 +302,7 @@ function nuovo() {
     for (const id of ['c-cerca', 'c-ragione', 'c-piva', 'c-indirizzo', 'c-cap', 'c-citta', 'c-prov', 'c-email', 'p-oggetto', 'p-pagamento', 'p-note']) $(id).value = '';
     $('p-data').value = new Date().toISOString().slice(0, 10);
     $('p-validita').value = 60; $('p-iva').value = 22;
+    $('p-revisione').value = revisioneDefault; $('p-revisione-default').checked = false;
     $('tabella-righe').querySelector('tbody').innerHTML = '';
     renderRighe();
     aggiornaBottoniStato();
@@ -307,6 +331,8 @@ async function apri(id) {
     $('p-validita').value = p.validitaGiorni ?? 60;
     $('p-iva').value = p.aliquotaIva ?? 22;
     $('p-pagamento').value = p.condizioniPagamento ?? '';
+    $('p-revisione').value = p.revisioneCondizioni ?? revisioneDefault;
+    $('p-revisione-default').checked = false;
     $('p-note').value = p.note ?? '';
     const num = p.numero ? `${p.anno}/${String(p.numero).padStart(3, '0')}` : 'bozza';
     $('form-titolo').textContent = 'Preventivo ' + num;
@@ -321,6 +347,13 @@ function aggiornaBottoniStato() {
     const btnApprova = $('btn-approva');
     if (btnApprova) btnApprova.classList.toggle('nascosto', !(stato.id && stato.statoPrev === STATO.DA_APPROVARE));
     $('btn-elimina').classList.toggle('nascosto', !stato.id);
+    $('btn-offerta-word').classList.toggle('nascosto', !stato.id);
+    $('btn-offerta-pdf').classList.toggle('nascosto', !stato.id);
+}
+
+function scaricaOfferta(formato) {
+    if (!stato.id) return;
+    window.open(`/api/preventivi/${stato.id}/offerta?formato=${formato}`, '_blank');
 }
 
 function corpo(statoRichiesto) {
@@ -340,6 +373,8 @@ function corpo(statoRichiesto) {
         validitaGiorni: +$('p-validita').value || 60,
         aliquotaIva: +$('p-iva').value || 22,
         condizioniPagamento: $('p-pagamento').value.trim(),
+        revisioneCondizioni: $('p-revisione').value.trim(),
+        impostaRevisionePredefinita: $('p-revisione-default').checked,
         note: $('p-note').value.trim(),
         righe: stato.righe.map((r, i) => ({
             progressivo: i + 1, tipo: r.tipo,
@@ -394,6 +429,7 @@ function avvia() {
     $('c-cerca').addEventListener('change', scegliCliente);
     $('ctrl-input').addEventListener('change', aggiungiControllo);
     $('acc-input').addEventListener('change', aggiungiAccessorio);
+    $('btn-acc-libero').addEventListener('click', aggiungiAccessorioLibero);
     $('p-iva').addEventListener('input', ricalcola);
     $('btn-libero').addEventListener('click', apriLibero);
     $('lib-chiudi').addEventListener('click', chiudiLibero);
@@ -406,8 +442,10 @@ function avvia() {
     $('btn-approvazione').addEventListener('click', () => salva(STATO.DA_APPROVARE));
     const ba = $('btn-approva'); if (ba) ba.addEventListener('click', approva);
     $('btn-elimina').addEventListener('click', elimina);
+    $('btn-offerta-word').addEventListener('click', () => scaricaOfferta('word'));
+    $('btn-offerta-pdf').addEventListener('click', () => scaricaOfferta('pdf'));
 
-    Promise.all([caricaRegistro(), caricaControlli(), caricaAccessori(), caricaLabEsterni()])
+    Promise.all([caricaRegistro(), caricaControlli(), caricaAccessori(), caricaLabEsterni(), caricaImpostazioni()])
         .catch(e => console.error(e));
 }
 

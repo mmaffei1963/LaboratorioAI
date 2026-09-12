@@ -4,6 +4,7 @@ using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.LaboratorioAI;
+using LaboratorioAI.Documenti;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,15 @@ namespace LaboratorioAI.Web.Controllers;
 [RichiedePermesso(Permessi.PreventiviGestione)]
 public class PreventiviController : Controller
 {
-    private const string RevisioneCondizioniCorrente = "Mod. Com. 05 Rev. 18 del 16/04/25";
+    private const string ChiaveRevisione = "Preventivi.RevisioneCondizioni";
+    private const string RevisioneDefault = "Mod. Com. 05 Rev. 18 del 16/04/25";
+
+    /// <summary>Revisione corrente delle Condizioni Generali (da Configurazioni, con fallback al default).</summary>
+    private async Task<string> RevisioneCorrenteAsync(CancellationToken ct)
+    {
+        var c = await _ctx.Configurazioni.AsNoTracking().FirstOrDefaultAsync(x => x.Chiave == ChiaveRevisione, ct);
+        return string.IsNullOrWhiteSpace(c?.Valore) ? RevisioneDefault : c!.Valore!;
+    }
 
     private readonly ContestoLaboratorioAI _ctx;
     private readonly IServizioPreventivi _servizio;
@@ -26,15 +35,20 @@ public class PreventiviController : Controller
     private readonly IRepositoryLaboratoriEsterni _labEsterni;
     private readonly IContestoUtente _utente;
     private readonly IServizioAudit _audit;
+    private readonly IGeneratoreOffertaPreventivo _offerta;
+    private readonly IWebHostEnvironment _ambiente;
 
     public PreventiviController(
         ContestoLaboratorioAI ctx, IServizioPreventivi servizio, IRepositoryControlli catalogo,
         IRepositoryAnagrafiche anagrafiche, IRepositoryLaboratoriEsterni labEsterni,
-        IContestoUtente utente, IServizioAudit audit)
+        IContestoUtente utente, IServizioAudit audit, IGeneratoreOffertaPreventivo offerta,
+        IWebHostEnvironment ambiente)
     {
         _ctx = ctx; _servizio = servizio; _catalogo = catalogo; _anagrafiche = anagrafiche;
-        _labEsterni = labEsterni; _utente = utente; _audit = audit;
+        _labEsterni = labEsterni; _utente = utente; _audit = audit; _offerta = offerta; _ambiente = ambiente;
     }
+
+    private const string ModelloCartaIntestata = "docx/Carta_intestata_Marea.docx";
 
     public IActionResult Index()
     {
@@ -85,6 +99,11 @@ public class PreventiviController : Controller
             .OrderBy(v => v.Descrizione)
             .Select(v => new { v.IdVoceAccessorio, v.Codice, v.Descrizione, v.Prezzo, v.UnitaMisura })
             .ToListAsync(ct));
+
+    /// <summary>Impostazioni predefinite del modulo (revisione Condizioni Generali corrente).</summary>
+    [HttpGet("api/preventivi/impostazioni")]
+    public async Task<IActionResult> Impostazioni(CancellationToken ct) =>
+        Json(new { RevisioneCondizioni = await RevisioneCorrenteAsync(ct) });
 
     /// <summary>Compone una riga da un controllo esistente (prezzo base a cascata + snapshot metodi).</summary>
     [HttpPost("api/preventivi/riga-controllo")]
@@ -182,10 +201,34 @@ public class PreventiviController : Controller
         p.ValiditaGiorni = req.ValiditaGiorni is int v && v > 0 ? v : 60;
         p.CondizioniPagamento = Pulisci(req.CondizioniPagamento);
         p.RevisioneCondizioni = string.IsNullOrWhiteSpace(req.RevisioneCondizioni)
-            ? RevisioneCondizioniCorrente : req.RevisioneCondizioni!.Trim();
+            ? await RevisioneCorrenteAsync(ct) : req.RevisioneCondizioni!.Trim();
         p.AliquotaIva = req.AliquotaIva is decimal iva && iva >= 0 ? iva : 22m;
         p.Note = Pulisci(req.Note);
         p.IdUtenteCreatore ??= _utente.IdUtente;
+
+        // Aggiorna la revisione corrente predefinita (per le prossime offerte), se richiesto.
+        if (req.ImpostaRevisionePredefinita && !string.IsNullOrWhiteSpace(p.RevisioneCondizioni))
+        {
+            var cfg = await _ctx.Configurazioni.FirstOrDefaultAsync(x => x.Chiave == ChiaveRevisione, ct);
+            if (cfg is null)
+            {
+                _ctx.Configurazioni.Add(new Configurazione
+                {
+                    Chiave = ChiaveRevisione,
+                    Valore = p.RevisioneCondizioni,
+                    Descrizione = "Revisione corrente delle Condizioni Generali di Fornitura per i preventivi",
+                    Categoria = "Preventivi",
+                    DataModifica = ora,
+                    IdUtenteModifica = _utente.IdUtente
+                });
+            }
+            else
+            {
+                cfg.Valore = p.RevisioneCondizioni;
+                cfg.DataModifica = ora;
+                cfg.IdUtenteModifica = _utente.IdUtente;
+            }
+        }
 
         // Righe (+ metodi)
         var prog = 1;
@@ -256,6 +299,40 @@ public class PreventiviController : Controller
             dettaglio: new { p.Numero, p.Anno, p.ClienteRagioneSociale, Righe = p.Righe.Count, p.TotaleImponibile, Stato = p.Stato.ToString() }, ct: ct);
 
         return Json(new { p.IdPreventivo, p.Numero, p.Anno, Stato = (int)p.Stato, StatoTesto = p.Stato.ToString(), p.TotaleImponibile, p.RichiedeApprovazione });
+    }
+
+    /// <summary>Genera l'offerta in Word (RTF) o PDF a partire dal preventivo salvato.</summary>
+    [HttpGet("api/preventivi/{id:int}/offerta")]
+    public async Task<IActionResult> Offerta(int id, [FromQuery] string? formato, CancellationToken ct)
+    {
+        var p = await _ctx.Preventivi.AsNoTracking()
+            .Include(x => x.Righe).ThenInclude(r => r.Metodi)
+            .FirstOrDefaultAsync(x => x.IdPreventivo == id, ct);
+        if (p is null) return NotFound();
+
+        var pdf = string.Equals(formato, "pdf", StringComparison.OrdinalIgnoreCase);
+        byte[] contenuto;
+        string estensione, mime;
+        if (pdf)
+        {
+            contenuto = _offerta.GeneraPdf(p);
+            estensione = "pdf";
+            mime = "application/pdf";
+        }
+        else
+        {
+            var modello = Path.Combine(_ambiente.WebRootPath, ModelloCartaIntestata);
+            if (!System.IO.File.Exists(modello))
+                return NotFound(new { messaggio = "Modello di carta intestata non trovato: " + ModelloCartaIntestata });
+            contenuto = _offerta.GeneraWord(p, modello);
+            estensione = "docx";
+            mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        }
+        await _audit.RegistraAsync(
+            AreaFunzionale.Preventivi, "preventivo.offerta", EsitoOperazione.Successo,
+            tipoEntita: "Preventivo", idEntita: id.ToString(),
+            dettaglio: new { p.Numero, p.Anno, Formato = estensione }, ct: ct);
+        return File(contenuto, mime, _offerta.NomeFile(p, estensione));
     }
 
     [HttpPost("api/preventivi/{id:int}/approva")]
@@ -341,6 +418,7 @@ public record RichiestaSalvaPreventivo
     public int? ValiditaGiorni { get; init; }
     public string? CondizioniPagamento { get; init; }
     public string? RevisioneCondizioni { get; init; }
+    public bool ImpostaRevisionePredefinita { get; init; }
     public decimal? AliquotaIva { get; init; }
     public string? Note { get; init; }
 

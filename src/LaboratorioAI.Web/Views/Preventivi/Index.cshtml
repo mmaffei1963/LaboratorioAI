@@ -56,6 +56,8 @@
         <label>Validità (giorni)<input type="number" id="p-validita" value="60" min="1" /></label>
         <label>Aliquota IVA %<input type="number" id="p-iva" value="22" min="0" step="0.5" /></label>
         <label style="grid-column:1/-1">Condizioni di pagamento<input type="text" id="p-pagamento" placeholder="es. Bonifico bancario vista fattura" /></label>
+        <label style="grid-column:1/-1">Revisione Condizioni Generali di Fornitura<input type="text" id="p-revisione" placeholder="es. Mod. Com. 05 Rev. 18 del 16/04/25" /></label>
+        <label style="grid-column:1/-1" class="ricorda"><input type="checkbox" id="p-revisione-default" /> Imposta questa revisione come predefinita per le prossime offerte</label>
         <label style="grid-column:1/-1">Note<input type="text" id="p-note" /></label>
     </div>
 
@@ -72,6 +74,13 @@
         <label style="align-self:end">
             <button type="button" class="pulsante pulsante-tenue" id="btn-libero">+ Controllo in subappalto (campo libero)</button>
         </label>
+    </div>
+
+    <div class="griglia-filtri">
+        <label>Voce accessoria libera<input type="text" id="acc-descr" placeholder="descrizione…" /></label>
+        <label>Prezzo €<input type="number" id="acc-prezzo" min="0" step="0.01" /></label>
+        <label>Q.tà<input type="number" id="acc-qta" min="1" value="1" /></label>
+        <label style="align-self:end"><button type="button" class="pulsante pulsante-tenue" id="btn-acc-libero">+ Aggiungi accessorio</button></label>
     </div>
 
     <div class="tabella-scorrevole" style="margin-top:0.6rem">
@@ -95,6 +104,8 @@
         <button type="button" class="pulsante pulsante-tenue" id="btn-elimina" style="margin-right:auto">Elimina</button>
         <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
         <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
+        <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-offerta-word">Offerta Word</button>
+        <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-offerta-pdf">Offerta PDF</button>
         <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-approvazione">Richiedi approvazione</button>
         @if (puoApprovare)
         {

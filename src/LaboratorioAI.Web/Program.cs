@@ -205,6 +205,7 @@ builder.Services.AddScoped<IRepositoryAccettazione, RepositoryAccettazione>();
 builder.Services.AddSingleton<IGeneratoreTracciatoAccettazione, GeneratoreTracciatoAccettazione>();
 builder.Services.AddSingleton<IGeneratoreDocumentiAccettazione, GeneratoreDocumentiAccettazione>();
 builder.Services.AddSingleton<IGeneratoreTracciatoControllo, GeneratoreTracciatoControllo>();
+builder.Services.AddSingleton<IGeneratoreOffertaPreventivo, GeneratoreOffertaPreventivo>();
 
 builder.Services.AddScoped<LaboratorioAI.Dati.LaboratorioAI.Import.IImportatoreUsda,
     LaboratorioAI.Dati.LaboratorioAI.Import.ImportatoreUsda>();
