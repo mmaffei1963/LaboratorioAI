@@ -772,6 +772,75 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("Caricamenti", "templog");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CertificatoEsternoDaImportare", b =>
+                {
+                    b.Property<int>("IdCertificatoEsterno")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCertificatoEsterno"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CodiceLocale")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("DataCancellazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCertificato")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime>("DataSped")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdCampioneArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Laboratorio")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NomeFile")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("NumeroCertificato")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Stato")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdCertificatoEsterno");
+
+                    b.HasIndex("CodiceLocale")
+                        .IsUnique();
+
+                    b.HasIndex("IdCampioneArcLab");
+
+                    b.HasIndex("Stato", "Attivo");
+
+                    b.ToTable("EsterniDaImportare", "certificati");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Configurazione", b =>
                 {
                     b.Property<int>("IdConfigurazione")

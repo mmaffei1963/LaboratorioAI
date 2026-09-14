@@ -11,6 +11,7 @@
 ───────────────────────────────────────────────────────────────────────────*/
 :r C:\Sviluppo\LaboratorioAI\scripts\sql\ImportArcLab_Controlli.sql
 :r C:\Sviluppo\LaboratorioAI\scripts\sql\ImportArcLab_Accettazioni.sql
+:r C:\Sviluppo\LaboratorioAI\scripts\sql\ImportArcLab_CertificatiEsterni.sql
 GO
 PRINT 'Setup import ArcLab completato: proc dbo.Importa_Tutto pronta.';
 GO

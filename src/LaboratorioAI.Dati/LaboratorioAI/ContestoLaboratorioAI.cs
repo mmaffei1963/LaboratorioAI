@@ -74,6 +74,9 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<PropostaControllo> ProposteControllo => Set<PropostaControllo>();
     public DbSet<PropostaRigaMetodo> ProposteRigheMetodo => Set<PropostaRigaMetodo>();
 
+    // ── Certificati esterni da importare (schema certificati) ──────
+    public DbSet<CertificatoEsternoDaImportare> CertificatiEsterniDaImportare => Set<CertificatoEsternoDaImportare>();
+
     // ── Preventivi (schema preventivi) ─────────────────────────────
     public DbSet<Preventivo> Preventivi => Set<Preventivo>();
     public DbSet<RigaPreventivo> RighePreventivo => Set<RigaPreventivo>();
