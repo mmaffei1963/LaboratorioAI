@@ -86,6 +86,24 @@ public class RepositoryControlli : IRepositoryControlli
         return await cn.QueryFirstOrDefaultAsync<string?>(new CommandDefinition(sql, new { Id = idControllo }, cancellationToken: ct));
     }
 
+    public async Task<IReadOnlyList<VoceImport>> StatiImportAsync(IReadOnlyList<string> codiciLocali, CancellationToken ct = default)
+    {
+        var codici = codiciLocali?.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList() ?? new List<string>();
+        if (codici.Count == 0) return Array.Empty<VoceImport>();
+
+        // Il registro potrebbe non esistere in ambienti non ancora predisposti: la guardia OBJECT_ID evita l'errore.
+        const string sql = """
+            IF OBJECT_ID('dbo.ImportDaLaboratorioAI') IS NULL
+                SELECT CAST(NULL AS VARCHAR(40)) AS CodiceLocale, CAST(NULL AS INT) AS IdControllo WHERE 1 = 0;
+            ELSE
+                SELECT CodiceLocale, IdEntitaArcLab AS IdControllo
+                FROM dbo.ImportDaLaboratorioAI
+                WHERE TipoEntita = 'PropostaControllo' AND CodiceLocale IN @Codici;
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<VoceImport>(new CommandDefinition(sql, new { Codici = codici }, cancellationToken: ct))).ToList();
+    }
+
     public async Task<IReadOnlyList<VoceControlloEsistente>> ControlliAttiviAsync(CancellationToken ct = default)
     {
         const string sql = "SELECT IdControllo, Controllo FROM Controllo WHERE Attivo = 1 AND Controllo IS NOT NULL ORDER BY Controllo";

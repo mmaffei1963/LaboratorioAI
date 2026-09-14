@@ -183,16 +183,12 @@ async function salva() {
     } catch (e) { alert(e.message); return null; }
 }
 
-async function generaTracciato() {
+async function approva() {
     const r = await salva();
     if (!r) return;
-    const resp = await fetch(`/api/controlli/${r.idPropostaControllo}/tracciato`, { method: 'POST' });
-    if (!resp.ok) { let m = 'Errore'; try { m = (await resp.json()).messaggio; } catch { } alert(m); return; }
-    const blob = await resp.blob();
-    const cd = resp.headers.get('content-disposition') || '';
-    const nome = (cd.match(/filename="?([^"]+)"?/) || [])[1] || 'PropostaControllo.xml';
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click();
-    URL.revokeObjectURL(a.href);
+    try {
+        await api(`/api/controlli/${r.idPropostaControllo}/approva`, { method: 'POST' });
+    } catch (e) { alert(e.message); return; }
     $('pannello-form').classList.add('nascosto');
     caricaRegistro();
 }
@@ -236,10 +232,11 @@ async function caricaRegistro() {
         <td style="color:${badge(p.stato)};font-weight:600">${esc(p.stato)}</td>
         <td>${esc(p.controllo)}</td><td class="numerico">${p.numeroMetodi}</td><td class="numerico">${eur(p.prezzo)}</td>
         <td>${esc(p.origine)}</td><td>${p.dataCreazione ? new Date(p.dataCreazione).toLocaleDateString('it-IT') : ''}</td>
+        <td>${p.importato ? 'IdControllo ' + p.idControlloArcLab : ''}</td>
         <td>
             <button class="pulsante pulsante-tenue" data-apri="${p.idPropostaControllo}">Apri</button>
             ${p.stato === 'Bozza' || p.stato === 'DaApprovare' || p.stato === 'Approvato' ? `<button class="pulsante pulsante-tenue" data-del="${p.idPropostaControllo}">Elimina</button>` : ''}
-        </td></tr>`).join('') || '<tr><td colspan="7">Nessuna proposta. Premi «Nuova proposta».</td></tr>';
+        </td></tr>`).join('') || '<tr><td colspan="8">Nessuna proposta. Premi «Nuova proposta».</td></tr>';
     document.querySelectorAll('#tabella-registro [data-apri]').forEach(b => b.addEventListener('click', () => apri(+b.dataset.apri)));
     document.querySelectorAll('#tabella-registro [data-del]').forEach(b => b.addEventListener('click', async () => {
         if (!confirm('Eliminare la proposta?')) return;
@@ -253,7 +250,7 @@ $('m-input')?.addEventListener('change', scegliMetodo);
 $('c-esistente')?.addEventListener('change', caricaEsistente);
 $('btn-nome-ai')?.addEventListener('click', proponiNome);
 $('btn-salva')?.addEventListener('click', salva);
-$('btn-tracciato')?.addEventListener('click', generaTracciato);
+$('btn-approva')?.addEventListener('click', approva);
 caricaCatalogo();
 caricaControlliAttivi();
 caricaRegistro();

@@ -4,7 +4,6 @@ using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.LaboratorioAI;
-using LaboratorioAI.Documenti;
 using LaboratorioAI.IA;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
@@ -19,21 +18,17 @@ namespace LaboratorioAI.Web.Controllers;
 [RichiedePermesso(Permessi.ControlliProponi)]
 public class ControlliController : Controller
 {
-    private const string MimeXml = "application/xml";
-
     private readonly ContestoLaboratorioAI _ctx;
     private readonly IRepositoryControlli _catalogo;
-    private readonly IGeneratoreTracciatoControllo _tracciato;
     private readonly IClientAnthropic _ia;
     private readonly IContestoUtente _utente;
     private readonly IServizioAudit _audit;
 
     public ControlliController(
         ContestoLaboratorioAI ctx, IRepositoryControlli catalogo,
-        IGeneratoreTracciatoControllo tracciato, IClientAnthropic ia, IContestoUtente utente,
-        IServizioAudit audit)
+        IClientAnthropic ia, IContestoUtente utente, IServizioAudit audit)
     {
-        _ctx = ctx; _catalogo = catalogo; _tracciato = tracciato; _ia = ia; _utente = utente; _audit = audit;
+        _ctx = ctx; _catalogo = catalogo; _ia = ia; _utente = utente; _audit = audit;
     }
 
     public IActionResult Index()
@@ -101,19 +96,56 @@ public class ControlliController : Controller
     [HttpGet("api/controlli/elenco")]
     public async Task<IActionResult> Elenco(CancellationToken ct)
     {
-        var righe = await _ctx.ProposteControllo.AsNoTracking()
+        var lista = await _ctx.ProposteControllo.AsNoTracking()
             .Where(p => p.Attivo && p.DataCancellazione == null)
             .OrderByDescending(p => p.DataCreazione).Take(300)
             .Select(p => new
             {
-                p.IdPropostaControllo, p.CodiceLocale, Stato = p.Stato.ToString(),
+                p.IdPropostaControllo, p.CodiceLocale, p.Stato,
                 p.Controllo, p.Origine, p.DataCreazione,
                 NumeroMetodi = p.Righe.Count,
                 // Lo sconto riga in fase di proposta è sempre 0 (lo imposta il laboratorio), quindi
                 // il totale è la somma dei costi; il calcolo con sconto è replicato lato client.
                 Prezzo = p.Righe.Sum(r => r.CostoMetodoEuro ?? 0m)
             }).ToListAsync(ct);
-        return Json(righe);
+
+        // Stato di importazione da ArcLab (registro dbo.ImportDaLaboratorioAI, sola lettura).
+        // Se ArcLab è lento/irraggiungibile il registro si carica comunque, senza lo stato import.
+        var codici = lista.Select(x => x.CodiceLocale).ToList();
+        Dictionary<string, int> importati;
+        try
+        {
+            importati = (await _catalogo.StatiImportAsync(codici, ct))
+                .GroupBy(x => x.CodiceLocale).ToDictionary(g => g.Key, g => g.First().IdControllo);
+        }
+        catch
+        {
+            importati = new Dictionary<string, int>();
+        }
+
+        // Riconciliazione: le proposte presenti nel registro passano a stato Importato (sul DB proprio).
+        if (importati.Count > 0)
+        {
+            var codiciImportati = importati.Keys.ToList();
+            var daAggiornare = await _ctx.ProposteControllo
+                .Where(p => codiciImportati.Contains(p.CodiceLocale) && p.Stato != StatoProposta.Importato)
+                .ToListAsync(ct);
+            if (daAggiornare.Count > 0)
+            {
+                foreach (var p in daAggiornare) { p.Stato = StatoProposta.Importato; p.DataUltimaModifica = DateTime.UtcNow; }
+                await _ctx.SaveChangesAsync(ct);
+            }
+        }
+
+        var risposta = lista.Select(x => new
+        {
+            x.IdPropostaControllo, x.CodiceLocale,
+            Stato = importati.ContainsKey(x.CodiceLocale) ? nameof(StatoProposta.Importato) : x.Stato.ToString(),
+            x.Controllo, x.Origine, x.DataCreazione, x.NumeroMetodi, x.Prezzo,
+            Importato = importati.ContainsKey(x.CodiceLocale),
+            IdControlloArcLab = importati.TryGetValue(x.CodiceLocale, out var idc) ? (int?)idc : null
+        });
+        return Json(risposta);
     }
 
     [HttpGet("api/controlli/{id:int}")]
@@ -236,28 +268,26 @@ public class ControlliController : Controller
         return Ok();
     }
 
-    // ── Generazione tracciato XML (supervisore) ──
-    [HttpPost("api/controlli/{id:int}/tracciato")]
+    // ── Approvazione (abilita l'import automatico in ArcLab) ──
+    [HttpPost("api/controlli/{id:int}/approva")]
     [RichiedePermesso(Permessi.ControlliApprova)]
-    public async Task<IActionResult> Tracciato(int id, CancellationToken ct)
+    public async Task<IActionResult> Approva(int id, CancellationToken ct)
     {
         var p = await _ctx.ProposteControllo.Include(x => x.Righe)
             .FirstOrDefaultAsync(x => x.IdPropostaControllo == id, ct);
         if (p is null) return NotFound(new { messaggio = "Proposta non trovata." });
         if (p.Righe.Count == 0) return BadRequest(new { messaggio = "Nessun metodo: aggiungine almeno uno." });
+        if (p.Stato == StatoProposta.Importato)
+            return BadRequest(new { messaggio = "Proposta già importata in ArcLab." });
 
-        var bytes = _tracciato.GeneraXml(p);
-        var nome = _tracciato.NomeFile(p);
-        p.Stato = StatoProposta.Trasmesso;
-        p.DataTrasmissione = DateTime.UtcNow;
-        p.NomeFileTracciato = nome;
+        p.Stato = StatoProposta.Approvato;
         p.DataUltimaModifica = DateTime.UtcNow;
         await _ctx.SaveChangesAsync(ct);
         await _audit.RegistraAsync(
-            AreaFunzionale.Controlli, "proposta.tracciato.xml", EsitoOperazione.Successo,
+            AreaFunzionale.Controlli, "proposta.approvata", EsitoOperazione.Successo,
             tipoEntita: "PropostaControllo", idEntita: id.ToString(),
-            dettaglio: new { p.Controllo, NomeFile = nome, Metodi = p.Righe.Count }, ct: ct);
-        return File(bytes, MimeXml, nome);
+            dettaglio: new { p.Controllo, Metodi = p.Righe.Count }, ct: ct);
+        return Json(new { p.IdPropostaControllo, Stato = p.Stato.ToString() });
     }
 }
 

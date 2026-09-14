@@ -20,7 +20,16 @@ public interface IRepositoryControlli
 
     /// <summary>Nome corrente di un controllo ArcLab (per la guardia sul riutilizzo del nome).</summary>
     Task<string?> NomeControlloAsync(int idControllo, CancellationToken ct = default);
+
+    /// <summary>
+    /// Stato di importazione in ArcLab delle proposte, letto dal registro dbo.ImportDaLaboratorioAI.
+    /// Restituisce vuoto se il registro non esiste ancora (ambiente non ancora predisposto).
+    /// </summary>
+    Task<IReadOnlyList<VoceImport>> StatiImportAsync(IReadOnlyList<string> codiciLocali, CancellationToken ct = default);
 }
+
+/// <summary>Riga del registro import: proposta (per CodiceLocale) → controllo creato in ArcLab.</summary>
+public record VoceImport(string CodiceLocale, int IdControllo);
 
 /// <summary>Controllo ArcLab esistente (per la segnalazione di duplicati).</summary>
 public record VoceControlloEsistente(int IdControllo, string? Controllo);

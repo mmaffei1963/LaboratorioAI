@@ -7,7 +7,7 @@
 <div class="barra-strumenti">
     <div>
         <h1>Proposta controlli</h1>
-        <p class="sottotitolo">Proponi un nuovo controllo scegliendo i metodi dal catalogo. I dati restano in staging e generano un tracciato XML per l'import supervisionato in ArcLab: nessuna scrittura diretta sul gestionale.</p>
+        <p class="sottotitolo">Proponi un nuovo controllo scegliendo i metodi dal catalogo. Alla tua approvazione il controllo viene importato in ArcLab dal processo dedicato: LaboratorioAI non scrive mai direttamente sul gestionale.</p>
     </div>
     <div class="azioni">
         <button class="pulsante" id="btn-nuova">Nuova proposta</button>
@@ -19,7 +19,7 @@
         <summary style="cursor:pointer;font-weight:600">Registro proposte <span id="conteggio" class="sottotesto"></span></summary>
         <div class="tabella-scorrevole" style="max-height:20rem;margin-top:0.5rem">
             <table class="tabella" id="tabella-registro">
-                <thead><tr><th>Stato</th><th>Controllo</th><th class="numerico">Metodi</th><th class="numerico">Prezzo €</th><th>Origine</th><th>Creata</th><th></th></tr></thead>
+                <thead><tr><th>Stato</th><th>Controllo</th><th class="numerico">Metodi</th><th class="numerico">Prezzo €</th><th>Origine</th><th>Creata</th><th>ArcLab</th><th></th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -73,7 +73,7 @@
         <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
         @if (puoApprovare)
         {
-            <button type="button" class="pulsante pulsante-secondario" id="btn-tracciato">Approva e genera XML</button>
+            <button type="button" class="pulsante pulsante-secondario" id="btn-approva">Approva</button>
         }
     </div>
 </section>
