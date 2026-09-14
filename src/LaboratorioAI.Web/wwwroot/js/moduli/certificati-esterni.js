@@ -148,26 +148,35 @@ async function salvaRiga(tr, idx) {
     const esito = tr.querySelector('.esito');
     if (!nome) { esito.textContent = 'Nome mancante.'; return false; }
     const c = r.ant.campione;
+    const e = r.ant.estrazione || {};
     // data del nome/smistamento = emissione del certificato (dataNome), fallback ricezione
     const data = r.ant.dataNome || (c?.dataRicezione ? new Date(c.dataRicezione).toISOString().slice(0, 10) : '');
     const palomar = $('cartella-palomar')?.value.trim() || '';
     const archivio = $('cartella-archivio')?.value.trim() || '';
+    // Aggancio import ArcLab (solo se il campione è stato trovato)
+    const idCampione = c?.idCampione || '';
+    const numeroCertificato = e.rdPEsterno || '';
+    const laboratorio = r.ant.labAcronimo || e.laboratorio || '';
     esito.textContent = 'salvataggio…';
     try {
         let j;
         if (r.percorso) {
             j = await analizzaJson('/api/certificati-esterni/conferma-percorso',
-                { percorso: r.percorso, nomeFinale: nome, labAcronimo: r.ant.labAcronimo || '', data, cartellaPalomar: palomar, cartellaArchivio: archivio });
+                { percorso: r.percorso, nomeFinale: nome, labAcronimo: r.ant.labAcronimo || '', data, cartellaPalomar: palomar, cartellaArchivio: archivio,
+                  idCampione: idCampione || null, numeroCertificato, dataCertificato: data, laboratorio });
         } else {
             const fd = new FormData();
             fd.append('file', r.file); fd.append('nomeFinale', nome);
             fd.append('labAcronimo', r.ant.labAcronimo || ''); fd.append('data', data);
             fd.append('cartellaPalomar', palomar); fd.append('cartellaArchivio', archivio);
+            fd.append('idCampione', idCampione); fd.append('numeroCertificato', numeroCertificato);
+            fd.append('dataCertificato', data); fd.append('laboratorio', laboratorio);
             const rr = await fetch('/api/certificati-esterni/conferma', { method: 'POST', body: fd });
             j = await rr.json().catch(() => ({}));
             if (!rr.ok) throw new Error(j.messaggio || 'Errore');
         }
         esito.innerHTML = '<span style="color:#1a7f37">salvato</span>'
+            + (j.importProgrammato ? ' · <span style="color:#1741b3">import ArcLab programmato</span>' : '')
             + (j.originaleSpostato ? ' · originale spostato' : '')
             + (j.avviso ? ' · <span style="color:#b26a00">' + esc(j.avviso) + '</span>' : '');
         tr.querySelector('.salva').disabled = true;

@@ -1,8 +1,11 @@
 using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Dati.LaboratorioAI;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LaboratorioAI.Web.Controllers;
 
@@ -18,12 +21,17 @@ public class CertificatiEsterniController : Controller
     private readonly IServizioCertificatiEsterni _servizio;
     private readonly IConfiguration _config;
     private readonly IServizioAudit _audit;
+    private readonly ContestoLaboratorioAI _ctx;
+    private readonly IContestoUtente _utente;
 
-    public CertificatiEsterniController(IServizioCertificatiEsterni servizio, IConfiguration config, IServizioAudit audit)
+    public CertificatiEsterniController(IServizioCertificatiEsterni servizio, IConfiguration config,
+        IServizioAudit audit, ContestoLaboratorioAI ctx, IContestoUtente utente)
     {
         _servizio = servizio;
         _config = config;
         _audit = audit;
+        _ctx = ctx;
+        _utente = utente;
     }
 
     public IActionResult Index()
@@ -82,7 +90,9 @@ public class CertificatiEsterniController : Controller
     [RequestSizeLimit(30_000_000)]
     public async Task<IActionResult> Conferma(IFormFile? file, [FromForm] string? nomeFinale,
         [FromForm] string? labAcronimo, [FromForm] string? data,
-        [FromForm] string? cartellaPalomar, [FromForm] string? cartellaArchivio, CancellationToken ct)
+        [FromForm] string? cartellaPalomar, [FromForm] string? cartellaArchivio,
+        [FromForm] int? idCampione, [FromForm] string? numeroCertificato, [FromForm] string? dataCertificato,
+        [FromForm] string? laboratorio, CancellationToken ct)
     {
         if (file is null || file.Length == 0) return BadRequest(new { messaggio = "Nessun file." });
         if (string.IsNullOrWhiteSpace(nomeFinale)) return BadRequest(new { messaggio = "Nome file mancante." });
@@ -95,9 +105,10 @@ public class CertificatiEsterniController : Controller
             await SalvaRinominatoAsync(pdf, nome, labAcronimo, data, cartellaPalomar, cartellaArchivio, percorsi, ct);
             if (percorsi.Count == 0)
                 return BadRequest(new { messaggio = "Nessuna cartella di destinazione configurata." });
+            var importProgrammato = await RegistraDaImportareAsync(idCampione, numeroCertificato, dataCertificato, laboratorio, nome, ct);
             await _audit.RegistraAsync(AreaFunzionale.CertificatiEsterni, "certificatiesterni.salva", EsitoOperazione.Successo,
-                tipoEntita: "CertificatoEsterno", idEntita: nome, dettaglio: new { nome, percorsi, sorgente = "upload" }, ct: ct);
-            return Json(new { nome, percorsi });
+                tipoEntita: "CertificatoEsterno", idEntita: nome, dettaglio: new { nome, percorsi, sorgente = "upload", importProgrammato }, ct: ct);
+            return Json(new { nome, percorsi, importProgrammato });
         }
         catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
     }
@@ -134,10 +145,11 @@ public class CertificatiEsterniController : Controller
                 avviso = "Salvato, ma originale non spostato (permessi cartella?): " + exMove.Message;
             }
 
+            var importProgrammato = await RegistraDaImportareAsync(req.IdCampione, req.NumeroCertificato, req.DataCertificato, req.Laboratorio, nome, ct);
             await _audit.RegistraAsync(AreaFunzionale.CertificatiEsterni, "certificatiesterni.salva", EsitoOperazione.Successo,
                 tipoEntita: "CertificatoEsterno", idEntita: nome,
-                dettaglio: new { nome, percorsi, originaleSpostato, sorgente = "cartella" }, ct: ct);
-            return Json(new { nome, percorsi, originaleSpostato, avviso });
+                dettaglio: new { nome, percorsi, originaleSpostato, sorgente = "cartella", importProgrammato }, ct: ct);
+            return Json(new { nome, percorsi, originaleSpostato, avviso, importProgrammato });
         }
         catch (Exception ex) { return BadRequest(new { messaggio = "Salvataggio non riuscito: " + ex.Message }); }
     }
@@ -166,6 +178,42 @@ public class CertificatiEsterniController : Controller
             await System.IO.File.WriteAllBytesAsync(dest, pdf, ct);
             percorsi.Add(dest);
         }
+    }
+
+    /// <summary>
+    /// Registra il certificato esterno nella staging di import ArcLab, se agganciato a un campione.
+    /// Niente campione = niente import. Evita doppioni per stesso campione + numero.
+    /// </summary>
+    private async Task<bool> RegistraDaImportareAsync(int? idCampione, string? numeroCertificato,
+        string? dataCertificato, string? laboratorio, string nomeFile, CancellationToken ct)
+    {
+        if (idCampione is not int idc || idc <= 0) return false;
+        var numero = (numeroCertificato ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(numero)) return false;
+
+        var esiste = await _ctx.CertificatiEsterniDaImportare.AnyAsync(
+            x => x.Attivo && x.DataCancellazione == null && x.IdCampioneArcLab == idc && x.NumeroCertificato == numero, ct);
+        if (esiste) return false;
+
+        var dataCert = DateTime.TryParse(dataCertificato, System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var d) ? d.Date : DateTime.Today;
+
+        var ora = DateTime.UtcNow;
+        _ctx.CertificatiEsterniDaImportare.Add(new CertificatoEsternoDaImportare
+        {
+            IdCampioneArcLab = idc,
+            NumeroCertificato = numero.Length > 50 ? numero[..50] : numero,
+            DataCertificato = dataCert,
+            DataSped = DateTime.Now,
+            NomeFile = nomeFile,
+            Laboratorio = string.IsNullOrWhiteSpace(laboratorio) ? null : laboratorio!.Trim(),
+            Stato = StatoCertificatoEsterno.DaImportare,
+            DataCreazione = ora,
+            DataUltimaModifica = ora,
+            IdUtente = _utente.IdUtente
+        });
+        await _ctx.SaveChangesAsync(ct);
+        return true;
     }
 
     private static async Task<byte[]> LeggiAsync(IFormFile file, CancellationToken ct)
@@ -202,4 +250,10 @@ public record RichiestaConfermaPercorso
     public string? Data { get; init; }
     public string? CartellaPalomar { get; init; }
     public string? CartellaArchivio { get; init; }
+
+    // Aggancio import ArcLab (certificato → campione).
+    public int? IdCampione { get; init; }
+    public string? NumeroCertificato { get; init; }
+    public string? DataCertificato { get; init; }
+    public string? Laboratorio { get; init; }
 }
