@@ -37,6 +37,45 @@ async function monitora() {
     } catch (e) { $('stato-caricamento').textContent = e.message; }
 }
 
+// ══ Fonte dati: file oppure DB MonitorTemperature ══
+function fonteSelezionata() {
+    return document.querySelector('input[name="fonte-templog"]:checked')?.value || 'file';
+}
+function aggiornaFonte() {
+    const db = fonteSelezionata() !== 'file';
+    $('riga-db')?.classList.toggle('nascosto', !db);
+    $('blocco-file')?.classList.toggle('nascosto', db);
+    aggiornaFinestra();
+}
+function aggiornaFinestra() {
+    const range = $('db-finestra')?.value === 'range';
+    $('db-dal-wrap')?.classList.toggle('nascosto', !range);
+    $('db-al-wrap')?.classList.toggle('nascosto', !range);
+}
+
+async function monitoraDb() {
+    const fonte = fonteSelezionata();
+    if (fonte === 'file') return;
+    const corpo = { fonte, salva: $('db-salva')?.checked || false };
+    const modo = $('db-finestra')?.value || '24';
+    if (modo === 'range') {
+        if (!$('db-dal').value || !$('db-al').value) { $('stato-db').textContent = 'Indica data/ora inizio e fine.'; return; }
+        corpo.dal = $('db-dal').value; corpo.al = $('db-al').value;
+    } else {
+        corpo.ore = +modo || 24;
+    }
+    $('stato-db').textContent = 'Lettura dal database…';
+    try {
+        ultimo = await api('/api/templog/monitora-db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+        renderRisultato(ultimo);
+        $('stato-db').textContent = (!ultimo.canali || ultimo.canali.length === 0)
+            ? 'Nessuna misura nel periodo.'
+            : (ultimo.numeroCanaliMonitorati === 0
+                ? 'Letture caricate, ma nessun canale ha limiti impostati (vedi "Da sistemare").'
+                : '');
+    } catch (e) { $('stato-db').textContent = e.message; }
+}
+
 function renderRisultato(r) {
     canaleCorrente = -1;
     $('dettaglio-canale')?.classList.add('nascosto');
@@ -414,6 +453,10 @@ async function validaSelezionati(esito) {
 
 // ══ Avvio ══
 $('btn-monitora')?.addEventListener('click', monitora);
+$('btn-monitora-db')?.addEventListener('click', monitoraDb);
+document.querySelectorAll('input[name="fonte-templog"]').forEach(r => r.addEventListener('change', aggiornaFonte));
+$('db-finestra')?.addEventListener('change', aggiornaFinestra);
+aggiornaFonte();
 $('btn-sincronizza')?.addEventListener('click', sincronizza);
 $('btn-proponi')?.addEventListener('click', proponi);
 $('btn-export-pdf')?.addEventListener('click', () => esporta('pdf'));

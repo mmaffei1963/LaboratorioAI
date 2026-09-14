@@ -191,6 +191,7 @@ builder.Services.AddSingleton<IGeneratoreRapportoBilancia, GeneratoreRapportoBil
 
 // ── Monitoraggio TempLog Econorma ──────────────────────────────
 builder.Services.AddSingleton<IServizioMonitoraggioTempLog, ServizioMonitoraggioTempLog>();
+builder.Services.AddScoped<LaboratorioAI.Core.Servizi.ILettoreDbTempLog, LaboratorioAI.Dati.MonitorTemperature.LettoreDbTempLog>();
 builder.Services.AddSingleton<ILettoreFileTempLog, LaboratorioAI.Dati.Import.LettoreFileTempLog>();
 builder.Services.AddScoped<IRepositoryTempLog, RepositoryTempLog>();
 builder.Services.AddSingleton<IGeneratoreReportTempLog, GeneratoreReportTempLog>();

@@ -14,6 +14,29 @@
 </div>
 
 <section class="riquadro">
+    <div class="barra-risultati"><h2>Fonte dati</h2></div>
+    <div class="azioni-filtri" style="margin-bottom:0.4rem">
+        <label class="casella"><input type="radio" name="fonte-templog" value="file" checked /> File Econorma (Excel)</label>
+        <label class="casella"><input type="radio" name="fonte-templog" value="Misure" /> Misuratore 1 (DB)</label>
+        <label class="casella"><input type="radio" name="fonte-templog" value="Misure1" /> Misuratore 2 (DB)</label>
+    </div>
+    <div class="azioni-filtri nascosto" id="riga-db" style="margin-bottom:0.4rem">
+        <label>Finestra
+            <select id="db-finestra">
+                <option value="24">Ultime 24 ore</option>
+                <option value="48">Ultime 48 ore</option>
+                <option value="range">Intervallo…</option>
+            </select>
+        </label>
+        <label id="db-dal-wrap" class="nascosto">Da <input type="datetime-local" id="db-dal" /></label>
+        <label id="db-al-wrap" class="nascosto">A <input type="datetime-local" id="db-al" /></label>
+        <label class="casella"><input type="checkbox" id="db-salva" /> registra il caricamento</label>
+        <button type="button" class="pulsante" id="btn-monitora-db">Leggi dal DB</button>
+        <div style="flex:1"></div>
+        <span id="stato-db" class="sottotesto"></span>
+    </div>
+
+    <div id="blocco-file">
     <div class="barra-risultati"><h2>Carica file</h2></div>
     <div class="azioni-filtri">
         <input type="file" id="file-templog" accept=".xls,.xlsx" />
@@ -29,6 +52,7 @@
     </div>
     <div class="tabella-scorrevole" style="max-height:14rem">
         <table class="tabella" id="tabella-file"><thead><tr><th>File</th><th>Percorso</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
     </div>
 </section>
 

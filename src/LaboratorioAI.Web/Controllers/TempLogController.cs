@@ -27,6 +27,7 @@ public class TempLogController : Controller
 
     private readonly ContestoLaboratorioAI _ctx;
     private readonly ILettoreFileTempLog _lettore;
+    private readonly ILettoreDbTempLog _lettoreDb;
     private readonly IServizioMonitoraggioTempLog _monitor;
     private readonly IRepositoryTempLog _repo;
     private readonly IGeneratoreReportTempLog _report;
@@ -36,11 +37,11 @@ public class TempLogController : Controller
     private readonly IServizioAudit _audit;
 
     public TempLogController(
-        ContestoLaboratorioAI ctx, ILettoreFileTempLog lettore, IServizioMonitoraggioTempLog monitor,
-        IRepositoryTempLog repo, IGeneratoreReportTempLog report, IContestoUtente utente,
-        IServizioVersione versione, IConfiguration config, IServizioAudit audit)
+        ContestoLaboratorioAI ctx, ILettoreFileTempLog lettore, ILettoreDbTempLog lettoreDb,
+        IServizioMonitoraggioTempLog monitor, IRepositoryTempLog repo, IGeneratoreReportTempLog report,
+        IContestoUtente utente, IServizioVersione versione, IConfiguration config, IServizioAudit audit)
     {
-        _ctx = ctx; _lettore = lettore; _monitor = monitor; _repo = repo; _report = report;
+        _ctx = ctx; _lettore = lettore; _lettoreDb = lettoreDb; _monitor = monitor; _repo = repo; _report = report;
         _utente = utente; _versione = versione; _config = config; _audit = audit;
     }
 
@@ -97,6 +98,32 @@ public class TempLogController : Controller
             await _ctx.SaveChangesAsync(ct);
         }
 
+        return Json(risultato);
+    }
+
+    // ── Monitoraggio dal DB MonitorTemperature (misuratori Econorma) ─
+    [HttpPost("api/templog/monitora-db")]
+    public async Task<IActionResult> MonitoraDb([FromBody] RichiestaMonitoraDb req, CancellationToken ct)
+    {
+        var fonte = string.Equals(req.Fonte, "Misure1", StringComparison.OrdinalIgnoreCase)
+            ? FonteTempLogDb.Misure1 : FonteTempLogDb.Misure;
+        // Default: ultime 24 ore. Presets 24/48 h o intervallo esplicito dal client.
+        var al = req.Al ?? DateTime.Now;
+        var dal = req.Dal ?? al.AddHours(-(req.Ore is int o && o > 0 ? o : 24));
+
+        FileTempLog contenuto;
+        try { contenuto = await _lettoreDb.LeggiAsync(fonte, dal, al, ct); }
+        catch (Exception ex) { return BadRequest(new { messaggio = "Lettura MonitorTemperature non riuscita: " + ex.Message }); }
+
+        if (contenuto.Canali.Count == 0)
+            return Json(_monitor.Monitora(contenuto, new List<LimitiCanale>()));
+
+        // Se i limiti (Apparecchiature via AssegnazioneSonde) non sono leggibili, mostra comunque le temperature.
+        IReadOnlyList<LimitiCanale> limiti;
+        try { limiti = await _lettoreDb.LimitiAsync(contenuto.Canali, ct); }
+        catch { limiti = new List<LimitiCanale>(); }
+        var risultato = _monitor.Monitora(contenuto, limiti);
+        if (req.Salva) await SalvaCaricamentoAsync(risultato, "MonitorTemperature/" + fonte, ct);
         return Json(risultato);
     }
 
@@ -477,6 +504,17 @@ public record RichiestaCaricaCartella
 {
     public string Cartella { get; init; } = "";
     public string NomeFile { get; init; } = "";
+}
+
+public record RichiestaMonitoraDb
+{
+    /// <summary>"Misure" (misuratore 1) o "Misure1" (misuratore 2).</summary>
+    public string? Fonte { get; init; }
+    /// <summary>Finestra rapida in ore (24/48). Ignorata se Dal/Al sono valorizzati.</summary>
+    public int? Ore { get; init; }
+    public DateTime? Dal { get; init; }
+    public DateTime? Al { get; init; }
+    public bool Salva { get; init; }
 }
 
 public record RichiestaPdfCanale
