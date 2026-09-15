@@ -50,7 +50,7 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
     {
         var doc = new Document();
         var normale = doc.Styles["Normal"]!;
-        normale.Font.Name = "Arial";
+        normale.Font.Name = "Montserrat";
         normale.Font.Size = 10;
 
         var sec = doc.AddSection();
@@ -92,7 +92,8 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
         {
             var subappalto = r.Metodi.Any(m => m.IdLabEsternoArcLab != null) || r.Tipo == TipoRigaPreventivo.ControlloLibero;
 
-            var h = sec.AddParagraph("ANALISI DI LABORATORIO — " + (r.Descrizione ?? "").ToUpperInvariant());
+            var idPart = r.IdControlloArcLab is int idc ? $" (ID {idc})" : "";
+            var h = sec.AddParagraph("ANALISI DI LABORATORIO — " + (r.Descrizione ?? "").ToUpperInvariant() + idPart);
             h.Format.Font.Bold = true;
             h.Format.SpaceBefore = "0.4cm";
             h.Format.SpaceAfter = "0.1cm";
@@ -193,6 +194,9 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
             "La presente offerta e le Condizioni Generali di Fornitura si intendono integralmente accettate dal COMMITTENTE " +
             "al momento della consegna del campione al laboratorio.", spazioPrima: true, grassetto: true);
 
+        // Informativa privacy (fissa, uguale per ogni offerta)
+        AggiungiInformativaPrivacy(sec);
+
         // Firma
         var firma = sec.AddParagraph("Per accettazione (timbro e firma)                                        MARE.A s.r.l.");
         firma.Format.SpaceBefore = "1cm";
@@ -248,6 +252,64 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
         var pv = row.Cells[1].AddParagraph($"€ {Fmt(importo)}");
         pv.Format.Alignment = ParagraphAlignment.Right;
         pv.Format.Font.Bold = grassetto;
+    }
+
+    // ── Informativa privacy (art. 13 Reg. UE 2016/679) — testo fisso MARE.A ──
+    private static void Sotto(Section sec, string t)
+    {
+        var p = sec.AddParagraph(t);
+        p.Format.Font.Bold = true;
+        p.Format.Font.Size = 8.5;
+        p.Format.SpaceBefore = "0.25cm";
+    }
+
+    private static void AggiungiInformativaPrivacy(Section sec)
+    {
+        var tit = sec.AddParagraph("INFORMATIVA PRIVACY");
+        tit.Format.SpaceBefore = "0.6cm";
+        tit.Format.Font.Bold = true;
+        tit.Format.Font.Size = 12;
+        tit.Format.SpaceAfter = "0.1cm";
+        var sub = sec.AddParagraph("Ai sensi dell'art. 13 Regolamento UE 2016/679");
+        sub.Format.Font.Size = 8;
+        sub.Format.Font.Italic = true;
+        sub.Format.SpaceAfter = "0.2cm";
+
+        Sotto(sec, "Identità e dati di contatto del titolare del trattamento");
+        Nota(sec, "Il titolare del trattamento è la ditta MARE.A s.r.l. con sede legale in Via E. Toti, 2 - 47841, Cattolica (RN) tel. 0541 830442, fax 0541 830460 e-mail: info@mare-a.com – CF/P.IVA 03670240401.");
+
+        Sotto(sec, "Finalità e base giuridica del trattamento");
+        Nota(sec, "I suoi dati personali sono trattati nel rispetto dei principi di correttezza, liceità e trasparenza, per le seguenti finalità:");
+        Nota(sec, "1) Fornitura del servizio ed adempimenti amministrativi e fiscali connessi al rapporto contrattuale;");
+        Nota(sec, "2) Servizio di assistenza post-vendita, ivi compresi eventuali contatti a mezzo posta cartacea e/o telefonici e/o tramite e-mail e/o sms per comunicazioni inerenti lo svolgimento dei servizi da lei affidatici;");
+        Nota(sec, "3) Newsletter: previo ottenimento del suo consenso, il Titolare e gli incaricati al trattamento potranno inoltre inviarle, a mezzo posta cartacea, via e-mail, sms o App di messaggistica, occasionali aggiornamenti circa nuovi servizi obbligatori e/o funzionali alla sua attività;");
+        Nota(sec, "4) Profilazione: previo ottenimento del suo consenso, il Titolare e gli incaricati al trattamento potranno categorizzare la sua attività (es. Hotel, Ristorante, Ingrosso ecc.) al fine di poter selezionare più accuratamente le comunicazioni a lei destinate.");
+
+        Sotto(sec, "Destinatari dei dati personali");
+        Nota(sec, "Nell'ambito dei trattamenti di cui alla presente informativa, i suoi dati, anche appartenenti alle categorie particolari di cui all'art. 9 del Regolamento UE 2016/679, saranno trattati da nostri incaricati interni e potranno essere comunicati anche a soggetti terzi, formalmente nominati responsabili del trattamento.");
+        Nota(sec, "Nell'ambito del trattamento di cui al punto 1), in particolare, i suoi dati saranno comunicati ai consulenti amministrativi e fiscali del Titolare ed alle Autorità pubbliche competenti in materia.");
+
+        Sotto(sec, "Obbligo di fornirci i suoi dati");
+        Nota(sec, "La fornitura dei suoi dati personali per le finalità 1) e 2), anche appartenenti alle categorie particolari di cui all'art. 9 del Regolamento UE 2016/679, è necessaria ai fini dell'esecuzione del servizio contrattuale e conseguentemente la loro mancata o incompleta fornitura renderà impossibile assicurare tale servizio.");
+        Nota(sec, "Il conferimento dei dati per le finalità di cui ai punti 3) e 4), invece, non è necessario ed il soggetto interessato ha il diritto di opporsi in qualsiasi momento a tale trattamento, anche in parte, inviando la richiesta all'indirizzo del Titolare del trattamento indicato sopra. Per quanto riguarda le finalità di cui al punto 4), infine, il conferimento dei suoi dati non è obbligatorio, ma il mancato consenso alla profilazione ci impedirà di inviarle comunicazioni personalizzate.");
+
+        Sotto(sec, "Periodo di conservazione dei dati");
+        Nota(sec, "I suoi dati personali saranno conservati per tutto il tempo imposto in base a disposizioni normative inerenti i servizi da lei affidatici e la disciplina amministrativa e fiscale.");
+        Nota(sec, "Per finalità informative e per l'invio di aggiornamenti normativi, news relative ad iniziative commerciali, nonché per comunicare iniziative ed altri eventi, saranno conservati per un periodo di 24 mesi, fatta salva l'ipotesi di ulteriori vendite e/o sue richieste che dovessero avvenire in tale arco di tempo e/o la necessità di conservare i dati per le altre finalità di cui alla presente informativa.");
+
+        Sotto(sec, "Diritti dell'interessato");
+        Nota(sec, "Lei ha diritto di revocare il consenso prestato in calce alla presente informativa in qualsiasi momento tramite comunicazione all'indirizzo del Titolare del trattamento. Allo stesso modo lei potrà chiedere l'accesso ai suoi dati personali, la rettifica, la cancellazione, la limitazione o l'opposizione del trattamento oltre che la portabilità dei dati (art. 20 del Regolamento UE 2016/679). La richiesta di cancellazione dei dati è subordinata agli obblighi di conservazione dei documenti imposti da norme di legge.");
+
+        Sotto(sec, "Diritto di proporre reclamo all'Autorità di controllo");
+        Nota(sec, "Lei potrà, nel caso ritenga che il trattamento di dati che la riguardano violi il Regolamento UE 2016/679, proporre reclamo all'Autorità per la protezione dei dati personali.");
+
+        Sotto(sec, "Consensi");
+        Nota(sec, "Acconsento al trattamento dei dati di natura particolare ai sensi dell'art. 9 del Reg. UE 2016/679.");
+        Nota(sec, "[  ] SI        [  ] NO");
+        Nota(sec, "Acconsento ad essere contattato a mezzo posta cartacea, via e-mail, sms o App di messaggistica, per l'invio di occasionali aggiornamenti circa nuovi servizi obbligatori e/o funzionali alla sua attività.");
+        Nota(sec, "[  ] SI        [  ] NO");
+        Nota(sec, "Acconsento al trattamento dei miei dati personali per l'attività di profilazione al fine di poter selezionare più accuratamente le comunicazioni a lei destinate.");
+        Nota(sec, "[  ] SI        [  ] NO");
     }
 
     private static void Nota(Section sec, string testo, bool spazioPrima = false, bool grassetto = false)
