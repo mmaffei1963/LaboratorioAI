@@ -19,8 +19,10 @@ public class RepositoryMetodi : IRepositoryMetodi
     /// La sottoquery su ProceduraMetodo è distinta perché un metodo può
     /// avere più procedure: senza DISTINCT il join moltiplicherebbe le righe.
     /// </remarks>
+    // Una riga per metodo (OUTER APPLY TOP 1): evita l'esplosione di righe dei LEFT JOIN
+    // su rigametodo/labEstMetodo, che rendeva la query lentissima con conseguente timeout.
     private const string SqlMetodiAttivi = """
-        SELECT DISTINCT
+        SELECT
             m.IdMetodo,
             m.RifBiblio          AS RiferimentoNormativo,
             p.NomeParametro,
@@ -29,16 +31,21 @@ public class RepositoryMetodi : IRepositoryMetodi
             le.LabEsterno        AS LaboratorioEsterno,
             ISNULL(lem.AccrLabEsterno, 0) AS AccreditatoEsterno
         FROM Metodo m
-        INNER JOIN (
-            SELECT DISTINCT IdMetodi
-            FROM ProceduraMetodo
-            WHERE Attivo = 1
-        ) pm ON pm.IdMetodi = m.IdMetodo
-        LEFT JOIN Parametro p     ON p.IdParametro = m.IdParametro
-        LEFT JOIN rigametodo rm   ON rm.IdMetodo = m.IdMetodo
-        LEFT JOIN labEstMetodo lem ON lem.IdMetodo = m.IdMetodo
-        LEFT JOIN LabEsterno le   ON le.IdLabEsterno = lem.IdLabEsterno
-        WHERE m.RifBiblio IS NOT NULL OR p.NomeParametro IS NOT NULL
+        LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
+        OUTER APPLY (
+            SELECT TOP 1 r.DenominazioneRiga
+            FROM rigametodo r
+            WHERE r.IdMetodo = m.IdMetodo
+            ORDER BY r.IdRigametodo
+        ) rm
+        OUTER APPLY (
+            SELECT TOP 1 x.AccrLabEsterno, x.IdLabEsterno
+            FROM labEstMetodo x
+            WHERE x.IdMetodo = m.IdMetodo
+        ) lem
+        LEFT JOIN LabEsterno le ON le.IdLabEsterno = lem.IdLabEsterno
+        WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
+          AND (m.RifBiblio IS NOT NULL OR p.NomeParametro IS NOT NULL)
         ORDER BY m.RifBiblio
         """;
 
@@ -46,7 +53,7 @@ public class RepositoryMetodi : IRepositoryMetodi
     {
         using var cn = await _fabbrica.ApriAsync(ct);
         var righe = await cn.QueryAsync<MetodoRicercabile>(
-            new CommandDefinition(SqlMetodiAttivi, cancellationToken: ct));
+            new CommandDefinition(SqlMetodiAttivi, commandTimeout: 120, cancellationToken: ct));
 
         // Un metodo può comparire più volte per via delle diverse righe metodo:
         // si tiene la prima occorrenza, che è quella con la denominazione più comune.
