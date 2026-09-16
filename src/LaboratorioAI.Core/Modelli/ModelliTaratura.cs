@@ -18,6 +18,12 @@ public record PuntoCertificatoCdr
     public double IncertezzaEstesa { get; init; }
     /// <summary>Incertezza tipo del CDR usata nel budget (contributo «u lab»).</summary>
     public double IncertezzaTipo { get; init; }
+
+    /// <summary>
+    /// Vero se il punto proviene dalla taratura precedente/secondaria del CDR (usata solo per
+    /// l'interpolazione), falso se è un punto del certificato LAT. Il rapporto mostra solo i primari.
+    /// </summary>
+    public bool Secondario { get; init; }
 }
 
 /// <summary>Una lettura: temperatura di riferimento nominale + lettura dello strumento (Tw).</summary>
@@ -47,6 +53,8 @@ public record DatiTaratura
 public record RisultatoPuntoTaratura
 {
     public string Etichetta { get; init; } = "";
+    /// <summary>Numero di misure (letture ripetute) effettuate su questo punto.</summary>
+    public int NumeroMisure { get; init; }
     public double TemperaturaMediaRiferimento { get; init; }
     public double TemperaturaMediaStrumento { get; init; }
     public double DifferenzaMedia { get; init; }

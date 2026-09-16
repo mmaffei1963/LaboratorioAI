@@ -8,7 +8,8 @@ namespace LaboratorioAI.Documenti;
 /// (Cod.Termometro / N°Rapporto taratura + Del / Scadenza taratura) con sfondo colorato per anno.</summary>
 public interface IGeneratoreEtichetteTermometri
 {
-    byte[] Genera(IReadOnlyList<RigaEtichetta> righe);
+    /// <param name="percorsoWwwRoot">Serve a caricare il logo MARE.A (wwwroot/img/logo_marea.png).</param>
+    byte[] Genera(IReadOnlyList<RigaEtichetta> righe, string? percorsoWwwRoot = null);
 }
 
 /// <inheritdoc />
@@ -27,18 +28,26 @@ public class GeneratoreEtichetteTermometri : IGeneratoreEtichetteTermometri
         return XLColor.FromHtml("#" + Ciclo[i]);
     }
 
-    private static string Data(DateTime? d) => d?.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("it-IT")) ?? "";
+    private static string Data(DateTime? d) => d?.ToString("dd/MM/yy", CultureInfo.GetCultureInfo("it-IT")) ?? "";
 
-    public byte[] Genera(IReadOnlyList<RigaEtichetta> righe)
+    public byte[] Genera(IReadOnlyList<RigaEtichetta> righe, string? percorsoWwwRoot = null)
     {
         using var wb = new XLWorkbook();
         var ws = wb.AddWorksheet("Etichette");
         for (int c = 0; c < Larghezze.Length; c++) ws.Column(c + 1).Width = Larghezze[c];
 
+        // Logo MARE.A (se disponibile) da inserire in alto a sinistra di ogni etichetta.
+        string? logo = null;
+        if (!string.IsNullOrWhiteSpace(percorsoWwwRoot))
+        {
+            var p = Path.Combine(percorsoWwwRoot, "img", "logo_marea.png");
+            if (File.Exists(p)) logo = p;
+        }
+
         int r = 2;
         foreach (var e in righe)
         {
-            Etichetta(ws, r, e);
+            Etichetta(ws, r, e, logo);
             r += 4; // 3 righe etichetta + 1 riga vuota di separazione
         }
 
@@ -47,7 +56,7 @@ public class GeneratoreEtichetteTermometri : IGeneratoreEtichetteTermometri
         return ms.ToArray();
     }
 
-    private static void Etichetta(IXLWorksheet ws, int top, RigaEtichetta e)
+    private static void Etichetta(IXLWorksheet ws, int top, RigaEtichetta e, string? logo)
     {
         var sfondo = ColoreAnno(e.AnnoColore);
         // Sfondo pieno + testo bianco su tutte le 3 righe, colonne A–E
@@ -79,5 +88,13 @@ public class GeneratoreEtichetteTermometri : IGeneratoreEtichetteTermometri
         scad.Value = Data(e.Scadenza);
         scad.Style.Font.Bold = true; scad.Style.Font.FontColor = XLColor.FromHtml("#FFF200");
         scad.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+        // Logo MARE.A in alto a sinistra (angolo libero riga 1, colonne A–B).
+        if (logo is not null)
+        {
+            ws.AddPicture(logo)
+              .MoveTo(ws.Cell(top, 1), 2, 1)
+              .WithSize(81, 18);   // ~1 riga di altezza, resta nella fascia libera in alto a sx
+        }
     }
 }

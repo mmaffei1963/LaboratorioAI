@@ -41,10 +41,27 @@ async function caricaEsterni() {
     esterni = await api('/api/scadenziario/esterni');
     renderEsterni();
 }
+function giorniAScadenza(dataScadenza) {
+    if (!dataScadenza) return null;
+    const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+    const s = new Date(dataScadenza); s.setHours(0, 0, 0, 0);
+    return Math.round((s - oggi) / 86400000);
+}
+
 function renderEsterni() {
     const soloDaFatt = $('filtro-fatturare')?.checked;
+    const limite = $('filtro-scadenza')?.value;   // "" | "0" | "15" | "30" | "60"
     const puoGestire = !!$('btn-nuovo-esterno');
-    const lista = esterni.filter(t => !soloDaFatt || !t.fatturato);
+    const lista = esterni.filter(t => {
+        if (soloDaFatt && t.fatturato) return false;
+        if (limite !== '' && limite != null) {
+            if (t.escludiScadenze) return false;        // esclusi dalla valutazione scadenze
+            const gg = giorniAScadenza(t.dataScadenza);
+            if (gg == null) return false;               // senza data: esclusa dai filtri per scadenza
+            if (gg > Number(limite)) return false;      // entro N giorni (include scadute: gg negativi)
+        }
+        return true;
+    });
     const daFatturare = esterni.filter(t => !t.fatturato).length;
     $('conteggio-esterni').textContent = `${lista.length} mostrati · ${daFatturare} da fatturare`;
     $('tabella-esterni').tBodies[0].innerHTML = lista.map(t => {
@@ -52,7 +69,7 @@ function renderEsterni() {
         const fatt = t.fatturato ? '<span style="color:#1a7f37;font-weight:600">Sì</span>' : '';
         return `<tr${!t.fatturato ? ' style="background:#fdf4f4"' : ''}>
             <td class="numerico">${t.numeroRapporto ?? '—'}</td><td>${esc(t.tipologia)}</td>
-            <td>${dataIt(t.dataTaratura)}</td><td>${dataIt(t.dataScadenza)}</td>
+            <td>${dataIt(t.dataTaratura)}</td><td>${dataIt(t.dataScadenza)}${t.escludiScadenze ? ' <span title="Non valutato nelle scadenze" style="color:#888">(escl.)</span>' : ''}</td>
             <td>${esc(t.cliente)}</td><td>${esc(t.riferimento)}</td><td>${dataIt(t.dataConsegna)}</td>
             <td>${fatt}</td>
             <td>${puoGestire ? `<button class="pulsante pulsante-tenue" data-edit="${i}">Modifica</button> <button class="pulsante pulsante-tenue" data-del="${t.idTermometroEsterno}">Elimina</button>` : ''}</td>
@@ -80,6 +97,7 @@ function apriEsterno(t) {
     $('e-fattura').value = t.rifFattura ?? '';
     $('e-note').value = t.note ?? '';
     $('e-fatturare').checked = !!t.fatturato;
+    if ($('e-escludi-scadenze')) $('e-escludi-scadenze').checked = !!t.escludiScadenze;
     $('pannello-esterno').classList.remove('nascosto');
     $('pannello-esterno').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -97,7 +115,8 @@ async function salvaEsterno() {
         operatoreConsegna: $('e-operatore').value || null,
         rifFattura: $('e-fattura').value || null,
         note: $('e-note').value || null,
-        fatturato: $('e-fatturare').checked
+        fatturato: $('e-fatturare').checked,
+        escludiScadenze: $('e-escludi-scadenze')?.checked || false
     };
     await api('/api/scadenziario/esterni', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
     $('pannello-esterno').classList.add('nascosto');
@@ -128,6 +147,7 @@ $('btn-nuovo-esterno')?.addEventListener('click', () => apriEsterno(null));
 $('btn-esterno-salva')?.addEventListener('click', salvaEsterno);
 $('btn-esterno-annulla')?.addEventListener('click', () => $('pannello-esterno').classList.add('nascosto'));
 $('filtro-fatturare')?.addEventListener('change', renderEsterni);
+$('filtro-scadenza')?.addEventListener('change', renderEsterni);
 async function caricaClienti() {
     const lc = $('lista-clienti'); if (!lc) return;
     try {

@@ -53,6 +53,7 @@ public class ServizioTaratura : IServizioTaratura
             punti.Add(new RisultatoPuntoTaratura
             {
                 Etichetta = p.Etichetta,
+                NumeroMisure = n,
                 TemperaturaMediaRiferimento = meanTr,
                 TemperaturaMediaStrumento = meanTw,
                 DifferenzaMedia = meanDw,

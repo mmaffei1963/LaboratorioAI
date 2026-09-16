@@ -238,8 +238,17 @@ async function apriTaratura(id) {
 }
 
 function renderMisure() {
+    // Numerazione della lettura all'interno del punto: riparte a ogni cambio di lettera.
+    // Solo di supporto all'inserimento: non finisce nei rapporti.
+    let prevPunto = null, contatore = 0;
+    const numeri = misure.map(m => {
+        const p = (m.punto || '').trim().toUpperCase();
+        if (p !== prevPunto) { contatore = 1; prevPunto = p; } else { contatore++; }
+        return contatore;
+    });
     $('tabella-misure').querySelector('tbody').innerHTML = misure.map((m, i) =>
         `<tr>
+            <td class="numerico" style="color:#888">${numeri[i]}</td>
             <td><input type="text" data-i="${i}" data-c="punto" value="${testo(m.punto)}" style="width:4rem" /></td>
             <td class="numerico"><input type="number" step="0.001" data-i="${i}" data-c="tRiferimento" value="${m.tRiferimento}" style="width:7rem" /></td>
             <td class="numerico"><input type="number" step="0.001" data-i="${i}" data-c="letturaStrumento" value="${m.letturaStrumento}" style="width:7rem" /></td>
@@ -250,6 +259,9 @@ function renderMisure() {
             const v = inp.dataset.c === 'punto' ? inp.value : num(inp.value);
             misure[Number(inp.dataset.i)][inp.dataset.c] = v;
         }));
+    // Alla fine della modifica di un "Punto" ricalcola la numerazione (riparte a ogni lettera).
+    $('tabella-misure').querySelectorAll('input[data-c="punto"]').forEach(inp =>
+        inp.addEventListener('change', () => renderMisure()));
     $('tabella-misure').querySelectorAll('.mis-rm').forEach(b =>
         b.addEventListener('click', () => { misure.splice(Number(b.dataset.i), 1); renderMisure(); }));
 }

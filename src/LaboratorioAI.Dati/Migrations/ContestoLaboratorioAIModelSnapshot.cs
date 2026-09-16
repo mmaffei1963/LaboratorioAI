@@ -1475,8 +1475,15 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
-                    b.Property<DateTime?>("DataInvioPortale")
+                    b.Property<DateTime?>("DataInvio")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Hash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("IdInsediamento")
+                        .HasColumnType("int");
 
                     b.Property<int>("IdLotto")
                         .HasColumnType("int");
@@ -1484,8 +1491,9 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Property<int?>("IdUtente")
                         .HasColumnType("int");
 
-                    b.Property<bool>("InviatoPortale")
-                        .HasColumnType("bit");
+                    b.Property<string>("NomeFile")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<int>("NumeroCampioni")
                         .HasColumnType("int");
@@ -1494,10 +1502,26 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("PercorsoFile")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("StatoInvio")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tentativi")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UltimoErrore")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.HasKey("IdOrdineAccettazione");
 
                     b.HasIndex("IdLotto")
                         .IsUnique();
+
+                    b.HasIndex("StatoInvio");
 
                     b.ToTable("OrdiniEmessi", "accettazione");
                 });
@@ -2819,6 +2843,9 @@ namespace LaboratorioAI.Dati.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<bool>("EscludiScadenze")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Fatturato")
                         .HasColumnType("bit");

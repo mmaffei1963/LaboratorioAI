@@ -74,7 +74,8 @@ public class ScadenziarioController : Controller
             .Select(t => new
             {
                 t.IdTermometroEsterno, t.NumeroRapporto, t.Tipologia, t.DataTaratura, t.DataScadenza,
-                t.Cliente, t.Riferimento, t.Note, t.DataConsegna, t.OperatoreConsegna, t.RifFattura, t.Fatturato
+                t.Cliente, t.Riferimento, t.Note, t.DataConsegna, t.OperatoreConsegna, t.RifFattura, t.Fatturato,
+                t.EscludiScadenze
             }).ToListAsync(ct);
         return Json(righe);
     }
@@ -92,6 +93,7 @@ public class ScadenziarioController : Controller
         t.Cliente = req.Cliente; t.Riferimento = req.Riferimento; t.Note = req.Note;
         t.DataConsegna = req.DataConsegna; t.OperatoreConsegna = req.OperatoreConsegna; t.RifFattura = req.RifFattura;
         t.Fatturato = req.Fatturato;
+        t.EscludiScadenze = req.EscludiScadenze;
         t.DataUltimaModifica = DateTime.UtcNow; t.IdUtente = _utente.IdUtente;
         await _ctx.SaveChangesAsync(ct);
         await _audit.RegistraAsync(
@@ -212,5 +214,6 @@ public record TermometroEsternoDto
     public string? OperatoreConsegna { get; init; }
     public string? RifFattura { get; init; }
     public bool Fatturato { get; init; }
+    public bool EscludiScadenze { get; init; }
 }
 

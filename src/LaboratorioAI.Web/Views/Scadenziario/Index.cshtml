@@ -26,6 +26,15 @@
 <section class="riquadro">
     <div class="barra-risultati"><h2>Esterni (clienti)</h2><span id="conteggio-esterni" class="sottotesto"></span>
         <label class="casella"><input type="checkbox" id="filtro-fatturare" /> solo da fatturare</label>
+        <label class="casella">scadenza
+            <select id="filtro-scadenza">
+                <option value="">tutte</option>
+                <option value="0">scadute / oggi</option>
+                <option value="15">entro 15 gg</option>
+                <option value="30">entro 30 gg</option>
+                <option value="60">entro 60 gg</option>
+            </select>
+        </label>
     </div>
     @if (puoGestire)
     {
@@ -64,6 +73,7 @@
             <label>Rif. fattura<input type="text" id="e-fattura" /></label>
             <label>Note<input type="text" id="e-note" /></label>
             <label class="casella"><input type="checkbox" id="e-fatturare" /> fatturato</label>
+            <label class="casella"><input type="checkbox" id="e-escludi-scadenze" /> non valutare nelle scadenze</label>
         </div>
         <div class="azioni-filtri">
             <div style="flex:1"></div>

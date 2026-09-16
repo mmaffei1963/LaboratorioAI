@@ -15,8 +15,8 @@ namespace LaboratorioAI.Documenti;
 /// </summary>
 public interface IGeneratoreRapportoTaratura
 {
-    byte[] GeneraPdf(DatiRapportoTaratura dati);
-    byte[] GeneraWord(DatiRapportoTaratura dati);
+    byte[] GeneraPdf(DatiRapportoTaratura dati, string? percorsoWwwRoot = null);
+    byte[] GeneraWord(DatiRapportoTaratura dati, string? percorsoWwwRoot = null);
     string NomeFile(DatiRapportoTaratura dati, string estensione);
 }
 
@@ -25,9 +25,9 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
-    public byte[] GeneraPdf(DatiRapportoTaratura d)
+    public byte[] GeneraPdf(DatiRapportoTaratura d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();
         using var ms = new MemoryStream();
@@ -35,9 +35,9 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         return ms.ToArray();
     }
 
-    public byte[] GeneraWord(DatiRapportoTaratura d)
+    public byte[] GeneraWord(DatiRapportoTaratura d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var tmp = Path.Combine(Path.GetTempPath(), "labai_tar_" + Guid.NewGuid().ToString("N") + ".rtf");
         try
         {
@@ -49,29 +49,81 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
 
     public string NomeFile(DatiRapportoTaratura d, string estensione)
     {
-        var nome = new string((d.StrumentoIdentificazione ?? "Taratura")
-            .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
-        return $"Rapporto_Taratura_{nome}_{d.DataTaratura:yyyyMMdd}.{estensione}";
+        var nome = Slug(d.StrumentoIdentificazione, "Taratura");
+        var cod = Slug(d.StrumentoCodice, "");
+        // Evita la ripetizione: aggiunge il codice solo se non è già contenuto nell'identificazione.
+        bool giaPresente = cod.Length > 0 &&
+            (nome.Contains(cod, StringComparison.OrdinalIgnoreCase) || cod.Contains(nome, StringComparison.OrdinalIgnoreCase));
+        var parteCod = (cod.Length == 0 || giaPresente) ? "" : $"_{cod}";
+
+        // Cliente (committente), quando presente.
+        var cli = Slug(d.Committente, "");
+        var parteCli = cli.Length == 0 ? "" : $"_{cli}";
+
+        return $"Rapporto_Taratura{parteCli}_{nome}{parteCod}_{d.DataTaratura:yyyyMMdd}.{estensione}";
     }
 
-    private static Document Costruisci(DatiRapportoTaratura d)
+    /// <summary>Slug per nome file: solo lettere/cifre, il resto "_", senza ripetizioni, troncato.</summary>
+    private static string Slug(string? s, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return fallback;
+        var sb = new System.Text.StringBuilder();
+        bool underscore = false;
+        foreach (var ch in s.Trim())
+        {
+            if (char.IsLetterOrDigit(ch)) { sb.Append(ch); underscore = false; }
+            else if (!underscore) { sb.Append('_'); underscore = true; }
+        }
+        var r = sb.ToString().Trim('_');
+        if (r.Length > 40) r = r.Substring(0, 40).Trim('_');
+        return r.Length == 0 ? fallback : r;
+    }
+
+    private static Document Costruisci(DatiRapportoTaratura d, string? percorsoWwwRoot)
     {
         var doc = new Document();
         var normale = doc.Styles["Normal"]!;
         normale.Font.Name = "Arial";
         normale.Font.Size = 9;
 
+        var headerImg = Immagine(percorsoWwwRoot, "intestazione_marea_pulita.png")
+                        ?? Immagine(percorsoWwwRoot, "intestazione carta intestata MAREA.png");
+        var footerImg = Immagine(percorsoWwwRoot, "Piede carta intestata MAREA.png");
+        bool cartaIntestata = headerImg is not null || footerImg is not null;
+
         var sec = doc.AddSection();
         sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(1.0);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(1.0);
         sec.PageSetup.LeftMargin = Unit.FromCentimeter(2);
         sec.PageSetup.RightMargin = Unit.FromCentimeter(2);
+        sec.PageSetup.TopMargin = Unit.FromCentimeter(cartaIntestata ? 3.4 : 1.0);
+        sec.PageSetup.BottomMargin = Unit.FromCentimeter(cartaIntestata ? 2.2 : 1.0);
+        sec.PageSetup.HeaderDistance = Unit.FromCentimeter(0.6);
+        sec.PageSetup.FooterDistance = Unit.FromCentimeter(0.4);
 
-        // Intestazione MARE.A (compatta)
-        var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
-        Piccolo(sec, "Sede legale e operativa: Via E. Toti, 2 • 47841 Cattolica (RN) • Tel 0541 830442 • Fax 0541 830460");
-        Piccolo(sec, "info@mare-a.com • www.mare-a.com • Cod. Fisc. e P. Iva 03670240401 • Laboratorio Analisi");
+        if (headerImg is not null)
+        {
+            var hp = sec.Headers.Primary.AddParagraph();
+            hp.Format.Alignment = ParagraphAlignment.Center;
+            var img = hp.AddImage(headerImg);
+            img.LockAspectRatio = true;
+            img.Width = Unit.FromCentimeter(16.5);
+        }
+        if (footerImg is not null)
+        {
+            var fp = sec.Footers.Primary.AddParagraph();
+            fp.Format.Alignment = ParagraphAlignment.Center;
+            var img = fp.AddImage(footerImg);
+            img.LockAspectRatio = true;
+            img.Width = Unit.FromCentimeter(17);
+        }
+
+        if (!cartaIntestata)
+        {
+            // Nessuna carta intestata disponibile: intestazione testuale (comportamento precedente).
+            var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
+            Piccolo(sec, "Sede legale e operativa: Via E. Toti, 2 • 47841 Cattolica (RN) • Tel 0541 830442 • Fax 0541 830460");
+            Piccolo(sec, "info@mare-a.com • www.mare-a.com • Cod. Fisc. e P. Iva 03670240401 • Laboratorio Analisi");
+        }
 
         var tit = sec.AddParagraph("RAPPORTO DI TARATURA");
         tit.Format.Alignment = ParagraphAlignment.Center; tit.Format.Font.Bold = true; tit.Format.Font.Size = 13;
@@ -113,13 +165,15 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
             "Scadenza CDR", d.CdrDataScadenza is DateOnly cs ? cs.ToString("dd/MM/yyyy", It) : "—");
         RigaInfo(cd, "Risoluzione CDR", $"{Num(d.CdrRisoluzione, 3)} °C", "Fattore di copertura k", Num(d.CdrFattoreCopertura, 0));
 
-        // Punti del certificato CDR
-        if (d.Certificato.Count > 0)
+        // Punti del certificato CDR — solo i primari (i secondari sono la taratura precedente,
+        // usata unicamente per l'interpolazione; i valori "ufficiali" sono nel certificato allegato).
+        var puntiCert = d.Certificato.Where(p => !p.Secondario).ToList();
+        if (puntiCert.Count > 0)
         {
             var lblCert = sec.AddParagraph("Dati ultima taratura CDR");
             lblCert.Format.Font.Bold = true; lblCert.Format.SpaceBefore = "0.2cm"; lblCert.Format.SpaceAfter = "0.05cm";
             var cert = TabellaValori(sec, "T indicata °C", "T riferim. °C", "Differenza °C", "UE(CR) °C");
-            foreach (var p in d.Certificato)
+            foreach (var p in puntiCert)
                 RigaValori(cert, Num(p.TIndicata, 2), Num(p.TRiferimento, 2), Num(p.Differenza, 3), Num(p.IncertezzaEstesa, 3));
         }
 
@@ -127,7 +181,7 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         Titolo(sec, "Dati riepilogativi della taratura");
         var ris = TabellaRisultati(sec);
         foreach (var p in d.Risultato.Punti)
-            RigaRisultato(ris, p.Etichetta, Num(p.TemperaturaMediaRiferimento, 2), Num(p.TemperaturaMediaStrumento, 2),
+            RigaRisultato(ris, p.Etichetta, p.NumeroMisure.ToString(It), Num(p.TemperaturaMediaRiferimento, 2), Num(p.TemperaturaMediaStrumento, 2),
                 Num(p.DifferenzaMedia, 3), Num(p.IncertezzaEstesa, 3), Num(p.FattoreCorrezione, 3));
 
         var notaU = sec.AddParagraph(
@@ -211,14 +265,15 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         var t = sec.AddTable();
         t.Borders.Width = 0.5; t.Borders.Color = new Color(0xFFBBBBBB);
         t.Format.Font.Size = 8.5; t.Format.SpaceAfter = "0.05cm";
-        t.AddColumn(Unit.FromCentimeter(1.6));   // punto
-        t.AddColumn(Unit.FromCentimeter(3.3));   // Tr
-        t.AddColumn(Unit.FromCentimeter(3.3));   // Tw
-        t.AddColumn(Unit.FromCentimeter(3.2));   // diff
-        t.AddColumn(Unit.FromCentimeter(2.8));   // U
-        t.AddColumn(Unit.FromCentimeter(2.8));   // correzione
+        t.AddColumn(Unit.FromCentimeter(1.4));   // punto
+        t.AddColumn(Unit.FromCentimeter(1.5));   // n. misure
+        t.AddColumn(Unit.FromCentimeter(3.0));   // Tr
+        t.AddColumn(Unit.FromCentimeter(3.0));   // Tw
+        t.AddColumn(Unit.FromCentimeter(3.0));   // diff
+        t.AddColumn(Unit.FromCentimeter(2.6));   // U
+        t.AddColumn(Unit.FromCentimeter(2.5));   // correzione
         var h = t.AddRow(); h.Format.Font.Bold = true; h.Shading.Color = new Color(0xFFF3F3F3);
-        string[] intest = ["Punto", "Rif. Tr [°C]", "Strum. Tw [°C]", "Diff. Tw−Tr [°C]", "Incert. U (1) [°C]", "Correzione [°C]"];
+        string[] intest = ["Punto", "N. misure", "Rif. Tr [°C]", "Strum. Tw [°C]", "Diff. Tw−Tr [°C]", "Incert. U (1) [°C]", "Correzione [°C]"];
         for (int i = 0; i < intest.Length; i++)
         {
             h.Cells[i].AddParagraph(intest[i]).Format.Alignment = ParagraphAlignment.Center;
@@ -227,14 +282,23 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         return t;
     }
 
-    private static void RigaRisultato(Table t, string punto, string tr, string tw, string diff, string u, string corr)
+    private static void RigaRisultato(Table t, string punto, string nMisure, string tr, string tw, string diff, string u, string corr)
     {
         var r = t.AddRow();
         r.Cells[0].AddParagraph(punto).Format.Alignment = ParagraphAlignment.Center;
+        r.Cells[1].AddParagraph(nMisure).Format.Alignment = ParagraphAlignment.Center;
         string[] v = [tr, tw, diff, u, corr];
         for (int i = 0; i < v.Length; i++)
-            r.Cells[i + 1].AddParagraph(v[i]).Format.Alignment = ParagraphAlignment.Right;
+            r.Cells[i + 2].AddParagraph(v[i]).Format.Alignment = ParagraphAlignment.Right;
     }
 
     private static string Num(double v, int dec) => v.ToString("N" + dec, It);
+
+    /// <summary>Percorso di un'immagine di carta intestata in wwwroot/img, se esiste.</summary>
+    private static string? Immagine(string? percorsoWwwRoot, string nomeFile)
+    {
+        if (string.IsNullOrWhiteSpace(percorsoWwwRoot)) return null;
+        var full = Path.Combine(percorsoWwwRoot, "img", nomeFile);
+        return File.Exists(full) ? full : null;
+    }
 }

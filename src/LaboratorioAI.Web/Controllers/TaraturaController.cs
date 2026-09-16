@@ -45,17 +45,18 @@ public class TaraturaController : Controller
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
     private readonly IServizioAudit _audit;
+    private readonly IWebHostEnvironment _ambiente;
 
     public TaraturaController(
         ContestoLaboratorioAI ctx, IServizioTaratura calcolo, IServizioValidazioneTaratura validazione,
         IServizioControlliTaratura controlli, IGeneratoreRapportoTaratura generatore,
         IGeneratoreRapportoValidazione generatoreValidazione, IGeneratoreEtichetteTermometri etichette,
         IClientAnthropic ia, IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
-        IServizioAudit audit)
+        IServizioAudit audit, IWebHostEnvironment ambiente)
     {
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
         _generatore = generatore; _generatoreValidazione = generatoreValidazione; _etichette = etichette; _ia = ia;
-        _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
+        _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit; _ambiente = ambiente;
     }
 
     public IActionResult Index()
@@ -328,7 +329,7 @@ public class TaraturaController : Controller
         };
 
         bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
-        var contenuto = word ? _generatore.GeneraWord(datiRapporto) : _generatore.GeneraPdf(datiRapporto);
+        var contenuto = word ? _generatore.GeneraWord(datiRapporto, _ambiente.WebRootPath) : _generatore.GeneraPdf(datiRapporto, _ambiente.WebRootPath);
         var estensione = word ? "rtf" : "pdf";
         var mime = word ? MimeRtf : MimePdf;
         return File(contenuto, mime, _generatore.NomeFile(datiRapporto, estensione));
@@ -350,7 +351,7 @@ public class TaraturaController : Controller
             Scadenza = t.DataScadenza,
             AnnoColore = t.DataTaratura.Year
         };
-        var bytes = _etichette.Genera(new[] { riga });
+        var bytes = _etichette.Genera(new[] { riga }, _ambiente.WebRootPath);
         var nome = new string((t.StrumentoCodice ?? t.StrumentoIdentificazione ?? "termometro")
             .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
         return File(bytes, MimeXlsx, $"Etichetta_{nome}.xlsx");
@@ -609,7 +610,8 @@ public class TaraturaController : Controller
             Certificato = cdr.Punti.OrderBy(p => p.Ordine).Select(p => new PuntoCertificatoCdr
             {
                 TIndicata = p.TIndicata, TRiferimento = p.TRiferimento, Differenza = p.Differenza,
-                IncertezzaEstesa = p.IncertezzaEstesa, IncertezzaTipo = p.IncertezzaTipo
+                IncertezzaEstesa = p.IncertezzaEstesa, IncertezzaTipo = p.IncertezzaTipo,
+                Secondario = p.Secondario
             }).ToList(),
             RisoluzioneStrumento = res,
             FattoreCopertura = k <= 0 ? 2.0 : k,

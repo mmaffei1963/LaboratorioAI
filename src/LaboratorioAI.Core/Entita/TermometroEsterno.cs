@@ -22,6 +22,9 @@ public class TermometroEsterno
     /// <summary>Già fatturato (colonna «FATT» = «Sì» nel foglio). L'amministrazione lo imposta al momento della fattura.</summary>
     public bool Fatturato { get; set; }
 
+    /// <summary>Se true, il termometro non viene considerato nei filtri/valutazioni per scadenza.</summary>
+    public bool EscludiScadenze { get; set; }
+
     /// <summary>Se il termometro proviene da una taratura eseguita in app (modulo Taratura), il suo Id.</summary>
     public int? IdTaraturaOrigine { get; set; }
 
