@@ -88,6 +88,9 @@ public static class Permessi
     public const string AccettazioneEsegui    = "accettazione.esegui";
     public const string AccettazioneTrasmetti  = "accettazione.trasmetti";
 
+    // ── Ordine di Accettazione (documento generato da lotti ArcLab) ──
+    public const string OrdiniAccettazioneGestione = "ordiniaccettazione.gestione";
+
     // ── Solo esterni (confronto certificati esterni/interni + fatturazione) ──
     public const string SoloEsterniVisualizza = "soloesterni.visualizza";
 
@@ -130,6 +133,7 @@ public static class Permessi
         TempLogEsegui, TempLogMappatura, TempLogValidazione,
         ScadenziarioVisualizza, ScadenziarioGestione,
         AccettazioneEsegui, AccettazioneTrasmetti,
+        OrdiniAccettazioneGestione,
         SoloEsterniVisualizza,
         CertificatiEsterniGestione,
         ControlliProponi, ControlliApprova,

@@ -74,6 +74,9 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<PropostaControllo> ProposteControllo => Set<PropostaControllo>();
     public DbSet<PropostaRigaMetodo> ProposteRigheMetodo => Set<PropostaRigaMetodo>();
 
+    // ── Ordini di Accettazione emessi (registro anti-doppione, schema accettazione) ──
+    public DbSet<OrdineAccettazioneEmesso> OrdiniAccettazioneEmessi => Set<OrdineAccettazioneEmesso>();
+
     // ── Certificati esterni da importare (schema certificati) ──────
     public DbSet<CertificatoEsternoDaImportare> CertificatiEsterniDaImportare => Set<CertificatoEsternoDaImportare>();
 

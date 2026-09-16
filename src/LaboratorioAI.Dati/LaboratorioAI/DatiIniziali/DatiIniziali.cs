@@ -89,6 +89,7 @@ public static class Popolamento
         (Permessi.ScadenziarioGestione,   "Gestire termometri esterni e generare etichette", AreaFunzionale.Scadenziario),
         (Permessi.AccettazioneEsegui,   "Accettare campioni fuori sede (bozze)",         AreaFunzionale.Accettazione),
         (Permessi.AccettazioneTrasmetti, "Generare il tracciato e trasmettere l'accettazione", AreaFunzionale.Accettazione),
+        (Permessi.OrdiniAccettazioneGestione, "Generare gli Ordini di Accettazione dai lotti ArcLab", AreaFunzionale.Accettazione),
 
         (Permessi.SoloEsterniVisualizza, "Confrontare i certificati esterni con gli interni", AreaFunzionale.SoloEsterni),
 

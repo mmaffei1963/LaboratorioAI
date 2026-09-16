@@ -207,6 +207,8 @@ builder.Services.AddSingleton<IGeneratoreTracciatoAccettazione, GeneratoreTracci
 builder.Services.AddSingleton<IGeneratoreDocumentiAccettazione, GeneratoreDocumentiAccettazione>();
 builder.Services.AddSingleton<IGeneratoreTracciatoControllo, GeneratoreTracciatoControllo>();
 builder.Services.AddSingleton<IGeneratoreOffertaPreventivo, GeneratoreOffertaPreventivo>();
+builder.Services.AddScoped<IRepositoryOrdineAccettazione, RepositoryOrdineAccettazione>();
+builder.Services.AddSingleton<IGeneratoreOrdineAccettazione, GeneratoreOrdineAccettazione>();
 
 builder.Services.AddScoped<LaboratorioAI.Dati.LaboratorioAI.Import.IImportatoreUsda,
     LaboratorioAI.Dati.LaboratorioAI.Import.ImportatoreUsda>();

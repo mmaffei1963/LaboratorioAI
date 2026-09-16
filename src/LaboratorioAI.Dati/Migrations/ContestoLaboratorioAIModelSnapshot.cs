@@ -1454,6 +1454,54 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("MateriePrime", "nutri");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.OrdineAccettazioneEmesso", b =>
+                {
+                    b.Property<int>("IdOrdineAccettazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdOrdineAccettazione"));
+
+                    b.Property<string>("Cliente")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("CodLotto")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("DataEmissione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataInvioPortale")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdLotto")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("InviatoPortale")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NumeroCampioni")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Origine")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdOrdineAccettazione");
+
+                    b.HasIndex("IdLotto")
+                        .IsUnique();
+
+                    b.ToTable("OrdiniEmessi", "accettazione");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Permesso", b =>
                 {
                     b.Property<int>("IdPermesso")

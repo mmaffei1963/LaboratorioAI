@@ -1,0 +1,66 @@
+@{
+    ViewData["Titolo"] = "Ordini di Accettazione";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Ordini di Accettazione</h1>
+        <p class="sottotitolo">Genera l'Ordine di Accettazione dei lotti già ricevuti in ArcLab (sola lettura: nulla viene scritto sul gestionale). Il documento riporta il riepilogo dei campioni con i prezzi di commessa, il riquadro delle condizioni (Allegato A Rev. 19) e l'allegato tecnico per campione. Il PDF va poi pubblicato sul portale Palomar.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <details id="dett-impostazioni">
+        <summary style="cursor:pointer;font-weight:600">Impostazioni documento</summary>
+        <div class="griglia-filtri" style="margin-top:0.5rem">
+            <label style="grid-column:1/-1">Revisione Condizioni Generali di Fornitura (condivisa con le offerte)
+                <input type="text" id="s-revisione" placeholder="Mod. Com. 05 Rev. 19 del …" />
+            </label>
+            <label style="grid-column:1/-1">Riferimento modulo Ordine di Accettazione
+                <input type="text" id="s-modulo" placeholder="Mod. Acc. 01 Rev. 0 del 16/09/2026" />
+            </label>
+            <div style="display:flex;align-items:flex-end">
+                <button class="pulsante" id="btn-salva-impostazioni">Salva impostazioni</button>
+            </div>
+        </div>
+        <p class="sottotesto">La revisione è la stessa usata dalle offerte: cambiandola qui vale per tutti i documenti. Il link pubblico resta “Condizioni Generali di Fornitura” (senza revisione), ma la revisione in vigore viene citata nel corpo del documento.</p>
+    </details>
+</section>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Dal (data ricezione)
+            <input type="date" id="f-dal" />
+        </label>
+        <label>Al (data ricezione)
+            <input type="date" id="f-al" />
+        </label>
+        <div style="display:flex;align-items:flex-end;gap:0.5rem">
+            <button class="pulsante" id="btn-carica">Carica lotti</button>
+            <button class="pulsante secondario" id="btn-schedulati" title="Registra come emessi tutti i lotti del periodo non ancora emessi (guardia anti-doppione)">Genera schedulati (periodo)</button>
+        </div>
+    </div>
+    <p class="sottotesto" id="msg"></p>
+</section>
+
+<section class="riquadro">
+    <div class="tabella-scorrevole" style="max-height:32rem">
+        <table class="tabella" id="tabella-lotti">
+            <thead>
+                <tr>
+                    <th>Cod. lotto</th>
+                    <th>Data ric.</th>
+                    <th>Cliente</th>
+                    <th class="numerico">Campioni</th>
+                    <th>Stato</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/ordini-accettazione.js" asp-append-version="true"></script>
+}
