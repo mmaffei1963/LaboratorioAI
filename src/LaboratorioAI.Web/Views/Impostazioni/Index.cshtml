@@ -1,0 +1,23 @@
+@{
+    ViewData["Titolo"] = "Impostazioni documenti";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Impostazioni documenti</h1>
+        <p class="sottotitolo">Punto unico per le configurazioni condivise tra i moduli documentali (revisione delle Condizioni Generali usata da offerte e Ordini di Accettazione, riferimento modulo, indirizzi per le notifiche di errore, cartella di archiviazione). La revisione delle Condizioni cambiata qui vale per tutti i documenti.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div id="campi-impostazioni" class="griglia-filtri"></div>
+    <div class="azioni-filtri">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante" id="btn-salva">Salva impostazioni</button>
+    </div>
+    <p class="sottotesto" id="msg"></p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/impostazioni.js" asp-append-version="true"></script>
+}

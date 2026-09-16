@@ -10,24 +10,6 @@
 </div>
 
 <section class="riquadro">
-    <details id="dett-impostazioni">
-        <summary style="cursor:pointer;font-weight:600">Impostazioni documento</summary>
-        <div class="griglia-filtri" style="margin-top:0.5rem">
-            <label style="grid-column:1/-1">Revisione Condizioni Generali di Fornitura (condivisa con le offerte)
-                <input type="text" id="s-revisione" placeholder="Mod. Com. 05 Rev. 19 del …" />
-            </label>
-            <label style="grid-column:1/-1">Riferimento modulo Ordine di Accettazione
-                <input type="text" id="s-modulo" placeholder="Mod. Acc. 01 Rev. 0 del 16/09/2026" />
-            </label>
-            <div style="display:flex;align-items:flex-end">
-                <button class="pulsante" id="btn-salva-impostazioni">Salva impostazioni</button>
-            </div>
-        </div>
-        <p class="sottotesto">La revisione è la stessa usata dalle offerte: cambiandola qui vale per tutti i documenti. Il link pubblico resta “Condizioni Generali di Fornitura” (senza revisione), ma la revisione in vigore viene citata nel corpo del documento.</p>
-    </details>
-</section>
-
-<section class="riquadro">
     <div class="griglia-filtri">
         <label>Dal (data ricezione)
             <input type="date" id="f-dal" />
@@ -37,8 +19,9 @@
         </label>
         <div style="display:flex;align-items:flex-end;gap:0.5rem">
             <button class="pulsante" id="btn-carica">Carica lotti</button>
-            <button class="pulsante secondario" id="btn-schedulati" title="Registra come emessi tutti i lotti del periodo non ancora emessi (guardia anti-doppione)">Genera schedulati (periodo)</button>
+            <button class="pulsante secondario" id="btn-schedulati" title="Registra come emessi tutti i lotti del periodo non ancora emessi, pronti (guardia anti-doppione)">Genera schedulati (periodo)</button>
         </div>
+        <label class="casella" style="grid-column:1/-1"><input type="checkbox" id="filtro-non-pronti" /> mostra anche i lotti senza parametri caricati (non generabili)</label>
     </div>
     <p class="sottotesto" id="msg"></p>
 </section>

@@ -28,6 +28,8 @@ public class OrdiniAccettazioneController : Controller
     private const string ChiaveModuloOA = "OrdineAccettazione.ModuloRevisione";
     private const string ModuloDefault = "Mod. Acc. 01 Rev. 0 del 16/09/2026";
     private const string ChiaveCartella = "OrdineAccettazione.CartellaOutput";     // se vuota → App_Data/OrdiniAccettazione
+    private const string ChiaveEmailErrori = "OrdineAccettazione.EmailErrori";
+    private const string EmailErroriDefault = "mmaffei@mare-a.com; dbertozzi@mare-a.com; refertazione@mare-a.com";
 
     private readonly ContestoLaboratorioAI _ctx;
     private readonly IRepositoryOrdineAccettazione _repo;
@@ -65,49 +67,8 @@ public class OrdiniAccettazioneController : Controller
         ordine.RiferimentoModulo = await ModuloCorrenteAsync(ct);
     }
 
-    // ── Impostazioni (revisione Condizioni condivisa + riferimento Mod. Acc.) ──
-    [HttpGet("api/ordini-accettazione/impostazioni")]
-    public async Task<IActionResult> LeggiImpostazioni(CancellationToken ct) =>
-        Json(new
-        {
-            RevisioneCondizioni = await RevisioneCorrenteAsync(ct),
-            ModuloRevisione = await ModuloCorrenteAsync(ct)
-        });
-
-    [HttpPost("api/ordini-accettazione/impostazioni")]
-    [RichiedePermesso(Permessi.AmministrazioneConfigurazioni)]
-    public async Task<IActionResult> SalvaImpostazioni([FromBody] ImpostazioniOrdine req, CancellationToken ct)
-    {
-        if (!string.IsNullOrWhiteSpace(req.RevisioneCondizioni))
-            await SalvaConfigAsync(ChiaveRevisione, req.RevisioneCondizioni!.Trim(),
-                "Revisione corrente delle Condizioni Generali di Fornitura (condivisa offerte/OA)", "Preventivi", ct);
-        if (!string.IsNullOrWhiteSpace(req.ModuloRevisione))
-            await SalvaConfigAsync(ChiaveModuloOA, req.ModuloRevisione!.Trim(),
-                "Riferimento modulo (Mod. Acc.) dell'Ordine di Accettazione", "Accettazione", ct);
-
-        await _audit.RegistraAsync(AreaFunzionale.Accettazione, "ordineaccettazione.impostazioni",
-            EsitoOperazione.Successo, dettaglio: new { req.RevisioneCondizioni, req.ModuloRevisione }, ct: ct);
-        return Json(new { ok = true });
-    }
-
-    private async Task SalvaConfigAsync(string chiave, string valore, string descrizione, string categoria, CancellationToken ct)
-    {
-        var cfg = await _ctx.Configurazioni.FirstOrDefaultAsync(x => x.Chiave == chiave, ct);
-        if (cfg is null)
-            _ctx.Configurazioni.Add(new Configurazione
-            {
-                Chiave = chiave, Valore = valore, Descrizione = descrizione, Categoria = categoria,
-                DataModifica = DateTime.UtcNow, IdUtenteModifica = _utente.IdUtente
-            });
-        else { cfg.Valore = valore; cfg.DataModifica = DateTime.UtcNow; cfg.IdUtenteModifica = _utente.IdUtente; }
-        await _ctx.SaveChangesAsync(ct);
-    }
-
-    public record ImpostazioniOrdine
-    {
-        public string? RevisioneCondizioni { get; init; }
-        public string? ModuloRevisione { get; init; }
-    }
+    // Le impostazioni (revisione Condizioni condivisa, Mod. Acc., email errori, cartella) si modificano
+    // in Amministrazione → Impostazioni documenti (ImpostazioniController). Qui vengono solo lette.
 
     // ── Elenco lotti candidati (con flag "già emesso") ──────────────
     [HttpGet("api/ordini-accettazione/lotti")]
@@ -131,6 +92,8 @@ public class OrdiniAccettazioneController : Controller
             DataRicezione = l.DataRicezione?.ToString("yyyy-MM-dd"),
             l.Cliente,
             l.NumeroCampioni,
+            l.CampioniConParametri,
+            l.Pronto,
             GiaEmesso = setEmessi.Contains(l.IdLotto)
         }));
     }
@@ -142,6 +105,8 @@ public class OrdiniAccettazioneController : Controller
         var ordine = await _repo.LeggiPerLottoAsync(idLotto, ct);
         if (ordine is null)
             return NotFound(new { messaggio = $"Lotto {idLotto} non trovato o senza campioni in ArcLab." });
+        if (!ordine.Pronto)
+            return BadRequest(new { messaggio = $"Lotto {ordine.CodLotto}: {ordine.CampioniSenzaParametri} campione/i senza parametri caricati. Documento non generabile." });
         await ApplicaImpostazioniAsync(ordine, ct);
 
         var pdf = string.Equals(formato, "pdf", StringComparison.OrdinalIgnoreCase);
@@ -183,25 +148,44 @@ public class OrdiniAccettazioneController : Controller
     [HttpPost("api/ordini-accettazione/genera-schedulati")]
     public async Task<IActionResult> GeneraSchedulati([FromQuery] DateTime? dal, [FromQuery] DateTime? al, CancellationToken ct)
     {
-        var alEsclusivo = al?.Date.AddDays(1);
-        var lotti = await _repo.LottiRicevutiAsync(dal?.Date, alEsclusivo, ct);
+        // Default (run notturno): tutte le schede ricevute OGGI. Solo lotti "pronti"; i non pronti
+        // sono esclusi e riproposti al run successivo quando avranno i parametri.
+        var dalD = (dal ?? DateTime.Today).Date;
+        var alEsclusivo = (al?.Date ?? DateTime.Today.Date).AddDays(1);
+        var lotti = await _repo.LottiRicevutiAsync(dalD, alEsclusivo, ct);
 
-        int nuovi = 0, gia = 0, errori = 0;
+        int nuovi = 0, gia = 0, nonPronti = 0, errori = 0;
+        var errate = new List<string>();
         foreach (var l in lotti)
         {
             try
             {
                 var esito = await RegistraEmissioneAsync(l.IdLotto, "schedulato", ct);
-                if (esito.Ordine is null) { errori++; continue; }
+                if (esito.NonPronto) { nonPronti++; continue; }
+                if (esito.Ordine is null) { errori++; errate.Add($"Lotto {l.CodLotto} (id {l.IdLotto}): {esito.Messaggio}"); continue; }
                 if (esito.Doppione) gia++; else nuovi++;
             }
-            catch { errori++; }
+            catch (Exception ex) { errori++; errate.Add($"Lotto {l.CodLotto} (id {l.IdLotto}): {ex.Message}"); }
         }
 
-        await _audit.RegistraAsync(AreaFunzionale.Accettazione, "ordineaccettazione.schedulato",
-            EsitoOperazione.Successo, dettaglio: new { Nuovi = nuovi, GiaEmessi = gia, Errori = errori }, ct: ct);
+        // In caso di errori, avvisa gli indirizzi configurati (invio effettivo da collegare con SMTP/Palomar).
+        if (errori > 0)
+            await NotificaErroriAsync(errate, ct);
 
-        return Json(new { nuovi, giaEmessi = gia, errori, totale = lotti.Count });
+        await _audit.RegistraAsync(AreaFunzionale.Accettazione, "ordineaccettazione.schedulato",
+            EsitoOperazione.Successo,
+            dettaglio: new { Nuovi = nuovi, GiaEmessi = gia, NonPronti = nonPronti, Errori = errori }, ct: ct);
+
+        return Json(new { nuovi, giaEmessi = gia, nonPronti, errori, totale = lotti.Count });
+    }
+
+    /// <summary>Registra (audit) l'elenco errori da notificare agli indirizzi configurati. L'invio email
+    /// effettivo verrà collegato con lo step di invio (SMTP/Palomar).</summary>
+    private async Task NotificaErroriAsync(IReadOnlyList<string> errori, CancellationToken ct)
+    {
+        var destinatari = await ConfigAsync(ChiaveEmailErrori, "", ct);
+        await _audit.RegistraAsync(AreaFunzionale.Accettazione, "ordineaccettazione.errori",
+            EsitoOperazione.Errore, dettaglio: new { Destinatari = destinatari, Errori = errori }, ct: ct);
     }
 
     /// <summary>Archivia il PDF su disco in &lt;cartella&gt;/AAAA/MM/ e ritorna il percorso completo.</summary>
@@ -220,7 +204,11 @@ public class OrdiniAccettazioneController : Controller
         return percorso;
     }
 
-    private record EsitoEmissione(OrdineAccettazioneEmesso? Ordine, bool Doppione, string Messaggio);
+    private record EsitoEmissione(OrdineAccettazioneEmesso? Ordine, bool Doppione, string Messaggio)
+    {
+        /// <summary>True se saltato perché il lotto non ha tutti i parametri caricati.</summary>
+        public bool NonPronto { get; init; }
+    }
 
     /// <summary>
     /// Registra l'emissione dell'Ordine di Accettazione per un lotto. Idempotente: se già presente
@@ -235,6 +223,9 @@ public class OrdiniAccettazioneController : Controller
         var ordine = await _repo.LeggiPerLottoAsync(idLotto, ct);
         if (ordine is null)
             return new EsitoEmissione(null, false, $"Lotto {idLotto} non trovato o senza campioni in ArcLab.");
+        if (!ordine.Pronto)
+            return new EsitoEmissione(null, false, $"Lotto {ordine.CodLotto}: {ordine.CampioniSenzaParametri} campione/i senza parametri. Escluso.")
+                   { NonPronto = true };
         await ApplicaImpostazioniAsync(ordine, ct);
 
         // Genera il PDF (carta intestata) e archivialo su disco; calcola l'impronta.

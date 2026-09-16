@@ -26,8 +26,12 @@ param(
     [string]$BaseUrl = "http://localhost:5080",
     [string]$Dal = "",
     [string]$Al  = "",
-    [int]$GiorniIndietro = 2
+    [int]$GiorniIndietro = 0
 )
+
+# Uso previsto: run NOTTURNO (es. 22:00 o 23:00 via Task Scheduler) che genera le schede
+# ricevute OGGI e non ancora inviate. Solo lotti "pronti" (tutti i campioni con parametri);
+# i non pronti sono esclusi e riproposti al run successivo. Guardia anti-doppione lato server.
 
 $ErrorActionPreference = "Stop"
 

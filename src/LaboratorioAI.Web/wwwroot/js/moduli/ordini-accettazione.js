@@ -31,25 +31,38 @@ async function caricaLotti() {
     } catch (e) { msg(e.message, true); }
 }
 
+let ultimiLotti = [];
+
 function render(lotti) {
+    ultimiLotti = lotti;
+    const mostraNonPronti = $('filtro-non-pronti')?.checked;
+    const visibili = lotti.filter(l => mostraNonPronti || l.pronto);
     const tb = $('tabella-lotti').querySelector('tbody');
     tb.innerHTML = '';
-    for (const l of lotti) {
+    for (const l of visibili) {
         const tr = document.createElement('tr');
-        const stato = l.giaEmesso
-            ? '<span class="etichetta" style="background:#e7f5e7;color:#256029">Emesso</span>'
-            : '<span class="etichetta" style="background:#fff3cd;color:#7a5b00">Da emettere</span>';
+        let stato;
+        if (!l.pronto) {
+            const mancanti = l.numeroCampioni - l.campioniConParametri;
+            stato = `<span class="etichetta" style="background:#f8d7da;color:#842029" title="Campioni senza parametri caricati">Senza parametri (${mancanti}/${l.numeroCampioni})</span>`;
+        } else if (l.giaEmesso) {
+            stato = '<span class="etichetta" style="background:#e7f5e7;color:#256029">Emesso</span>';
+        } else {
+            stato = '<span class="etichetta" style="background:#fff3cd;color:#7a5b00">Da emettere</span>';
+        }
+        const azioni = l.pronto
+            ? `<a class="pulsante pulsante-tenue" href="/api/ordini-accettazione/${l.idLotto}/documento?formato=pdf" target="_blank">PDF</a>
+               <a class="pulsante pulsante-tenue" href="/api/ordini-accettazione/${l.idLotto}/documento?formato=docx">Word</a>
+               <button type="button" class="pulsante pulsante-tenue btn-emetti" data-id="${l.idLotto}" ${l.giaEmesso ? 'disabled' : ''}>Segna emesso</button>`
+            : `<span class="sottotesto">non generabile</span>`;
+        if (!l.pronto) tr.style.opacity = '0.7';
         tr.innerHTML = `
             <td>${esc(l.codLotto)}</td>
             <td>${esc(l.dataRicezione || '')}</td>
             <td>${esc(l.cliente || '')}</td>
-            <td class="numerico">${l.numeroCampioni}</td>
+            <td class="numerico">${l.campioniConParametri}/${l.numeroCampioni}</td>
             <td>${stato}</td>
-            <td style="white-space:nowrap">
-                <a class="pulsante pulsante-tenue" href="/api/ordini-accettazione/${l.idLotto}/documento?formato=pdf" target="_blank">PDF</a>
-                <a class="pulsante pulsante-tenue" href="/api/ordini-accettazione/${l.idLotto}/documento?formato=docx">Word</a>
-                <button type="button" class="pulsante pulsante-tenue btn-emetti" data-id="${l.idLotto}" ${l.giaEmesso ? 'disabled' : ''}>Segna emesso</button>
-            </td>`;
+            <td style="white-space:nowrap">${azioni}</td>`;
         tb.appendChild(tr);
     }
     tb.querySelectorAll('.btn-emetti').forEach(b => b.addEventListener('click', () => emetti(b.dataset.id)));
@@ -69,32 +82,14 @@ async function generaSchedulati() {
     msg('Elaborazione…');
     try {
         const r = await api('/api/ordini-accettazione/genera-schedulati?' + paramsPeriodo().toString(), { method: 'POST' });
-        msg(`Completato: ${r.nuovi} nuovi, ${r.giaEmessi} già emessi, ${r.errori} errori (su ${r.totale}).`);
+        msg(`Completato: ${r.nuovi} nuovi, ${r.giaEmessi} già emessi, ${r.nonPronti} senza parametri, ${r.errori} errori (su ${r.totale}).`);
         await caricaLotti();
-    } catch (e) { msg(e.message, true); }
-}
-
-async function caricaImpostazioni() {
-    try {
-        const s = await api('/api/ordini-accettazione/impostazioni');
-        $('s-revisione').value = s.revisioneCondizioni || '';
-        $('s-modulo').value = s.moduloRevisione || '';
-    } catch { /* silenzioso */ }
-}
-
-async function salvaImpostazioni() {
-    const rev = $('s-revisione').value.trim();
-    const mod = $('s-modulo').value.trim();
-    if (!confirm('Confermi la modifica delle impostazioni?\n\nLa revisione delle Condizioni Generali è condivisa con le offerte: verrà applicata a tutti i nuovi documenti.')) return;
-    try {
-        await postJson('/api/ordini-accettazione/impostazioni', { revisioneCondizioni: rev, moduloRevisione: mod });
-        msg('Impostazioni salvate.');
     } catch (e) { msg(e.message, true); }
 }
 
 $('btn-carica').addEventListener('click', caricaLotti);
 $('btn-schedulati').addEventListener('click', generaSchedulati);
-$('btn-salva-impostazioni').addEventListener('click', salvaImpostazioni);
+$('filtro-non-pronti')?.addEventListener('change', () => render(ultimiLotti));
 
 // Default: ultimi 7 giorni
 (function init() {
@@ -102,6 +97,5 @@ $('btn-salva-impostazioni').addEventListener('click', salvaImpostazioni);
     const dal = new Date(oggi); dal.setDate(dal.getDate() - 7);
     $('f-al').value = oggi.toISOString().slice(0, 10);
     $('f-dal').value = dal.toISOString().slice(0, 10);
-    caricaImpostazioni();
     caricaLotti();
 })();

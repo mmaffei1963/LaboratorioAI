@@ -101,12 +101,13 @@
                 </div>
             </div>
         }
-        @if (Utente.HaPermesso(Permessi.AmministrazioneAudit))
+        @if (Utente.HaPermesso(Permessi.AmministrazioneAudit) || Utente.HaPermesso(Permessi.AmministrazioneConfigurazioni))
         {
             <div class="gruppo">
                 <span class="gruppo-testo">Amministrazione ▾</span>
                 <div class="menu">
-                    <a href="/Audit">Registro attività (audit)</a>
+                    @if (Utente.HaPermesso(Permessi.AmministrazioneConfigurazioni)) { <a href="/Impostazioni">Impostazioni documenti</a> }
+                    @if (Utente.HaPermesso(Permessi.AmministrazioneAudit)) { <a href="/Audit">Registro attività (audit)</a> }
                 </div>
             </div>
         }

@@ -76,6 +76,15 @@ public class OrdineAccettazione
         Math.Round(TotaleImponibile * AliquotaIva / 100m, 2, MidpointRounding.AwayFromZero);
 
     public decimal TotaleConIva => TotaleImponibile + TotaleIva;
+
+    /// <summary>Numero di campioni privi di prove/parametri caricati.</summary>
+    public int CampioniSenzaParametri => Campioni.Count(c => c.Analisi.Count == 0);
+
+    /// <summary>
+    /// Il documento è generabile solo se ci sono campioni e tutti hanno almeno una prova
+    /// (parametri caricati). I lotti non pronti sono esclusi da generazione e schedulazione.
+    /// </summary>
+    public bool Pronto => Campioni.Count > 0 && CampioniSenzaParametri == 0;
 }
 
 /// <summary>Un campione del lotto, con dati identificativi e analisi richieste.</summary>

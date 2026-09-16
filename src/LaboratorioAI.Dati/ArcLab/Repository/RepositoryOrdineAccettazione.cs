@@ -246,7 +246,10 @@ public class RepositoryOrdineAccettazione : IRepositoryOrdineAccettazione
             CONVERT(nvarchar(20),  l.CodLotto)         AS CodLotto,
             l.DataRic                                  AS DataRicezione,
             CONVERT(nvarchar(300), cl.RagioneSociale)  AS Cliente,
-            (SELECT COUNT(*) FROM Campione c WHERE c.IdLotto = l.IdLotto) AS NumeroCampioni
+            (SELECT COUNT(*) FROM Campione c WHERE c.IdLotto = l.IdLotto) AS NumeroCampioni,
+            (SELECT COUNT(*) FROM Campione c
+              WHERE c.IdLotto = l.IdLotto
+                AND EXISTS (SELECT 1 FROM prove pr WHERE pr.IdCampione = c.IdCampione)) AS CampioniConParametri
         FROM Lotto l
             LEFT JOIN commessa cm ON cm.IdCommessa = l.IdCommessa
             LEFT JOIN Clienti cl ON CAST(cl.CODContabilita AS varchar(50)) = CAST(cm.Cod_Cliente AS varchar(50))

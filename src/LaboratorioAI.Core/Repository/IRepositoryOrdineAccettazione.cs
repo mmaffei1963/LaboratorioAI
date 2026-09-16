@@ -29,4 +29,9 @@ public record LottoCandidato
     public DateTime? DataRicezione { get; init; }
     public string? Cliente { get; init; }
     public int NumeroCampioni { get; init; }
+    /// <summary>Campioni con almeno una prova (parametri) caricata.</summary>
+    public int CampioniConParametri { get; init; }
+
+    /// <summary>Pronto = tutti i campioni hanno i parametri caricati.</summary>
+    public bool Pronto => NumeroCampioni > 0 && CampioniConParametri >= NumeroCampioni;
 }

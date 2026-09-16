@@ -206,29 +206,8 @@ public class PreventiviController : Controller
         p.Note = Pulisci(req.Note);
         p.IdUtenteCreatore ??= _utente.IdUtente;
 
-        // Aggiorna la revisione corrente predefinita (per le prossime offerte), se richiesto.
-        if (req.ImpostaRevisionePredefinita && !string.IsNullOrWhiteSpace(p.RevisioneCondizioni))
-        {
-            var cfg = await _ctx.Configurazioni.FirstOrDefaultAsync(x => x.Chiave == ChiaveRevisione, ct);
-            if (cfg is null)
-            {
-                _ctx.Configurazioni.Add(new Configurazione
-                {
-                    Chiave = ChiaveRevisione,
-                    Valore = p.RevisioneCondizioni,
-                    Descrizione = "Revisione corrente delle Condizioni Generali di Fornitura per i preventivi",
-                    Categoria = "Preventivi",
-                    DataModifica = ora,
-                    IdUtenteModifica = _utente.IdUtente
-                });
-            }
-            else
-            {
-                cfg.Valore = p.RevisioneCondizioni;
-                cfg.DataModifica = ora;
-                cfg.IdUtenteModifica = _utente.IdUtente;
-            }
-        }
+        // La revisione predefinita si imposta in Amministrazione → Impostazioni documenti.
+        // Qui resta solo la revisione della singola offerta (snapshot), eventualmente sovrascritta.
 
         // Righe (+ metodi)
         var prog = 1;
@@ -418,7 +397,6 @@ public record RichiestaSalvaPreventivo
     public int? ValiditaGiorni { get; init; }
     public string? CondizioniPagamento { get; init; }
     public string? RevisioneCondizioni { get; init; }
-    public bool ImpostaRevisionePredefinita { get; init; }
     public decimal? AliquotaIva { get; init; }
     public string? Note { get; init; }
 

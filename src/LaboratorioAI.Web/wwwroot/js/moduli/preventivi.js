@@ -302,7 +302,7 @@ function nuovo() {
     for (const id of ['c-cerca', 'c-ragione', 'c-piva', 'c-indirizzo', 'c-cap', 'c-citta', 'c-prov', 'c-email', 'p-oggetto', 'p-pagamento', 'p-note']) $(id).value = '';
     $('p-data').value = new Date().toISOString().slice(0, 10);
     $('p-validita').value = 60; $('p-iva').value = 22;
-    $('p-revisione').value = revisioneDefault; $('p-revisione-default').checked = false;
+    $('p-revisione').value = revisioneDefault;
     $('tabella-righe').querySelector('tbody').innerHTML = '';
     renderRighe();
     aggiornaBottoniStato();
@@ -332,7 +332,6 @@ async function apri(id) {
     $('p-iva').value = p.aliquotaIva ?? 22;
     $('p-pagamento').value = p.condizioniPagamento ?? '';
     $('p-revisione').value = p.revisioneCondizioni ?? revisioneDefault;
-    $('p-revisione-default').checked = false;
     $('p-note').value = p.note ?? '';
     const num = p.numero ? `${p.anno}/${String(p.numero).padStart(3, '0')}` : 'bozza';
     $('form-titolo').textContent = 'Preventivo ' + num;
@@ -374,7 +373,6 @@ function corpo(statoRichiesto) {
         aliquotaIva: +$('p-iva').value || 22,
         condizioniPagamento: $('p-pagamento').value.trim(),
         revisioneCondizioni: $('p-revisione').value.trim(),
-        impostaRevisionePredefinita: $('p-revisione-default').checked,
         note: $('p-note').value.trim(),
         righe: stato.righe.map((r, i) => ({
             progressivo: i + 1, tipo: r.tipo,
