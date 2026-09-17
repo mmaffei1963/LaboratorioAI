@@ -208,17 +208,23 @@ async function strutturaAI() {
         const r = await api('/api/prelievo/struttura', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testo }) });
         const nuovi = Array.isArray(r.lotti) ? r.lotti.map(normalizzaLotto) : [];
         if (nuovi.length) {
-            // se il giro è "vuoto" (un solo lotto senza dati) lo sostituisco, altrimenti aggiungo.
-            const vuoto = giro.lotti.length === 1 && !giro.lotti[0].cliente && giro.lotti[0].campioni.every(c => !c.denominazione);
-            giro.lotti = vuoto ? nuovi : giro.lotti.concat(nuovi);
+            // togli i lotti completamente vuoti creati a mano, poi aggiungi in fondo quelli dettati
+            const nonVuoto = l => (l.cliente || '').trim() || (l.localita || '').trim() || (l.controllo || '').trim()
+                || l.campioni.some(c => (c.denominazione || '').trim() || (c.matrice || '').trim() || (c.temperatura ?? '') !== '');
+            giro.lotti = giro.lotti.filter(nonVuoto).concat(nuovi);
             render();
+            window.scrollTo(0, document.body.scrollHeight);
         }
         const domande = Array.isArray(r.domande) ? r.domande : [];
-        $('domande-ai').innerHTML = domande.length
+        const intro = `<p class="sottotesto" style="color:#256029">Aggiunti ${nuovi.length} lotto/i in fondo alla lista.</p>`;
+        $('domande-ai').innerHTML = intro + (domande.length
             ? '<p style="font-weight:600;margin:0.5rem 0 0.2rem">L\'AI chiede:</p><ul>' + domande.map(d => `<li>${esc(d)}</li>`).join('') + '</ul>'
-            : '<p class="sottotesto" style="color:#256029">Struttura completata: nessun dato obbligatorio mancante.</p>';
+            : '<p class="sottotesto">Nessun dato obbligatorio mancante.</p>');
     } catch (e) {
-        $('domande-ai').innerHTML = `<p class="sottotesto" style="color:#b00">${esc(e.message)}</p>`;
+        const msg = /failed to fetch/i.test(e.message)
+            ? 'Impossibile contattare il server (rete assente o app non raggiungibile). La strutturazione con AI richiede rete: riprova quando sei online.'
+            : e.message;
+        $('domande-ai').innerHTML = `<p class="sottotesto" style="color:#b00">${esc(msg)}</p>`;
     }
 }
 
