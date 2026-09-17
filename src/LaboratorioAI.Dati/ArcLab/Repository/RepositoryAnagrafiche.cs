@@ -113,6 +113,27 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
             new CommandDefinition(sql, cancellationToken: ct))).ToList();
     }
 
+    public async Task<IReadOnlyList<VoceAnagrafica>> MetodiAsync(CancellationToken ct = default)
+    {
+        // Solo metodi effettivamente usati (presenti in rigametodo). Etichetta: denominazione + rif. biblio.
+        const string sql = """
+            SELECT m.IdMetodo AS Id,
+                   LTRIM(RTRIM(
+                     ISNULL(NULLIF(CONVERT(nvarchar(300), m.DettagliMetodo), ''), CONVERT(nvarchar(300), p.NomeParametro))
+                     + CASE WHEN m.RifBiblio IS NOT NULL THEN ' — ' + CONVERT(nvarchar(300), m.RifBiblio) ELSE '' END
+                   )) AS Nome
+            FROM Metodo m
+                LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
+            WHERE EXISTS (SELECT 1 FROM rigametodo rm WHERE rm.IdMetodo = m.IdMetodo)
+              AND (m.DettagliMetodo IS NOT NULL OR p.NomeParametro IS NOT NULL OR m.RifBiblio IS NOT NULL)
+            ORDER BY Nome
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<VoceAnagrafica>(
+            new CommandDefinition(sql, commandTimeout: 120, cancellationToken: ct))).ToList();
+    }
+
     public async Task<IReadOnlyList<string>> PrelevatoriAsync(CancellationToken ct = default)
     {
         const string sql = """

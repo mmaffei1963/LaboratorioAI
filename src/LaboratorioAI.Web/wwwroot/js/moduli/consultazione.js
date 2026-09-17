@@ -10,12 +10,13 @@ let insediamentiTutti = [];
 
 async function caricaAnagrafiche() {
     try {
-        const [clienti, insediamenti, matrici, controlli, laboratori] = await Promise.all([
+        const [clienti, insediamenti, matrici, controlli, laboratori, metodi] = await Promise.all([
             chiamaApi('/api/anagrafiche/clienti'),
             chiamaApi('/api/anagrafiche/insediamenti'),
             chiamaApi('/api/anagrafiche/matrici'),
             chiamaApi('/api/anagrafiche/controlli'),
-            chiamaApi('/api/anagrafiche/laboratori-esterni')
+            chiamaApi('/api/anagrafiche/laboratori-esterni'),
+            chiamaApi('/api/anagrafiche/metodi')
         ]);
 
         insediamentiTutti = insediamenti;
@@ -25,6 +26,7 @@ async function caricaAnagrafiche() {
         popolaSelect(document.getElementById('f-matrice'),      matrici,    'Tutte');
         popolaSelect(document.getElementById('f-controllo'),    controlli);
         popolaSelect(document.getElementById('f-labesterno'),   laboratori);
+        popolaSelect(document.getElementById('f-metodo'),       metodi);
     } catch (errore) {
         avvisa(`Caricamento filtri non riuscito: ${errore.message}`, 'errore');
     }
@@ -65,6 +67,8 @@ function leggiCriteri() {
         email:                 valore('f-email'),
 
         idLaboratorioEsterno: numero('f-labesterno'),
+        idMetodo: numero('f-metodo'),
+        metodoNome: valore('f-metodo-testo'),
         stato: valore('f-stato'),
         limite: 500
     };
@@ -111,9 +115,13 @@ function disegnaRisultati(esito) {
             + `affina i criteri per un elenco completo.`;
 
     // Le card riflettono l'intera selezione (calcolo lato server), non solo le righe mostrate
+    const cardMetodo = (esito.totalePrezzoMetodo != null)
+        ? `<div class="scheda scheda-dato"><h2>€ ${euro(esito.totalePrezzoMetodo)}</h2><p>Totale prezzo metodo</p></div>`
+        : '';
     document.getElementById('pannello-sintesi').innerHTML = `
         <div class="scheda scheda-dato"><h2>${esito.totaleCompleto}</h2><p>Campioni</p></div>
-        <div class="scheda scheda-dato"><h2>€ ${euro(esito.totalePrezzo)}</h2><p>Totale prezzo controllo</p></div>`;
+        <div class="scheda scheda-dato"><h2>€ ${euro(esito.totalePrezzo)}</h2><p>Totale prezzo controllo</p></div>
+        ${cardMetodo}`;
 
     document.querySelector('#tabella-risultati tbody').innerHTML =
         esito.campioni.map(c => `

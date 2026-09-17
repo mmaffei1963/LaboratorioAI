@@ -225,6 +225,7 @@ public class RepositoryCampioni : IRepositoryCampioni
         CriteriRicercaCampioni criteri, CancellationToken ct = default)
     {
         var (dove, parametri) = ComponiFiltri(criteri);
+        parametri.Add("IdMetodoTot", criteri.IdMetodo);   // per il totale del prezzo metodo (NULL = non calcolato)
 
         var sql = $"""
             WITH {CostantiArcLab.CteEstPortale}
@@ -246,8 +247,48 @@ public class RepositoryCampioni : IRepositoryCampioni
             """;
 
         using var cn = await _fabbrica.ApriAsync(ct);
-        return await cn.QueryFirstOrDefaultAsync<TotaliRicerca>(
+        var totali = await cn.QueryFirstOrDefaultAsync<TotaliRicerca>(
             new CommandDefinition(sql, parametri, cancellationToken: ct)) ?? new TotaliRicerca();
+
+        // Totale del prezzo metodo (CostoMetodoEuro) sulle prove trovate: query separata, solo se è
+        // impostato un filtro Metodo (per Id o per testo). SQL non consente un aggregato su una sottoquery.
+        var haFiltroMetodo = criteri.IdMetodo is not null || !string.IsNullOrWhiteSpace(criteri.MetodoNome);
+        if (haFiltroMetodo)
+        {
+            var match = new List<string>();
+            if (criteri.IdMetodo is not null) match.Add("rm.IdMetodo = @IdMetodoTot");
+            if (!string.IsNullOrWhiteSpace(criteri.MetodoNome))
+                match.Add("(m.DettagliMetodo LIKE @MetodoNome OR p.NomeParametro LIKE @MetodoNome OR m.RifBiblio LIKE @MetodoNome)");
+            var condMetodo = string.Join(" OR ", match);
+
+            var sqlMetodo = $"""
+                WITH {CostantiArcLab.CteEstPortale}
+                SELECT ISNULL(SUM(CONVERT(decimal(18,2), m.CostoMetodoEuro)), 0)
+                FROM Campione ca
+                INNER JOIN Lotto lo           ON lo.IdLotto = ca.IdLotto
+                INNER JOIN commessa cm        ON cm.IdCommessa = lo.IdCommessa
+                LEFT  JOIN Controllo co       ON co.IDControllo = cm.IDControllo
+                INNER JOIN ContattoCliente cc ON cc.IDContatto = cm.IDContatto
+                INNER JOIN Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
+                INNER JOIN Clienti cl         ON cl.IDCliente = i.IDCliente
+                LEFT  JOIN matrice mx         ON mx.IdMatrice = ca.IdMatrice
+                LEFT  JOIN mansione msp       ON msp.IdMansione = ca.IdPrelevatore
+                LEFT  JOIN Organico org       ON org.IdOrganico = msp.IdOrganico
+                LEFT  JOIN mansione msr       ON msr.IdMansione = lo.IdRicevitore
+                LEFT  JOIN Organico orgr      ON orgr.IdOrganico = msr.IdOrganico
+                {CostantiArcLab.JoinEstPortale}
+                INNER JOIN prove pr           ON pr.IdCampione = ca.IdCampione
+                INNER JOIN rigametodo rm      ON rm.IdRigametodo = pr.IdRigaMetodo
+                INNER JOIN Metodo m           ON m.IdMetodo = rm.IdMetodo
+                LEFT  JOIN Parametro p        ON p.IdParametro = m.IdParametro
+                WHERE {dove} AND ({condMetodo})
+                """;
+            var totMetodo = await cn.ExecuteScalarAsync<decimal?>(
+                new CommandDefinition(sqlMetodo, parametri, cancellationToken: ct));
+            totali = totali with { TotalePrezzoMetodo = totMetodo };
+        }
+
+        return totali;
     }
 
     /// <summary>
@@ -431,6 +472,36 @@ public class RepositoryCampioni : IRepositoryCampioni
                           AND rm2.IdLabEsterno = @IdLabEsterno)
                 """);
             p.Add("IdLabEsterno", c.IdLaboratorioEsterno);
+        }
+
+        // Metodo: campioni che applicano un dato metodo (via prove → rigametodo → metodo)
+        if (c.IdMetodo is not null)
+        {
+            condizioni.Add($"""
+                EXISTS (SELECT 1
+                        FROM prove pr3
+                        INNER JOIN rigametodo rm3 ON rm3.IdRigametodo = pr3.IdRigaMetodo
+                        WHERE pr3.IdCampione = ca.IdCampione
+                          AND rm3.IdMetodo = @IdMetodo)
+                """);
+            p.Add("IdMetodo", c.IdMetodo);
+        }
+
+        // Metodo per testo: campioni con un metodo il cui nome/parametro/rif. contiene la parola.
+        if (!string.IsNullOrWhiteSpace(c.MetodoNome))
+        {
+            condizioni.Add($"""
+                EXISTS (SELECT 1
+                        FROM prove pr4
+                        INNER JOIN rigametodo rm4 ON rm4.IdRigametodo = pr4.IdRigaMetodo
+                        INNER JOIN Metodo m4      ON m4.IdMetodo = rm4.IdMetodo
+                        LEFT  JOIN Parametro p4   ON p4.IdParametro = m4.IdParametro
+                        WHERE pr4.IdCampione = ca.IdCampione
+                          AND (m4.DettagliMetodo LIKE @MetodoNome
+                            OR p4.NomeParametro  LIKE @MetodoNome
+                            OR m4.RifBiblio       LIKE @MetodoNome))
+                """);
+            p.Add("MetodoNome", $"%{c.MetodoNome.Trim()}%");
         }
 
         // Stato: replica la logica della proprietà calcolata sul modello

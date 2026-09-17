@@ -39,6 +39,12 @@ public record CriteriRicercaCampioni
     public string? PuntoPrelievo { get; init; }
     public int? IdLaboratorioEsterno { get; init; }
 
+    /// <summary>Trova i campioni che applicano questo metodo (via prove → rigametodo).</summary>
+    public int? IdMetodo { get; init; }
+
+    /// <summary>Ricerca per testo sul nome/parametro/riferimento del metodo (es. "glutine"): trova tutti i metodi che lo contengono.</summary>
+    public string? MetodoNome { get; init; }
+
     /// <summary>Email (di cliente/insediamento/contatto): raggruppa i condomìni di un amministratore.</summary>
     public string? Email { get; init; }
 
@@ -55,7 +61,7 @@ public record CriteriRicercaCampioni
         string.IsNullOrWhiteSpace(Ricevitore) &&
         string.IsNullOrWhiteSpace(LuogoPrelievo) && string.IsNullOrWhiteSpace(PuntoPrelievo) &&
         string.IsNullOrWhiteSpace(Email) &&
-        IdLaboratorioEsterno is null && Stato is null;
+        IdLaboratorioEsterno is null && IdMetodo is null && string.IsNullOrWhiteSpace(MetodoNome) && Stato is null;
 }
 
 /// <summary>Riga di risultato della ricerca campioni.</summary>
@@ -95,6 +101,8 @@ public record TotaliRicerca
 {
     public int Totale { get; init; }
     public decimal? TotalePrezzo { get; init; }
+    /// <summary>Somma del prezzo del metodo (CostoMetodoEuro) sulle prove trovate, se è impostato il filtro Metodo.</summary>
+    public decimal? TotalePrezzoMetodo { get; init; }
 }
 
 /// <summary>Esito di una ricerca, con indicazione di troncamento.</summary>

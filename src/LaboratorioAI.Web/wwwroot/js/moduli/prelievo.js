@@ -171,6 +171,11 @@ $('btn-svuota').addEventListener('click', () => {
     giro = { lotti: [] }; localStorage.removeItem(CHIAVE); $('riassunto').textContent = ''; render();
 });
 
+// Service worker (installabile + offline) — solo in contesto sicuro (HTTPS/localhost).
+if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('/sw.js').catch(() => { });
+}
+
 // ── Avvio ──
 if (!MIC_DISPONIBILE) {
     document.body.classList.add('senza-voce');

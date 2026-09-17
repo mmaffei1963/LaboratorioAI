@@ -14,6 +14,9 @@ public interface IRepositoryAnagrafiche
     Task<IReadOnlyList<VoceAnagrafica>> MatriciAsync(CancellationToken ct = default);
     Task<IReadOnlyList<VoceAnagrafica>> ControlliAsync(CancellationToken ct = default);
     Task<IReadOnlyList<VoceAnagrafica>> LaboratoriEsterniAsync(CancellationToken ct = default);
+
+    /// <summary>Metodi (per il filtro "campioni che applicano questo metodo").</summary>
+    Task<IReadOnlyList<VoceAnagrafica>> MetodiAsync(CancellationToken ct = default);
     Task<IReadOnlyList<string>> PrelevatoriAsync(CancellationToken ct = default);
     Task<IReadOnlyList<string>> LuoghiPrelievoAsync(CancellationToken ct = default);
 

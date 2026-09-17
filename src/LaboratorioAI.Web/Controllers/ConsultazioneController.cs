@@ -79,6 +79,10 @@ public class ConsultazioneController : Controller
     public async Task<IActionResult> LaboratoriEsterni(CancellationToken ct) =>
         Json(await _anagrafiche.LaboratoriEsterniAsync(ct));
 
+    [HttpGet("api/anagrafiche/metodi")]
+    public async Task<IActionResult> Metodi(CancellationToken ct) =>
+        Json(await _anagrafiche.MetodiAsync(ct));
+
     [HttpGet("api/anagrafiche/prelevatori")]
     public async Task<IActionResult> Prelevatori(CancellationToken ct) =>
         Json(await _anagrafiche.PrelevatoriAsync(ct));
@@ -112,6 +116,7 @@ public class ConsultazioneController : Controller
             esito.Troncato,
             TotaleCompleto = totali.Totale,
             totali.TotalePrezzo,
+            totali.TotalePrezzoMetodo,
             Campioni = esito.Elementi.Select(c => new
             {
                 c.IdCampione,
