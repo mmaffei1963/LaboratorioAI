@@ -1,6 +1,12 @@
 // Prelievo vocale — cattura offline dei dati del prelievo (lotto → campioni), riepilogo da digitare in ArcLab.
 // Tutto lato client: stato in localStorage, nessuna chiamata al server.
 const $ = id => document.getElementById(id);
+const esc = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+async function api(url, opt) {
+    const r = await fetch(url, opt);
+    if (!r.ok) { let m = 'Errore'; try { m = (await r.json()).messaggio || m; } catch { } throw new Error(m); }
+    return (r.headers.get('content-type') || '').includes('json') ? r.json() : r.text();
+}
 const CHIAVE = 'prelievo-giro-v1';
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 // Il riconoscimento vocale del browser funziona solo in contesto sicuro (HTTPS o localhost).
@@ -170,6 +176,54 @@ $('btn-svuota').addEventListener('click', () => {
     if (!confirm('Eliminare TUTTI i prelievi salvati? L\'operazione non è annullabile.')) return;
     giro = { lotti: [] }; localStorage.removeItem(CHIAVE); $('riassunto').textContent = ''; render();
 });
+
+// ── Dettato libero (AI) ──
+const CHIAVE_DETTATO = 'prelievo-dettato-v1';
+const dettatoEl = $('dettato');
+if (dettatoEl) {
+    dettatoEl.value = localStorage.getItem(CHIAVE_DETTATO) || '';
+    dettatoEl.addEventListener('input', () => localStorage.setItem(CHIAVE_DETTATO, dettatoEl.value));
+}
+
+function normalizzaCampione(c) {
+    const b = nuovoCampione();
+    for (const k of Object.keys(b)) if (c[k] != null) b[k] = c[k];
+    b.temperatura = (b.temperatura ?? '').toString();
+    b.ritardo = (b.ritardo ?? '').toString();
+    return b;
+}
+function normalizzaLotto(l) {
+    return {
+        cliente: l.cliente || '', localita: l.localita || '', controllo: (l.controllo ?? '').toString(), note: l.note || '',
+        campioni: Array.isArray(l.campioni) && l.campioni.length ? l.campioni.map(normalizzaCampione) : [nuovoCampione()]
+    };
+}
+
+async function strutturaAI() {
+    const testo = (dettatoEl?.value || '').trim();
+    if (!testo) { $('domande-ai').innerHTML = '<p class="sottotesto" style="color:#b00">Detta o scrivi qualcosa prima di strutturare.</p>'; return; }
+    if (!navigator.onLine) { $('domande-ai').innerHTML = '<p class="sottotesto" style="color:#b00">Sei offline: la strutturazione con AI richiede rete. I dati dettati restano salvati.</p>'; return; }
+    $('domande-ai').innerHTML = '<p class="sottotesto">Elaborazione con AI…</p>';
+    try {
+        const r = await api('/api/prelievo/struttura', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testo }) });
+        const nuovi = Array.isArray(r.lotti) ? r.lotti.map(normalizzaLotto) : [];
+        if (nuovi.length) {
+            // se il giro è "vuoto" (un solo lotto senza dati) lo sostituisco, altrimenti aggiungo.
+            const vuoto = giro.lotti.length === 1 && !giro.lotti[0].cliente && giro.lotti[0].campioni.every(c => !c.denominazione);
+            giro.lotti = vuoto ? nuovi : giro.lotti.concat(nuovi);
+            render();
+        }
+        const domande = Array.isArray(r.domande) ? r.domande : [];
+        $('domande-ai').innerHTML = domande.length
+            ? '<p style="font-weight:600;margin:0.5rem 0 0.2rem">L\'AI chiede:</p><ul>' + domande.map(d => `<li>${esc(d)}</li>`).join('') + '</ul>'
+            : '<p class="sottotesto" style="color:#256029">Struttura completata: nessun dato obbligatorio mancante.</p>';
+    } catch (e) {
+        $('domande-ai').innerHTML = `<p class="sottotesto" style="color:#b00">${esc(e.message)}</p>`;
+    }
+}
+
+$('btn-struttura')?.addEventListener('click', strutturaAI);
+$('btn-svuota-dettato')?.addEventListener('click', () => { if (dettatoEl) { dettatoEl.value = ''; localStorage.removeItem(CHIAVE_DETTATO); } $('domande-ai').innerHTML = ''; });
 
 // Service worker (installabile + offline) — solo in contesto sicuro (HTTPS/localhost).
 if ('serviceWorker' in navigator && window.isSecureContext) {

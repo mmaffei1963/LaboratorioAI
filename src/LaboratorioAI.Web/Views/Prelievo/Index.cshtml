@@ -14,6 +14,19 @@
 
 <p class="sottotesto" id="stato-salvataggio"></p>
 
+<section class="riquadro" id="pannello-dettato">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Dettato libero (AI) — richiede rete</summary>
+        <p class="sottotesto">Detta tutto liberamente (cliente, località, controllo e poi i campioni). Al rientro, con la rete, premi "Struttura con AI": i campi si compilano da soli e l'AI ti segnala cosa manca. Se sei offline, usa direttamente i campi sotto.</p>
+        <textarea id="dettato" rows="5" style="width:100%;font-size:16px;padding:10px;box-sizing:border-box" placeholder="Es. Cliente ICI, insediamento Gradara, controllo 2422. Primo campione: filetti di acciughe lotto JM162X, matrice semiconserve ittiche, imballaggio confezione originale, punto magazzino, temperatura ambiente…"></textarea>
+        <div class="azioni-filtri" style="margin-top:0.5rem">
+            <button class="pulsante" id="btn-struttura">Struttura con AI</button>
+            <button class="pulsante pulsante-tenue" id="btn-svuota-dettato">Pulisci dettato</button>
+        </div>
+        <div id="domande-ai"></div>
+    </details>
+</section>
+
 <div id="lista-lotti"></div>
 
 <section class="riquadro" id="pannello-riassunto" style="margin-top:1rem">
