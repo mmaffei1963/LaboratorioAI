@@ -58,6 +58,7 @@
                     @if (Utente.HaPermesso(Permessi.PrefatturatoTamponi)) { <a href="/TamponiContratto">Tamponi in contratto</a> }
                     @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
                     @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Accettazione">Accettazione campioni</a> }
+                    @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Prelievo">Prelievo vocale</a> }
                     @if (Utente.HaPermesso(Permessi.OrdiniAccettazioneGestione)) { <a href="/OrdiniAccettazione">Ordini di Accettazione</a> }
                     @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/SoloEsterni">Certificati esterni Non Ricertificati</a> }
                     @if (Utente.HaPermesso(Permessi.CertificatiEsterniGestione)) { <a href="/CertificatiEsterni">Certificati esterni · rinomina</a> }

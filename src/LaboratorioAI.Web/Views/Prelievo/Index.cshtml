@@ -1,0 +1,82 @@
+@{
+    ViewData["Titolo"] = "Prelievo vocale";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Prelievo vocale</h1>
+        <p class="sottotitolo">Raccogli i dati del prelievo in campo dettandoli a voce. Funziona offline (dopo il primo caricamento): i dati restano sul dispositivo finché non generi il riassunto da digitare in ArcLab. Nulla viene inviato al server.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante" id="btn-nuovo-lotto">+ Nuovo lotto</button>
+    </div>
+</div>
+
+<p class="sottotesto" id="stato-salvataggio"></p>
+
+<div id="lista-lotti"></div>
+
+<section class="riquadro" id="pannello-riassunto" style="margin-top:1rem">
+    <div class="barra-risultati"><h2>Riepilogo del giro</h2><span id="conteggio-giro" class="sottotesto"></span></div>
+    <div class="azioni-filtri" style="margin-bottom:0.5rem">
+        <button class="pulsante" id="btn-riassunto">Genera riepilogo</button>
+        <button class="pulsante pulsante-tenue" id="btn-copia">Copia</button>
+        <button class="pulsante pulsante-tenue" id="btn-stampa">Stampa / PDF</button>
+        <div style="flex:1"></div>
+        <button class="pulsante pulsante-tenue" id="btn-svuota" title="Elimina tutti i prelievi salvati">Svuota giro</button>
+    </div>
+    <pre id="riassunto" style="white-space:pre-wrap;background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:0.8rem;min-height:2rem"></pre>
+</section>
+
+<!-- Template lotto -->
+<template id="tpl-lotto">
+    <section class="riquadro lotto" style="margin-bottom:1rem">
+        <div class="barra-risultati">
+            <h2 class="titolo-lotto"></h2>
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue lotto-dup">Duplica lotto</button>
+            <button type="button" class="pulsante pulsante-tenue lotto-rm">Rimuovi lotto</button>
+        </div>
+        <div class="griglia-filtri">
+            <label style="grid-column:1/-1">Cliente *<span class="campo-voce"><input type="text" data-f="cliente" /><button type="button" class="mic" title="Detta">🎤</button></span></label>
+            <label style="grid-column:1/-1">Località / Insediamento *<span class="campo-voce"><input type="text" data-f="localita" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Controllo (ID o descrizione) *<span class="campo-voce"><input type="text" data-f="controllo" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Note lotto<span class="campo-voce"><input type="text" data-f="note" /><button type="button" class="mic">🎤</button></span></label>
+        </div>
+
+        <div class="barra-risultati" style="margin-top:0.6rem"><h3>Campioni</h3><div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue camp-add">+ Aggiungi campione</button></div>
+        <div class="lista-campioni"></div>
+    </section>
+</template>
+
+<!-- Template campione -->
+<template id="tpl-campione">
+    <div class="riquadro campione" style="margin:0.5rem 0;background:#fcfcfc">
+        <div class="barra-risultati">
+            <h4 class="titolo-campione"></h4>
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue camp-dup">Duplica</button>
+            <button type="button" class="pulsante pulsante-tenue camp-rm">Rimuovi</button>
+        </div>
+        <div class="griglia-filtri">
+            <label style="grid-column:1/-1">Denominazione campione * <span class="critico">(critico — descrizione completa + n° lotto)</span>
+                <span class="campo-voce"><input type="text" data-f="denominazione" /><button type="button" class="mic">🎤</button></span></label>
+            <label>Matrice *<span class="campo-voce"><input type="text" data-f="matrice" /><button type="button" class="mic">🎤</button></span></label>
+            <label>Imballaggio<span class="campo-voce"><input type="text" data-f="imballaggio" /><button type="button" class="mic">🎤</button></span></label>
+            <label>Temperatura prelievo °C *<input type="number" step="0.1" data-f="temperatura" placeholder="es. -18 / 4 / 20" /></label>
+            <label>Data/ora prelievo<input type="datetime-local" data-f="dataOra" /></label>
+            <div><label>Punto di prelievo<span class="campo-voce"><input type="text" data-f="punto" /><button type="button" class="mic">🎤</button></span></label>
+                <label class="casella"><input type="checkbox" data-f="puntoSconosciuto" /> sconosciuto / n.a.</label></div>
+            <label class="casella" style="grid-column:1/-1"><input type="checkbox" data-f="shelfLife" /> shelf life (inizio analisi posticipato)</label>
+            <label class="riga-ritardo" style="display:none">Ritardo analisi (giorni)<input type="number" step="1" data-f="ritardo" /></label>
+            <label style="grid-column:1/-1">Luogo di prelievo (se diverso dall'insediamento)<span class="campo-voce"><input type="text" data-f="luogo" placeholder="nome + indirizzo" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Note campione<span class="campo-voce"><input type="text" data-f="noteCampione" /><button type="button" class="mic">🎤</button></span></label>
+        </div>
+        <p class="mancanti sottotesto" style="color:#b00"></p>
+    </div>
+</template>
+
+@section Script {
+    <script type="module" src="~/js/moduli/prelievo.js" asp-append-version="true"></script>
+}

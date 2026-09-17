@@ -141,6 +141,39 @@ body {
 .riquadro-errore { border-left: 4px solid var(--rosso); }
 .riquadro-errore h1 { color: var(--rosso); }
 
+/* ── Prelievo vocale ─────────────────────────────────────── */
+.campo-voce { display: flex; gap: 6px; align-items: center; }
+.campo-voce input { flex: 1; }
+.mic { border: 1px solid var(--bordo, #ccc); background: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 1rem; line-height: 1.4; }
+.mic:hover { background: #f0f0f0; }
+.senza-voce .mic { display: none; }   /* riconoscimento vocale non disponibile: si usa il microfono della tastiera */
+.critico { color: #b00; font-size: 0.8rem; font-weight: 600; }
+.campo-mancante { outline: 2px solid #e0b000; }
+
+/* Ottimizzazione smartphone della pagina Prelievo vocale */
+.lotto, .campione { }
+.lotto .griglia-filtri, .campione .griglia-filtri { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lotto input, .campione input, .lotto select, .campione select {
+    font-size: 16px;               /* evita lo zoom automatico su iOS */
+    padding: 10px 12px;
+    min-height: 44px;              /* target tocco */
+    width: 100%;
+    box-sizing: border-box;
+}
+.campione .mic, .lotto .mic { min-height: 44px; min-width: 46px; font-size: 1.2rem; }
+.campione label, .lotto label { font-weight: 600; }
+
+@media (max-width: 780px) {
+    .lotto .griglia-filtri, .campione .griglia-filtri { grid-template-columns: 1fr; }  /* una colonna sul telefono */
+    .barra-strumenti { flex-direction: column; align-items: stretch; gap: 8px; }
+    .barra-strumenti .azioni .pulsante { width: 100%; }
+    .azioni-filtri { flex-wrap: wrap; gap: 8px; }
+    .azioni-filtri .pulsante { flex: 1 1 auto; min-height: 44px; }
+    #btn-nuovo-lotto { width: 100%; min-height: 48px; font-size: 1.05rem; }
+    .barra-risultati { flex-wrap: wrap; }
+    .barra-risultati .pulsante { min-height: 40px; }
+}
+
 /* ── Schede ──────────────────────────────────────────────── */
 .titolo-sezione {
     margin: 26px 0 10px;
