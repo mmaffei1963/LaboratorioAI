@@ -26,6 +26,10 @@ var builder = WebApplication.CreateBuilder(args);
 // In sviluppo restano gli user-secrets; questo file, se assente, viene ignorato.
 builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true);
 
+// Font resolver per i PDF (PDFsharp cross-platform): font incorporati, così la generazione
+// PDF funziona anche su server privi di font di sistema. Idempotente.
+LaboratorioAI.Documenti.FontResolverLabAI.Registra();
+
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // LOGGING
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

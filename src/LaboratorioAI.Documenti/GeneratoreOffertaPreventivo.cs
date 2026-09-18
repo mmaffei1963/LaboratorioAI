@@ -30,6 +30,7 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
 
     public byte[] GeneraPdf(Preventivo p)
     {
+        FontResolverLabAI.Registra();
         var doc = Costruisci(p);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();

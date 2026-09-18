@@ -17,4 +17,12 @@
   <ItemGroup>
     <ProjectReference Include="..\LaboratorioAI.Core\LaboratorioAI.Core.csproj" />
   </ItemGroup>
+  <!-- Font incorporati per PDFsharp (build cross-platform, senza font di sistema): il generatore
+       PDF li risolve tramite FontResolverLabAI, così funziona su qualsiasi server. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts\LiberationSans-Regular.ttf" />
+    <EmbeddedResource Include="Fonts\LiberationSans-Bold.ttf" />
+    <EmbeddedResource Include="Fonts\LiberationSans-Italic.ttf" />
+    <EmbeddedResource Include="Fonts\LiberationSans-BoldItalic.ttf" />
+  </ItemGroup>
 </Project>

@@ -31,6 +31,7 @@ public class GeneratoreOrdineAccettazione : IGeneratoreOrdineAccettazione
 
     public byte[] GeneraPdf(OrdineAccettazione o, string? percorsoWwwRoot = null)
     {
+        FontResolverLabAI.Registra();
         var doc = Costruisci(o, percorsoWwwRoot);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();

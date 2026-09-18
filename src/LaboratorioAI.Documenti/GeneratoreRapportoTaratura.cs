@@ -27,6 +27,7 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
 
     public byte[] GeneraPdf(DatiRapportoTaratura d, string? percorsoWwwRoot = null)
     {
+        FontResolverLabAI.Registra();
         var doc = Costruisci(d, percorsoWwwRoot);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();
