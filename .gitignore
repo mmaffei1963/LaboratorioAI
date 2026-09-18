@@ -34,3 +34,7 @@ docs/Validazione/pdf_rapporti/
 
 # Certificati laboratori esterni (dati clienti) — non versionare
 docs/RDP/
+
+# Segreti locali/server (NON versionare, NON pubblicare dal progetto)
+appsettings.secrets.json
+**/appsettings.secrets.json

@@ -21,6 +21,11 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Segreti fuori dal versionamento e dal publish (es. chiave Anthropic): file opzionale
+// creato UNA VOLTA sul server; sopravvive ai deploy perché non è nel pacchetto pubblicato.
+// In sviluppo restano gli user-secrets; questo file, se assente, viene ignorato.
+builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true);
+
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // LOGGING
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
