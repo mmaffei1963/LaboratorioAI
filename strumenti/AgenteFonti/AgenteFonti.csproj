@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Agente fonti normative (17/10/2026), stesso schema dell'agente ACCREDIA: gira sul PC dell'ufficio, che raggiunge
+    i canali ufficiali per programmi (Cellar dell'Ufficio pubblicazioni UE per i testi EUR-Lex, API Open Data di
+    Normattiva), scarica i testi delle fonti e li invia al server con una normale chiamata HTTPS in uscita.
+    Nessun pacchetto esterno e nessun riferimento ai progetti della soluzione.
+
+    Uso: Avvia-Agente.bat per una prova manuale; per l'uso normale
+    dotnet publish -c Release -o pubblicato e attività pianificata settimanale di Windows sull'eseguibile.
+    Opzioni: ‑‑server http://localhost:5080 (prova in sviluppo), ‑‑fonte 3 (una sola fonte).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

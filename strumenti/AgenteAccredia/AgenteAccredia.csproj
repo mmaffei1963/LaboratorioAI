@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sostituisce strumenti/RelayAccredia (rimosso il 29/09/2026). Quel relay era "pull": il server
+    di produzione doveva raggiungere un servizio in ascolto su questo PC — cosa che, essendo la
+    produzione ospitata fuori dalla rete aziendale, avrebbe richiesto di esporre questo PC verso
+    internet. Questo agente è invece "push": gira su questo PC (che raggiunge regolarmente
+    certificati.accredia.it), scarica i dati con la stessa IClientAccredia/ClientAccredia già
+    collaudata (riferimento diretto al progetto Dati, nessuna duplicazione di logica) e poi invia
+    il risultato al server via una normale chiamata HTTPS in uscita, come un client qualunque —
+    nessuna porta da aprire su questo PC.
+
+    Uso: "dotnet run" da questa cartella per una prova manuale, oppure pubblicare
+    (dotnet publish -c Release -o pubblicato) e schedulare l'eseguibile con l'Utilità di
+    pianificazione di Windows. Vedi Avvia-Agente.bat per una prova manuale comoda.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Progetto console "nudo" (non ASP.NET Core): a differenza del progetto Web, qui questi
+         pacchetti non arrivano gratis dal framework condiviso e vanno referenziati a mano. -->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LaboratorioAI.Dati\LaboratorioAI.Dati.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Anche questo va dichiarato a mano in un'app console (nel progetto Web è automatico):
+         senza, appsettings.json non finisce nella cartella di output e l'app non parte. -->
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

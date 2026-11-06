@@ -38,3 +38,21 @@ docs/RDP/
 # Segreti locali/server (NON versionare, NON pubblicare dal progetto)
 appsettings.secrets.json
 **/appsettings.secrets.json
+
+# --- Esclusioni aggiunte 06/11/2026 (dati reali e scarti) ---
+src/LaboratorioAI.Web/App_Data/
+docs/AndamentoClienti/
+docs/PowerBi/
+Ripartenza/
+_to_delete/
+/dotnet
+*.bak
+*.lnk
+prova_*
+strumenti/AgenteFonti/pubblicato/
+
+# Configurazione agenti (contiene segreti): in git solo il modello .esempio.json
+strumenti/AgenteAccredia/appsettings.json
+strumenti/AgenteFonti/appsettings.json
+
+docs/Privacy/FILE PRIVACY SLUG/

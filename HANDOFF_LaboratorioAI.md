@@ -1,367 +1,261 @@
 # Laboratorio AI — Documento di handoff
-## Per la continuazione del progetto in una nuova sessione
+## Per riprendere il lavoro in una nuova sessione
 
 | | |
 |---|---|
-| **Data** | Agosto 2026 (aggiornato: aggiunte le funzioni di prefatturazione — Tamponi in contratto e Non fatturare — accreditamento esterno nei certificati, filtri prelevatore/ricevitore, launcher desktop) |
+| **Aggiornato** | 13 ottobre 2026 (riscrittura completa; sostituisce la versione di agosto e `claude/ripartenza-2026-10-11.md`) |
 | **Committente** | MARE.A srl — Mirko Maffei, Responsabile di Laboratorio |
-| **Scopo** | Consentire la ripresa del lavoro senza aver letto la conversazione precedente |
+| **Scopo** | Riprendere il lavoro senza aver letto le conversazioni precedenti |
 
-> **Stato sintetico:** lo sviluppo e il collaudo funzionale sono **completi**. Resta la **messa in produzione** (deploy sul server), descritta nel runbook `DEPLOY_LaboratorioAI.md`. Dopo le ultime modifiche la produzione va ripubblicata (vedi §9).
-
----
-
-## 1. Nome e scopo del sistema
-
-**Laboratorio AI** è un applicativo **interno** a MARE.A srl, laboratorio accreditato ACCREDIA n° 00729 (ISO/IEC 17025:2018), sede a Cattolica (RN).
-
-Affianca il gestionale ArcLab fornendo strumenti di consultazione, analisi e supporto decisionale che ArcLab non offre: analisi AI dei risultati analitici, ricerche trasversali sull'archivio, generazione automatica di documenti di valutazione del rischio, portale per i clienti.
-
-**Non è destinato alla vendita.** Non è multi-tenant. Non sostituisce ArcLab.
-
-**Regola invariante, mai da violare:** il sistema non scrive mai su ArcLab. Nessuna eccezione. Il vincolo è applicato tecnicamente: l'account di servizio ha solo `db_datareader` su `LabAnalisiDati`.
+> **Stato sintetico (13/10/2026).** Il sistema è **in produzione** dal 10/10/2026 (https://labai.mare-a.com per i colleghi, https://portale.mare-a.com per i clienti) e viene ripubblicato a ogni blocco di funzioni. In produzione c'è tutto fino al Cruscotto Direzione fase 1. Sono **pronti in sviluppo, da collaudare e pubblicare** insieme: Direzione fase 2 (Andamento territorio), Commento AI e fase 3 (Rendimento commerciali). Lo storico dettagliato di ogni consegna è in `CHANGELOG.md` sul PC.
 
 ---
 
-## 2. Funzionalità principali
+## 1. Nome, scopo e regole invarianti
 
-### 2.1 Aree dell'applicazione operatori
+**Laboratorio AI** (LabAI) è un applicativo **interno** di MARE.A srl, laboratorio accreditato ACCREDIA n° 00729 L (ISO/IEC 17025:2018), Cattolica (RN), con sede anche a Pesaro dal 2022. Affianca il gestionale **ArcLab** e la contabilità **AZW** con consultazioni, controlli, documenti, analisi AI, strumenti per commerciali e consulenti, cruscotto per la direzione e un portale per i clienti. Non è in vendita, non è multi-tenant, non sostituisce ArcLab.
 
-| Area | Funzione | Stato |
+**Regole che non si violano mai**
+- **Mai scrivere su ArcLab** (`LabAnalisiDati`) né su AZW: sola lettura, nessuna eccezione. L'account di servizio ha solo `db_datareader` su ArcLab. Quello che va in ArcLab ci arriva tramite **Palomar** (cartelle di prelievo, XML per import supervisionato) o lo inseriscono le persone.
+- **Nessuna cancellazione fisica**: campo `Attivo = false`, righe «Annullato» collegate, svuotamento/anonimizzazione dopo i termini.
+- **Schema solo con migrazioni EF Core**, che **crea e applica Mirko** con i comandi che gli si danno. Mai toccare il database a mano.
+- Tabelle in italiano al plurale, chiavi `Id<Entità>` `INT IDENTITY`, date **UTC** nel database.
+- **Segreti** (password SMTP Brevo, `AgenteSegreto`, chiave Anthropic, credenziali `svc_labai` e SUPERUSER del portale): solo in `appsettings.Production.json` di produzione, negli user-secrets di sviluppo o nell'appsettings dell'agente. Mai nel repository, in chat o in memoria; chiedere a Mirko di non incollarli.
+
+## 2. Come lavorare con Mirko
+
+- Mirko non è uno sviluppatore: **italiano semplice**, spiegazioni brevi, **comandi pronti da copiare** (sempre con il `cd C:\Sviluppo\LaboratorioAI` davanti). Rispondere sempre in italiano.
+- **«Prima definiamo bene, poi realizzi»**: per una funzione nuova si propone, si fanno le domande che servono, Mirko approva, poi si sviluppa.
+- Priorità alla manutenibilità: strumenti .NET comuni, niente soluzioni esotiche.
+- Colleghi poco informatizzati: testi delle pagine e delle guide chiari, brevi, «per situazioni».
+- Persone di riferimento: Mirko Maffei (socio, responsabile di laboratorio, amministratore di LabAI); Davide Bertozzi (dirige il laboratorio con Mirko, non socio); soci Giuliana Giulini, Marco Sertori, Daniele Vaccarini, Stefano Scaramucci; commerciali Ludovico Zatterin «Ludo» (laboratorio, dal 2025) e Andrea Carloni (sicurezza, HACCP, formazione); **Gen** è il responsabile IT (server, IIS, firewall, permessi).
+
+---
+
+## 3. Funzioni (menu e home «a cartelle»)
+
+Menu in testata e home sono generati dalla stessa lista (`Web\Navigazione\MenuApplicazione.cs`): una pagina nuova compare in entrambi. La home ha cartelle con icona, **contatori «cose da fare»** (`ContatoriHome.cs`), **preferiti** (stellina, `app.PreferitiUtenti`) e **ricerca delle funzioni**. Ogni pagina ha la sua **guida** («? Guida») e la casella **«Chiedi alla guida»** (§5).
+
+| Cartella | Funzioni | Note |
 |---|---|---|
-| **Da Validare** | Campioni con tutte le prove verificate ma senza certificato; analisi AI singola e massiva con archivio-first | Funzionante (errore 500 risolto) |
-| **Consultazione** | Ricerca campioni con filtri combinabili (inclusi prelevatore e ricevitore), colonne prezzo/idcontrollo/prelevatore, totali card calcolati lato server sull'intera selezione; identificativi tecnici con tabella per singola prova (accreditamento interno/esterno, IdProva, IdRigaMetodo) attivabile dall'elenco. **Esporta risultati (RDP)**: export Excel dei risultati completi come sul rapporto di prova (una riga per prova, con punto campionato, risultato con segno, unità, limiti di fiducia, analita, metodo/rif. biblio, accreditamento, responsabile, lab esterno), sui campioni filtrati e solo certificati; riusa gli stessi filtri di ricerca | Funzionante (errore 500 risolto) |
-| **Certificati emessi** | Ricerca storico certificati, analisi AI a posteriori; sotto ogni prova esecutore, numero laboratorio esterno e accreditamento (MARE.A / esterno) | Funzionante |
-| **Metodi e Controlli** | Ricerca bidirezionale metodi ↔ controlli, tre logiche di confronto, prezzi sulle commesse in vigore | Funzionante |
-| **Commesse** | Commesse attive per tipo/cliente/insediamento, esplosione in campioni o prestazioni | Funzionante |
-| **Laboratori Esterni** | Prove in outsourcing, riepilogo per metodo, filtro numero lotto, indicazione «accreditato esterno» (a video e in Excel), esportazione Excel | Funzionante |
-| **Tamponi in contratto** | Prefatturazione tamponi (IdControllo 180/203/2513, filtro controlli componibile) con riconoscimento del contratto di consulenza HACCP e n° tamponi inclusi; filtri prelevatore e ricevitore; riepilogo per insediamento + dettaglio; Excel | Funzionante |
-| **Non fatturare** | Campioni con flag «non fatturare» nel periodo; doppio riepilogo per prelevatore e per ricevitore (con totale generale), dettaglio con prezzo e contratto HACCP; filtri prelevatore/ricevitore/controlli; Excel | Funzionante |
-| **DVR Legionellosi** | Generazione DOCX singola e massiva, registro, ispezione modelli | Funzionante — collaudato su dati reali |
-| **Piscine** | DVR piscine, Regolamento interno, Manuale/Registro autocontrollo (Emilia-Romagna e Marche), tabelle parametri/punti/scadenzario, dati salvati su SQL | Funzionante — collaudato su dati reali |
-| **Nutrizionali** | Archivio materie prime (import USDA/CREA/CNF, import AI da scheda tecnica PDF), Ricette con calcolo nutrizionale in tempo reale, rapporto (PDF/Word/**Excel**), verifica AI archivio-first. Il rapporto è anche **scheda di verifica per il committente**: tabella ingredienti con quantità/percentuale e **fonte dei valori**, più **clausola di responsabilità** (chi usa il dato per l'etichettatura si assume la verifica di ricetta/quantità/fonti) | Funzionante |
-| **Strumenti · Taratura termometri** | Modulo 04-01: taratura per confronto con CDR, budget GUM, rapporto, validazione calcolo, analisi AI, duplica | Funzionante |
-| **Strumenti · Taratura incubatori** | Modulo 04-02: correzione + deriva CDR, budget, rapporto, validazione, AI, duplica | Funzionante |
-| **Strumenti · Mappatura incubatori** | Modulo 04-03: correzione, budget, intervallo per ripiano, test F/Cochran/Kruskal-Wallis, rapporto, validazione, AI | Funzionante |
-| **Strumenti · Taratura bilance** | Modulo 45 (EURAMET cg-18): eccentricità/ripetibilità/linearità, budget d'incertezza, pesiere condivise, rapporto PDF/Word a due pagine con grafico, validazione, AI | Funzionante |
-| **Strumenti · Monitoraggio Econorma** (Visore Dati Econorma) | Carica i file dei registratori Econorma (.xls), applica i limiti di taratura letti da ArcLab (mappatura canale→sonda→PianoInterventi TARATURA), evidenzia escursioni rosso/blu, tabella valori per orario, monitor con grafici interattivi per canale, report escursioni Excel/PDF, export sonde ArcLab con data ultima sincronizzazione, validazione umana (conforme/dubbio/non conforme) singola e multipla con registro, caricamento da cartella di rete con memoria dell'ultima usata. **Non altera mai i dati.** | Funzionante — validato sul motore, in collaudo web |
-| **Strumenti · Scadenziario tarature** | Scadenziario strumenti interni da ArcLab (IdAttività 25/26, ultima taratura da SchedeIntervento + FreqGiorni), raggruppato per tipo (Termometri; Incubatori/Termostati/Stufe; Frigoriferi/Congelatori; Altro); archivio/scadenziario dei termometri clienti (esterni) importato dal foglio «2011-2026» (solo tarature correnti, escluse RINNOVATO/DISMESSO), con flag «Fatturato» (colonna Fatt) e filtro «da fatturare», selezione cliente da ArcLab. Le tarature dei termometri cliente eseguite nel modulo Taratura confluiscono qui. Etichette termometro generate dal modulo **Taratura** (Excel formato foglio 2020, colore di sfondo per anno). | Funzionante — in collaudo web |
-| **Accettazione** | Accettazione campioni con maschera ottimizzata per smartphone (sezioni «accessorie» apribili): insediamento con città, commesse per insediamento con prezzo, prelevatori/ricevitori attivi, tecniche/imballaggi, esploso del controllo, procedura automatica dalla matrice, laboratorio esterno automatico, luogo prelievo. Verbale di prelievo con **numero interno VP-NNNNNN** (contatore atomico), modificabile. Data/ora ricezione attribuita alla sincronizzazione (non compilabile). PDF: richiesta analisi e catena di custodia (sezione lab esterno), etichetta campione/lotto e scheda ricezione (campione generale). Verifica di importabilità. I dati restano in **staging**: la generazione del `CodLotto` e l'import in ArcLab restano a **Palomar** (tracciato XML/mappatura). | In collaudo — mappatura consegnata a Palomar |
-| **Certificati esterni Non Ricertificati** | Confronto tra i certificati esterni emessi sul **portale** (Marea `Entries`) e i certificati interni: elenca i campioni per cui esiste il certificato esterno ma **non** la ricertificazione MARE.A (spedito l'originale), con stato di fatturazione; export Excel. | Funzionante |
-| **Proposta controlli** | Consulenti/clienti propongono nuovi controlli scegliendo i metodi dal **catalogo dei metodi attivi** (ProceduraMetodo.Attivo); prezzo sommato automaticamente; regola del **lab esterno unico**; verifica **duplicati** (stesso insieme di metodi) con popup; **proposta del nome via AI** usando le sigle (Sigla_Metodo); **modifica di un controllo esistente** (ricerca per nome o IdControllo) con guardia sul riutilizzo del nome; validazione di Cifre significative/MaxDecimali. Staging → **XML per import supervisionato**: nessuna scrittura diretta in ArcLab. | Funzionante |
-| **Ricerca errori** | Verifiche diagnostiche in sola lettura su ArcLab, con export Excel per sezione: (1) doppioni di parametro sui rapporti di prova con selezione anni (esclusi microbiologici ed eccezione valore energetico 236 kJ/kcal); (2) metodi attivi senza Cifre_significative/Decimali_Max; (3) metodi con margine (CostoMetodoEuro vs CostoAnoi) sotto soglia % impostabile o negativo; (4) metodi doppi per stesso IdParametro + DettagliMetodo + RifMetodo (normalizzati); (5) lotti senza ricevitore; (6) lotti senza vettore; (7) coerenza di categoria prelevatore/vettore decisa dai nomi (interno vs cliente/terza parte): devono coincidere, e se il prelevatore è cliente/terza parte il verbale (Lotto.BuonoPrelievo) non deve esserci; (8) campioni con AnalisiChiusa non pronti alla stampa (prove senza VerificaValore o senza DataInizioProva/DataFineProva, o rigametodo senza Arrotonda/MaxDecimali), per data o per singolo lotto/campione. In cima un **cruscotto** con spunte per eseguire i controlli selezionati (riepilogo con semafori + «Apri» che apre e lancia la sezione) ed **«Esporta tutto»** in un unico Excel con un foglio per controllo. Nessuna scrittura. | Funzionante — da collaudare in sviluppo |
+| **Ciclo analitico** | Accettazione campioni · Prelievo vocale · Da Validare · Ordini di Accettazione · Certificati esterni · rinomina · Certificati esterni non ricertificati · Laboratori Esterni · Ricerca errori | Accettazione e Prelievo vocale pensati per telefono (Prelievo funziona anche offline, con tendine da ArcLab e inserimento libero). Ordini di Accettazione: **sviluppo sospeso** (probabilmente partiranno da ArcLab). Certificati esterni: nome concordato con Palomar, «solo esterni» e «misti» in cartelle Palomar diverse, annullamento con motivo, registro di controllo. Laboratori esterni: accreditamenti monitorati con l'Agente ACCREDIA (§8), «da sistemare», prove sospese. Ricerca errori: 9 controlli diagnostici su ArcLab. |
+| **Ricerche e statistiche** | Consultazione · Certificati emessi · Metodi e Controlli · Commesse · Statistiche | Export «risultati come sul rapporto di prova». Prove in subappalto: conta solo l'accreditamento del laboratorio esterno (mai «accreditato MARE.A»). |
+| **Commerciale** | Clienti da seguire · Cambi di gestione · Preventivi analisi · Preventivi consulenza · Condizioni e firme · Proposta controlli · Le mie provvigioni | Clienti da seguire: fatturato di analisi in calo, Legionella, registro azioni, assegnazioni. Cambi di gestione (subentri): sedi perse e nuovo gestore, verifica P.IVA su VIES. Condizioni e firme: revisioni delle Condizioni Generali, Firmatario per cliente, link personale di approvazione sul Portale, ricevuta, invio massivo (max 1000/giorno, Brevo), inviti al cliente e promemoria. |
+| **Consulenza** | Preventivi consulenza · Rapportini di consulenza · Attività e pacchetti consulenza | Contratti Word/PDF con analisi di laboratorio nei pacchetti; rapporto di intervento (MOD. CF 05) inviato a Palomar; deleghe operative (Word/PDF, per sede). |
+| **Legionella e piscine** | DVR Legionella · DVR Piscine | DVR Legionellosi DOCX singolo e massivo; piscine: DVR, regolamento, manuale ER e registro Marche. |
+| **Nutrizionale** | Materie prime · Ricette nutrizionali | Import USDA/CREA/CNF e da scheda tecnica PDF con AI; rapporto anche come scheda di verifica per il committente; Nutrition Facts USA/Canada. |
+| **Strumenti e tarature** | Taratura termometri · Taratura incubatori · Mappatura incubatori · Taratura bilance · Scadenziario tarature | Motori validati con test sui fogli storici; validazione del calcolo; eliminazione dal registro con motivo; etichette termometri. |
+| **Monitor Econorma** | Monitoraggio Econorma · Monitor generale / controllo / differenze / grafici · Sonde e sincronizzazione | Area MVC `MonitorTemperature` con database proprio `MonitorTemperature` (vedi `HANDOFF_MonitorTemperature.md`); limiti di taratura da ArcLab. |
+| **Amministrazione e fatturazione** | Tamponi in contratto · Non fatturare · Provvigioni · Accordi provvigioni · Segnalatori · Compensi segnalatori | Provvigioni calcolate sugli **incassi** AZW con accordi, basi di calcolo, convenzioni, trimestri chiusi e archiviati; vedi `claude/analisi-modulo-provvigioni.md` e `claude/regole-provvigioni-2027.md`. |
+| **Direzione** (solo ruolo Direzione) | Indicatori economici · Andamento territorio · Rendimento commerciali · Classificazione voci | Vedi `claude/analisi-cruscotto-direzione.md`. Indicatori come Power BI, riscontrati al centesimo; territorio per sede del cliente e caso Pesaro; costo e rendimento dei commerciali; **Commento AI** su tutte e tre le pagine, con archivio. |
+| **Impostazioni e controllo** | Impostazioni documenti · Voci preventivi · Sigle laboratori esterni · Responsabili clienti · Consulenze: documenti e deleghe · Clienti da seguire: soglie e assegnazioni · Utenti e ruoli · Registro attività (audit) · Domande alla guida | Impostazioni documenti contiene cartelle (Palomar, arrivo, processati, archivi), testi e revisione delle Condizioni. |
 
-> **Stato «Spedito originale»** (Consultazione e Laboratori esterni): quando il certificato esterno risulta emesso sul portale (Marea `Entries`) ma manca la ricertificazione interna, lo stato del campione/prova diventa *Spedito originale* (con filtro dedicato). Distingue il «ritardo» (IdCertificato nullo ma nessun esterno) dal «spedito l'originale» (esterno presente e non ricertificato). Realizzato con una CTE su Marea + LEFT JOIN per non degradare i tempi.
+## 4. Portale clienti
 
-> **Menù per macroaree** (agosto 2026): la barra superiore è organizzata in tendine — **Laboratorio** (Da Validare, Consultazione, Certificati, Metodi e Controlli, Commesse, Laboratori Esterni, Tamponi, Non fatturare, Certificati esterni Non Ricertificati, Accettazione, Proposta controlli), **Manualistica** (DVR Legionella, DVR Piscine), **Nutrizionali**, **Strumenti** (le quattro tarature + Monitoraggio Econorma + Scadenziario tarature).
+Progetto separato `LaboratorioAI.Portale` (sviluppo `localhost:5081`, produzione https://portale.mare-a.com dietro Cloudflare).
+- Accesso con codice contabilità + P.IVA (da ArcLab); sessioni su database con token opaco (header `X-Sessione-Portale`), revocabili; protezione da tentativi ripetuti; credenziale esclusa dai log. Accesso operatore `MAREA` con password da variabile d'ambiente.
+- Consultazione di campioni e certificati, filtri (lo Stato viaggia come testo, `JsonStringEnumConverter`); badge «A» di accreditamento solo per le prove interne.
+- **Condizioni e firme**: `/Firma/{codice}` (approvazione delle Condizioni Generali, apertura obbligatoria dei PDF, firma grafica facoltativa) e `/Indica/{codice}` (il cliente indica il Firmatario). Codici casuali a 256 bit, nel database solo l'impronta; percorsi mascherati nei log.
+- In sviluppo i log compaiono anche nella finestra; `Avvia_Portale.bat` avvia e apre il browser.
 
-### 2.2 Portale clienti
+## 5. L'AI nel sistema
 
-Progetto ASP.NET Core separato (`LaboratorioAI.Portale`), porta 5081. **Avviato e collaudato.**
-- Autenticazione con codice contabilità + P.IVA (credenziali da ArcLab)
-- Sessioni su database con token opaco (header `X-Sessione-Portale`, non cookie), revocabili singolarmente
-- Protezione da tentativi ripetuti per codice e per IP
-- Dettaglio prove riservato all'accesso operatore
-- Filtro Serilog che esclude credenziali da ogni livello di log
-- Accesso operatore (codice `MAREA`) con password da variabile d'ambiente `Portale__CredenzialeOperatore`, mai nel codice; se assente l'accesso operatore è disabilitato
+API Anthropic via `HttpClient` (`IA\ClientAnthropic.cs`; modello predefinito in `OpzioniAnthropic`, configurabile; chiave in `Anthropic:ChiaveApi`). Principi comuni: **archivio prima di chiamare** dove ha senso; ogni chiamata registrata con modello, token e costo stimato; **l'AI commenta o estrae, i numeri li calcola il programma**.
 
-### 2.3 Analisi AI
-
-- Integrazione API Anthropic (claude-sonnet-4-6) via HttpClient
-- Archivio-first: recupera analisi esistente prima di chiamare il modello
-- Ogni esecuzione è un record distinto — nessuna sovrascrittura
-- Giudizio (CONFORME / NON CONFORME / BORDERLINE) dedotto dal testo
-- Snapshot dei dati descrittivi nella riga: l'analisi resta leggibile anche se il campione in ArcLab viene modificato
-- Tracciabilità: versione applicazione e modello AI registrati su ogni analisi
+| Dove | Cosa fa |
+|---|---|
+| Da Validare / Certificati emessi | Analisi dei risultati del campione (giudizio Conforme / Borderline / Non conforme), archivio in `app.Analisi` |
+| Certificati esterni | Estrazione dei dati dal PDF del laboratorio esterno |
+| Materie prime | Estrazione dei valori nutrizionali dalla scheda tecnica PDF |
+| Ricette, tarature | Verifica anti-errore del calcolo |
+| Proposta controlli | Proposta del nome del controllo con le sigle dei metodi |
+| Prelievo vocale | Struttura il testo dettato in campi del prelievo |
+| «Chiedi alla guida» | Risponde solo con il testo delle guide che la persona può vedere (prompt caching), registro `log.DomandeGuida` svuotato dopo 12 mesi |
+| Direzione · Commento AI | Commenta i numeri della pagina (con i nomi dei primi 30 clienti per elenco), archivio `dir.CommentiAi` con i dati inviati |
 
 ---
 
-## 3. Architettura tecnica
+## 6. Architettura tecnica
 
-### 3.1 Stack
+| Livello | Tecnologia |
+|---|---|
+| Runtime | .NET 8 LTS |
+| Web | ASP.NET Core MVC, Razor + ES modules (nessuna pipeline di build, niente npm) |
+| Dati | EF Core per il database proprio (migrazioni) + Dapper per ArcLab (sola lettura) |
+| Database | SQL Server (produzione su 192.168.23.1 / SRVMAREA; sviluppo `PCMAREA01\SQLEXPRESS`) |
+| Documenti | DocumentFormat.OpenXml (Word), PDFsharp/MigraDoc (PDF), ClosedXML (Excel), ExcelDataReader (.xls Econorma), `ConvertitoreWordPdf` comune |
+| Log | Serilog su file (`log\laboratorioai-AAAAMMGG.log`) |
+| Autenticazione | Entra ID (Microsoft.Identity.Web); in sviluppo «accesso di sviluppo» senza credenziali |
+| E-mail | Brevo (SMTP, piano Starter 20.000/mese; dominio mare-a.com autenticato; Reply-To refertazione@) |
 
-| Livello | Tecnologia | Motivazione |
-|---|---|---|
-| Runtime | .NET 8 LTS | Standard di mercato su Windows/IIS; manutenibilità da sviluppatori .NET |
-| Framework web | ASP.NET Core MVC | Hosting in-process nativo su IIS (ANCM v2), nessun processo esterno |
-| Accesso dati | EF Core (db proprio) + Dapper (ArcLab) | EF per schema versionato con migrazioni; Dapper per query complesse su ArcLab |
-| Database | SQL Server 192.168.23.1 | Infrastruttura esistente, backup già strutturato |
-| Frontend | Razor + ES modules | Nessuna pipeline di build (no npm, no webpack); manutenibile da qualsiasi sviluppatore .NET |
-| Documenti Word | DocumentFormat.OpenXml (Microsoft) | Libreria ufficiale; gestisce i Content Control SDT meglio di alternative |
-| Fogli Excel | ClosedXML | Licenza MIT, matura |
-| Logging | Serilog | Standard di fatto; file + console |
-| Autenticazione | Microsoft.Identity.Web (Entra ID) | Account M365 aziendali già esistenti |
-
-### 3.2 Struttura della soluzione
-
+**Soluzione** (`C:\Sviluppo\LaboratorioAI\LaboratorioAI.sln`):
 ```
-LaboratorioAI.sln
-├── src/LaboratorioAI.Core/          Entità, modelli, interfacce repository e servizi
-├── src/LaboratorioAI.Dati/          EF Core (db proprio) + Dapper (ArcLab sola lettura)
-├── src/LaboratorioAI.Web/           ASP.NET Core MVC — applicazione operatori (porta 5080)
-├── src/LaboratorioAI.Portale/       Portale clienti (progetto separato, porta 5081)
-├── src/LaboratorioAI.IA/            Integrazione API Anthropic
-└── src/LaboratorioAI.Documenti/     ClosedXML (Excel) + OpenXml (DVR e Manuali Word)
+src/LaboratorioAI.Core/        Entità, modelli, motori di calcolo puri (testati), costanti, interfacce
+src/LaboratorioAI.Dati/        EF Core (ContestoLaboratorioAI, migrazioni), Dapper ArcLab, importatore AZW, servizi
+src/LaboratorioAI.Web/         App per i colleghi (5080), Areas/MonitorTemperature
+src/LaboratorioAI.Portale/     Portale clienti (5081)
+src/LaboratorioAI.IA/          Client Anthropic ed estrattori
+src/LaboratorioAI.Documenti/   Generatori Word/PDF/Excel (DVR, piscine, offerte, OdA, rapporti...)
+tests/LaboratorioAI.Core.Tests/ Test xUnit dei motori
+strumenti/AgenteAccredia/      Agente che legge la banca dati ACCREDIA e invia a LabAI (fuori dalla soluzione)
 ```
 
-### 3.3 IIS — hosting
+**Punti tecnici trasversali**
+- Avvio della Web: `MigrateAsync` e poi `Popolamento.EseguiAsync` (permessi, ruoli, profili iniziali). Un errore qui ferma l'avvio (500.30), salvo le assegnazioni iniziali di ruolo che dal 13/10 finiscono solo come avviso nel log.
+- **Permessi**: ogni permesso nuovo va aggiunto **sia** a `Permessi.Tutti` (`Core\Costanti\Permessi.cs`) **sia** a `DatiIniziali.Catalogo()`; l'Amministratore riceve in automatico tutto il catalogo. Attributi `[RichiedePermesso]`, `[RichiedeUnoDeiPermessi]`, `[SolaLetturaSenza]`. I permessi si rileggono dal database a ogni richiesta (cache 1 minuto).
+- **Audit**: `IServizioAudit.RegistraAsync` in tutti i moduli operativi (`log.Audit`, append-only; IdEntita max 100 caratteri).
+- **Registro di controllo** dei documenti consegnati a Palomar: `log.RegistroDocumenti` con verifica che il file sia davvero nella cartella.
+- **Guide**: registro in `Web\Navigazione\Guide.cs` (le voci con percorso più specifico prima), testi in `Views\Guide\_<Codice>.cshtml`.
+- Razor: una `@` nel testo va scritta `@@`. Nelle viste nuove il compilatore in sviluppo non richiede altro.
+- EF Core 8: evitare `array.Contains` su `ReadOnlySpan` nelle query (errore 500 già visto); le liste `List<>.Contains` vanno bene.
+- JSON: le tuple non si serializzano; proiettare su oggetti anonimi.
 
-- **In-process** (ANCM v2): l'applicazione gira dentro w3wp.exe, nessun processo Python o gestore esterno
-- Application Pool senza runtime .NET gestito (`managedRuntimeVersion = ""`)
-- `startMode = AlwaysRunning`, `idleTimeout = 0`, nessun riciclo automatico
-- Cloudflare in modalità proxy (orange cloud) davanti all'IP pubblico per il portale
-- Laboratorio AI non viene pubblicato su internet: accesso solo da LAN o VPN
-- Dettaglio operativo completo nel runbook `DEPLOY_LaboratorioAI.md`
+## 7. Modello dati
 
----
+**Database**
+| Database | Uso |
+|---|---|
+| `LabAnalisiDati` (ArcLab) | Sola lettura |
+| `Marea` (portale storico) | Sola lettura (`Entries` dei certificati esterni pubblicati) |
+| `LaboratorioAI` | Produzione, lettura e scrittura |
+| `LaboratorioAI_Test` | Sviluppo e collaudo |
+| `MonitorTemperature` | Monitor Econorma (mai `MigrateAsync` su quel contesto; si scrive solo la mappatura sonde) |
+| File AZW (`AZW_07.accdb`) | Letto da copia temporanea dall'importatore (sola lettura) |
 
-## 4. Modello dati
-
-### 4.1 Due database
-
-| Database | Proprietario | Accesso del sistema |
-|---|---|---|
-| `LabAnalisiDati` (ArcLab) | Fornitore ArcLab | Sola lettura — mai scrittura |
-| `LaboratorioAI` | Sistema | Lettura/scrittura piena |
-| `LaboratorioAI_Test` | Sistema | Collaudo |
-
-### 4.2 Schema del database proprio — quattro schemi SQL
-
+**Schemi del database proprio**
 | Schema | Contenuto |
 |---|---|
 | `sec` | Utenti, Ruoli, Permessi, UtentiRuoli, RuoliPermessi |
-| `app` | Analisi (AI), RegistroDvr, DvrPiscine (dati scheda in JSON), Configurazioni |
-| `nutrizionale` | Materie prime, Ricette, VerificheNutrizionali |
-| `taratura` / `incubatori` / `mappatura` | Tarature, ValidazioniCalcolo, Analisi dei moduli 04-01/04-02/04-03 |
-| `bilance` | Pesiere, MasseCampione, TaratureBilance, ValidazioniCalcoloBilance, AnalisiBilance |
-| `templog` | MappatureCanali, Caricamenti (con validazione umana), Sincronizzazioni |
-| `tarature` | TermometriEsterni (archivio/scadenziario termometri clienti, flag Fatturato, link a taratura d'origine) |
-| `portale` | SessioniPortale, TentativiAccesso |
-| `log` | Audit (append-only) |
+| `app` | Analisi AI, DVR, piscine, Configurazioni (Impostazioni documenti), accettazione e proposte (staging), preferiti, denominazioni metodi verificate |
+| `log` | Audit, RegistroDocumenti, DomandeGuida |
+| `portale` | Sessioni e tentativi di accesso |
+| `nutri` | Materie prime, ricette, verifiche nutrizionali |
+| `taratura`, `bilance`, `tarature`, `templog` | Strumenti, scadenziario esterni, Monitoraggio Econorma |
+| `accettazione`, `controlli` | Accettazione e proposta controlli |
+| `certificati` | Certificati esterni da importare, sigle laboratori, archivio estrazioni |
+| `labesterni` | Accreditamenti monitorati, revisioni, stato ACCREDIA, prove sospese, verifica metodi |
+| `preventivi` | Preventivi analisi, voci accessorie e di pagamento |
+| `cons` | Preventivi e pacchetti consulenza, rapportini, deleghe, documenti tipo, voci incarico, responsabili cliente |
+| `provv` | Commerciali, codici venditore, copie AZW (clienti, fatture, righe, incassi, note), accordi, basi, convenzioni, trimestri, segnalatori |
+| `clienti` | Clienti da seguire: azioni, assegnazioni, soglie, copie ArcLab (campioni mensili, insediamenti, prestazioni), subentri, verifiche P.IVA |
+| `contratti` | Condizioni Generali: revisioni (PDF e impronta), clausole, firmatari, richieste, eventi (catena di impronte, trigger contro UPDATE/DELETE), inviti |
+| `dir` | Direzione: movimenti analitici mensili, classificazione voci, centri, commesse, fatturato per cliente, commenti AI |
 
-### 4.3 Entità principali
+**Ultime migrazioni**: … `Subentri`, `PrestazioniENoteRighe`, `CertificatiMistiEAnnulli`, `Direzione` (in produzione), `DirezioneTerritorio`, `DirezioneCommentiAi` (create, da pubblicare).
 
-**AnalisiAi** — ogni esecuzione è un record distinto
-- `IdAnalisi`, `IdCampione`, `IdCertificato?`, `Modalita`
-- `DataAnalisi`, `IdUtente`
-- Snapshot: `RagioneSociale`, `DenominazioneCampione`, `Matrice`, `DataRicezione`, `NumeroProve`
-- `Giudizio` (enum: NonDeterminato / Conforme / Borderline / NonConforme)
-- `Testo` (testo integrale), `ModelloAI`, `VersioneApplicazione`
-- `TokenInput`, `TokenOutput`, `CostoStimato`
+**Note di schema ArcLab da ricordare** (cause di errori 500 se ignorate)
+- `CodLotto` / `CodCampione` sono testo: confronto con interi con `TRY_CONVERT(int, …)`.
+- Prelevatore: `Campione.IdPrelevatore → mansione (IdAttività = 1) → Organico`; ricevitore: `Lotto.IdRicevitore → mansione (IdAttività = 2) → Organico`.
+- Contratto HACCP: commessa `IdTipoCommessa = 5`, `DescrIncarico LIKE 'Gestione ed assistenza autocontrol%HACCP%'`, con prestazioni; n° tamponi = `DurataPres`.
+- Accreditamento esterno: vale solo se il metodo è accreditato presso il laboratorio che ha eseguito la prova (`labEstMetodo.IdLabEsterno = rigametodo.IdLabEsterno`), con `EXISTS`.
+- Certificati esterni sul portale: CTE su `Marea` + LEFT JOIN (le EXISTS correlate vanno in timeout), `COLLATE DATABASE_DEFAULT`.
+- Scadenziario: ultima taratura `MAX(SchedeIntervento.DataInt)` per piano, `IdAttività` 25/26. Econorma: limiti nel `PianoInterventi` «TARATURA».
+- Tipi commessa: 3 analisi, 4 formazione, 5 consulenza; aree della consulenza dalla voce del tipo di incarico (`cons.VociIncarico`).
+- In SSMS le query su ArcLab vanno precedute da `USE LabAnalisiDati;`, quelle su LabAI da `USE LaboratorioAI;` (le tabelle hanno lo schema davanti, es. `sec.Ruoli`).
 
-**DvrPiscina** — scheda piscina persistita
-- Dati anagrafici, vasche e impianti serializzati in `DatiScheda` (JSON) nello schema `app`
-- Fonte unica dei dati fisici delle vasche, riusata per DVR, Manuale ER e Registro Marche
-- Migrazione `20260726102836_AggiuntaDvrPiscine`
+## 8. Fonti e collegamenti esterni
 
-**Monitoraggio TempLog** (schema `templog`)
-- `MappaturaCanaleTempLog` — legame stabile Canale (T01…) ↔ IdStrumento ArcLab; i limiti NON sono qui, si rileggono da ArcLab a ogni caricamento; soft-delete + validità per il turnover sonde
-- `CaricamentoTempLog` — storico dei file analizzati con esiti (escursioni), cartella d'origine (per riproporre l'ultima), e **validazione umana**: `EsitoValidazione` (Conforme/Dubbio/NonConforme), `Validatore`, `DataValidazione`, `NoteValidazione`
-- `SincronizzazioneSondeTempLog` — registra ogni sincronizzazione delle sonde da ArcLab (data «ultima sincronizzazione»)
-- Risoluzione limiti (sola lettura ArcLab): sonda → `apparecchiature.Associato1` (testo con «Cod: <IdApparecchio ambiente>») → `PianoInterventi` con `NomePiano` contenente «TARATURA» (mai «MAPPATURA»), match `CodPiano` tollerante ai separatori → `ValTeorico`, `LimInfInt`, `LimSupInt`. Lettura file .xls via ExcelDataReader.
+- **AZW**: `Copia.bat` sul PC di Mirko, ogni notte prima delle copie notturne, aggiorna `AZW_07.accdb` (macro Access `mcrAggiornaDBF`) e lo copia in `\\SRVMAREA\marea\IT\MIRKO\Mirko\AZW_07.accdb` (produzione) e `D:\LabAnalisi\mirko.maffei\AZW_07.accdb` (sviluppo, `PercorsoAzw`). L'**importazione AZW** di LabAI (notturna alle 03:30, o con «Importa AZW ora» / «Aggiorna da AZW») copia: clienti con zona e codice venditore, fatture, righe, incassi, note di credito, commesse ArcLab, campioni mensili, insediamenti e prestazioni ArcLab, contabilità analitica e fatturato per cliente (Direzione). Se una parte non si legge, il resto procede e il messaggio lo dice.
+- **Palomar**: cartelle di prelievo per certificati esterni (solo esterni e misti), Ordini di Accettazione, rapportini; il codice del lotto e l'import in ArcLab restano a Palomar.
+- **Agente ACCREDIA** (`strumenti\AgenteAccredia`): legge la banca dati ACCREDIA (revisioni, stato, prove sospese) e invia a LabAI con `AgenteSegreto`. Da programmare come attività pianificata di Windows.
+- **Power BI**: modello `AZW_TS_VERSION.pbit` sullo stesso file AZW; gli indicatori della Direzione ne riproducono le regole.
 
-**Scadenziario tarature** (schema `tarature`)
-- `TermometroEsterno` — termometro cliente non in ArcLab: N° rapporto, tipologia, date, cliente, consegna, `Fatturato`, `IdTaraturaOrigine` (se generato da una taratura in app)
-- Scadenziario interni (sola lettura ArcLab): `PianoInterventi` con `IdAttività` 25/26, ultima taratura da `MAX(SchedeIntervento.DataInt)` per piano, scadenza = ultima + `FreqGiorni`, apparecchiature in uso; raggruppamento per tipo via parole chiave nel nome
-- Import esterni: foglio «2011-2026», mappatura colonne per intestazione, righe con RINNOVATO/DISMESSO escluse; colonna «Fatt» → `Fatturato`
-- Etichette: generate dal modulo Taratura (Excel, formato blocchetto 2020, sfondo colore per anno con testo a contrasto)
+## 9. Ruoli e permessi
 
-**VoceAudit** — append-only, mai aggiornata né cancellata
-- `DataOra`, `IdUtente`, `EmailUtente`, `IndirizzoIp`
-- `Area` (enum), `Azione`, `TipoEntita`, `IdEntita`
-- `Esito`, `Dettaglio` (JSON), `VersioneApplicazione`
+Ruoli **per mestiere** (dall'11/10/2026, gestiti da **Impostazioni → Utenti e ruoli**): Amministratore, Responsabile, Responsabile Qualità, Qualità, Tecnico, Campionatore, Accettazione, Commerciale, Consulente, Socio, Consultazione, **Direzione** (dal 13/10: soci + Bertozzi, permessi `direzione.consulta` e `direzione.gestisci`); Operatore disattivato. Chi entra la prima volta riceve Consultazione; le persone si possono registrare in anticipo per e-mail. Profili iniziali in `Dati\LaboratorioAI\DatiIniziali\ProfiliRuoli.cs` (applicati una sola volta). Almeno un Amministratore attivo; i permessi dei ruoli li cambia solo un Amministratore.
 
-**SessionePortale** — sessioni del portale su database (sopravvivono ai riavvii)
-- Token opaco generato con `RandomNumberGenerator`
-- `Scadenza`, `DataRevoca` (revoca puntuale)
-- La credenziale non è mai memorizzata
+> In produzione il ruolo Direzione esiste ma l'assegnazione automatica alle 6 persone non è avvenuta: va fatta (o verificata) a mano da Utenti e ruoli.
 
-### 4.4 Convenzioni del modello dati
+## 10. Ambienti, avvio e pubblicazione
 
-- Nomi tabella in italiano, plurale
-- Chiavi primarie `Id<Entità>`, sempre `INT IDENTITY`
-- Date in UTC nel database, conversione a ora locale in presentazione
-- Nessuna cancellazione fisica: campo `Attivo` o `DataCancellazione`
-- Schema versionato con migrazioni EF Core — mai modificare il database a mano
-- Migrazioni presenti: `20260724102024_Iniziale`, `20260726102836_AggiuntaDvrPiscine`
+| | Sviluppo | Produzione |
+|---|---|---|
+| Web | `http://localhost:5080` (`Avvia_LaboratorioAI.bat`) | https://labai.mare-a.com |
+| Portale | `http://localhost:5081` (`Avvia_Portale.bat`) | https://portale.mare-a.com |
+| Database | `LaboratorioAI_Test` | `LaboratorioAI` |
+| Cartella | `C:\Sviluppo\LaboratorioAI` | `\\SRVMAREA\marea\LaboratorioAI\Produzione\Web` e `\Portale` (D:\MAREA\… sul server) |
+| Log | console + `log\` | `\\SRVMAREA\marea\LaboratorioAI\Produzione\Web\log\` |
 
-### 4.5 Note tecniche ArcLab (agganci di schema da ricordare)
-
-Facts scoperti durante lo sviluppo dei report, causa di errori 500 se ignorati:
-
-- **CodLotto / CodCampione sono colonne testo** con valori non numerici (es. `\`): confrontandoli con interi usare sempre `TRY_CONVERT(int, ...)`, altrimenti errore 245.
-- **Prelevatore**: `Campione.IdPrelevatore → mansione (IdMansione, IdAttività = 1) → Organico`. Nome = `LTRIM(RTRIM(ISNULL(CognomeOrg,'') + ' ' + ISNULL(NomeOrg,'')))`.
-- **Ricevitore**: `Lotto.IdRicevitore → mansione (IdMansione, IdAttività = 2) → Organico`, stesso schema di nome.
-- **Contratto di consulenza HACCP** = commessa `IdTipoCommessa = 5` con `DescrIncarico LIKE 'Gestione ed assistenza autocontrol%HACCP%'` (una sola «l» per intercettare il refuso «autocontrolo» in ArcLab) **e** con prestazioni presenti; il n° tamponi inclusi = `DurataPres`.
-- **Accreditamento**: `Metodo.Accreditato` (MARE.A) e `Metodo.Accreditato_Esterno`; per il lab esterno usare `labEstMetodo.AccrLabEsterno` con `EXISTS` (non `MAX(bit)`, non valido). Numero laboratorio = `LabEsterno.NumeroAccredia`.
-- **Prefatturazione**: `commessa.NonFatturare` (bit), `commessa.PrezzoControllo`, `commessa.DataScadenzaInc`; certificato `Certificato.NCertificato/DataCertificato/DataFattura`. In SSMS le query vanno prefissate con `USE LabAnalisiDati;`.
-
----
-
-## 5. Ruoli e permessi
-
-### 5.1 Modello
-
-Autorizzazione a permessi granulari, non a ruoli. I permessi hanno forma `area.funzione`:
-
+**Pubblicare** (da `C:\Sviluppo\LaboratorioAI`, con LaboratorioAI di sviluppo chiuso):
+```powershell
+cd C:\Sviluppo\LaboratorioAI
+dotnet publish src\LaboratorioAI.Web -c Release -o C:\Sviluppo\Publish\Web
+.\Pubblica-Produzione.ps1 -TentativiVerifica 18
 ```
-validazione.visualizza          validazione.analizza        validazione.analizza_lotto
-consultazione.campioni          consultazione.certificati   consultazione.clienti
-consultazione.risultati         metodi.consulta             metodi.prezzi
-commesse.consulta               commesse.prezzi             labesterni.consulta
-labesterni.esporta              prefatturato.tamponi        prefatturato.nonfatturare
-dvr.genera                      dvr.lotto                   dvr.registro
-piscine.genera                  amministrazione.utenti      amministrazione.configurazioni
-amministrazione.audit
+Oppure `Pubblica-Produzione.bat` (publish + script). Il Portale con `Pubblica-Portale.bat`. Lo script: mette offline l'app (`app_offline.htm`), aspetta che IIS rilasci i file, fa il backup datato in `Produzione\Backup\BUP gg-mm-aa (n)`, copia **esclusi gli `appsettings*.json`** (riprovando i file bloccati), riavvia, verifica il sito e, se non risponde, **ripristina da solo** il backup (senza toccare la cartella `log`). Dettagli in `claude/procedura-deploy-produzione.md`.
+
+**Lezioni del 13/10/2026**: il primo avvio dopo una migrazione può fallire o essere lento; se capita, il log ora resta e si legge in `Produzione\Web\log\`. Per una diagnosi senza toccare la produzione: avviare il pacchetto pubblicato sul PC contro il database di test (`$env:ASPNETCORE_ENVIRONMENT="Development"; dotnet LaboratorioAI.Web.dll --urls http://localhost:5090` dentro `C:\Sviluppo\Publish\Web`). Il registro `stdout` di IIS si attiva con `stdoutLogEnabled="true"` nel `web.config` del pacchetto (da rimettere a false).
+
+## 11. Come si sviluppa e si consegna
+
+- **Fonte di verità del codice**: il PC di Mirko, `C:\Sviluppo\LaboratorioAI` (in sessione collegata: `$HOME/mnt/Sviluppo--LaboratorioAI`). Nello spazio cloud si lavora su una copia per compilare e testare.
+- Consegna:
+  1. prima di sovrascrivere, confrontare i file del PC con quelli attesi (diff/md5);
+  2. pacchetto `.tgz` con `md5.txt` in `C:\Sviluppo\LaboratorioAI\obj\`, estratto in `src\` (e `tests\`), verifica con `md5sum -c`;
+  3. voce in `CHANGELOG.md`;
+  4. se cambiano le entità, dare a Mirko il comando della migrazione.
+- Comandi migrazione (con LaboratorioAI chiuso):
+```powershell
+cd C:\Sviluppo\LaboratorioAI
+dotnet ef migrations add <Nome> --context ContestoLaboratorioAI --project src\LaboratorioAI.Dati --startup-project src\LaboratorioAI.Web
+dotnet ef database update --context ContestoLaboratorioAI --project src\LaboratorioAI.Dati --startup-project src\LaboratorioAI.Web
+dotnet build
 ```
+  (`--context` è obbligatorio: nella soluzione ci sono più DbContext.)
+- I motori di calcolo stanno in Core come funzioni pure, con test in `tests\LaboratorioAI.Core.Tests`.
 
-> I permessi effettivi sono elencati in `src\LaboratorioAI.Core\Costanti\Permessi.cs`: questa lista è indicativa. Le aree «Tamponi in contratto» e «Non fatturare» usano i permessi di prefatturazione.
+## 12. Stato e punti aperti (13/10/2026)
 
-### 5.2 Stato attuale
+**Da fare subito**
+1. Collaudare in sviluppo **Andamento territorio**, **Commento AI** (tutte e tre le pagine) e **Rendimento commerciali**; poi pubblicare insieme. In produzione premere «Aggiorna da AZW» nella Direzione.
+2. Assegnare il ruolo **Direzione** alle 6 persone in produzione (se non già fatto).
+3. Rendimento commerciali: verificare che le provvigioni non siano già comprese nelle voci di costo ZAT/CAR (doppio conteggio).
+4. Classificare le voci AZW senza tipo **ALE** e **GAS** (Classificazione voci).
+5. Impostazioni documenti in produzione: cartella di arrivo dei certificati esterni, cartelle Palomar solo esterni / misti, processati esterni / misti.
+6. Ripubblicare anche il **Portale** (correzione del filtro Stato, badge accreditamento).
 
-**Tutti gli utenti sono assegnati al ruolo Amministratore.** Tutti vedono tutto (scelta confermata: «per ora tutti vedono tutto»).
+**Prima del lancio delle Condizioni Generali**: parere legale (Giovanna), Rev. 19 definitiva, marca temporale giornaliera; non mettere in coda inviti massivi prima. Evitare campagne massive da aprile a luglio.
 
-Il modello a ruoli (Amministratore, Responsabile, Operatore, Consultazione) è definito e i ruoli sono in database, ma solo Amministratore ha permessi assegnati nella prima release.
+**Altri aperti**
+- Mail di presentazione ai colleghi (bozza in `claude/ripartenza-2026-10-11.md`, appendice).
+- Ricerca errori: valutare le incoerenze prelevatore/vettore (~1.084) e i campioni non pronti (~131) emersi in sviluppo.
+- Guide ancora da scrivere: DVR Legionella, Piscine, Monitor Econorma.
+- Ordini di Accettazione: sviluppo sospeso.
+- Manuali (DVR Sicurezza, Manuale HACCP): modello dati e template dopo il riscontro dei consulenti.
+- Rimandati: approvazione obbligatoria delle offerte scontate, riconciliazione Palomar, metodo ArcLab 12846, rotazione `AgenteSegreto`, attività pianificata per l'Agente ACCREDIA, punti aperti delle provvigioni (vedi analisi), «clienti senza approvazione» in accettazione, chi ha accesso RDP al server IIS.
+- Direzione: eventuale ripartizione del costo dei commerciali cliente per cliente.
 
-**Differenziazione futura = configurazione, non codice.** Togliere un permesso a un ruolo è una riga in una tabella.
-
-### 5.3 Implementazione tecnica
-
-- `FornitorePolicyPermessi`: genera policy al volo da qualunque codice permesso
-- `[RichiedePermesso(Permessi.ValidazioneAnalizza)]`: attributo su controller/azione
-- I permessi viaggiano come claim nel cookie di sessione
-- Modifica ai permessi: effetto al successivo accesso dell'utente
-
----
-
-## 6. Vincoli e requisiti confermati
-
-| Requisito | Dettaglio |
-|---|---|
-| **Credenziale portale** | Letta da ArcLab (P.IVA). Non passa mai in chiaro: HTTPS obbligatorio, solo nel body della POST, esclusa dai log con filtro Serilog, confronto a tempo costante su hash SHA-256, confronto eseguito anche per codici inesistenti (timing attack) |
-| **Repository Git** | Bare su share dedicata: `\\<server>\Sviluppo\LaboratorioAI.git`. Escludere da OneDrive e da sincronizzazioni automatiche |
-| **Ambiente collaudo** | `D:\LaboratorioAI\Collaudo`, database `LaboratorioAI_Test`. Legge ArcLab di produzione in sola lettura — nessun rischio |
-| **Deploy produzione** | `D:\LaboratorioAI\Produzione`, database `LaboratorioAI`. Vedi `DEPLOY_LaboratorioAI.md` |
-| **Entra ID** | Da configurare in fase di deploy: TenantId e ClientId da inserire come variabili d'ambiente o `appsettings.Production.json` (fuori dal repository). Richiede admin M365 |
-| **Application Pool** | Account di dominio `MAREA\svc_labai`: `db_datareader` su ArcLab, su `LaboratorioAI` datareader+datawriter+ddladmin per le migrazioni |
-| **Rischio residuo portale** | La P.IVA è dato pubblico: le misure proteggono il transito, non aumentano l'entropia. Accettato consapevolmente |
-
----
-
-## 7. Stato attuale
-
-### 7.1 Completato
-
-- [x] Documento di analisi funzionale approvato
-- [x] Soluzione .NET 8 con sei progetti — **compila con 0 errori**
-- [x] Migrazioni `Iniziale` e `AggiuntaDvrPiscine` generate e applicate
-- [x] Accesso di sviluppo (senza Entra ID) attivo in `Development`
-- [x] Web app su `http://localhost:5080` con `LaboratorioAI_Test` su `PCMAREA01\SQLEXPRESS`
-- [x] Tutte le aree operatori funzionanti (errori 500 «Da Validare» e «Ricerca campioni» risolti)
-- [x] **Piscine**: DVR, Regolamento, Manuale ER e Registro Marche completi e collaudati su dati reali; dati scheda salvati su SQL (schema `app`, `DvrPiscine`)
-- [x] Raccolta dati piscine resa responsive per smartphone (CSS)
-- [x] Chiave API Anthropic impostata via user-secrets (`Anthropic:ChiaveApi`)
-- [x] DVR Legionellosi collaudato su modelli reali
-- [x] **Portale clienti avviato e testato**: login cliente (codice + P.IVA) e `/stato` verificati; corretta gestione del messaggio d'errore in accesso
-- [x] **Tamponi in contratto** (prefatturazione): riproduce in sola lettura i criteri di prefatturazione ArcLab; IdControllo 180/203/2513 con filtro controlli componibile; aggancia il contratto di consulenza HACCP (commessa tipo 5) con n° tamponi inclusi; filtri prelevatore e ricevitore; Excel su due fogli
-- [x] **Non fatturare** (prefatturazione): campioni con flag NonFatturare nel periodo; doppio riepilogo per prelevatore e per ricevitore con totale generale; dettaglio con prezzo e contratto HACCP; filtri e Excel (colonna + foglio ricevitore)
-- [x] **Certificati emessi**: sotto ogni prova, esecutore, numero laboratorio esterno (`LabEsterno.NumeroAccredia`) e accreditamento (MARE.A `Metodo.Accreditato` / esterno via `labEstMetodo.AccrLabEsterno`)
-- [x] **Laboratori Esterni**: filtro numero lotto e indicazione «accreditato esterno» (a video e in Excel)
-- [x] **Consultazione**: filtri prelevatore/ricevitore, colonne prezzo/idcontrollo/prelevatore, totali card completi calcolati lato server; tabella per singola prova negli identificativi tecnici (accreditamento interno/esterno, IdProva, IdRigaMetodo)
-- [x] **Totali delle card sempre completi** su tutte le schede (calcolo lato server o caricamento completo con dettaglio a video limitato)
-- [x] **Launcher desktop** (`Avvia_LaboratorioAI.bat` / `.ps1`): avvia il server se non attivo e apre `http://localhost:5080`
-- [x] Etichetta «Elenco troncato» arricchita con il numero di righe mostrate; IdControllo mostrato accanto al nome del controllo (Tamponi e Non fatturare)
-- [x] **Nutrizionali**: archivio materie prime + Ricette con calcolo in tempo reale, import AI da scheda tecnica, verifica AI
-- [x] **Tarature strumenti** (04-01, 04-02, 04-03, bilance 45): motori validati con test xUnit, rapporti PDF/Word, validazione del calcolo con registro/avviso, analisi AI, duplica; piani di validazione formule (docx) per bilance e mappatura
-- [x] **Monitoraggio TempLog Econorma**: motore validato sul file reale; lettura `.xls`, limiti da ArcLab (mappatura canale→sonda→PianoInterventi TARATURA), evidenziazione escursioni, valori per orario, monitor interattivo, report Excel/PDF, export sonde, validazione umana singola/multipla con registro (**in collaudo web**)
-- [x] **Menù riorganizzato per macroaree** (Laboratorio, Manualistica, Nutrizionali, Strumenti)
-- [x] **Scadenziario tarature**: interni da ArcLab raggruppati per tipo; archivio esterni importato dal foglio «2011-2026» (solo correnti), flag Fatturato + filtro; cliente da ArcLab; etichette termometro generate dal modulo Taratura (Excel, colore per anno)
-- [x] **Accettazione** (staging): maschera mobile con sezioni apribili, città/commesse/prezzo per insediamento, prelevatori/ricevitori attivi, tecniche/imballaggi, esploso controllo, procedura da matrice, lab esterno automatico, luogo prelievo; **verbale VP-NNNNNN** con contatore atomico; data ricezione alla sincro; PDF richiesta/catena custodia (lab esterno) ed etichetta/scheda ricezione (campione); verifica importabilità. `CodLotto` e import lasciati a **Palomar** (mappatura consegnata)
-- [x] **Certificati esterni Non Ricertificati**: confronto portale (Marea `Entries`) ↔ certificati interni, stato fatturazione, Excel
-- [x] **Proposta controlli**: catalogo metodi attivi, prezzo automatico, lab esterno unico, verifica duplicati con popup, proposta nome via AI con sigle, modifica di controllo esistente con guardia sul nome, validazione Cifre/MaxDecimali; **XML per import supervisionato** (nessuna scrittura ArcLab)
-- [x] **Stato «Spedito originale»** in Consultazione e Laboratori esterni (CTE su Marea + LEFT JOIN) con filtro dedicato
-- [x] **Schede di variabilità manuali** (docx) per DVR Sicurezza e Manuale HACCP: analisi parti fisse/variabili/condizionali, inviate ai consulenti per calibrazione
-
-### 7.2 Aperti (sviluppo/collaudo)
-
-Nessuno bloccante allo sviluppo. Da completare **prima/subito dopo** la messa in esercizio:
-
-- **Copertura audit trail — estesa (agosto 2026)**: le chiamate `RegistraAsync` sono ora presenti, oltre a DVR/Laboratori esterni/Tamponi, anche in **Accettazione** (salva/elimina/tracciato XML/PDF), **Proposta controlli** (salva/elimina/XML), **Certificati esterni Non Ricertificati** (export), **Non fatturare** (export), **Piscine** (salva/DVR/regolamento/manuale), **Taratura/Incubatori/Mappatura/Bilance** (salva/validazione/analisi AI), **Monitoraggio Econorma** (validazioni/mappatura), **Da Validare** (analisi AI singola/massiva), **Scadenziario** (salva/elimina/svuota/import), **Materie prime** (import/estrazione AI/salva/elimina), **Ricette** (salva/verifica AI). Aree loggate: 17/18/19/… (aggiunta `Mappatura=20`). Restano non loggate solo le schermate di sola lettura (Consultazione, Metodi, Commesse). *Da ricompilare e provare.*
-- **Collaudo Accettazione con Palomar** sul tracciato XML/mappatura reale.
-- **Manuali**: dopo il riscontro dei consulenti sulle due schede, costruire modello dati + template per Sicurezza e HACCP (hotel entro gennaio).
-
-### 7.3 Da fare — messa in produzione (con il sistemista)
-
-Tutti i dettagli operativi sono nel runbook **`DEPLOY_LaboratorioAI.md`**. In sintesi:
-
-- Creazione database `LaboratorioAI` sul server e applicazione migrazioni (automatiche al primo avvio della Web app)
-- Creazione account `MAREA\svc_labai` e assegnazione permessi (invariante: `db_datareader` su ArcLab)
-- Registrazione app su Entra ID (TenantId/ClientId) — richiede admin M365
-- Pubblicazione e configurazione IIS di Web (5080) e Portale (5081)
-- Variabili d'ambiente di produzione: `Anthropic__ChiaveApi`, `EntraId__*`, `Portale__CredenzialeOperatore`, percorsi modelli piscine
-- Esposizione esterna del portale (reverse proxy / Cloudflare)
-- Collaudo post-deploy secondo la checklist del runbook
-
----
-
-## 8. Percorsi chiave
+## 13. Percorsi chiave
 
 | Elemento | Percorso |
 |---|---|
 | Soluzione | `C:\Sviluppo\LaboratorioAI\LaboratorioAI.sln` |
-| Runbook di deploy | `C:\Sviluppo\LaboratorioAI\DEPLOY_LaboratorioAI.md` |
-| Configurazione sviluppo Web | `src\LaboratorioAI.Web\appsettings.Development.json` |
-| Configurazione sviluppo Portale | `src\LaboratorioAI.Portale\appsettings.Development.json` |
-| Program.cs Web | `src\LaboratorioAI.Web\Program.cs` |
-| Program.cs Portale | `src\LaboratorioAI.Portale\Program.cs` |
-| Migrazioni EF | `src\LaboratorioAI.Dati\Migrations\` |
-| Mappa valori DVR | `src\LaboratorioAI.Documenti\Dvr\MappaValori.cs` |
-| Generatore piscine | `src\LaboratorioAI.Documenti\Piscine\GeneratorePiscine.cs` |
-| Repository campioni | `src\LaboratorioAI.Dati\ArcLab\Repository\RepositoryCampioni.cs` |
-| Repository portale | `src\LaboratorioAI.Dati\ArcLab\Repository\RepositoryPortale.cs` |
-| Repository tamponi in contratto | `src\LaboratorioAI.Dati\ArcLab\Repository\RepositoryTamponiContratto.cs` |
-| Repository non fatturare | `src\LaboratorioAI.Dati\ArcLab\Repository\RepositoryNonFatturare.cs` |
-| Esportatori Excel prefatturazione | `src\LaboratorioAI.Documenti\EsportatoreTamponiContratto.cs`, `EsportatoreNonFatturare.cs` |
-| Catalogo permessi | `src\LaboratorioAI.Core\Costanti\Permessi.cs` |
-| Launcher desktop | `Avvia_LaboratorioAI.bat` / `Avvia_LaboratorioAI.ps1` (radice soluzione) |
-| Modelli Word piscine | `C:\Sviluppo\Piscine\Modello\` |
+| Storico consegne | `CHANGELOG.md` (radice) |
+| Menu e home | `src\LaboratorioAI.Web\Navigazione\MenuApplicazione.cs`, `ContatoriHome.cs` |
+| Guide | `src\LaboratorioAI.Web\Navigazione\Guide.cs`, `Views\Guide\_*.cshtml` |
+| Permessi | `src\LaboratorioAI.Core\Costanti\Permessi.cs` + `DatiIniziali.Catalogo()` |
+| Ruoli iniziali | `src\LaboratorioAI.Dati\LaboratorioAI\DatiIniziali\ProfiliRuoli.cs` |
+| Contesto EF e migrazioni | `src\LaboratorioAI.Dati\LaboratorioAI\ContestoLaboratorioAI.cs`, `src\LaboratorioAI.Dati\Migrations\` |
+| Importazione AZW | `src\LaboratorioAI.Dati\Provvigioni\ImportatoreAzw.cs` |
+| Provvigioni | `Dati\Provvigioni\ServizioProvvigioniLab.cs`, `Core\Provvigioni\Motore*.cs` |
+| Direzione | `Core\Direzione\*`, `Dati\Direzione\ServizioRendimentoCommerciali.cs`, `Web\Controllers\DirezioneController.cs` |
+| Client AI | `src\LaboratorioAI.IA\ClientAnthropic.cs` |
+| Pubblicazione | `Pubblica-Produzione.bat` / `.ps1`, `Pubblica-Portale.bat` |
+| Avvio sviluppo | `Avvia_LaboratorioAI.bat`, `Avvia_Portale.bat` |
+| Runbook messa in esercizio iniziale | `DEPLOY_LaboratorioAI.md` |
+| Monitor Econorma | `HANDOFF_MonitorTemperature.md` |
 
-**Comandi di avvio (sviluppo)**:
-```powershell
-cd C:\Sviluppo\LaboratorioAI
-dotnet run --project src\LaboratorioAI.Web      # porta 5080
-dotnet run --project src\LaboratorioAI.Portale  # porta 5081
-```
+## 14. Documenti di riferimento nel progetto
 
-> Nota operativa: Web (5080) e Portale (5081) condividono i progetti `Core`/`Dati`/`Documenti`. Se una è in esecuzione mentre ricompili l'altra dopo aver toccato quei progetti, la build resta bloccata sui DLL bloccati. In quel caso: `Ctrl+C`, `dotnet build-server shutdown`, chiudi i processi, e usa `dotnet build` seguito da `dotnet run --no-build`. Il Serilog del portale scrive solo su file (`log\portale-*.log`): la console vuota all'avvio è normale, l'app è comunque in ascolto.
-
----
-
-## 9. Prossimi passi
-
-Un solo blocco residuo: **la messa in produzione**, da eseguire seguendo `DEPLOY_LaboratorioAI.md`.
-
-> **Ripubblicazione (dopo le ultime modifiche).** Le funzioni recenti (prefatturazione, accreditamento certificati, filtri, ecc.) non sono ancora nella cartella di produzione. Al momento del passaggio su server, pubblicare le versioni Release aggiornate:
-> ```powershell
-> dotnet publish src\LaboratorioAI.Web     -c Release -o D:\LaboratorioAI\Produzione\Web
-> dotnet publish src\LaboratorioAI.Portale -c Release -o D:\LaboratorioAI\Produzione\Portale
-> ```
-> Dopo la publish, rimuovere gli `appsettings.Development.json` dalle cartelle di produzione (la configurazione di produzione arriva da `appsettings.Production.json` e dalle variabili d'ambiente).
-
-Ordine consigliato:
-
-1. Preparare il database e l'account di servizio (sezione 3 del runbook)
-2. Registrare l'app su Entra ID (sezione 7)
-3. Pubblicare e configurare IIS per Web e Portale (sezioni 4, 6, 8)
-4. Predisporre cartelle e modelli documentali sul server (sezione 5)
-5. Eseguire la checklist di verifica e sicurezza post-deploy (sezioni 9 e 10)
+- `claude/procedura-deploy-produzione.md` — pubblicazione corrente.
+- `claude/analisi-cruscotto-direzione.md` — Direzione (indicatori, territorio, commerciali, Commento AI).
+- `claude/analisi-modulo-provvigioni.md`, `claude/regole-provvigioni-2027.md`, `Contesto_modulo_provvigioni.md` — provvigioni e segnalatori.
+- `claude/analisi-clienti-da-seguire.md`, `claude/analisi-subentri-e-priorita-clienti.md` — clienti da seguire e cambi di gestione.
+- `claude/condizioni-e-firme.md` — Condizioni Generali e firme.
+- `claude/analisi-preventivi-consulenza.md`, `claude/analisi-rapportino-consulenze.md` — consulenza.
+- `claude/proposta-home-menu-registro-attivita.md` — home e menu.
+- `claude/ripartenza-2026-10-11.md` — superato da questo documento (resta per la bozza della mail ai colleghi).
 
 ---
 
-## 10. Progetto Piscine — integrato
-
-Il componente Piscine, previsto inizialmente come sviluppo separato, è stato **realizzato e integrato** in Laboratorio AI seguendo le convenzioni della sezione 4: permessi, area funzionale, controller `PiscineController`, voce di navigazione, persistenza su SQL (schema `app`). Genera DVR piscine, Regolamento interno e Manuale/Registro di autocontrollo per Emilia-Romagna e Marche, con i dati fisici delle vasche come fonte unica condivisa fra i documenti e le soglie normative regionali gestite separatamente.
-
----
-
-*MARE.A srl — Cattolica (RN) — Luglio 2026*
+*MARE.A srl — Cattolica (RN) — ottobre 2026*
