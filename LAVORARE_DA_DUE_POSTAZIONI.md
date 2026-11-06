@@ -27,6 +27,15 @@ Il repository GitHub e' la fonte di verita' del codice.
 - File contabile AZW_07.accdb
 - Database di test (si copiano con backup e ripristino)
 
+## Come si cambia postazione (i due .bat)
+- Quando ti siedi a un PC: doppio clic su INIZIO-LAVORO.bat. Scarica il lavoro dall'altro PC,
+  propone di aggiornare il database locale se sono arrivate migrazioni e controlla la configurazione.
+- Prima di alzarti: doppio clic su FINE-LAVORO.bat. Controlla che non ci siano password o file
+  riservati, chiede due parole su cosa hai fatto e salva tutto su GitHub.
+- Sono gli stessi file su entrambi i PC: riconoscono da soli dove si trovano.
+- Se un messaggio e' rosso, lo script si e' fermato senza cambiare niente: leggi cosa dice e, se non basta,
+  incollalo a Claude. Non forzare mai (niente git push --force, niente git reset --hard).
+
 ## Script (.bat / .ps1): cosa fanno su ciascuna postazione
 - Avvia_LaboratorioAI.bat, Avvia_Portale.bat, Avvia_Tracciato.bat: funzionano su entrambe le postazioni.
   Prima di partire controllano (scripts\Controlla-Ambiente.ps1): se manca appsettings.Development.json

@@ -13,6 +13,8 @@ publish/
 # Configurazioni locali e segreti
 appsettings.Development.json
 appsettings.Local.json
+# copie di backup delle configurazioni (es. appsettings.Development.json.prima-di-D)
+appsettings*.json.*
 *.pfx
 *.key
 

@@ -10,6 +10,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - `Ripristina-Produzione-13-10.bat` e `datapump_dati_locale_to_prod.ps1`: aggiunta una conferma scritta (possono rovinare la produzione); `pubblica_web.ps1` solo dal PC dell'ufficio.
 - `Backup_Su_D.bat`, `Script-Database-Tracciato.bat`, `Crea-Collegamenti-Desktop-Tracciato.ps1`: percorso del progetto preso dalla posizione dello script; sul portatile non si crea il collegamento di pubblicazione.
 - `scripts\estrai-andamento-clienti.ps1`: istanza locale `.\SQLEXPRESS` (vale su entrambi i PC).
+- Nuovi `INIZIO-LAVORO.bat` e `FINE-LAVORO.bat` (script in `scripts\Inizio-Lavoro.ps1` e `Fine-Lavoro.ps1`): pull con controlli e proposta di aggiornare il database locale quando arrivano migrazioni; commit e push con blocco se ci sono password in chiaro, file di configurazione locali, database o file oltre 50 MB.
+- `.gitignore`: ignorate le copie di backup delle configurazioni (`appsettings*.json.*`, come `appsettings.Development.json.prima-di-D`).
 
 ## Manualistica - dizionario della check list dai modelli (05/11/2026)
 - Nuovi `TendineModello` e `ServizioVociChecklist`: le voci delle tendine si leggono dalle revisioni approvate e popolano `man.VociChecklist` e `man.OpzioniVoce`. Pagina «Manualistica → Voci della check list»: si guarda l'anteprima, poi si scrive. Le voci scritte a mano dai consulenti non si toccano; quelle sparite dai modelli si spengono senza cancellarsi.
