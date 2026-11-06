@@ -1,0 +1,78 @@
+@model LaboratorioAI.Web.Controllers.ModelloOrdinePrivato
+@{
+    var o = Model.Ordine;
+    var e = Model.Esistente;
+    var consegna = e?.Consegna ?? (string.IsNullOrEmpty(Model.EmailProposta) ? LaboratorioAI.Core.Entita.ConsegnaRapportoPrivato.AMano : LaboratorioAI.Core.Entita.ConsegnaRapportoPrivato.Email);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Ordine di Accettazione da firmare</h1>
+        <p class="sottotitolo">Cliente privato senza accesso al Portale: si stampa l'Ordine con le Condizioni Generali per i privati, il cliente firma alla consegna del campione e l'originale va nel raccoglitore delle schede dei privati (nessuna scansione).</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="/OrdiniAccettazione">Ordini di Accettazione</a></div>
+</div>
+
+@if (o is null)
+{
+    <section class="riquadro">
+        <p style="color:#b00">@(Model.Motivo ?? $"Lotto {Model.IdLotto} non trovato in ArcLab o senza campioni.")</p>
+        <p><a class="pulsante pulsante-tenue" href="">Ricarica</a></p>
+    </section>
+}
+else
+{
+    <section class="riquadro">
+        <h2 style="margin-top:0">Lotto @o.CodLotto</h2>
+        <p>
+            <strong>@o.ClienteRagioneSociale</strong>
+            @if (!string.IsNullOrWhiteSpace(o.ClienteCitta)) { <span> — @o.ClienteCitta</span> }
+            <br />
+            <span class="sottotesto">Ricevuto il @(o.DataRicezione?.ToString("dd/MM/yyyy") ?? "—") · @o.Campioni.Count campion@(o.Campioni.Count == 1 ? "e" : "i")</span>
+        </p>
+        @if (!o.Pronto)
+        {
+            <p style="color:#b00;font-weight:600">@o.CampioniSenzaParametri campione/i senza parametri caricati: carica i parametri in ArcLab, poi ricarica questa pagina.</p>
+        }
+        @if (e is not null)
+        {
+            <p class="sottotesto" style="background:#e8eef7;padding:0.4rem 0.7rem;border-radius:6px">
+                Già stampato @e.Stampe volt@(e.Stampe == 1 ? "a" : "e"), l'ultima il @e.DataStampa.ToLocalTime().ToString("dd/MM/yyyy HH:mm") da @e.NomeUtente@(e.FirmatoIl is DateTime f ? $" — firmato il {f:dd/MM/yyyy}" : "").
+                Ristampando si aggiorna la stessa registrazione.
+            </p>
+        }
+    </section>
+
+    <section class="riquadro" @(o.Pronto ? "" : "hidden")>
+        <h2 style="margin-top:0">Rapporto di Prova</h2>
+        <fieldset style="border:none;padding:0;margin:0 0 0.8rem 0">
+            <legend style="font-weight:600;margin-bottom:0.3rem">Come lo riceve il cliente</legend>
+            <label class="casella"><input type="radio" name="consegna" value="1" @(consegna == LaboratorioAI.Core.Entita.ConsegnaRapportoPrivato.Email ? "checked" : "") /> per e-mail</label>
+            <label class="casella"><input type="radio" name="consegna" value="2" @(consegna == LaboratorioAI.Core.Entita.ConsegnaRapportoPrivato.AMano ? "checked" : "") /> ritiro a mano</label>
+            <label class="casella"><input type="radio" name="consegna" value="3" @(consegna == LaboratorioAI.Core.Entita.ConsegnaRapportoPrivato.Entrambi ? "checked" : "") /> entrambi</label>
+        </fieldset>
+        <label style="display:block;max-width:32rem">E-mail a cui inviare il Rapporto di Prova
+            <input type="email" id="email" style="width:100%" value="@Model.EmailProposta" placeholder="es. mario.rossi@esempio.it" autocomplete="off" />
+        </label>
+        <p class="sottotesto" id="nota-email">
+            @if (e is null && !string.IsNullOrEmpty(Model.EmailProposta))
+            {
+                <text>Proposta l'e-mail usata l'ultima volta per questo cliente: verificala con lui.</text>
+            }
+            else
+            {
+                <text>In ArcLab non c'è un campo per l'e-mail del privato: viene registrata qui e riproposta alla prossima consegna.</text>
+            }
+        </p>
+        <label class="casella" style="margin-top:0.6rem"><input type="checkbox" id="firmato" @(e is null || e.FirmatoIl is not null ? "checked" : "") /> firmato alla consegna del campione (oggi)</label>
+        <div style="margin-top:1rem;display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center">
+            <button class="pulsante" id="btn-stampa" data-lotto="@Model.IdLotto">Stampa da firmare</button>
+            <span class="sottotesto" id="msg"></span>
+        </div>
+        <p class="sottotesto" style="margin-top:0.8rem">La stampa viene archiviata e registrata in «Consegnati ai privati» (pagina Ordini di Accettazione), dove si cerca per numero di lotto al momento dell'invio del Rapporto di Prova.</p>
+    </section>
+}
+
+@section Script {
+    <script type="module" src="~/js/moduli/ordine-privato.js" asp-append-version="true"></script>
+}

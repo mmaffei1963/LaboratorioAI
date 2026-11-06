@@ -1,0 +1,110 @@
+@using System.Globalization
+@model LaboratorioAI.Web.Controllers.ModelloCompensi
+@{
+    ViewData["Titolo"] = "Compensi segnalatori";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    var imp = Model.UltimaImportazione;
+    var totale = Model.Trimestri.Sum(t => t.Provvigione);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Compensi segnalatori</h1>
+        <p class="sottotitolo">Quanto spetta a ciascun segnalatore sui clienti che ha portato, calcolato sugli <strong>incassi</strong> registrati in AZW (le fatture non pagate non generano compenso; gli storni lo riducono; le note di credito si tolgono nel trimestre della nota). I trimestri si chiudono insieme alle provvigioni dei commerciali, dalla pagina Provvigioni: da quel momento i compensi del trimestre non cambiano più.</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Segnalatori")">← Segnalatori</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Esporta", "Segnalatori", new { idSegnalatore = Model.IdSegnalatore })">Esporta Excel</a>
+    </div>
+</div>
+
+@if (imp is not null)
+{
+    <p class="sottotesto">Dati AZW importati il @imp.DataOra.ToLocalTime().ToString("dd/MM/yyyy HH:mm") (file aggiornato al @(imp.DataModificaFile?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "n/d")).</p>
+}
+
+<section class="riquadro">
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+        <span class="sottotesto">Segnalatore:</span>
+        <a class="pulsante @(Model.IdSegnalatore is null ? "" : "pulsante-tenue")" href="@Url.Action("Compensi", "Segnalatori")">Tutti</a>
+        @foreach (var s in Model.Segnalatori.Where(s => s.Attivo))
+        {
+            <a class="pulsante @(Model.IdSegnalatore == s.IdSegnalatore ? "" : "pulsante-tenue")" href="@Url.Action("Compensi", "Segnalatori", new { idSegnalatore = s.IdSegnalatore })">@s.Nome</a>
+        }
+    </div>
+</section>
+
+@if (Model.Avvisi.Count > 0)
+{
+    <section class="riquadro">
+        <strong>Da controllare</strong>
+        <ul>@foreach (var a in Model.Avvisi) { <li>@a</li> }</ul>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Per trimestre di incasso</h2><span class="sottotesto">Totale: <strong>@Euro(totale)</strong></span></div>
+    @if (Model.Trimestri.Count == 0)
+    {
+        <p class="sottotesto">Nessun compenso: registra i clienti segnalati nella pagina Segnalatori.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Trimestre</th><th class="numerico">Incassato nell'ambito</th><th class="numerico">Note di credito</th><th class="numerico">Compenso</th><th>Stato</th></tr></thead>
+                <tbody>
+                @foreach (var t in Model.Trimestri)
+                {
+                    <tr><td>@t.Etichetta</td><td class="numerico">@Euro(t.Incassato)</td><td class="numerico">@Euro(t.NoteCredito)</td><td class="numerico">@Euro(t.Provvigione)</td><td>@(t.Chiuso ? "chiuso" : "aperto")</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@if (Model.PerSegnalatore.Count > 0)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Per segnalatore</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Segnalatore</th><th class="numerico">Clienti</th><th class="numerico">Base incassata</th><th class="numerico">Compenso</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.PerSegnalatore)
+                {
+                    <tr><td>@r.Nome</td><td class="numerico">@r.Clienti</td><td class="numerico">@Euro(r.Base)</td><td class="numerico">@Euro(r.Compenso)</td></tr>
+                }
+                </tbody>
+                <tfoot><tr><th>Totale</th><th class="numerico">@Model.PerSegnalatore.Sum(r => r.Clienti)</th><th class="numerico">@Euro(Model.PerSegnalatore.Sum(r => r.Base))</th><th class="numerico">@Euro(Model.PerSegnalatore.Sum(r => r.Compenso))</th></tr></tfoot>
+            </table>
+        </div>
+        <p class="sottotesto">Base e compenso dall'inizio di ogni segnalazione, secondo il calcolo attuale. MARE.A e i consulenti allo 0% mostrano la base (quanto fatturato hanno portato) con compenso zero.</p>
+    </section>
+
+    <section class="riquadro">
+        <details>
+            <summary style="cursor:pointer;font-weight:600">Per cliente (@Model.PerCliente.Count)</summary>
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Segnalatore</th><th>Condizione</th><th>Cliente</th><th>Dal</th><th>Compenso fermo dal</th><th class="numerico">Base</th><th class="numerico">Compenso</th></tr></thead>
+                    <tbody>
+                    @foreach (var r in Model.PerCliente)
+                    {
+                        <tr>
+                            <td>@r.Segnalatore</td><td>@r.Condizione</td>
+                            <td>@(r.Nome.Length > 0 ? r.Nome : "—") <span class="sottotesto">(@r.Cliente)</span></td>
+                            <td>@r.DataInizio.ToString("dd/MM/yyyy")</td>
+                            <td>@(r.FineCompenso?.ToString("dd/MM/yyyy") ?? "in corso")</td>
+                            <td class="numerico">@Euro(r.Base)</td><td class="numerico">@Euro(r.Compenso)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <p class="sottotesto">«Compenso fermo dal»: data in cui il compenso si è interrotto (troppi mesi senza fatture nell'ambito, durata massima o data di fine della segnalazione).</p>
+        </details>
+    </section>
+}

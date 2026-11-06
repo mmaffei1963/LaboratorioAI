@@ -1,0 +1,27 @@
+@model List<LaboratorioAI.Web.Navigazione.Guida>
+<div class="barra-strumenti">
+    <div>
+        <h1>Guide</h1>
+        <p class="sottotitolo">Come si usano le funzioni di Laboratorio AI, spiegato per situazioni: cerca quella che ti interessa e segui i passi.
+            Dalla pagina di una funzione la guida si apre anche con il pulsante <strong>? Guida</strong> in alto a destra.</p>
+        <p class="sottotitolo">Non trovi la situazione giusta? Scrivi la domanda in <strong>Chiedi alla guida</strong>, con parole tue
+            (es. «come cerco i certificati di un cliente?»): l'AI risponde con i passi da seguire leggendo le guide che puoi vedere,
+            e ti dice quale guida aprire. Non conosce i dati di ArcLab né dei clienti: se la risposta non è nelle guide, te lo dice.
+            Con 👍 / 👎 ci aiuti a capire quali guide migliorare.</p>
+    </div>
+</div>
+<partial name="_ChiediGuida" />
+@if (Model.Count == 0)
+{
+    <p class="vuoto">Per le funzioni che usi non ci sono ancora guide.</p>
+}
+<div class="elenco-guide">
+    @foreach (var g in Model)
+    {
+        <a class="scheda-guida" href="/Guide/@g.Codice">
+            <strong>@g.Titolo</strong>
+            <span>@g.Descrizione</span>
+            <small>Aggiornata il @g.Aggiornata.ToString("dd/MM/yyyy")</small>
+        </a>
+    }
+</div>

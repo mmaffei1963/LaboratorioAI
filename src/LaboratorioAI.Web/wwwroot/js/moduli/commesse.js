@@ -94,7 +94,7 @@ function disegna(esito) {
     const diLaboratorio = Number(document.getElementById('f-tipo').value) === TIPO_LABORATORIO;
 
     document.querySelector('#tabella-commesse thead').innerHTML = diLaboratorio
-        ? `<tr><th>ID</th><th>Cliente</th><th>Insediamento</th><th>Controllo</th>
+        ? `<tr><th>ID</th><th>Cliente</th><th>Insediamento</th><th>ID controllo</th><th>Controllo</th>
                ${mostraPrezzi ? '<th class="numerico">Importo</th>' : ''}
                <th>Data</th><th>Contratto</th><th>Responsabile</th><th></th></tr>`
         : `<tr><th>ID</th><th>Cliente</th><th>Insediamento</th><th>Incarico</th>
@@ -110,6 +110,7 @@ function disegna(esito) {
             <td class="codice">${c.idCommessa}</td>
             <td><strong>${testo(c.ragioneSociale)}</strong></td>
             <td>${testo(c.nomeInsediamento) || '—'}</td>
+            ${diLaboratorio ? `<td class="codice">${c.idControllo ?? '—'}</td>` : ''}
             <td>${testo(diLaboratorio ? c.controllo : c.descrizioneIncarico) || '—'}</td>
             ${mostraPrezzi ? `<td class="numerico">${euro(c.prezzoControllo)}</td>` : ''}
             <td>${testo(c.dataCommessa) || '—'}</td>

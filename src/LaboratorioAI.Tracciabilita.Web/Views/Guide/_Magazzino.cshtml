@@ -1,0 +1,37 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A vedere <strong>quali lotti di materie prime hai in magazzino</strong> e a segnare quali stai usando. Il lotto <em>messo in uso</em> è quello che il programma propone nelle ricette quando produci.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Capire cosa c'è e in quale vista guardare</summary>
+    <dl class="glossario">
+        <dt>Da impegnare</dt><dd>Lotti arrivati che non hai ancora messo in uso: sono in attesa.</dd>
+        <dt>In uso</dt><dd>Lotti che stai usando in produzione.</dd>
+        <dt>Tutti in magazzino</dt><dd>Tutti i lotti con giacenza maggiore di zero.</dd>
+        <dt>Rimanenze per articolo</dt><dd>In fondo alla pagina: quanto ne hai in totale per ogni articolo e fornitore.</dd>
+    </dl>
+</details>
+
+<details class="situazione">
+    <summary>Aprire un nuovo sacco o lotto: metterlo in uso</summary>
+    <ol class="passi">
+        <li>Nella vista <strong>Da impegnare</strong> trova il lotto (puoi usare <strong>Cerca</strong>: lotto, articolo o fornitore).</li>
+        <li>Premi <span class="tasto">Metti in uso</span>.</li>
+    </ol>
+    <p class="dopo">Da quel giorno il lotto viene proposto nelle ricette: la ricerca «lotti da usare in un giorno» parte dalla data in cui lo hai messo in uso.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il lotto è finito</summary>
+    <p>Nella vista <strong>In uso</strong> premi <span class="tasto">Esaurito</span> sul lotto: esce dal magazzino e non viene più proposto.</p>
+    <p class="nota">Il lotto non sparisce: la sua scheda e la sua rintracciabilità restano consultabili.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere la storia di un lotto</summary>
+    <p>Clicca il <strong>codice del lotto</strong>: si apre la scheda con arrivi, movimenti e giacenza. Da lì il pulsante <span class="tasto">Rintracciabilità</span> mostra da dove viene e dove è finito.</p>
+</details>

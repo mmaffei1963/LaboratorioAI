@@ -164,6 +164,52 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
             new CommandDefinition(SqlDoppi, commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
     }
 
+    // ── 9. Denominazioni dei metodi (09/10/2026) ────────────────────
+    // Solo i dati: il confronto (denominazione che non cita il parametro, stessa denominazione per parametri diversi)
+    // è in Core (ControlloDenominazioniMetodi), testabile senza database.
+    private const string SqlDenominazioni = """
+        SELECT m.IdMetodo, m.IdParametro,
+               CONVERT(nvarchar(300), p.NomeParametro)  AS NomeParametro,
+               CONVERT(nvarchar(500), m.DettagliMetodo) AS DettagliMetodo,
+               CONVERT(nvarchar(300), m.RifBiblio)      AS RifBiblio
+        FROM metodo m
+            LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
+        WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
+        ORDER BY p.NomeParametro, m.IdMetodo
+        """;
+
+    public async Task<IReadOnlyList<RigaMetodoDenominazione>> MetodiDenominazioneAsync(CancellationToken ct = default)
+    {
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<RigaMetodoDenominazione>(
+            new CommandDefinition(SqlDenominazioni, commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
+    }
+
+    // Rapporti di prova emessi nel periodo con almeno una prova del metodo (come in Consultazione: Campione.IdCertificato).
+    private const string SqlRapportiMetodo = """
+        SELECT rm.IdMetodo,
+               COUNT(DISTINCT ce.IdCertificato) AS NRapporti,
+               MAX(ce.DataCertificato)          AS UltimoRapporto
+        FROM prove pr
+            INNER JOIN rigametodo  rm ON rm.IdRigametodo = pr.IdRigaMetodo
+            INNER JOIN Campione    ca ON ca.IdCampione = pr.IdCampione
+            INNER JOIN Certificato ce ON ce.IdCertificato = ca.IdCertificato
+        WHERE rm.IdMetodo IN @Ids
+          AND ce.DataCertificato >= @Da AND ce.DataCertificato < @A
+        GROUP BY rm.IdMetodo
+        """;
+
+    public async Task<IReadOnlyList<RigaRapportiMetodo>> RapportiPerMetodoAsync(
+        IReadOnlyCollection<int> idMetodi, int annoDa, int annoA, CancellationToken ct = default)
+    {
+        if (idMetodi.Count == 0) return Array.Empty<RigaRapportiMetodo>();
+        var (da, a) = Intervallo(annoDa, annoA);
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<RigaRapportiMetodo>(
+            new CommandDefinition(SqlRapportiMetodo, new { Ids = idMetodi.Distinct().ToList(), Da = da, A = a },
+                commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
+    }
+
     // ── 5/6. Lotti con riferimento mancante (ricevitore / vettore) ──
     // Campo variabile (@Colonna) non parametrizzabile: si compone la clausola con nome fisso.
     private const string SqlLottiSenza = """
@@ -315,5 +361,139 @@ public class RepositoryRicercaErrori : IRepositoryRicercaErrori
         using var cn = await _fabbrica.ApriAsync(ct);
         return (await cn.QueryAsync<RigaCampioneStampa>(
             new CommandDefinition(sql, par, commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
+    }
+
+    // ── 10. Prezzi commesse ArcLab ↔ listini Marea (28/10/2026) ────
+    // Solo clienti ArcLab attivi e con codice contabilità (anche per le righe di Marea): gli altri non vanno nel portale.
+    public async Task<(IReadOnlyList<CommessaPrezzoArcLab> Commesse, IReadOnlyList<ListinoMarea> Listini)> PrezziCommesseMareaAsync(CancellationToken ct = default)
+    {
+        var sql = $"""
+            SELECT CAST(cm.IdCommessa AS int) AS IdCommessa, CAST(i.IDCliente AS int) AS IdCliente, cl.RagioneSociale,
+                   CAST(cm.IDInsediamento AS int) AS IdInsediamento, i.NomeInsed AS Insediamento,
+                   CAST(cm.IDControllo AS int) AS IdControllo, c.Controllo,
+                   CAST(cm.PrezzoControllo AS decimal(18, 2)) AS Prezzo,
+                   CAST(cm.NContratto AS int) AS NContratto, cm.DescrIncarico,
+                   cm.DataCommessa, cm.DataUltimoRinnovo, uso.UltimoCampione
+            FROM commessa cm
+                INNER JOIN Insediamento i ON i.IDInsediamento = cm.IDInsediamento
+                INNER JOIN Clienti cl     ON cl.IDCliente = i.IDCliente
+                                          AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+                LEFT  JOIN Controllo c    ON c.IdControllo = cm.IDControllo
+                OUTER APPLY (SELECT MAX(lo.DataRic) AS UltimoCampione FROM Lotto lo WHERE lo.IdCommessa = cm.IdCommessa) AS uso
+            WHERE cm.IdTipoCommessa = {CostantiArcLab.TipoCommessaLaboratorio}
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.IDControllo IS NOT NULL
+              AND cm.PrezzoControllo > 0;
+
+            SELECT CAST(mc.IDArcLab AS int) AS IdClienteArcLab, mc.Nome AS Cliente, CAST(l.IDControllo AS int) AS IdControllo,
+                   l.DescrizioneIncarico, CAST(l.Prezzo AS decimal(18, 2)) AS Prezzo, l.UltimaModifica,
+                   CAST(l.IDContratto AS int) AS IdContratto
+            FROM [Marea].dbo.Listini l
+                INNER JOIN [Marea].dbo.Clienti mc ON mc.Id = l.IDCliente
+                INNER JOIN Clienti cl ON cl.IDCliente = mc.IDArcLab AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+            WHERE mc.IDArcLab IS NOT NULL
+              AND ISNULL(mc.Obsoleto, 0) = 0
+              AND l.IDControllo IS NOT NULL
+              AND l.Prezzo IS NOT NULL;
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        using var multi = await cn.QueryMultipleAsync(new CommandDefinition(sql, commandTimeout: TimeoutDiagnostica, cancellationToken: ct));
+        var commesse = (await multi.ReadAsync<CommessaPrezzoArcLab>()).ToList();
+        var listini = (await multi.ReadAsync<ListinoMarea>()).ToList();
+        return (commesse, listini);
+    }
+
+    // ── 11. Commesse ArcLab ↔ Marea oltre ai prezzi (28/10/2026) ───
+    public async Task<DatiCommesseMarea> CommesseMareaAsync(CancellationToken ct = default)
+    {
+        var attive = $"cm.IdTipoCommessa = {CostantiArcLab.TipoCommessaLaboratorio} AND cm.DataScadenzaInc IS NULL AND cm.IDControllo IS NOT NULL";
+        var sql = $"""
+            SELECT CAST(cm.IdCommessa AS int) AS IdCommessa, CAST(i.IDCliente AS int) AS IdCliente, cl.RagioneSociale,
+                   CAST(cm.IDInsediamento AS int) AS IdInsediamento, i.NomeInsed AS Insediamento,
+                   CAST(cm.IDControllo AS int) AS IdControllo, c.Controllo,
+                   CAST(cm.NContratto AS int) AS NContratto, cm.DescrIncarico,
+                   cm.DataCommessa, cm.DataUltimoRinnovo, uso.UltimoCampione
+            FROM commessa cm
+                INNER JOIN Insediamento i ON i.IDInsediamento = cm.IDInsediamento
+                INNER JOIN Clienti cl     ON cl.IDCliente = i.IDCliente
+                                          AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+                LEFT  JOIN Controllo c    ON c.IdControllo = cm.IDControllo
+                OUTER APPLY (SELECT MAX(lo.DataRic) AS UltimoCampione FROM Lotto lo WHERE lo.IdCommessa = cm.IdCommessa) AS uso
+            WHERE {attive};
+
+            SELECT DISTINCT CAST(rm.IdControllo AS int) AS IdControllo, p.NomeParametro, rm.DenominazioneRiga
+            FROM rigametodo rm
+                INNER JOIN metodo m    ON m.IdMetodo = rm.IdMetodo
+                LEFT  JOIN Parametro p ON p.IdParametro = m.IdParametro
+            WHERE rm.IdRigametodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}
+              AND rm.IdControllo IN (SELECT cm.IDControllo FROM commessa cm WHERE {attive});
+
+            SELECT CAST(IdControllo AS int) AS IdControllo, Controllo FROM Controllo;
+
+            SELECT CAST(mco.IDCommessa AS int) AS IdCommessa, mco.DescCommessa, CAST(mco.IDClienteArcLab AS int) AS IdClienteArcLab,
+                   CAST(mco.IDInsediamentoArcLab AS int) AS IdInsediamentoArcLab, mco.Parametri
+            FROM [Marea].dbo.Commesse mco
+                INNER JOIN Clienti cl ON cl.IDCliente = mco.IDClienteArcLab AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+            WHERE ISNULL(mco.Obsoleto, 0) = 0;
+
+            SELECT CAST(mc.IDArcLab AS int) AS IdClienteArcLab, mc.Nome AS Cliente, CAST(l.IDControllo AS int) AS IdControllo,
+                   l.DescrizioneIncarico, CAST(ISNULL(l.Prezzo, 0) AS decimal(18, 2)) AS Prezzo, l.UltimaModifica,
+                   CAST(l.IDContratto AS int) AS IdContratto
+            FROM [Marea].dbo.Listini l
+                INNER JOIN [Marea].dbo.Clienti mc ON mc.Id = l.IDCliente
+                INNER JOIN Clienti cl ON cl.IDCliente = mc.IDArcLab AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+            WHERE mc.IDArcLab IS NOT NULL
+              AND ISNULL(mc.Obsoleto, 0) = 0
+              AND l.IDControllo IS NOT NULL;
+
+            -- clienti non obsoleti nel portale ma non attivi in ArcLab (o senza codice contabilità, inesistenti, non collegati)
+            SELECT CAST(mc.Id AS int) AS IdMarea, mc.Nome, CAST(mc.CodContabilita AS nvarchar(50)) AS CodContabilitaMarea,
+                   CAST(mc.IDArcLab AS int) AS IdArcLab, cl.RagioneSociale AS RagioneSocialeArcLab,
+                   CAST(CASE WHEN mc.IDArcLab IS NULL THEN 'non collegato ad ArcLab (IDArcLab vuoto)'
+                             WHEN cl.IDCliente IS NULL THEN 'cliente non trovato in ArcLab'
+                             WHEN ISNULL(cl.Attivo, 0) <> 1 THEN 'non attivo in ArcLab'
+                             ELSE 'senza codice contabilità in ArcLab' END AS nvarchar(100)) AS Motivo,
+                   CAST((SELECT COUNT(*) FROM [Marea].dbo.Listini l WHERE l.IDCliente = mc.Id) AS int) AS Listini,
+                   CAST((SELECT COUNT(*) FROM [Marea].dbo.Commesse mco WHERE mco.IDClienteArcLab = mc.IDArcLab AND ISNULL(mco.Obsoleto, 0) = 0) AS int) AS Commesse,
+                   mc.PortaleUltimoAccesso AS UltimoAccessoPortale
+            FROM [Marea].dbo.Clienti mc
+                LEFT JOIN Clienti cl ON cl.IDCliente = mc.IDArcLab
+            WHERE ISNULL(mc.Obsoleto, 0) = 0
+              AND NOT (ISNULL(cl.Attivo, 0) = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL);
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        using var multi = await cn.QueryMultipleAsync(new CommandDefinition(sql, commandTimeout: TimeoutDiagnostica, cancellationToken: ct));
+        var commesse = (await multi.ReadAsync<CommessaArcLab>()).ToList();
+        var parametri = (await multi.ReadAsync<ParametroControlloArcLab>()).ToList();
+        var controlli = (await multi.ReadAsync<NomeControlloArcLab>()).ToList();
+        var commesseMarea = (await multi.ReadAsync<CommessaMarea>()).ToList();
+        var listini = (await multi.ReadAsync<ListinoMarea>()).ToList();
+        var clientiNonAttivi = (await multi.ReadAsync<ClienteMareaNonAttivo>()).ToList();
+        return new DatiCommesseMarea(commesse, parametri, controlli, commesseMarea, listini, clientiNonAttivi);
+    }
+
+    // ── 12. Commesse attive senza numero di contratto (28/10/2026) ──
+    public async Task<IReadOnlyList<CommessaSenzaContratto>> CommesseSenzaContrattoAsync(CancellationToken ct = default)
+    {
+        var sql = $"""
+            SELECT CAST(cm.IdCommessa AS int) AS IdCommessa, CAST(cm.CodCommessa AS nvarchar(50)) AS CodCommessa,
+                   CAST(i.IDCliente AS int) AS IdCliente, cl.RagioneSociale,
+                   LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))) AS CodContabilita,
+                   i.NomeInsed AS Insediamento, CAST(cm.IDControllo AS int) AS IdControllo, c.Controllo, cm.DescrIncarico,
+                   CAST(cm.PrezzoControllo AS decimal(18, 2)) AS Prezzo, cm.DataCommessa,
+                   uso.UltimoCampione, CAST(ISNULL(uso.Lotti, 0) AS int) AS Lotti
+            FROM commessa cm
+                INNER JOIN Insediamento i ON i.IDInsediamento = cm.IDInsediamento
+                INNER JOIN Clienti cl     ON cl.IDCliente = i.IDCliente
+                                          AND cl.Attivo = 1 AND NULLIF(LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))), '') IS NOT NULL
+                LEFT  JOIN Controllo c    ON c.IdControllo = cm.IDControllo
+                OUTER APPLY (SELECT MAX(lo.DataRic) AS UltimoCampione, COUNT(*) AS Lotti FROM Lotto lo WHERE lo.IdCommessa = cm.IdCommessa) AS uso
+            WHERE cm.IdTipoCommessa = {CostantiArcLab.TipoCommessaLaboratorio}
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.NContratto IS NULL
+            ORDER BY uso.UltimoCampione DESC, cl.RagioneSociale;
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<CommessaSenzaContratto>(new CommandDefinition(sql, commandTimeout: TimeoutDiagnostica, cancellationToken: ct))).ToList();
     }
 }

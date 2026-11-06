@@ -1,0 +1,57 @@
+@model LaboratorioAI.Web.Controllers.ModelloResponsabiliCliente
+@{
+    ViewData["Titolo"] = "Responsabili clienti";
+    var elenco = Model.Elenco;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Responsabili clienti</h1>
+        <p class="sottotitolo">Sigla della zona nell'anagrafica AZW (ANACF, campo ZONA) e nome del responsabile cliente MARE.A. Il nome si riporta nei contratti di consulenza quando si carica il cliente; nel preventivo resta modificabile. Nulla si cancella: le sigle non più usate si disattivano.</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <form method="post" asp-action="ResponsabiliDaAzw"><button type="submit" class="pulsante pulsante-tenue">Aggiungi le sigle presenti in AZW</button></form>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Pacchetti", "PreventiviConsulenza")">Pacchetti</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "PreventiviConsulenza")">← Preventivi</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<form method="post" asp-action="ResponsabiliSalva">
+    <section class="riquadro">
+        @if (elenco.Count == 0)
+        {
+            <p class="sottotesto">Nessuna sigla. Premi «Aggiungi le sigle presenti in AZW» (serve un'importazione AZW recente da Amministrazione → Provvigioni) oppure aggiungile qui sotto.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Sigla (zona AZW)</th><th class="numerico">Clienti in AZW</th><th>Nome del responsabile</th><th>E-mail</th><th>Attiva</th></tr></thead>
+                    <tbody>
+                    @for (var i = 0; i < elenco.Count; i++)
+                    {
+                        var r = elenco[i];
+                        <tr style="@(r.Attivo ? "" : "opacity:0.55")">
+                            <td><strong>@r.Sigla</strong><input type="hidden" name="righe[@i].IdResponsabileCliente" value="@r.IdResponsabileCliente" /></td>
+                            <td class="numerico">@(Model.ClientiPerZona.TryGetValue(r.Sigla, out var n) ? n : 0)</td>
+                            <td><input type="text" name="righe[@i].Nome" value="@r.Nome" maxlength="100" placeholder="da completare" style="width:100%" /></td>
+                            <td><input type="text" inputmode="email" name="righe[@i].Email" value="@r.Email" maxlength="250" style="width:100%" /></td>
+                            <td style="text-align:center"><input type="checkbox" name="righe[@i].Attivo" value="true" checked="@r.Attivo" /><input type="hidden" name="righe[@i].Attivo" value="false" /></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <div class="griglia-filtri" style="margin-top:0.6rem">
+            <label>Nuova sigla<input type="text" name="nuovaSigla" maxlength="20" placeholder="es. MM" /></label>
+            <label>Nome<input type="text" name="nuovoNome" maxlength="100" /></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Salva</button></div>
+        </div>
+    </section>
+</form>

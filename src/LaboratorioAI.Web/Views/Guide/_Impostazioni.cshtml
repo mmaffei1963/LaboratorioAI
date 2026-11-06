@@ -1,0 +1,42 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Impostazioni documenti» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> È il punto unico delle <strong>impostazioni condivise</strong> dai documenti: revisione delle Condizioni Generali richiamata da offerte
+        e Ordini di Accettazione (e quella di consulenza), riferimenti dei moduli, indirizzi per gli avvisi di errore, <strong>cartelle</strong> (archivio, cartelle di prelievo
+        di Palomar) e testi standard dei rapportini e delle deleghe. Una modifica qui vale <strong>subito per tutti</strong>.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Esce una nuova revisione delle Condizioni Generali</summary>
+    <ol class="passi">
+        <li>Cambia il valore della revisione (es. «Rev. 19 del …») nella voce delle offerte di laboratorio, oppure in quella dei preventivi di consulenza.</li>
+        <li>Premi <span class="tasto">Salva impostazioni</span>.</li>
+    </ol>
+    <p class="nota">Da quel momento le <strong>nuove</strong> offerte e i nuovi documenti citano la nuova revisione; quelli già emessi conservano la loro.
+        Per l'approvazione da parte dei clienti c'è anche la pagina <em>Condizioni e firme</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare una cartella o un indirizzo e-mail</summary>
+    <ol class="passi">
+        <li>Trova la voce (es. <em>Cartella di prelievo Palomar per Certificati Esterni Rinominati</em>, <em>E-mail errori</em> degli Ordini di Accettazione).</li>
+        <li>Scrivi il nuovo percorso di rete (es. <code>\\SRVMAREA\marea\…</code>) o gli indirizzi separati da punto e virgola.</li>
+        <li>Premi <span class="tasto">Salva impostazioni</span>.</li>
+    </ol>
+    <p class="nota">La cartella deve esistere ed essere raggiungibile dal server di LaboratorioAI: se non lo è, i salvataggi falliscono e l'errore compare nel registro del modulo.
+        Prima di cambiarla sentite Gen.</p>
+</details>
+
+<details class="situazione">
+    <summary>Correggere un testo standard dei rapportini o delle deleghe</summary>
+    <p>Le voci <em>Rapportini.Testo…</em> e <em>Deleghe…</em> contengono le frasi fisse stampate nei rapportini di consulenza e nelle deleghe operative
+        (responsabilità, modalità di consegna, osservazioni, legale rappresentante MARE.A, modello Word…). Modifica il testo e salva:
+        vale per i documenti generati da quel momento.</p>
+    <p class="nota">Sono testi con valore contrattuale: cambiali solo dopo averli concordati (ed eventualmente sentito il legale).</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

@@ -1,0 +1,266 @@
+@using System.Globalization
+@model LaboratorioAI.Web.Controllers.ModelloGestioneCompensi
+@{
+    var it = CultureInfo.InvariantCulture;   // nei campi numerici il separatore decimale è il punto
+    string N(decimal? v) => v?.ToString("0.##", it) ?? "";
+    var a = Model.DatiAnno;
+    var chiuso = a?.Chiuso == true;
+}
+@* Compensi soci (21/10/2026): impostazioni dell'anno, solo per il socio gestore. Definizione: claude/definizione-compensi-soci.md *@
+<style>
+    .cs-g td, .cs-g th { padding: 4px 6px !important; vertical-align: middle; }
+    .cs-g input[type=number] { width: 7.5rem; }
+    .cs-g input.corto { width: 4.5rem; }
+    .cs-g input[type=text], .cs-g input[type=email] { width: 100%; min-width: 7rem; }
+    .cs-note { font-size: .78rem; color: #6B7280; }
+    .cs-griglia { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .7rem; }
+    .cs-griglia label { display: flex; flex-direction: column; gap: 3px; font-size: .82rem; font-weight: 600; }
+    .pulsante-attenzione { background: #B45309 !important; color: #fff !important; }
+</style>
+
+@if (ViewData["AvvisoSviluppo"] is string avvSvil) { <section class="riquadro" style="border-left:4px solid #B45309"><strong>@avvSvil</strong></section> }
+<div class="barra-strumenti">
+    <div>
+        <h1>Compensi soci · impostazioni @Model.Anno</h1>
+        <p class="sottotitolo">Regole dell'anno, percentuali delle voci per la base del laboratorio, dati dei soci, premi dell'area laboratorio, soci e categorie dei rimborsi. Ogni anno ha le sue regole: cambiarle non tocca gli anni passati.</p>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        <a class="pulsante" href="@Url.Action("Index", new { anno = Model.Anno })">Torna al prospetto</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+
+<section class="riquadro">
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end">
+        <form method="get" style="display:flex;gap:.5rem;align-items:flex-end">
+            <label>Anno
+                <select name="anno" onchange="this.form.submit()">
+                    @foreach (var x in Model.Anni) { <option value="@x" selected="@(x == Model.Anno)">@x</option> }
+                    @if (!Model.Anni.Contains(Model.Anno)) { <option value="@Model.Anno" selected>@Model.Anno (da creare)</option> }
+                </select>
+            </label>
+        </form>
+        <form method="post" asp-action="CreaAnno" style="display:flex;gap:.5rem;align-items:flex-end">
+            <label>Nuovo anno<input type="number" name="anno" value="@((Model.Anni.Count > 0 ? Model.Anni.Max() : DateTime.Today.Year - 2) + 1)" min="2020" max="@(DateTime.Today.Year + 1)" class="corto" style="width:6rem" /></label>
+            <button type="submit" class="pulsante pulsante-tenue">Crea anno</button>
+        </form>
+        <span class="cs-note">Il nuovo anno copia regole, percentuali e dati dei soci dall'anno prima; il recupero viene da solo dalla differenza dell'anno prima.</span>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Carica un anno dal vecchio file Excel</h2></div>
+    <form method="post" asp-action="ImportaExcel" enctype="multipart/form-data" style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end">
+        <label>Anno di competenza<input type="number" name="anno" value="@Model.Anno" min="2020" max="@(DateTime.Today.Year + 1)" style="width:6rem" /></label>
+        <label>Foglio (vuoto = «anno+1 x anno», es. 2026x2025)<input type="text" name="foglio" style="width:12rem" /></label>
+        <label>File Excel<input type="file" name="file" accept=".xlsx" required /></label>
+        <button type="submit" class="pulsante">Carica e confronta</button>
+    </form>
+    <p class="cs-note" style="margin-bottom:0">Serve per il primo anno (controllo dei conti). Carica regole, ore, mesi, premi dell'area laboratorio, rimborsi come totale per socio, recuperi (colonna M) e la base del laboratorio scritta a mano. Poi mostra il confronto con i totali del foglio. Si può ripetere: i dati caricati prima vengono sostituiti.</p>
+</section>
+
+@if (a is null)
+{
+    <section class="riquadro"><p>L'anno @Model.Anno non esiste ancora: crealo o caricalo dal file Excel.</p></section>
+}
+else
+{
+    if (chiuso)
+    {
+        <section class="riquadro" style="border-left:4px solid #B45309"><strong>Anno chiuso il @a.DataChiusura?.ToLocalTime().ToString("dd/MM/yyyy"):</strong> per modificarlo riaprilo dal prospetto.</section>
+    }
+    <fieldset disabled="@chiuso" style="border:0;padding:0;margin:0">
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Regole dell'anno @a.Anno</h2></div>
+        <form method="post" asp-action="SalvaParametri">
+            <input type="hidden" name="Anno" value="@a.Anno" />
+            <div class="cs-griglia">
+                <label>Base annua a tempo pieno (€)<input type="number" step="0.01" name="BaseTempoPieno" value="@N(a.BaseTempoPieno)" /></label>
+                <label>Ore settimanali del tempo pieno<input type="number" step="0.5" name="OreTempoPieno" value="@N(a.OreTempoPieno)" /></label>
+                <label>Compenso amministratore annuo (€)<input type="number" step="0.01" name="CompensoAmministratore" value="@N(a.CompensoAmministratore)" /></label>
+                <label>Compenso responsabile d'area (€)<input type="number" step="0.01" name="CompensoResponsabileArea" value="@N(a.CompensoResponsabileArea)" /></label>
+                <label>Assicurazione auto propria al 100% (€)<input type="number" step="0.01" name="AssicurazioneAuto" value="@N(a.AssicurazioneAuto)" /></label>
+                <label>Premio (€)<input type="number" step="0.01" name="Premio" value="@N(a.Premio)" /></label>
+                <label>Quota RSPP (%)<input type="number" step="0.01" name="PercentualeRspp" value="@N(a.PercentualeRspp)" /></label>
+                <label>Indennità direzione laboratorio (%)<input type="number" step="0.01" name="PercentualeIndennitaLaboratorio" value="@N(a.PercentualeIndennitaLaboratorio)" /></label>
+                <label>Base laboratorio scritta a mano (€, vuoto = da AZW)<input type="number" step="0.01" name="BaseLaboratorioManuale" value="@N(a.BaseLaboratorioManuale)" /></label>
+                <label>Perché la base è scritta a mano<input type="text" name="NotaBaseLaboratorio" value="@a.NotaBaseLaboratorio" maxlength="500" /></label>
+                <label style="grid-column:1/-1;flex-direction:row;align-items:center;gap:.4rem;font-weight:normal"><input type="checkbox" name="TrasferteDaAzw" value="true" checked="@a.TrasferteDaAzw" style="width:auto" /><input type="hidden" name="TrasferteDaAzw" value="false" />Rimborsi delle trasferte con mezzo privato letti da AZW (togliere solo per un anno caricato dal vecchio Excel, dove sono già negli «altri rimborsi»)</label>
+                <label style="grid-column:1/-1">Note<input type="text" name="Note" value="@a.Note" maxlength="1000" /></label>
+            </div>
+            <button type="submit" class="pulsante" style="margin-top:.6rem">Salva le regole</button>
+        </form>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Dati dei soci @a.Anno</h2></div>
+        <form method="post" asp-action="SalvaDatiSoci">
+            <input type="hidden" name="anno" value="@a.Anno" />
+            <div class="tabella-scorrevole">
+                <table class="tabella cs-g">
+                    <thead><tr><th>Socio</th><th>Ore sett.</th><th>Mesi amm.</th><th>Resp. area</th><th>Auto propria %</th><th>Quota RSPP</th><th>Indennità lab.</th><th>Premio (vuoto = dell'anno)</th><th>Recupero a mano (vuoto = dall'anno prima)</th><th>Rettifica percepito</th><th>Nota rettifica</th><th>Quota fissa AMM (€)</th><th>Resto per area (es. 05=50;FOR=50)</th><th>Differenza da pagare su (vuoto = come a sinistra)</th><th>Note</th></tr></thead>
+                    <tbody>
+                    @for (var i = 0; i < Model.DatiSoci.Count; i++)
+                    {
+                        var d = Model.DatiSoci[i];
+                        <tr>
+                            <td><input type="hidden" name="righe[@i].Id" value="@d.IdCompensoSocioAnno" />@d.Socio?.Nome</td>
+                            <td><input type="number" step="0.5" class="corto" name="righe[@i].OreSettimanali" value="@N(d.OreSettimanali)" /></td>
+                            <td><input type="number" min="0" max="12" class="corto" name="righe[@i].MesiAmministratore" value="@d.MesiAmministratore" /></td>
+                            <td><input type="checkbox" name="righe[@i].ResponsabileArea" value="true" checked="@d.ResponsabileArea" /><input type="hidden" name="righe[@i].ResponsabileArea" value="false" /></td>
+                            <td><input type="number" step="1" min="0" max="100" class="corto" name="righe[@i].PercentualeAutoPropria" value="@N(d.PercentualeAutoPropria)" /></td>
+                            <td><input type="checkbox" name="righe[@i].QuotaRspp" value="true" checked="@d.QuotaRspp" /><input type="hidden" name="righe[@i].QuotaRspp" value="false" /></td>
+                            <td><input type="checkbox" name="righe[@i].IndennitaLaboratorio" value="true" checked="@d.IndennitaLaboratorio" /><input type="hidden" name="righe[@i].IndennitaLaboratorio" value="false" /></td>
+                            <td><input type="number" step="0.01" name="righe[@i].Premio" value="@N(d.Premio)" /></td>
+                            <td><input type="number" step="0.01" name="righe[@i].RecuperoManuale" value="@N(d.RecuperoManuale)" /></td>
+                            <td><input type="number" step="0.01" name="righe[@i].RettificaPercepito" value="@N(d.RettificaPercepito)" /></td>
+                            <td><input type="text" name="righe[@i].NotaRettificaPercepito" value="@d.NotaRettificaPercepito" maxlength="500" /></td>
+                            @{ var ripD = LaboratorioAI.Dati.Direzione.ServizioCompensiSoci.RipartizioneDi(d); }
+                            <td><input type="number" step="0.01" name="righe[@i].QuotaFissaAmministrazione" value="@N(d.QuotaFissaAmministrazione)" placeholder="@N(ripD.QuotaFissaAmministrazione)" /></td>
+                            <td><input type="text" name="righe[@i].RipartizioneAree" value="@d.RipartizioneAree" maxlength="200" placeholder="@LaboratorioAI.Core.Direzione.RipartizioneSocio.Scrivi(ripD.PercentualiResto)" /></td>
+                            <td><input type="text" name="righe[@i].RipartizioneDifferenza" value="@d.RipartizioneDifferenza" maxlength="200" placeholder="@(ripD.PercentualiDifferenza is null ? "" : LaboratorioAI.Core.Direzione.RipartizioneSocio.Scrivi(ripD.PercentualiDifferenza))" /></td>
+                            <td><input type="text" name="righe[@i].Note" value="@d.Note" maxlength="1000" /></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <p class="cs-note">Base = base a tempo pieno × ore / @N(a.OreTempoPieno) (34 ore = 85%). Amministratore = compenso annuo / 12 × mesi. Il recupero si scrive a mano solo per il primo anno: dopo è la differenza dell'anno prima. La rettifica corregge i compensi percepiti letti da AZW (+ o −) e vuole una nota. Ripartizione per area (solo per le analisi): quota fissa all'amministrazione, il resto con le percentuali (aree 04 Laboratorio, 05 Sicurezza, 06 Igiene, FOR Formazione, PRY Consulenze); vuoto = valore di partenza mostrato in grigio. Indennità di laboratorio sempre al Laboratorio, quota RSPP sempre alla Sicurezza.</p>
+            <button type="submit" class="pulsante">Salva i dati dei soci</button>
+        </form>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Voci AZW della base laboratorio @a.Anno</h2></div>
+        <form method="post" asp-action="SalvaPercentuali">
+            <input type="hidden" name="anno" value="@a.Anno" />
+            <table class="tabella cs-g" style="max-width:40rem">
+                <thead><tr><th>Voce</th><th>Descrizione</th><th>%</th><th>Togli</th></tr></thead>
+                <tbody id="cs-percentuali">
+                @for (var i = 0; i < Model.Percentuali.Count; i++)
+                {
+                    var x = Model.Percentuali[i];
+                    <tr>
+                        <td><input type="hidden" name="righe[@i].Id" value="@x.IdPercentualeVoceLaboratorio" />@x.Voce</td>
+                        <td class="cs-note">@Model.DescrizioniVoci.GetValueOrDefault(x.Voce)</td>
+                        <td><input type="number" step="0.01" class="corto" name="righe[@i].Percentuale" value="@N(x.Percentuale)" /></td>
+                        <td><input type="checkbox" name="righe[@i].Togli" value="true" /></td>
+                    </tr>
+                }
+                <tr data-modello hidden>
+                    <td><input type="text" name="righe[999].Voce" list="cs-voci" maxlength="10" disabled style="width:6rem" /></td>
+                    <td class="cs-note">nuova voce</td>
+                    <td><input type="number" step="0.01" class="corto" name="righe[999].Percentuale" value="100" disabled /></td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <datalist id="cs-voci">@foreach (var v in Model.DescrizioniVoci) { <option value="@v.Key">@v.Value</option> }</datalist>
+            <div style="display:flex;gap:.4rem;margin-top:.5rem">
+                <button type="button" class="pulsante pulsante-tenue" data-aggiungi-riga="cs-percentuali">Aggiungi voce</button>
+                <button type="submit" class="pulsante">Salva le percentuali</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Premi dell'area laboratorio @a.Anno</h2></div>
+        <form method="post" asp-action="SalvaPremi">
+            <input type="hidden" name="anno" value="@a.Anno" />
+            <table class="tabella cs-g" style="max-width:56rem">
+                <thead><tr><th>Nome</th><th>Importo (€)</th><th>Va a un socio</th><th>Note</th><th>Togli</th></tr></thead>
+                <tbody id="cs-premi">
+                @for (var i = 0; i < Model.Premi.Count; i++)
+                {
+                    var x = Model.Premi[i];
+                    <tr>
+                        <td><input type="hidden" name="righe[@i].Id" value="@x.IdPremioAreaLaboratorio" /><input type="text" name="righe[@i].Nome" value="@x.Nome" maxlength="150" /></td>
+                        <td><input type="number" step="0.01" name="righe[@i].Importo" value="@N(x.Importo)" /></td>
+                        <td><select name="righe[@i].IdSocio"><option value="">—</option>@foreach (var s in Model.Soci) { <option value="@s.IdSocio" selected="@(s.IdSocio == x.IdSocio)">@s.Nome</option> }</select></td>
+                        <td><input type="text" name="righe[@i].Note" value="@x.Note" maxlength="500" /></td>
+                        <td><input type="checkbox" name="righe[@i].Togli" value="true" /></td>
+                    </tr>
+                }
+                <tr data-modello hidden>
+                    <td><input type="text" name="righe[999].Nome" maxlength="150" disabled /></td>
+                    <td><input type="number" step="0.01" name="righe[999].Importo" disabled /></td>
+                    <td><select name="righe[999].IdSocio" disabled><option value="">—</option>@foreach (var s in Model.Soci) { <option value="@s.IdSocio">@s.Nome</option> }</select></td>
+                    <td><input type="text" name="righe[999].Note" maxlength="500" disabled /></td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <p class="cs-note">Il totale dei premi si toglie dall'indennità di chi ha «Indennità lab.». Un premio collegato a un socio va anche nella colonna di quel socio.</p>
+            <div style="display:flex;gap:.4rem">
+                <button type="button" class="pulsante pulsante-tenue" data-aggiungi-riga="cs-premi">Aggiungi premio</button>
+                <button type="submit" class="pulsante">Salva i premi</button>
+            </div>
+        </form>
+    </section>
+    </fieldset>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Soci</h2></div>
+    <form method="post" asp-action="SalvaSoci">
+        <input type="hidden" name="anno" value="@Model.Anno" />
+        <table class="tabella cs-g" style="max-width:60rem">
+            <thead><tr><th>Socio</th><th>E-mail dell'utente</th><th>Voce AZW compensi</th><th>Commessa AZW RSPP</th><th>Nome nelle trasferte AZW (vuoto = come il socio)</th><th>Attivo</th></tr></thead>
+            <tbody>
+            @for (var i = 0; i < Model.Soci.Count; i++)
+            {
+                var s = Model.Soci[i];
+                <tr>
+                    <td><input type="hidden" name="righe[@i].Id" value="@s.IdSocio" />@(s.Nome + (s.Gestore ? " (gestore)" : ""))</td>
+                    <td><input type="email" name="righe[@i].Email" value="@s.Email" maxlength="255" /></td>
+                    <td><input type="text" name="righe[@i].VoceCompensiAzw" value="@s.VoceCompensiAzw" maxlength="10" style="width:5rem" /></td>
+                    <td><input type="text" name="righe[@i].CommessaRsppAzw" value="@s.CommessaRsppAzw" maxlength="20" style="width:7rem" /></td>
+                    <td><input type="text" name="righe[@i].OperatoreTrasferteAzw" value="@s.OperatoreTrasferteAzw" maxlength="150" placeholder="@s.Nome" /></td>
+                    <td><input type="checkbox" name="righe[@i].Attivo" value="true" checked="@s.Attivo" /><input type="hidden" name="righe[@i].Attivo" value="false" /></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <p class="cs-note">L'e-mail collega il socio al suo utente: solo i soci attivi vedono queste pagine. La voce AZW è quella dei compensi percepiti; la commessa è quella delle fatture RSPP (voce RSP).</p>
+        <button type="submit" class="pulsante">Salva i soci</button>
+    </form>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Categorie dei rimborsi</h2></div>
+    <form method="post" asp-action="SalvaCategorie">
+        <input type="hidden" name="anno" value="@Model.Anno" />
+        <table class="tabella cs-g" style="max-width:48rem">
+            <thead><tr><th>Categoria</th><th>Maggiorazione %</th><th>Chiede i km</th><th>Attiva</th></tr></thead>
+            <tbody id="cs-categorie">
+            @for (var i = 0; i < Model.Categorie.Count; i++)
+            {
+                var c = Model.Categorie[i];
+                <tr>
+                    <td><input type="hidden" name="righe[@i].Id" value="@c.IdCategoriaRimborso" /><input type="text" name="righe[@i].Nome" value="@c.Nome" maxlength="100" /></td>
+                    <td><input type="number" step="0.01" class="corto" name="righe[@i].Maggiorazione" value="@N(c.Maggiorazione)" /></td>
+                    <td><input type="checkbox" name="righe[@i].ConKm" value="true" checked="@c.ConKm" /><input type="hidden" name="righe[@i].ConKm" value="false" /></td>
+                    <td><input type="checkbox" name="righe[@i].Attivo" value="true" checked="@c.Attivo" /><input type="hidden" name="righe[@i].Attivo" value="false" /></td>
+                </tr>
+            }
+            <tr data-modello hidden>
+                <td><input type="text" name="righe[999].Nome" maxlength="100" disabled /></td>
+                <td><input type="number" step="0.01" class="corto" name="righe[999].Maggiorazione" value="0" disabled /></td>
+                <td><input type="checkbox" name="righe[999].ConKm" value="true" disabled /></td>
+                <td><input type="hidden" name="righe[999].Attivo" value="true" disabled /></td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="cs-note">La maggiorazione si copia nel rimborso quando viene inserito: cambiarla non tocca i rimborsi già inseriti.</p>
+        <div style="display:flex;gap:.4rem">
+            <button type="button" class="pulsante pulsante-tenue" data-aggiungi-riga="cs-categorie">Aggiungi categoria</button>
+            <button type="submit" class="pulsante">Salva le categorie</button>
+        </div>
+    </form>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/compensi-soci.js" asp-append-version="true"></script>
+}

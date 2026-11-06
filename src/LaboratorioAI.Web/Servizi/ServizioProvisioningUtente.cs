@@ -11,20 +11,24 @@ namespace LaboratorioAI.Web.Servizi;
 /// Allinea l'utente applicativo all'identità Entra ID al momento dell'accesso
 /// e arricchisce l'identità con i claim di permesso.
 ///
-/// Un utente che accede per la prima volta viene creato automaticamente e
-/// assegnato al ruolo Amministratore, coerentemente con la decisione 5.1
-/// del documento di analisi (nella prima release tutti vedono tutto).
+/// 11/10/2026 (ruoli per mestiere): chi entra per la prima volta riceve il ruolo «Consultazione», non più
+/// «Amministratore». Se l'Amministratore lo aveva registrato in anticipo con la sua e-mail, al primo accesso il
+/// collegamento con l'account Microsoft si completa e la persona trova già i suoi ruoli. I permessi vengono poi
+/// riletti dal database a ogni richiesta (<see cref="TrasformazionePermessi"/>), così una modifica vale subito.
 /// </summary>
 public class ServizioProvisioningUtente
 {
     private readonly ContestoLaboratorioAI _ctx;
+    private readonly ServizioPermessiUtente _permessi;
     private readonly ILogger<ServizioProvisioningUtente> _log;
 
     public ServizioProvisioningUtente(
         ContestoLaboratorioAI ctx,
+        ServizioPermessiUtente permessi,
         ILogger<ServizioProvisioningUtente> log)
     {
         _ctx = ctx;
+        _permessi = permessi;
         _log = log;
     }
 
@@ -47,20 +51,36 @@ public class ServizioProvisioningUtente
         var utente = await _ctx.Utenti
             .FirstOrDefaultAsync(u => u.ObjectIdEntra == objectId, ct);
 
+        if (utente is null && email.Length > 0)
+        {
+            // Persona registrata in anticipo dall'Amministratore: si collega al primo accesso.
+            var chiave = email.Trim().ToLower();
+            utente = await _ctx.Utenti.FirstOrDefaultAsync(u => u.ObjectIdEntra == null && u.Email.ToLower() == chiave, ct);
+            if (utente is not null)
+            {
+                utente.ObjectIdEntra = objectId;
+                utente.NomeCompleto = nome;
+                _log.LogInformation("Primo accesso di {Email}: collegato all'utente registrato in anticipo (Id {Id}).", email, utente.IdUtente);
+            }
+        }
+
         if (utente is null)
         {
             utente = await CreaAsync(objectId.Value, email, nome, ct);
-            _log.LogInformation("Primo accesso di {Email}: utente creato (Id {Id}).", email, utente.IdUtente);
+            _log.LogInformation("Primo accesso di {Email}: utente creato con ruolo Consultazione (Id {Id}).", email, utente.IdUtente);
         }
         else
         {
-            // Allinea i dati anagrafici, che su Entra possono cambiare
-            utente.Email = email;
+            // Allinea i dati anagrafici, che su Entra possono cambiare (l'e-mail solo se non è già di un altro utente).
+            if (!string.Equals(utente.Email, email, StringComparison.OrdinalIgnoreCase) && email.Length > 0
+                && !await _ctx.Utenti.AnyAsync(u => u.IdUtente != utente.IdUtente && u.Email == email, ct))
+                utente.Email = email;
             utente.NomeCompleto = nome;
         }
 
         if (!utente.Attivo)
         {
+            await _ctx.SaveChangesAsync(ct);
             _log.LogWarning("Accesso rifiutato: utente {Email} disattivato.", email);
             return;
         }
@@ -70,7 +90,7 @@ public class ServizioProvisioningUtente
 
         identita.AddClaim(new Claim(TipiClaim.IdUtente, utente.IdUtente.ToString()));
 
-        foreach (var permesso in await LeggiPermessiAsync(utente.IdUtente, ct))
+        foreach (var permesso in await _permessi.LeggiAsync(utente.IdUtente, ct))
         {
             identita.AddClaim(new Claim(TipiClaim.Permesso, permesso));
         }
@@ -98,15 +118,15 @@ public class ServizioProvisioningUtente
         _ctx.Utenti.Add(utente);
         await _ctx.SaveChangesAsync(ct);
 
-        var amministratore = await _ctx.Ruoli
-            .FirstOrDefaultAsync(r => r.Codice == Ruoli.Amministratore, ct);
+        var ruoloBase = await _ctx.Ruoli
+            .FirstOrDefaultAsync(r => r.Codice == Ruoli.Consultazione, ct);
 
-        if (amministratore is not null)
+        if (ruoloBase is not null)
         {
             _ctx.UtentiRuoli.Add(new UtenteRuolo
             {
                 IdUtente = utente.IdUtente,
-                IdRuolo = amministratore.IdRuolo,
+                IdRuolo = ruoloBase.IdRuolo,
                 DataAssegnazione = DateTime.UtcNow
             });
             await _ctx.SaveChangesAsync(ct);
@@ -114,12 +134,4 @@ public class ServizioProvisioningUtente
 
         return utente;
     }
-
-    private async Task<List<string>> LeggiPermessiAsync(int idUtente, CancellationToken ct) =>
-        await _ctx.UtentiRuoli
-            .Where(ur => ur.IdUtente == idUtente)
-            .SelectMany(ur => ur.Ruolo.Permessi)
-            .Select(rp => rp.Permesso.Codice)
-            .Distinct()
-            .ToListAsync(ct);
 }

@@ -42,6 +42,8 @@ public record VoceMetodo
     public string? Acronimo { get; init; }       // metodo.Acronimo (sigla), se presente
     public string? DenominazioneRiga { get; init; }
     public string? RifBiblio { get; init; }
+    /// <summary>metodo.DettagliMetodo: la denominazione usata nei Rapporti di Prova ufficiali (es. "Alluminio").</summary>
+    public string? DettagliMetodo { get; init; }
     public decimal? Costo { get; init; }         // metodo.CostoMetodoEuro
     public int? IdUnita { get; init; }
     public string? UnitaMisura { get; init; }

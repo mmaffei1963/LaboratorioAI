@@ -18,4 +18,16 @@ public interface IServizioAudit
         string? idEntita = null,
         object? dettaglio = null,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Ultima operazione registrata (qualsiasi azione) per ciascuna delle entità indicate, per
+    /// mostrare "chi ha fatto l'ultima modifica e quando" negli elenchi — senza aggiungere colonne
+    /// alle tabelle applicative: il dato è già tutto nell'audit trail esistente.
+    /// Le entità senza alcuna voce d'audit non compaiono nel risultato.
+    /// </summary>
+    Task<Dictionary<string, VoceAuditRiepilogo>> UltimeOperazioniAsync(
+        string tipoEntita, IEnumerable<string> idEntita, CancellationToken ct = default);
 }
+
+/// <summary>Riepilogo minimo dell'ultima voce d'audit di un'entità.</summary>
+public record VoceAuditRiepilogo(string? EmailUtente, DateTime DataOra, string Azione);

@@ -15,8 +15,8 @@ namespace LaboratorioAI.Documenti;
 /// </summary>
 public interface IGeneratoreRapportoMappatura
 {
-    byte[] GeneraPdf(DatiRapportoMappatura dati);
-    byte[] GeneraWord(DatiRapportoMappatura dati);
+    byte[] GeneraPdf(DatiRapportoMappatura dati, string? percorsoWwwRoot = null);
+    byte[] GeneraWord(DatiRapportoMappatura dati, string? percorsoWwwRoot = null);
     string NomeFile(DatiRapportoMappatura dati, string estensione);
 }
 
@@ -25,9 +25,9 @@ public class GeneratoreRapportoMappatura : IGeneratoreRapportoMappatura
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
-    public byte[] GeneraPdf(DatiRapportoMappatura d)
+    public byte[] GeneraPdf(DatiRapportoMappatura d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();
         using var ms = new MemoryStream();
@@ -35,9 +35,9 @@ public class GeneratoreRapportoMappatura : IGeneratoreRapportoMappatura
         return ms.ToArray();
     }
 
-    public byte[] GeneraWord(DatiRapportoMappatura d)
+    public byte[] GeneraWord(DatiRapportoMappatura d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var tmp = Path.Combine(Path.GetTempPath(), "labai_map_" + Guid.NewGuid().ToString("N") + ".rtf");
         try { new RtfDocumentRenderer().Render(doc, tmp, Path.GetTempPath()); return File.ReadAllBytes(tmp); }
         finally { if (File.Exists(tmp)) File.Delete(tmp); }
@@ -45,12 +45,12 @@ public class GeneratoreRapportoMappatura : IGeneratoreRapportoMappatura
 
     public string NomeFile(DatiRapportoMappatura d, string estensione)
     {
-        var nome = new string((d.ApparecchiaturaIdentificazione ?? "Mappatura")
-            .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
-        return $"Rapporto_Mappatura_{nome}_{d.DataMappatura:yyyyMMdd}.{estensione}";
+        var nome = NomiFileRapporti.Slug(d.ApparecchiaturaIdentificazione, "Mappatura");
+        var cli = NomiFileRapporti.Slug(d.Committente, "");
+        return $"Rapporto_Mappatura{(cli.Length == 0 ? "" : "_" + cli)}_{nome}_{d.DataMappatura:yyyyMMdd}.{estensione}";
     }
 
-    private static Document Costruisci(DatiRapportoMappatura d)
+    private static Document Costruisci(DatiRapportoMappatura d, string? percorsoWwwRoot)
     {
         var r = d.Risultato;
         var doc = new Document();
@@ -59,14 +59,7 @@ public class GeneratoreRapportoMappatura : IGeneratoreRapportoMappatura
         normale.Font.Size = 9;
 
         var sec = doc.AddSection();
-        sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(1.0);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(1.0);
-        sec.PageSetup.LeftMargin = Unit.FromCentimeter(1.8);
-        sec.PageSetup.RightMargin = Unit.FromCentimeter(1.8);
-
-        var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
-        Piccolo(sec, "Laboratorio Analisi • Via E. Toti, 2 — 47841 Cattolica (RN)");
+        CartaIntestataRapporti.Applica(sec, percorsoWwwRoot, margineLato: 1.8);   // 03/11/2026: come i termometri
 
         var tit = sec.AddParagraph("RAPPORTO DI MAPPATURA — APPARECCHIATURA TERMOSTATICA");
         tit.Format.Alignment = ParagraphAlignment.Center; tit.Format.Font.Bold = true; tit.Format.Font.Size = 12.5;
@@ -79,7 +72,8 @@ public class GeneratoreRapportoMappatura : IGeneratoreRapportoMappatura
         RigaInfo(t, "Rapporto n°", d.NumeroRapporto, "Data mappatura", d.DataMappatura.ToString("dd/MM/yyyy", It));
         RigaInfo(t, "Rif. istruzione", d.RiferimentoIstruzione ?? "—",
             "Data scadenza", d.DataScadenza is DateOnly s ? s.ToString("dd/MM/yyyy", It) : "—");
-        RigaInfo(t, "Committente", d.Committente ?? "—", "Redatto da", d.RedattoDa ?? "—");
+        RigaInfo(t, "Committente", CartaIntestataRapporti.Committente(d.Committente), "Redatto da", d.RedattoDa ?? "—");
+        if (!string.IsNullOrWhiteSpace(d.Insediamento)) RigaInfo(t, "Insediamento", d.Insediamento!, "", "");
 
         Titolo(sec, "Apparecchiatura e condizioni");
         var ap = TabellaInfo(sec);

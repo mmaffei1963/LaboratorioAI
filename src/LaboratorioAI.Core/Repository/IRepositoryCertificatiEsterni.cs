@@ -9,8 +9,20 @@ namespace LaboratorioAI.Core.Repository;
 public interface IRepositoryCertificatiEsterni
 {
     /// <summary>
-    /// Cerca il campione ArcLab per lotto/campione (numerici). L'anno è opzionale:
-    /// se assente si prende il più recente. Ritorna null se non trovato.
+    /// Cerca il campione ArcLab per lotto/campione (numerici). I numeri di lotto ripartono ogni anno:
+    /// se è nota la data di emissione del certificato si prende il lotto ricevuto ENTRO quella data,
+    /// il più vicino (evita di agganciare lo stesso numero dell'anno successivo). Senza data: il più recente.
+    /// Ritorna null se non trovato.
     /// </summary>
-    Task<CampioneArcLab?> CercaCampioneAsync(string lotto, string campione, int? anno, CancellationToken ct = default);
+    Task<CampioneArcLab?> CercaCampioneAsync(string lotto, string campione, DateOnly? ricevutoEntro, CancellationToken ct = default);
+
+    /// <summary>Laboratori esterni a cui sono affidate prove del campione (rigametodo.IdLabEsterno).</summary>
+    Task<IReadOnlyList<LabEsternoArcLab>> LabEsterniDelCampioneAsync(int idCampione, CancellationToken ct = default);
+
+    /// <summary>
+    /// Prove dei campioni indicati (escluse la riga tecnica e le prove escluse dal RdP), con laboratorio
+    /// esterno e presenza del risultato: servono a distinguere certificati solo esterni e misti e a
+    /// controllare se i valori dei misti sono stati inseriti.
+    /// </summary>
+    Task<IReadOnlyList<ProvaCampioneArcLab>> ProveDeiCampioniAsync(IEnumerable<int> idCampioni, CancellationToken ct = default);
 }

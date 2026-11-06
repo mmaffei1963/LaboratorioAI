@@ -1,0 +1,81 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestisci = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ProvvigioniGestisci);
+}
+@* Guida «Provvigioni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Calcola le <strong>provvigioni dei commerciali</strong> sugli <strong>incassi</strong> registrati nella contabilità (AZW),
+        secondo l'accordo di ciascuno, trimestre per trimestre. Quando un trimestre è finito e i dati sono aggiornati, si <strong>chiude</strong> e i valori
+        diventano definitivi. AZW e ArcLab vengono solo letti.</p>
+    @if (!gestisci)
+    {
+        <p class="nota">Tu hai l'accesso in <strong>sola lettura</strong>: vedi tutti i dati ma non puoi importare, chiudere trimestri o modificare.</p>
+    }
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Vedere le provvigioni di un commerciale</summary>
+    <ol class="passi">
+        <li>Scegli il commerciale con i pulsanti in alto (es. Zatterin, Carloni).</li>
+        <li>La tabella <strong>Per trimestre di incasso</strong> mostra incassato nel perimetro, note di credito, provvigione e stato
+            (<em>in corso</em>, <em>da chiudere</em>, <em>chiuso</em>). In alto a destra il totale e <span class="tasto">Esporta Excel</span>.</li>
+        <li>Sotto trovi il <strong>premio annuale</strong> (se previsto dall'accordo), il dettaglio <strong>per cliente</strong> e il
+            <strong>dettaglio per voce di fattura</strong> (ANA, ANE, AMB…) per anno e base di calcolo.</li>
+    </ol>
+    <p class="nota">Controlla in alto la data dell'<strong>ultima importazione AZW</strong>: gli incassi successivi non sono ancora conteggiati.
+        Gli <em>Avvisi</em> in fondo segnalano dati da verificare (es. clienti senza commesse attribuite).</p>
+</details>
+
+@if (gestisci)
+{
+    <h2>Per chi gestisce le provvigioni</h2>
+    <details class="situazione">
+        <summary>Aggiornare i dati dalla contabilità</summary>
+        <p>Premi <span class="tasto">Importa AZW ora</span> (qualche minuto). Al termine compaiono data, esito e numero di fatture, incassi e note di credito lette.
+            Il file AZW sul server si rigenera ogni sera dall'originale.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Chiudere un trimestre</summary>
+        <ol class="passi">
+            <li>Aspetta la fine del trimestre e che gli incassi siano registrati in AZW.</li>
+            <li>Premi <span class="tasto">Importa AZW ora</span>.</li>
+            <li>Sulla riga del trimestre <em>da chiudere</em> spunta la conferma e premi <span class="tasto">Chiudi trimestre</span>.</li>
+        </ol>
+        <p class="nota">La chiusura <strong>congela i movimenti di tutti i commerciali</strong> (e dei segnalatori) per quel trimestre: dopo, i valori non cambiano più.
+            Note di credito e incassi arrivati dopo finiscono nel trimestre in cui sono registrati.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Collegare il commerciale al suo utente e ad ArcLab</summary>
+        <ul class="passi">
+            <li><strong>Utente collegato:</strong> scegli l'accesso della persona e premi <span class="tasto">Salva collegamento</span>: così vede «Le mie provvigioni».</li>
+            <li><strong>Codice riferimento ArcLab:</strong> il codice del commerciale usato come «rif.» nelle commesse di ArcLab; serve a capire quali commesse sono sue.</li>
+        </ul>
+    </details>
+
+    <details class="situazione">
+        <summary>Un cliente deve contare per tutta l'area (eccezioni)</summary>
+        <p>Di norma consulenza e formazione contano solo sulle voci di fattura delle commesse del commerciale. In <em>Calcolo sull'intera area per alcuni clienti</em>
+            si indica, per un cliente e da una data, che conta tutto il fatturato di un'area (es. «Area formazione»). <span class="tasto">Chiudi</span> termina l'eccezione.
+            Le eccezioni non toccano i trimestri già chiusi.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Convenzioni (Carloni) ed elenco «in sviluppo» (Zatterin)</summary>
+        <ul class="passi">
+            <li><span class="tasto">Convenzioni</span>: le convenzioni pluriennali vengono dalle commesse continuative di ArcLab. Premi <span class="tasto">Aggiorna da ArcLab</span>,
+                poi controlla e salva <strong>data di inizio</strong>, <strong>origine</strong> (segnalata/indicata) e <strong>chi ha segnalato</strong>.
+                Le righe «da controllare» hanno una data non certa. In fondo, i confronti tra codice venditore AZW e riferimento ArcLab da sistemare.</li>
+            <li><span class="tasto">Elenco «in sviluppo»</span>: clienti per cui matura il 2% se raggiungono l'obiettivo di ricavi dell'anno. Si aggiungono a mano o da Excel
+                e contano solo quando sono <strong>approvati</strong>.</li>
+        </ul>
+    </details>
+}
+
+<p class="nota">Percentuali e regole si cambiano in <em>Accordi provvigioni</em>. Dubbi o problemi: Mirko Maffei.</p>

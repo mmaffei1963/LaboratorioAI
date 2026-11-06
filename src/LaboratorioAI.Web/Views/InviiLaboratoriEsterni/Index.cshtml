@@ -1,0 +1,79 @@
+@{
+    ViewData["Titolo"] = "Invio campioni ai laboratori esterni";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Invio campioni ai laboratori esterni</h1>
+        <p class="sottotitolo">Excel dei campioni spediti a un laboratorio esterno (campioni non certificati, prove del laboratorio non ancora esitate né escluse),
+            inviato per e-mail al laboratorio con copia a <strong>refertazione@mare-a.com</strong>, dove arrivano anche le risposte. Dati da ArcLab in sola lettura.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label style="grid-column:span 2">Laboratorio esterno<select id="f-lab"></select></label>
+        <label>Data analisi dal<input type="date" id="f-dal" /></label>
+        <label>al<input type="date" id="f-al" /></label>
+        <div style="display:flex;align-items:flex-end;gap:0.4rem">
+            <button type="button" class="pulsante" id="btn-cerca">Cerca campioni</button>
+        </div>
+    </div>
+    <p class="sottotesto" id="f-indirizzi"></p>
+</section>
+
+<section class="riquadro nascosto" id="pannello-risultati">
+    <div class="barra-risultati">
+        <h2>Campioni da inviare <span id="conteggio" class="sottotesto"></span></h2>
+        <div class="azioni">
+            <button type="button" class="pulsante pulsante-tenue" id="btn-tutti">Seleziona tutti</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-nessuno">Nessuno</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Scarica Excel</button>
+        </div>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:30rem">
+        <table class="tabella" id="tabella-campioni">
+            <thead><tr><th></th><th>Campione</th><th>Cliente / Insediamento</th><th>Denominazione</th><th>Prove</th><th>Data analisi</th><th>Già inviato</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <h3>E-mail</h3>
+    <div class="griglia-filtri">
+        <label style="grid-column:1 / -1">Oggetto<input type="text" id="f-oggetto" maxlength="300" /></label>
+        <label style="grid-column:1 / -1">Testo<textarea id="f-testo" rows="3" maxlength="4000"></textarea></label>
+    </div>
+    <div class="azioni-filtri">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante" id="btn-invia">Invia al laboratorio</button>
+    </div>
+</section>
+
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Indirizzi dei laboratori</summary>
+        <p class="sottotesto">Gli indirizzi non sono in ArcLab: si scrivono qui, separati da punto e virgola. refertazione@mare-a.com è sempre in copia.</p>
+        <div class="tabella-scorrevole" style="max-height:24rem">
+            <table class="tabella" id="tabella-contatti">
+                <thead><tr><th>Laboratorio</th><th>Destinatari</th><th>Altri in copia</th><th>Note</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro">
+    <details id="dett-registro">
+        <summary style="cursor:pointer;font-weight:600">Registro degli invii</summary>
+        <div class="tabella-scorrevole" style="max-height:24rem;margin-top:0.5rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>Data</th><th>Laboratorio</th><th>Periodo</th><th class="numerico">Campioni</th><th class="numerico">Prove</th><th>Destinatari</th><th>Inviato da</th><th>Esito</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/invii-lab-esterni.js" asp-append-version="true"></script>
+}

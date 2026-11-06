@@ -16,6 +16,11 @@ public class OpzioniAnthropic
     public string VersioneApi { get; set; } = "2023-06-01";
 
     public int TokenMassimi { get; set; } = 2000;
+    /// <summary>
+    /// Modello per la revisione delle schede limite (18/10/2026): un parere più indipendente da chi ha estratto.
+    /// Vuoto = lo stesso «Modello». Si imposta in appsettings, sezione Anthropic, chiave ModelloRevisione.
+    /// </summary>
+    public string? ModelloRevisione { get; set; }
     public int TimeoutSecondi { get; set; } = 120;
 
     /// <summary>Costo per milione di token, per la stima riportata sulle analisi.</summary>

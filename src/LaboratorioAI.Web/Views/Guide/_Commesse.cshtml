@@ -1,0 +1,46 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Commesse» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A vedere le <strong>commesse in vigore</strong> in ArcLab: di laboratorio (con il controllo e il prezzo concordato)
+        o di consulenza, formazione e altri servizi (con l'incarico e la durata). Da ogni commessa vedi i campioni arrivati o le prestazioni fatte.
+        Solo consultazione.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Quali commesse ha un cliente?</summary>
+    <ol class="passi">
+        <li>In <strong>Tipo commessa</strong> lascia <em>Analisi</em> (già scelto, sono le commesse del laboratorio) o scegli il tipo che ti interessa.</li>
+        <li>Scegli il <strong>Cliente</strong> e, se serve, l'<em>Insediamento</em>.</li>
+        <li>Premi <span class="tasto">Cerca</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/commesse-elenco.png" alt="Commesse: filtri e elenco delle commesse con pulsante Campioni" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Che prezzo abbiamo concordato per un controllo?</summary>
+    <p>Con il tipo <em>Analisi</em>, filtra per cliente e/o <strong>Controllo</strong>: la colonna <strong>Importo</strong> riporta il prezzo della commessa
+        (la vedi solo se hai il permesso sui prezzi).</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere i campioni (o le prestazioni) di una commessa</summary>
+    <p>Premi <span class="tasto">Campioni</span> sulla riga di una commessa di analisi: sotto compaiono i campioni con stato, date, denominazione e numero di prove.
+        Per le altre commesse il pulsante è <span class="tasto">Prestazioni</span>: mostra le prestazioni con date, responsabile e se sono già <strong>fatturate</strong>.
+        Chiudi il riquadro con la ×.</p>
+</details>
+
+<details class="situazione">
+    <summary>Altri filtri utili</summary>
+    <ul class="passi">
+        <li><strong>Responsabile</strong>: le commesse seguite da una persona (basta una parte del nome).</li>
+        <li><strong>Descrizione incarico</strong> e <strong>N° contratto</strong>: una parte del testo.</li>
+        <li>Per i tipi diversi da Analisi, <strong>Mostra</strong> permette di vedere anche le commesse concluse (di base solo le attive).</li>
+    </ul>
+    <p class="nota"><span class="tasto">Azzera</span> riporta tutti i filtri all'inizio.</p>
+</details>
+
+<p class="nota">Le commesse si creano e si modificano in ArcLab. Dubbi o problemi: Mirko Maffei.</p>

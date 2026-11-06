@@ -1,0 +1,479 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@using LaboratorioAI.Dati.Consulenza
+@model LaboratorioAI.Web.Controllers.ModelloPreventivoConsulenza
+@{
+    var p = Model.Preventivo;
+    ViewData["Titolo"] = "Preventivo " + p.NumeroCompleto;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Num(decimal? v) => v?.ToString("0.##", it) ?? "";
+    string Iso(DateTime? d) => d?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
+    var modificabile = LaboratorioAI.Web.Controllers.PreventiviConsulenzaController.Modificabile(p);
+    var attivitaPerId = Model.Attivita.ToDictionary(a => a.IdAttivitaConsulenza);
+    string Gruppo(int? tipo) => tipo switch { 5 => "Consulenza", 4 => "Formazione", _ => "Altro" };
+    string Modalita(ModalitaPrezzoConsulenza m) => m switch
+    {
+        ModalitaPrezzoConsulenza.Annuale => "Canone annuo (primo anno e successivi)",
+        ModalitaPrezzoConsulenza.Oraria => "A ore",
+        ModalitaPrezzoConsulenza.PacchettoOre => "Pacchetto ore",
+        ModalitaPrezzoConsulenza.PerUnita => "Per unità",
+        _ => "Prezzo unico"
+    };
+    string StatoTesto(StatoPreventivoConsulenza s) => s.ToString().ToLowerInvariant();
+    string Origine(OriginePrezzoPreventivo o) => o switch
+    {
+        OriginePrezzoPreventivo.Commessa => "prezzo di commessa del cliente",
+        OriginePrezzoPreventivo.Manuale => "prezzo scritto a mano",
+        _ => "listino"
+    };
+    var stimaAnalisi = ServizioPreventiviConsulenza.StimaAnnuaAnalisi(p);
+    var valoreComprese = ServizioPreventiviConsulenza.ValoreAnalisiComprese(p);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Preventivo @p.NumeroCompleto <span class="sottotesto">— @StatoTesto(p.Stato)</span></h1>
+        <p class="sottotitolo">@(p.RagioneSociale ?? "Cliente da indicare") · Condizioni: @p.RevisioneCondizioni</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+        <a class="pulsante" href="@Url.Action("Documento", "PreventiviConsulenza", new { id = p.IdPreventivoConsulenza })">Scarica contratto (Word)</a>
+        <a class="pulsante" href="@Url.Action("DocumentoPdf", "PreventiviConsulenza", new { id = p.IdPreventivoConsulenza })">Scarica contratto (PDF)</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "PreventiviConsulenza", new { anno = p.Anno })">← Elenco</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+@if (Model.ErroreArcLab is string err)
+{
+    <section class="riquadro"><strong>@err</strong></section>
+}
+
+<section class="riquadro">
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+        <span class="sottotesto">Stato:</span>
+        @foreach (var s in new[] { StatoPreventivoConsulenza.Bozza, StatoPreventivoConsulenza.Inviato, StatoPreventivoConsulenza.Accettato, StatoPreventivoConsulenza.Rifiutato, StatoPreventivoConsulenza.Annullato })
+        {
+            <form method="post" asp-action="CambiaStato" style="display:inline">
+                <input type="hidden" name="id" value="@p.IdPreventivoConsulenza" />
+                <input type="hidden" name="stato" value="@s" />
+                <button type="submit" class="pulsante @(p.Stato == s ? "" : "pulsante-tenue")">@StatoTesto(s)</button>
+            </form>
+        }
+        @if (p.DataAccettazione is DateTime da)
+        {
+            <span class="sottotesto">accettato il @da.ToString("dd/MM/yyyy")</span>
+        }
+    </div>
+    @if (!modificabile)
+    {
+        <p class="sottotesto" style="margin-top:0.4rem">Un preventivo accettato, rifiutato o annullato non si modifica: per cambiarlo riportalo in bozza.</p>
+    }
+</section>
+
+<form method="post" asp-action="Salva" asp-route-id="@p.IdPreventivoConsulenza">
+<fieldset @(modificabile ? "" : "disabled") style="border:0;padding:0;margin:0">
+
+<section class="riquadro" id="cliente">
+    <div class="barra-risultati"><h2>Cliente</h2>
+        @if (p.IdClienteArcLab is int idc) { <span class="sottotesto">ArcLab n. @idc · codice AZW @(p.CodiceClienteAzw ?? "—")</span> } else { <span class="sottotesto">cliente nuovo (dati inseriti a mano)</span> }
+    </div>
+    <div class="griglia-filtri">
+        <label>Cerca in ArcLab (scrivi almeno 2 lettere e scegli)
+            <input type="text" id="cerca-cliente" name="ClienteCercato" list="elenco-clienti-arclab" autocomplete="off" placeholder="ragione sociale" />
+        </label>
+        <datalist id="elenco-clienti-arclab"></datalist>
+        <input type="hidden" name="IdClienteScelto" id="id-cliente-scelto" />
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" name="azione" value="cliente" id="carica-cliente" class="pulsante pulsante-tenue">Carica dati da ArcLab e AZW</button></div>
+    </div>
+    <p class="sottotesto">Cliente nuovo: compila i campi qui sotto con i dati raccolti dal cliente prima del preventivo (codice SDI e PEC compresi).</p>
+    <div class="griglia-filtri">
+        <label>Ragione sociale<input type="text" name="RagioneSociale" value="@p.RagioneSociale" maxlength="200" /></label>
+        <label>Partita IVA<input type="text" name="PartitaIva" value="@p.PartitaIva" maxlength="20" /></label>
+        <label>Codice fiscale<input type="text" name="CodiceFiscale" value="@p.CodiceFiscale" maxlength="20" /></label>
+        <label>Indirizzo sede legale<input type="text" name="Indirizzo" value="@p.Indirizzo" maxlength="255" /></label>
+        <label>CAP<input type="text" name="Cap" value="@p.Cap" maxlength="10" /></label>
+        <label>Città<input type="text" name="Citta" value="@p.Citta" maxlength="100" /></label>
+        <label>Provincia<input type="text" name="Provincia" value="@p.Provincia" maxlength="4" /></label>
+        <label>E-mail<input type="text" inputmode="email" name="Email" value="@p.Email" maxlength="250" /></label>
+        <label>PEC<input type="text" inputmode="email" name="Pec" value="@p.Pec" maxlength="250" /></label>
+        <label>Codice destinatario SDI<input type="text" name="CodiceSdi" value="@p.CodiceSdi" maxlength="10" /></label>
+        <label>Telefono<input type="tel" name="Telefono" value="@p.Telefono" maxlength="50" /></label>
+    </div>
+
+    <h3 style="margin-top:0.8rem">Sede del servizio</h3>
+    @if (Model.Sedi.Count > 0)
+    {
+        <div class="griglia-filtri">
+            <label>Sedi del cliente in ArcLab
+                <select name="IdInsediamentoScelto">
+                    @foreach (var s in Model.Sedi) { <option value="@s.IdInsediamento" selected="@(s.IdInsediamento == p.IdInsediamentoArcLab)">@s.Nome @(s.Indirizzo is null ? "" : "– " + s.Indirizzo)</option> }
+                </select>
+            </label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" name="azione" value="sede" class="pulsante pulsante-tenue">Usa questa sede</button></div>
+        </div>
+    }
+    <div class="griglia-filtri">
+        <label>Nome sede<input type="text" name="SedeNome" value="@p.SedeNome" maxlength="255" /></label>
+        <label>Indirizzo sede<input type="text" name="SedeIndirizzo" value="@p.SedeIndirizzo" maxlength="500" /></label>
+    </div>
+
+    <h3 style="margin-top:0.8rem">Referente presso la sede</h3>
+    @if (Model.Contatti.Count > 0)
+    {
+        <div class="griglia-filtri">
+            <label>Referenti in ArcLab
+                <select name="IdContattoScelto">
+                    @foreach (var c in Model.Contatti) { <option value="@c.IdContatto" selected="@(c.IdContatto == p.IdContattoArcLab)">@c.NomeCompleto @(string.IsNullOrWhiteSpace(c.Mansione) ? "" : "(" + c.Mansione + ")")</option> }
+                </select>
+            </label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" name="azione" value="referente" class="pulsante pulsante-tenue">Usa questo referente</button></div>
+        </div>
+    }
+    else if (p.IdInsediamentoArcLab is not null)
+    {
+        <p class="sottotesto">La sede non ha referenti in ArcLab: inseriscilo qui; per la commessa andrà creato anche in ArcLab.</p>
+    }
+    <div class="griglia-filtri">
+        <label>Nome e cognome<input type="text" name="ReferenteNome" value="@p.ReferenteNome" maxlength="100" /></label>
+        <label>Mansione<input type="text" name="ReferenteMansione" value="@p.ReferenteMansione" maxlength="100" /></label>
+        <label>Telefono<input type="text" name="ReferenteTelefono" value="@p.ReferenteTelefono" maxlength="30" /></label>
+        <label>E-mail<input type="text" inputmode="email" name="ReferenteEmail" value="@p.ReferenteEmail" maxlength="250" /></label>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Offerta e condizioni</h2></div>
+    <div class="griglia-filtri">
+        <label>Oggetto<input type="text" name="Oggetto" value="@p.Oggetto" maxlength="500" placeholder="es. Servizi di sicurezza e HACCP" /></label>
+        <label>Settore di attività<input type="text" name="SettoreAttivita" value="@p.SettoreAttivita" maxlength="100" /></label>
+        <label>Data offerta<input type="date" name="DataOfferta" value="@Iso(p.DataOfferta)" /></label>
+        <label>Validità (giorni)<input type="number" name="ValiditaGiorni" value="@p.ValiditaGiorni" min="1" /></label>
+        <label>Inizio del servizio<input type="date" name="DataInizio" value="@Iso(p.DataInizio)" /></label>
+        <label>Durata dei canoni (anni)<input type="number" name="DurataAnni" value="@p.DurataAnni" min="1" /></label>
+        <label>Rate annuali dei canoni<input type="number" name="NumeroRate" value="@p.NumeroRate" min="1" max="12" /></label>
+        <label style="grid-column:1/-1">Condizioni di pagamento
+            <select id="aggiungi-pagamento">
+                <option value="">— aggiungi una modalità predefinita —</option>
+                @foreach (var m in Model.Pagamenti) { <option value="@m">@m</option> }
+            </select>
+            <textarea name="CondizioniPagamento" id="condizioni-pagamento" rows="4" maxlength="500" style="width:100%;font:inherit">@p.CondizioniPagamento</textarea>
+            <span class="sottotesto" id="avviso-pagamento"></span>
+        </label>
+        <script>
+            // Più modalità di pagamento (12/10/2026): una per riga; con due o più nel contratto compaiono le caselle da spuntare.
+            (() => {
+                const sel = document.getElementById('aggiungi-pagamento'), txt = document.getElementById('condizioni-pagamento'), avv = document.getElementById('avviso-pagamento');
+                // Modalità separate da una riga vuota: ognuna può avere più righe (es. banca e IBAN).
+                const blocchi = () => txt.value.replace(/\r/g, '').split(/\n\s*\n/).map(b => b.split('\n').map(s => s.trim()).filter(s => s).join('\n')).filter(b => b);
+                const aggiorna = () => {
+                    const n = blocchi().length;
+                    avv.textContent = n > 1
+                        ? `${n} modalità: nel contratto compaiono con la casella da spuntare e la frase «Condizioni di pagamento – indicare con una X la modalità scelta».`
+                        : 'Per proporre più modalità sceglile dall\'elenco: si aggiungono separate da una riga vuota.';
+                };
+                sel.addEventListener('change', () => {
+                    const v = sel.value.trim();
+                    if (v) {
+                        const b = blocchi();
+                        if (!b.some(x => x.toLowerCase() === v.toLowerCase())) b.push(v);
+                        txt.value = b.join('\n\n');
+                    }
+                    sel.value = '';
+                    aggiorna();
+                });
+                txt.addEventListener('input', aggiorna);
+                aggiorna();
+            })();
+        </script>
+        <label>Consulente MARE.A
+            <select name="IdOrganicoConsulente">
+                <option value="">— @(p.ConsulenteNome ?? "da indicare") —</option>
+                @foreach (var c in Model.Consulenti) { <option value="@c.IdOrganico" selected="@(c.IdOrganico == p.IdOrganicoConsulente)">@c.Nome</option> }
+            </select>
+        </label>
+        <label>Commerciale (se c'è: nel contratto come «Riferimento commerciale»)
+            <select name="IdCommerciale">
+                <option value="">— nessuno —</option>
+                @foreach (var c in Model.Commerciali) { <option value="@c.IdCommerciale" selected="@(c.IdCommerciale == p.IdCommerciale)">@c.Nome</option> }
+            </select>
+        </label>
+        <label>Responsabile cliente @if (p.ZonaCliente is string z) { <span class="sottotesto">(zona AZW @z)</span> }
+            <input type="text" name="ResponsabileCliente" value="@p.ResponsabileCliente" maxlength="100" placeholder="dalla zona AZW del cliente" /></label>
+        <label>Note interne<input type="text" name="Note" value="@p.Note" maxlength="2000" /></label>
+    </div>
+</section>
+
+<section class="riquadro" id="attivita">
+    @{ var blocchi = ServizioPreventiviConsulenza.BlocchiOrdinati(p); }
+    <div class="barra-risultati"><h2>Attività</h2><span class="sottotesto">
+        @if (blocchi.Count == 0)
+        {
+            <text>Primo anno: <strong>@Euro(p.TotalePrimoAnno)</strong></text>
+            if (p.TotaleAnniSuccessivi > 0) { <text>· anni successivi: <strong>@Euro(p.TotaleAnniSuccessivi)</strong></text> }
+        }
+        else
+        {
+            <text>@blocchi.Count @(blocchi.Count == 1 ? "blocco" : "blocchi") di quotazione, ognuno con il suo totale (non si sommano)</text>
+        }
+    </span></div>
+    @* 29/10/2026 (osservazioni di Ludo): blocchi di quotazione al posto delle due fasi *@
+    <div id="blocchi" style="margin-bottom:0.8rem">
+        @if (blocchi.Count == 0)
+        {
+            <p class="sottotesto">Un'unica quotazione. Per proporre più quotazioni separate (es. «Sopralluogo e valutazione» e «Interventi conseguenti»), ognuna con titolo, descrizione e totale propri, aggiungi un blocco: le attività già inserite finiscono nel blocco 1.</p>
+        }
+        @for (var bi = 0; bi < blocchi.Count; bi++)
+        {
+            var b = blocchi[bi];
+            var tb = ServizioPreventiviConsulenza.TotaliBlocco(p, b);
+            <fieldset style="border:1px solid #ccd;border-radius:6px;padding:0.5rem 0.8rem;margin-bottom:0.5rem">
+                <legend><strong>Blocco @b.Numero</strong> <span class="sottotesto">· @ServizioPreventiviConsulenza.RigheBlocco(p, b).Count attività · totale @Euro(tb.PrimoAnno)@(tb.Canoni ? " il primo anno, poi " + Euro(tb.AnniSuccessivi) + "/anno" : "")</span></legend>
+                <input type="hidden" name="Blocchi[@bi].Numero" value="@b.Numero" />
+                <div style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap">
+                    <label style="flex:1 1 20rem">Titolo<input type="text" name="Blocchi[@bi].Titolo" value="@b.Titolo" maxlength="200" placeholder="es. Sopralluogo e valutazione iniziale (vuoto = nessun titolo nel contratto)" style="width:100%" /></label>
+                    <button type="submit" name="azione" value="togli-blocco:@b.Numero" class="pulsante pulsante-tenue" title="Le attività del blocco passano al blocco precedente">Togli il blocco</button>
+                </div>
+                <label style="display:block">Descrizione (facoltativa, stampata sotto il titolo)<textarea name="Blocchi[@bi].Descrizione" rows="2" style="width:100%" maxlength="4000">@b.Descrizione</textarea></label>
+            </fieldset>
+        }
+        <button type="submit" name="azione" value="aggiungi-blocco" class="pulsante pulsante-tenue">+ Aggiungi un blocco di quotazione</button>
+    </div>
+    <div class="griglia-filtri">
+        <label>Parti da un pacchetto di settore
+            <select name="IdPacchetto"><option value="">—</option>@foreach (var k in Model.Pacchetti) { <option value="@k.IdPacchettoConsulenza">@k.Nome</option> }</select>
+        </label>
+        <div class="azioni-filtri"><button type="submit" name="azione" value="pacchetto" class="pulsante pulsante-tenue">Aggiungi il pacchetto</button></div>
+        <label>Aggiungi un'attività
+            <select name="IdAttivitaNuova">
+                <option value="">—</option>
+                @foreach (var g in Model.Attivita.Where(a => a.Attivo).GroupBy(a => Gruppo(a.IdTipoCommessa)))
+                {
+                    <optgroup label="@g.Key">@foreach (var a in g) { <option value="@a.IdAttivitaConsulenza">@a.Descrizione</option> }</optgroup>
+                }
+            </select>
+        </label>
+        <div class="azioni-filtri"><button type="submit" name="azione" value="aggiungi" class="pulsante pulsante-tenue">Aggiungi</button></div>
+    </div>
+    @if (p.Righe.Count == 0)
+    {
+        <p class="sottotesto">Nessuna attività: aggiungi un pacchetto di settore o un'attività. Serve almeno un'attività per il contratto.</p>
+    }
+    @for (var i = 0; i < p.Righe.Count; i++)
+    {
+        var r = p.Righe[i];
+        attivitaPerId.TryGetValue(r.IdAttivitaConsulenza, out var att);
+        var scelti = (r.Contenuti ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+        var disponibili = att?.Contenuti.Where(c => c.Attivo).OrderBy(c => c.Ordine).Select(c => c.Testo).ToList() ?? new List<string>();
+        var extra = scelti.Where(x => !disponibili.Contains(x)).ToList();
+        <div data-riga id="riga-@r.Progressivo" style="border-top:1px solid #ddd;padding:0.8rem 0">
+            <input type="hidden" name="Righe[@i].Progressivo" value="@r.Progressivo" />
+            <div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
+                <strong>@r.Progressivo. @r.DescrizioneAttivita <span class="sottotesto">@(r.Personalizzata ? "(attività personalizzata)" : $"(incarico ArcLab {r.IdTipoIncarico})")@(ServizioPreventiviConsulenza.BloccoDi(p, r) is { } blr ? " · blocco " + blr.Numero : "")</span></strong>
+                <span class="sottotesto">@(r.Informativa ? "per conoscenza, fuori totale" : Euro(ServizioPreventiviConsulenza.ImportoPrimoAnno(r)) + (r.ModalitaPrezzo == ModalitaPrezzoConsulenza.Annuale ? " · poi " + Euro(ServizioPreventiviConsulenza.ImportoSuccessivi(r)) + "/anno" : ""))
+                    <button type="submit" name="azione" value="rimuovi:@r.Progressivo" class="pulsante pulsante-tenue">Togli</button></span>
+            </div>
+            <div class="griglia-filtri">
+                @if (r.Personalizzata)
+                {
+                    <label>Titolo dell'attività<input type="text" name="Righe[@i].DescrizioneAttivita" value="@r.DescrizioneAttivita" maxlength="255" required /></label>
+                    <label>Unità (per prezzo a unità)<input type="text" name="Righe[@i].UnitaMisura" value="@r.UnitaMisura" maxlength="30" placeholder="es. ora, sopralluogo" /></label>
+                }
+                @if (blocchi.Count > 0)
+                {
+                    var bloccoRiga = ServizioPreventiviConsulenza.BloccoDi(p, r);
+                    <label>Blocco
+                        <select name="Righe[@i].Blocco">
+                            @foreach (var b in blocchi) { <option value="@b.Numero" selected="@(b == bloccoRiga)">@b.Numero. @ServizioPreventiviConsulenza.NomeBlocco(b)</option> }
+                        </select>
+                    </label>
+                }
+                <label>Descrizione aggiuntiva<input type="text" name="Righe[@i].DescrizioneLibera" value="@r.DescrizioneLibera" maxlength="1000" placeholder="facoltativa, es. per 3 sedi" /></label>
+                <label>Prezzo
+                    <select name="Righe[@i].ModalitaPrezzo" data-modalita>
+                        @foreach (var m in Enum.GetValues<ModalitaPrezzoConsulenza>()) { <option value="@m" selected="@(m == r.ModalitaPrezzo)">@Modalita(m)</option> }
+                    </select>
+                </label>
+                <label>Quantità (ore, unità)<input type="text" name="Righe[@i].Quantita" value="@Num(r.Quantita)" style="width:6rem" /></label>
+                <label>Prezzo (primo anno / unitario) €<input type="text" name="Righe[@i].Prezzo" value="@Num(r.Prezzo)" style="width:8rem" /></label>
+                <label class="solo-annuale">Prezzo anni successivi €<input type="text" name="Righe[@i].PrezzoSuccessivi" value="@Num(r.PrezzoSuccessivi)" style="width:8rem" /></label>
+                <label class="sottotesto"><input type="checkbox" name="Righe[@i].Informativa" value="true" checked="@r.Informativa" /> solo per conoscenza (fuori totale)</label>
+                <input type="hidden" name="Righe[@i].Informativa" value="false" />
+            </div>
+            @if (disponibili.Count > 0 || extra.Count > 0)
+            {
+                <details @(r.Progressivo == p.Righe.Max(x => x.Progressivo) ? "open" : "")>
+                    <summary class="sottotesto" style="cursor:pointer">Cosa comprende (@scelti.Count di @(disponibili.Count + extra.Count))</summary>
+                    <div style="columns:2 22rem;margin-top:0.3rem">
+                        @foreach (var c in disponibili.Concat(extra))
+                        {
+                            <label style="display:block;break-inside:avoid;font-size:0.9rem"><input type="checkbox" name="Righe[@i].Contenuti" value="@c" checked="@scelti.Contains(c)" /> @c</label>
+                        }
+                    </div>
+                </details>
+            }
+            <details>
+                <summary class="sottotesto" style="cursor:pointer">Testo nel contratto</summary>
+                <label style="display:block">Descrizione<textarea name="Righe[@i].TestoOfferta" rows="3" style="width:100%">@r.TestoOfferta</textarea></label>
+                <label class="solo-annuale" style="display:block">Secondo anno e successivi<textarea name="Righe[@i].TestoSuccessivi" rows="3" style="width:100%">@r.TestoSuccessivi</textarea></label>
+            </details>
+        </div>
+    }
+    @if (modificabile)
+    {
+        <div class="azioni-filtri" style="margin-top:0.6rem"><div style="flex:1"></div><button type="submit" name="azione" value="salva" class="pulsante">Salva</button></div>
+    }
+</section>
+
+<section class="riquadro" id="analisi">
+    <div class="barra-risultati"><h2>Analisi di laboratorio (@p.Analisi.Count)</h2>
+        <span class="sottotesto">
+            @if (stimaAnalisi > 0) { <text>a pagamento, stima annua <strong>@Euro(stimaAnalisi)</strong> (fuori dai corrispettivi) </text> }
+            @if (valoreComprese > 0) { <text>· comprese nel canone, valore di listino @Euro(valoreComprese) (non stampato)</text> }
+        </span>
+    </div>
+    <p class="sottotesto">Come nei preventivi analisi: controlli ArcLab con i loro parametri e metodi; prezzo di commessa del cliente se c'è, altrimenti listino.
+        <strong>Compresa nel canone</strong>: nel contratto il prezzo non compare. <strong>A pagamento</strong>: prezzo per analisi indicato, fatturata quando si esegue secondo le Condizioni Generali del Laboratorio.
+        Prezzo vuoto = torna al prezzo calcolato.</p>
+    @for (var i = 0; i < p.Analisi.Count; i++)
+    {
+        var an = p.Analisi[i];
+        var ids = an.IdControlli();
+        <div id="analisi-@an.Progressivo" style="border-top:1px solid #ddd;padding:0.8rem 0">
+            <input type="hidden" name="Analisi[@i].Progressivo" value="@an.Progressivo" />
+            <div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
+                <label style="font-weight:600"><input type="checkbox" name="Analisi[@i].Selezionata" value="true" title="Spunta per raggruppare" />
+                    A@(an.Progressivo). @an.Descrizione <span class="sottotesto">(@AnalisiConsulenza.Riferimento(an.IdControlloArcLab, an.IdControlliOrigine))</span></label>
+                <input type="hidden" name="Analisi[@i].Selezionata" value="false" />
+                <span class="sottotesto">
+                    @if (an.Modalita == ModalitaAnalisiConsulenza.CompresaNelCanone)
+                    {
+                        <text>compresa nel canone · valore @Euro(an.PrezzoBase) (@Origine(an.OriginePrezzo == OriginePrezzoPreventivo.Manuale ? OriginePrezzoPreventivo.Listino : an.OriginePrezzo))</text>
+                    }
+                    else
+                    {
+                        <text>@Euro(an.Prezzo) per analisi (@Origine(an.OriginePrezzo))@(an.QuantitaAnnua is decimal q ? " · " + Num(q) + "/anno = " + Euro(Math.Round(an.Prezzo * q, 2)) : "")</text>
+                    }
+                    <button type="submit" name="azione" value="rimuovi-analisi:@an.Progressivo" class="pulsante pulsante-tenue">Togli</button>
+                </span>
+            </div>
+            <div class="griglia-filtri">
+                <label>Nome nel contratto<input type="text" name="Analisi[@i].Descrizione" value="@an.Descrizione" maxlength="300" /></label>
+                <label>Come si paga
+                    <select name="Analisi[@i].Modalita">
+                        <option value="APagamento" selected="@(an.Modalita == ModalitaAnalisiConsulenza.APagamento)">A pagamento (prezzo indicato)</option>
+                        <option value="CompresaNelCanone" selected="@(an.Modalita == ModalitaAnalisiConsulenza.CompresaNelCanone)">Compresa nel canone (prezzo non indicato)</option>
+                    </select>
+                </label>
+                <label>Analisi all'anno<input type="text" name="Analisi[@i].QuantitaAnnua" value="@Num(an.QuantitaAnnua)" style="width:6rem" placeholder="facoltativo" /></label>
+                <label>Prezzo per analisi €<input type="text" name="Analisi[@i].Prezzo" value="@Num(an.Prezzo)" style="width:8rem" placeholder="calcolato @Num(an.PrezzoBase)" /></label>
+                <label>Note<input type="text" name="Analisi[@i].Note" value="@an.Note" maxlength="500" /></label>
+            </div>
+            <details>
+                <summary class="sottotesto" style="cursor:pointer">Parametri e metodi (@an.Metodi.Count)</summary>
+                <table class="tabella" style="font-size:0.85rem">
+                    <thead><tr><th>Denominazione</th><th>Metodo</th><th>Accr.</th></tr></thead>
+                    <tbody>
+                    @foreach (var m in an.Metodi.OrderBy(x => x.Progressivo))
+                    {
+                        <tr><td>@(m.Denominazione ?? m.Descrizione)</td><td>@m.RiferimentoNormativo</td><td>@(m.LabEsterno is not null ? "§ " + m.LabEsterno : m.Accreditato ? "Sì" : "—")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </details>
+        </div>
+    }
+    <div class="griglia-filtri" style="margin-top:0.6rem">
+        <label class="campo-con-suggerimenti" style="grid-column:1/-1">Aggiungi un controllo ArcLab — clicca per vedere tutti i controlli attivi, scrivi per restringere (parole del nome o ID)
+                <input type="text" name="ControlloCercato" data-cerca-controllo autocomplete="off" placeholder="es. superfici, potabilità, legionella, 2389…" />
+                <input type="hidden" name="IdControlloNuovo" data-id-controllo />
+                <div class="elenco-suggerimenti nascosto" data-elenco-controlli style="max-height:28rem"></div>
+            </label>
+        <div class="azioni-filtri"><button type="submit" name="azione" value="aggiungi-controllo" class="pulsante pulsante-tenue">Aggiungi controllo</button></div>
+    </div>
+    @if (p.Analisi.Count > 1)
+    {
+        <div class="griglia-filtri">
+            <label>Nome del gruppo<input type="text" name="NomeGruppo" maxlength="300" placeholder="es. Autocontrollo HACCP" /></label>
+            <div class="azioni-filtri"><button type="submit" name="azione" value="raggruppa" class="pulsante pulsante-tenue">Raggruppa le analisi spuntate</button></div>
+        </div>
+    }
+    @if (modificabile && p.Analisi.Count > 0)
+    {
+        <div class="azioni-filtri" style="margin-top:0.6rem"><div style="flex:1"></div>
+            <button type="submit" name="azione" value="prezzi-analisi" class="pulsante pulsante-tenue">Ricalcola i prezzi da ArcLab</button>
+            <button type="submit" name="azione" value="salva" class="pulsante">Salva</button></div>
+    }
+</section>
+</fieldset>
+</form>
+
+<section class="riquadro" id="commessa">
+    <div class="barra-risultati"><h2>Dati per le commesse in ArcLab</h2><span class="sottotesto">una commessa per ogni attività · NContratto = @(p.Numero?.ToString() ?? "—")</span></div>
+    <p class="sottotesto">Laboratorio AI non scrive in ArcLab: questi sono i valori da riportare nella maschera della commessa, una per attività (le righe «per conoscenza» sono escluse). TipoStampa 1 = continuativo (convenzione), 2 = occasionale.</p>
+    @if (Model.Commesse.Count == 0)
+    {
+        <p class="sottotesto">Nessuna attività da riportare.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>#</th><th>DescrIncarico (tipo)</th><th>Cod_Cliente</th><th>IDInsediamento</th><th>IDContatto</th><th>TipoStampa</th><th>CodCommessa</th><th>RespCommessa</th><th class="numerico">PrezzoControllo</th><th>DataCommessa</th><th>DataScadenzaInc</th><th>Rate</th><th>OggettoPrev / Note</th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.Commesse)
+                {
+                    <tr>
+                        <td>@c.Riga</td>
+                        <td>@c.DescrIncarico <span class="sottotesto">(@c.IdTipoIncarico, tipo commessa @(c.IdTipoCommessa?.ToString() ?? "—"))</span></td>
+                        <td>@(c.CodCliente ?? "da creare")</td>
+                        <td>@(c.IdInsediamento?.ToString() ?? "da creare")<div class="sottotesto">@c.Sede</div></td>
+                        <td>@(c.IdContatto?.ToString() ?? "da creare")<div class="sottotesto">@c.Referente</div></td>
+                        <td>@c.TipoStampa</td>
+                        <td>@(c.CodCommessa ?? "")</td>
+                        <td>@(c.IdOrganicoResponsabile?.ToString() ?? "—")<div class="sottotesto">@c.Responsabile</div></td>
+                        <td class="numerico">@Euro(c.PrezzoPrimoAnno)@if (c.PrezzoAnniSuccessivi is decimal ps) { <div class="sottotesto">poi @Euro(ps)/anno</div> }</td>
+                        <td>@c.DataCommessa?.ToString("dd/MM/yyyy")</td>
+                        <td>@c.DataScadenzaInc?.ToString("dd/MM/yyyy")</td>
+                        <td>@c.NumeroRateAnno</td>
+                        <td>@c.OggettoPrev<div class="sottotesto">@c.NoteCommessa</div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.CommesseAnalisi.Count > 0)
+        {
+            <h3 style="margin-top:0.8rem">Commesse di laboratorio (una per controllo)</h3>
+            <p class="sottotesto">Campi IDControllo e PrezzoControllo della commessa. Analisi comprese nel canone: PrezzoControllo 0. Gruppi: il prezzo unico del gruppo è sulla prima riga.</p>
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>#</th><th>IDControllo</th><th>Controllo</th><th>Cod_Cliente</th><th>IDInsediamento</th><th>IDContatto</th><th class="numerico">PrezzoControllo</th><th class="numerico">Analisi/anno</th><th>DataCommessa</th><th>Note</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in Model.CommesseAnalisi)
+                    {
+                        <tr>
+                            <td>A@(c.Riga)</td><td>@c.IdControllo</td><td>@c.Descrizione</td>
+                            <td>@(c.CodCliente ?? "da creare")</td>
+                            <td>@(c.IdInsediamento?.ToString() ?? "da creare")<div class="sottotesto">@c.Sede</div></td>
+                            <td>@(c.IdContatto?.ToString() ?? "da creare")</td>
+                            <td class="numerico">@(c.PrezzoControllo is decimal pc ? Euro(pc) : "(nel gruppo)")</td>
+                            <td class="numerico">@Num(c.QuantitaAnnua)</td>
+                            <td>@c.DataCommessa?.ToString("dd/MM/yyyy")</td>
+                            <td class="sottotesto">@c.Note</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <p class="sottotesto">Per l'amministrazione (AZW): SDI @(p.CodiceSdi ?? "—") · PEC @(p.Pec ?? "—") · P.IVA @(p.PartitaIva ?? "—") · C.F. @(p.CodiceFiscale ?? "—").</p>
+    }
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/preventivi-consulenza.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,69 @@
+@using LaboratorioAI.Dati.MonitorTemperature
+@model IReadOnlyList<DifferenzaLimiti>
+@{
+    ViewData["Title"] = "Allinea limiti da ArcLab";
+    var diversi = Model.Where(x => x.Esito == EsitoConfrontoLimiti.Diversi).ToList();
+    var altri = Model.Where(x => x.Esito is EsitoConfrontoLimiti.Conflitto or EsitoConfrontoLimiti.NonNelMonitor or EsitoConfrontoLimiti.SenzaLimitiArcLab).ToList();
+    string N(decimal? v) => v?.ToString("0.0#") ?? "-";
+    string Esito(EsitoConfrontoLimiti e) => e switch
+    {
+        EsitoConfrontoLimiti.Conflitto => "In ArcLab le sonde della stessa apparecchiatura hanno limiti diversi: correggere ArcLab",
+        EsitoConfrontoLimiti.NonNelMonitor => "Apparecchiatura non attiva nel monitoraggio",
+        EsitoConfrontoLimiti.SenzaLimitiArcLab => "In ArcLab non ci sono limiti",
+        _ => ""
+    };
+}
+
+<div class="mb-4">
+    <h1>Allinea limiti da ArcLab</h1>
+    <p>
+        Gli allarmi di EconormaAcquisizione e il Monitor controllo usano i limiti delle apparecchiature del monitoraggio.
+        Qui li confronti con i limiti di ArcLab (letti in sola lettura) e, dopo la conferma, copi quelli di ArcLab.
+        <strong>Gli allarmi già registrati non cambiano</strong>; le misure passate nel Monitor controllo si vedranno con i limiti nuovi.
+    </p>
+    <a asp-controller="Sonde" asp-area="MonitorTemperature" asp-action="Index" class="btn btn-secondary">Torna alle sonde</a>
+</div>
+
+@if (diversi.Count == 0)
+{
+    <div class="alert alert-success">Tutti i limiti del monitoraggio sono già uguali a quelli di ArcLab.</div>
+}
+else
+{
+    <form asp-controller="Sonde" asp-area="MonitorTemperature" asp-action="AllineaLimiti" method="post"
+          onsubmit="return confirm('Copiare i limiti di ArcLab nelle apparecchiature spuntate? Da subito gli allarmi useranno i limiti nuovi.');">
+        <table class="table table-striped table-bordered align-middle">
+            <thead>
+                <tr><th>Aggiorna</th><th>Apparecchiatura</th><th>Sonde</th><th>Monitoraggio (oggi)</th><th>ArcLab (nuovi)</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var d in diversi)
+                {
+                    <tr>
+                        <td><input type="checkbox" name="codici" value="@d.CodiceApparecchiatura" checked /></td>
+                        <td>@d.Descrizione <small class="text-muted">(@d.CodiceApparecchiatura)</small></td>
+                        <td>@d.Sonde</td>
+                        <td>@N(d.MinMonitor) / @N(d.MaxMonitor)</td>
+                        <td class="fw-bold">@N(d.MinArcLab ?? d.MinMonitor) / @N(d.MaxArcLab ?? d.MaxMonitor)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Copia i limiti di ArcLab nelle apparecchiature spuntate</button>
+    </form>
+}
+
+@if (altri.Count > 0)
+{
+    <h2 class="mt-4">Non aggiornabili</h2>
+    <table class="table table-bordered align-middle">
+        <thead><tr><th>Apparecchiatura</th><th>Sonde</th><th>Monitoraggio</th><th>Motivo</th></tr></thead>
+        <tbody>
+            @foreach (var d in altri)
+            {
+                <tr><td>@d.Descrizione <small class="text-muted">(@d.CodiceApparecchiatura)</small></td><td>@d.Sonde</td>
+                    <td>@N(d.MinMonitor) / @N(d.MaxMonitor)</td><td>@Esito(d.Esito)</td></tr>
+            }
+        </tbody>
+    </table>
+}

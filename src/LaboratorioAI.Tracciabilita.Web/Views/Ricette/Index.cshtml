@@ -1,0 +1,34 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoRicette
+@{ ViewData["Titolo"] = "Ricette"; }
+<div class="testa-pagina"><h1>Ricette</h1></div>
+<table class="elenco">
+    <thead><tr><th>Prodotto</th><th>Ingredienti</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Ricette)
+    {
+        <tr>
+            <td><a asp-action="Scheda" asp-route-id="@r.IdRicetta">@r.Nome</a>@if (!r.Attiva) { <span class="tag spento">fuori uso</span> }</td>
+            <td>@r.Ingredienti</td>
+            <td><a asp-action="Proposta" asp-route-id="@r.IdRicetta">Lotti da usare in un giorno »</a></td>
+        </tr>
+    }
+    @if (Model.Ricette.Count == 0)
+    {
+        <tr><td colspan="3">Nessuna ricetta. Creane una qui sotto.</td></tr>
+    }
+    </tbody>
+</table>
+@if (Model.MostraTutte)
+{
+    <p class="nota"><a asp-action="Index">Nascondi le ricette fuori uso</a></p>
+}
+else if (Model.NonInUso > 0)
+{
+    <p class="nota"><a asp-action="Index" asp-route-tutte="true">Mostra anche le ricette fuori uso (@Model.NonInUso)</a></p>
+}
+<h2>Nuova ricetta</h2>
+<form method="post" asp-action="Nuova" class="modulo">
+    <label asp-for="NuovoNome"></label>
+    <input asp-for="NuovoNome" />
+    <button type="submit">Crea ricetta</button>
+</form>

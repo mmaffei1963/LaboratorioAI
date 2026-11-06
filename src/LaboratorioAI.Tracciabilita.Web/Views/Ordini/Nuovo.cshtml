@@ -1,0 +1,28 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloNuovoOrdine
+@{ ViewData["Titolo"] = "Nuovo ordine"; }
+<h1>Nuovo ordine</h1>
+<p><a asp-action="Index">« Quadro consegne</a></p>
+<form method="post" asp-action="Nuovo" class="modulo">
+    <div asp-validation-summary="ModelOnly" class="errore"></div>
+    @if (Model.PrimoOrdine)
+    {
+        <label asp-for="NumeroIniziale">Numero del primo ordine</label>
+        <input asp-for="NumeroIniziale" type="number" min="1" placeholder="es. 8208" />
+        <span class="nota">È il primo ordine di questo programma: scrivi da che numero continuare. Poi i numeri vanno avanti da soli.</span>
+    }
+    else
+    {
+        <p class="nota">Numero assegnato: <strong>@Model.NumeroProposto</strong></p>
+    }
+    <label asp-for="IdFornitore"></label>
+    <select asp-for="IdFornitore">
+        <option value="">(scegli)</option>
+        @foreach (var f in Model.Fornitori) { <option value="@f.Id" selected="@(Model.IdFornitore == f.Id)">@f.Nome</option> }
+    </select>
+    <span asp-validation-for="IdFornitore" class="errore"></span>
+    <label asp-for="DataConsegnaPrevista"></label>
+    <input asp-for="DataConsegnaPrevista" type="date" />
+    <label asp-for="Note"></label>
+    <input asp-for="Note" />
+    <button type="submit">Crea ordine</button>
+</form>

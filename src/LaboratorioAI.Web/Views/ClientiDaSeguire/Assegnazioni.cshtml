@@ -1,0 +1,133 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model LaboratorioAI.Web.Controllers.ModelloAssegnazioni
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string N(decimal v) => v.ToString("0.##", it);
+    string E(decimal? v) => v is decimal x ? x.ToString("#,##0", it) + " €" : "—";
+    var imp = Model.Impostazioni;
+    var proposte = Model.Elenco.Where(x => x.Assegnazione.Stato == StatoAssegnazioneCliente.Proposta).ToList();
+    var inCorso = Model.Elenco.Where(x => x.Assegnazione.Stato == StatoAssegnazioneCliente.Approvata).ToList();
+    var storico = Model.Elenco.Where(x => x.Assegnazione.Stato is StatoAssegnazioneCliente.Rifiutata or StatoAssegnazioneCliente.Chiusa).ToList();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Clienti da seguire: assegnazioni e soglie</h1>
+        <p class="sottotitolo">Le proposte di assegnazione dei commerciali valgono solo dopo l'approvazione. Nulla si cancella: un'assegnazione si chiude.</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Index")">← Clienti da seguire</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Proposte da decidere (@proposte.Count)</h2></div>
+    @if (proposte.Count == 0)
+    {
+        <p class="sottotesto">Nessuna proposta in attesa.</p>
+    }
+    else
+    {
+        <table class="tabella">
+            <thead><tr><th>Cliente</th><th>Commerciale</th><th>Proposta</th><th class="numerico">Analisi ultimi 12 mesi</th><th>Decisione</th></tr></thead>
+            <tbody>
+            @foreach (var (a, comm, cli) in proposte)
+            {
+                <tr>
+                    <td><a href="@Url.Action("Scheda", new { id = a.CodiceCliente })"><strong>@cli</strong></a><br /><span class="sottotesto">@a.CodiceCliente</span></td>
+                    <td>@comm</td>
+                    <td>@a.DataProposta.ToLocalTime().ToString("dd/MM/yyyy") · @a.PropostaDa<br /><span class="sottotesto">@a.Motivo</span></td>
+                    <td class="numerico">@E(a.FatturatoLabAllaProposta)</td>
+                    <td>
+                        <form method="post" asp-action="Decidi" style="display:flex;gap:0.3rem;flex-wrap:wrap;align-items:center">
+                            <input type="hidden" name="id" value="@a.IdAssegnazioneCliente" />
+                            <input type="text" name="nota" placeholder="nota (facoltativa)" maxlength="1000" />
+                            <button type="submit" name="approva" value="true" class="pulsante minuto">Approva</button>
+                            <button type="submit" name="approva" value="false" class="pulsante pulsante-tenue minuto">Rifiuta</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Assegnazioni in corso (@inCorso.Count)</h2></div>
+    @if (inCorso.Count == 0)
+    {
+        <p class="sottotesto">Nessun cliente assegnato.</p>
+    }
+    else
+    {
+        <table class="tabella">
+            <thead><tr><th>Cliente</th><th>Commerciale</th><th>Dal</th><th class="numerico">Analisi alla proposta</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var (a, comm, cli) in inCorso)
+            {
+                <tr>
+                    <td><a href="@Url.Action("Scheda", new { id = a.CodiceCliente })"><strong>@cli</strong></a><br /><span class="sottotesto">@a.CodiceCliente</span></td>
+                    <td>@comm</td>
+                    <td>@a.DataInizio?.ToString("dd/MM/yyyy")<br /><span class="sottotesto">approvata da @a.DecisaDa</span></td>
+                    <td class="numerico">@E(a.FatturatoLabAllaProposta)</td>
+                    <td>
+                        <form method="post" asp-action="ChiudiAssegnazione" style="display:flex;gap:0.3rem;align-items:center" onsubmit="return confirm('Chiudere l\'assegnazione da oggi?')">
+                            <input type="hidden" name="id" value="@a.IdAssegnazioneCliente" />
+                            <input type="text" name="nota" placeholder="motivo" maxlength="500" />
+                            <button type="submit" class="pulsante pulsante-tenue minuto">Chiudi</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    @if (storico.Count > 0)
+    {
+        <details style="margin-top:0.6rem"><summary class="sottotesto">Rifiutate e chiuse (@storico.Count)</summary>
+            <table class="tabella">
+                <thead><tr><th>Cliente</th><th>Commerciale</th><th>Stato</th><th>Periodo</th><th>Nota</th></tr></thead>
+                <tbody>
+                @foreach (var (a, comm, cli) in storico)
+                {
+                    <tr>
+                        <td>@cli</td><td>@comm</td><td>@(a.Stato == StatoAssegnazioneCliente.Rifiutata ? "Rifiutata" : "Chiusa")</td>
+                        <td>@a.DataInizio?.ToString("dd/MM/yyyy") – @a.DataFine?.ToString("dd/MM/yyyy")</td>
+                        <td class="sottotesto">@a.NotaDecisione</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </details>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Soglie</h2><span class="sottotesto">Ultima modifica @imp.DataUltimaModifica.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @imp.UltimaModificaDa</span></div>
+    <form method="post" asp-action="Soglie" class="griglia-filtri">
+        <label>Fatturato di analisi minimo nei 12 mesi precedenti (€)<input type="text" inputmode="decimal" name="minimoFatturato" value="@N(imp.MinimoFatturato)" /></label>
+        <label>ROSSO se la variazione è uguale o peggiore di (%)<input type="text" inputmode="decimal" name="sogliaRosso" value="@N(imp.SogliaRosso)" /></label>
+        <label>GIALLO se la variazione è uguale o peggiore di (%)<input type="text" inputmode="decimal" name="sogliaGiallo" value="@N(imp.SogliaGiallo)" /></label>
+        <label>GIALLO per analisi perse di valore almeno (€, se il fatturato scende)<input type="text" inputmode="decimal" name="valoreAnalisiPerse" value="@N(imp.ValoreAnalisiPerse)" /></label>
+        <label>GIALLO se fermo negli ultimi 3 mesi e l'anno prima almeno (campioni)<input type="number" min="1" name="campioniTrimestreMinimo" value="@imp.CampioniTrimestreMinimo" /></label>
+        <label>Legionella: tolleranza oltre la data attesa (giorni)<input type="number" min="0" name="legionellaTolleranzaGiorni" value="@imp.LegionellaTolleranzaGiorni" /></label>
+        <label>Legionella: «da ricordare» con preavviso di (giorni)<input type="number" min="0" name="legionellaPreavvisoGiorni" value="@imp.LegionellaPreavvisoGiorni" /></label>
+        <label>Legionella: «in calo» se i campioni calano di almeno (%)<input type="text" inputmode="decimal" name="legionellaSogliaCalo" value="@N(imp.LegionellaSogliaCalo)" /></label>
+        <label>Solo consulenza: altri servizi almeno (€)<input type="text" inputmode="decimal" name="soloConsulenzaMinimo" value="@N(imp.SoloConsulenzaMinimo)" /></label>
+        <label>Solo consulenza: analisi meno di (€)<input type="text" inputmode="decimal" name="soloConsulenzaLabMassimo" value="@N(imp.SoloConsulenzaLabMassimo)" /></label>
+        <label>Controlli di Legionella: testo nel nome<input type="text" name="testoControlloLegionella" value="@imp.TestoControlloLegionella" maxlength="50" /></label>
+        <label>Voci AZW del fatturato Legionella<input type="text" name="vociLegionella" value="@imp.VociLegionella" maxlength="100" /></label>
+        <label>Fatturato di analisi = base di calcolo
+            <select name="idBaseCalcoloLaboratorio">
+                <option value="">Area analisi (predefinita)</option>
+                @foreach (var b in Model.Basi) { <option value="@b.IdBaseCalcolo" selected="@(imp.IdBaseCalcoloLaboratorio == b.IdBaseCalcolo)">@b.Nome</option> }
+            </select>
+        </label>
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Salva soglie</button></div>
+    </form>
+</section>

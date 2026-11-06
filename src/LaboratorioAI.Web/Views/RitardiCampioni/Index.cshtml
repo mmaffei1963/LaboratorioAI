@@ -1,0 +1,146 @@
+@using LaboratorioAI.Core.CicloAnalitico
+@using LaboratorioAI.Core.Entita
+@using LaboratorioAI.Web.Controllers
+@model LaboratorioAI.Web.Controllers.ModelloRitardiCampioni
+@{
+    var imp = Model.Impostazioni;
+    var nomiGiorni = new[] { (1, "lunedì"), (2, "martedì"), (3, "mercoledì"), (4, "giovedì"), (5, "venerdì"), (6, "sabato"), (0, "domenica") };
+    var gruppi = new[] { StatoRitardo.ParametriMancanti, StatoRitardo.RapportoDaEmettere, StatoRitardo.Subappalto };
+    var giorniTesto = string.Join(", ", nomiGiorni.Where(g => imp.GiorniAvviso.Contains(g.Item1)).Select(g => g.Item2));
+}
+@* Avviso campioni in ritardo (22/10/2026). Dati ArcLab in sola lettura. *@
+<style>
+    .rit td, .rit th { padding: 5px 8px !important; vertical-align: top; }
+    .rit .grave { color: #B91C1C; font-weight: 700; }
+    .rit-note { font-size: .78rem; color: #6B7280; }
+    .rit-nascondi { display: flex; gap: .3rem; }
+    .rit-nascondi input { width: 11rem; }
+    .rit-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .8rem; }
+    .rit-cifre .valore { font-size: 1.45rem; font-weight: 700; }
+</style>
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Campioni in ritardo</h1>
+        <p class="sottotitolo">Campioni senza rapporto di prova oltre la soglia del loro tipo. I giorni si contano dalla data di inizio = ricezione + ritardo programmato (es. shelf life: ricevuto il 10/10 con 5 giorni di ritardo → inizio 15/10). @(giorniTesto.Length > 0 ? $"Avviso all'apertura di LaboratorioAI: {giorniTesto}." : "Avviso all'apertura disattivato.")</p>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        <a class="pulsante" href="@Url.Action("Esporta")">Esporta Excel</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", new { aggiorna = true })">Ricalcola ora</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+@if (Model.Errore is not null) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@Model.Errore</strong></section> }
+
+<section class="riquadro">
+    <div class="rit-cifre">
+        <div><div class="sottotesto">Campioni in ritardo</div><div class="valore">@Model.Campioni.Count</div></div>
+        @foreach (var s in gruppi)
+        {
+            <div><div class="sottotesto">@RitardiCampioniController.NomeStato(s)</div><div class="valore">@Model.Campioni.Count(x => x.Stato == s)</div></div>
+        }
+    </div>
+    <p class="rit-note" style="margin-bottom:0">Calcolato alle @Model.CalcolatoIl.ToString("HH:mm") (si aggiorna ogni 10 minuti o con «Ricalcola ora»).</p>
+</section>
+
+@foreach (var s in gruppi)
+{
+    var righe = Model.Campioni.Where(x => x.Stato == s).ToList();
+    <section class="riquadro">
+        <details open="@(righe.Count > 0)">
+            <summary style="cursor:pointer;font-weight:600">@RitardiCampioniController.NomeStato(s) (@righe.Count)</summary>
+            @if (righe.Count == 0)
+            {
+                <p class="sottotesto" style="margin:.4rem 0 0">Nessun campione.</p>
+            }
+            else
+            {
+                <div class="tabella-scorrevole" style="margin-top:.4rem">
+                    <table class="tabella rit">
+                        <thead><tr><th>Campione</th><th>Cliente</th><th>Matrice · tipo</th><th>Ricezione</th><th>Inizio</th><th class="numerico">Giorni</th><th class="numerico">Soglia</th><th class="numerico">Ritardo</th><th>@(s == StatoRitardo.RapportoDaEmettere ? "" : "Prove mancanti")</th>@if (Model.PuoGestire) { <th></th> }</tr></thead>
+                        <tbody>
+                        @foreach (var x in righe)
+                        {
+                            <tr>
+                                <td><strong>@x.NumeroCampione</strong><div class="rit-note">@x.Denominazione</div></td>
+                                <td>@x.RagioneSociale<div class="rit-note">@x.Controllo</div></td>
+                                <td>@x.Matrice<div class="rit-note">@RitardiCampioniController.NomeFamiglia(x.Famiglia)</div></td>
+                                <td>@x.DataRicezione.ToString("dd/MM/yyyy")</td>
+                                <td>@x.DataInizio.ToString("dd/MM/yyyy")@(x.RitardoProgrammato > 0 ? " (+" + x.RitardoProgrammato + " gg)" : "")</td>
+                                <td class="numerico">@x.GiorniTrascorsi</td>
+                                <td class="numerico">@x.Soglia</td>
+                                <td class="numerico @(x.GiorniRitardo > x.Soglia ? "grave" : "")">+@x.GiorniRitardo</td>
+                                <td>@string.Join(", ", x.ProveMancanti)</td>
+                                @if (Model.PuoGestire)
+                                {
+                                    <td>
+                                        <form method="post" asp-action="Nascondi" class="rit-nascondi">
+                                            <input type="hidden" name="id" value="@x.IdCampione" /><input type="hidden" name="numero" value="@x.NumeroCampione" />
+                                            <input type="text" name="motivo" placeholder="motivo" maxlength="500" required />
+                                            <button type="submit" class="pulsante pulsante-tenue" title="Toglie il campione dall'elenco e dall'avviso">Non mostrare più</button>
+                                        </form>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </details>
+    </section>
+}
+
+@if (Model.Nascosti.Count > 0)
+{
+    <section class="riquadro">
+        <details>
+            <summary style="cursor:pointer;font-weight:600">Campioni non mostrati (@Model.Nascosti.Count)</summary>
+            <div class="tabella-scorrevole" style="margin-top:.4rem">
+                <table class="tabella rit">
+                    <thead><tr><th>Campione</th><th>Motivo</th><th>Da</th><th>Il</th>@if (Model.PuoGestire) { <th></th> }</tr></thead>
+                    <tbody>
+                    @foreach (var n in Model.Nascosti)
+                    {
+                        <tr>
+                            <td>@n.NumeroCampione</td><td>@n.Motivo</td><td>@n.NascostoDa</td><td>@n.DataNascosto.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            @if (Model.PuoGestire)
+                            {
+                                <td><form method="post" asp-action="Ripristina"><input type="hidden" name="id" value="@n.IdCampioneNascostoRitardi" /><button type="submit" class="pulsante pulsante-tenue">Mostra di nuovo</button></form></td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </section>
+}
+
+<section class="riquadro">
+    <details open="@(!Model.PuoGestire ? false : imp.GiorniAvviso.Count == 0)">
+        <summary style="cursor:pointer;font-weight:600">Impostazioni dell'avviso</summary>
+        <form method="post" asp-action="SalvaImpostazioni" style="margin-top:.5rem">
+            <fieldset disabled="@(!Model.PuoGestire)" style="border:0;padding:0;margin:0">
+                <p style="margin:.2rem 0"><strong>Giorni dell'avviso</strong>
+                    @foreach (var (n, nome) in nomiGiorni)
+                    {
+                        <label style="display:inline-flex;gap:.25rem;margin-right:.6rem;font-weight:normal"><input type="checkbox" name="giorni" value="@n" checked="@imp.GiorniAvviso.Contains(n)" style="width:auto" />@nome</label>
+                    }
+                </p>
+                <p style="margin:.6rem 0 .2rem"><strong>Soglie in giorni dall'inizio</strong> <span class="rit-note">(oltre la soglia il campione è in ritardo; il tipo viene dalla matrice, come per i limiti normativi)</span></p>
+                <div class="griglia-filtri" style="grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))">
+                    @foreach (var f in Enum.GetValues<FamigliaNormativa>())
+                    {
+                        <label>@RitardiCampioniController.NomeFamiglia(f)<input type="number" min="0" max="365" name="soglia_@f" value="@imp.Soglia(f)" /></label>
+                    }
+                    <label>Prove in subappalto<input type="number" min="0" max="365" name="sogliaSubappalto" value="@imp.SogliaSubappalto" /></label>
+                </div>
+                @if (Model.PuoGestire) { <button type="submit" class="pulsante" style="margin-top:.6rem">Salva</button> }
+            </fieldset>
+        </form>
+        @if (!Model.PuoGestire) { <p class="rit-note">Le impostazioni e «Non mostrare più» li gestisce chi conferma le validazioni.</p> }
+    </details>
+</section>

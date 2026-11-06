@@ -1,0 +1,67 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var valida = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.IncubatoriValidazione);
+}
+@* Guida «Taratura incubatori / celle» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A tarare il <strong>misuratore</strong> (termometro o logger) di un incubatore, frigo o cella
+        <strong>alla sua temperatura di esercizio</strong>, per confronto con il CDR (IO 04-02). Il programma dà la correzione, l'incertezza,
+        dice se è <strong>CONFORME</strong> e suggerisce dove regolare gli <strong>allarmi</strong>.</p>
+    <p>I CDR si inseriscono nella pagina <em>Taratura termometri</em>.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Tarare il misuratore di un incubatore o di una cella</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova taratura</span> e scegli il <strong>CDR</strong> usato.</li>
+        <li><strong>Committente:</strong> se lo strumento è di un cliente scrivi il <em>Cliente</em> e sceglilo dall'elenco ArcLab, poi scegli l'<em>Insediamento</em>.
+            Lascia vuoto se è nostro. Cliente e insediamento vanno nella testata del rapporto.</li>
+        <li><strong>Misuratore in taratura:</strong> è il misuratore associato alla cella o all'apparecchiatura sulla quale si legge la temperatura da confrontare con il CDR.
+            Segue l'origine dell'apparecchiatura: se la cella è nostra lo scegli dall'elenco ArcLab, se è del cliente scrivi marca, modello e matricola (l'elenco propone quelli già tarati).</li>
+        <li><strong>Apparecchiatura</strong> (l'incubatore o la cella): se è nostra scegli <em>Interno MARE.A</em> e sceglila dall'elenco; se è del cliente scegli
+            <em>Del cliente</em> e scrivi marca, modello e matricola (l'elenco propone quelle del cliente già tarate).</li>
+        <li><strong>Condizioni di esercizio:</strong> scrivi la temperatura di lavoro (es. 37), la tolleranza ± (es. 1) e la risoluzione del misuratore.</li>
+        <li><strong>Misure:</strong> premi <span class="tasto">Aggiungi 10 letture</span> e scrivi in ogni riga la temperatura del CDR e quella del misuratore.</li>
+        <li>Premi <span class="tasto">Calcola</span>: nei <strong>Risultati</strong> trovi correzione, incertezza, la fascia consigliata per gli <strong>allarmi</strong>
+            e l'esito <strong style="color:#1a7f37">CONFORME</strong> o <strong style="color:#b3261e">NON CONFORME</strong>.</li>
+        <li>Premi <span class="tasto">Salva taratura</span> e poi <span class="tasto">Rapporto PDF</span> (o Word).</li>
+    </ol>
+    <img class="schermata" src="/img/guide/incubatori-risultati.png" alt="Taratura incubatore: condizioni di esercizio, misure, risultati con allarmi e conformità" loading="lazy" />
+    <p class="dopo"><strong>Se è NON CONFORME:</strong> l'apparecchiatura non sta nella tolleranza. Non usarla per le prove e avvisa subito il Responsabile o la Qualità.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho fatto la mappatura: cosa metto in «Dispersione mappatura»?</summary>
+    <p>Se la stessa apparecchiatura ha una <strong>mappatura</strong> recente, puoi riportare qui di quanto variano le temperature tra le posizioni
+        (la più alta meno la più bassa, in °C): entra nell'incertezza. Se non ce l'hai, lascia <strong>0</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho più strumenti nello stesso giro</summary>
+    <p>Salva il primo e premi <span class="tasto">Duplica per nuovo strumento</span>: restano CDR, apparecchiatura e temperature di riferimento.
+        Cambia il misuratore, correggi le letture e salva. La casella <em>copia letture nel duplicato</em> decide se copiare anche le letture.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riaprire una taratura, ristampare il rapporto, controllo AI</summary>
+    <p>Clicca la riga nel <strong>Registro tarature</strong> per riaprirla. Dopo il salvataggio, <span class="tasto">Analizza (AI)</span> segnala
+        problemi come poche letture o CDR scaduto: è un aiuto, la decisione resta tua.</p>
+</details>
+
+@if (valida)
+{
+    <h2>Solo per Responsabile e Qualità</h2>
+    <details class="situazione">
+        <summary>Validare il calcolo ed eliminare dal registro</summary>
+        <p><span class="tasto">Valida calcoli</span> rifà tre casi di prova (errore positivo, negativo, tolleranza ridotta) e li confronta con il foglio storico:
+            esito atteso <strong style="color:#1a7f37">VALIDATO</strong>, con PDF nel registro validazioni.
+            <span class="tasto">Elimina dal registro</span> toglie una taratura sbagliata senza cancellarla (si ripristina con <em>Mostra eliminate</em>).</p>
+    </details>
+}
+
+<p class="nota">Dubbi sul metodo: Qualità. Problemi con il programma: Mirko Maffei.</p>

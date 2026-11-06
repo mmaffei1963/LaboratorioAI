@@ -1,0 +1,48 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A rispondere in fretta alla domanda «<em>se questo lotto è sbagliato, cosa e chi è coinvolto?</em>». Parti dal lotto sospetto (una materia prima o un prodotto) e il programma elenca <strong>i lotti coinvolti</strong>, <strong>quanto ne resta</strong> e <strong>i clienti da avvisare</strong>, con l'e-mail pronta.</p>
+    <p class="nota">Guardare l'anteprima <strong>non cambia nulla</strong>. Cambia qualcosa solo se avvii il richiamo vero.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Un fornitore mi segnala un lotto: vedere cosa è coinvolto</summary>
+    <ol class="passi">
+        <li>In <strong>Richiamo e simulazione</strong> scrivi nella casella il lotto, l'articolo o il fornitore e premi <span class="tasto">Cerca</span>.</li>
+        <li>Sulla riga giusta clicca <span class="tasto">Simula o richiama</span>: si apre l'anteprima.</li>
+        <li>Leggi <strong>Lotti coinvolti</strong> (a monte e a valle, con la giacenza residua e lo stato) e <strong>Clienti da avvisare</strong> (contatti e consegne ricevute).</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Fare una simulazione (prova periodica)</summary>
+    <ol class="passi">
+        <li>Apri l'anteprima come sopra.</li>
+        <li>Scrivi un motivo (per esempio «prova annuale»).</li>
+        <li>Premi <span class="tasto">Registra come simulazione</span>.</li>
+    </ol>
+    <p class="dopo">Non cambia lo stato di nessun lotto. Nel <strong>registro dei richiami e delle simulazioni</strong> resta il rapporto, con il <strong>tempo impiegato</strong> (da quando hai aperto la pagina): utile da mostrare in un audit.</p>
+</details>
+
+<details class="situazione">
+    <summary>Avviare un richiamo vero</summary>
+    <ol class="passi">
+        <li>Apri l'anteprima e scrivi il <strong>motivo</strong> (obbligatorio).</li>
+        <li>Premi <span class="tasto">Avvia il richiamo (blocca i lotti)</span> e conferma.</li>
+        <li>Nel rapporto usa <span class="tasto">Prepara l'e-mail per N clienti</span>: si apre il tuo programma di posta con i clienti in copia nascosta.</li>
+    </ol>
+    <p class="dopo">I lotti coinvolti diventano <em>Richiamato</em> (se sono stati consegnati a clienti) o <em>Bloccato</em> (altrimenti) e non si possono più spedire.</p>
+    <p class="attenzione">I clienti senza e-mail sono elencati a parte: vanno avvisati per telefono o di persona.</p>
+</details>
+
+<details class="situazione">
+    <summary>Stampare o ritrovare un rapporto</summary>
+    <p>Nel registro in fondo alla pagina clicca <span class="tasto">Rapporto</span> sulla riga; poi <span class="tasto">Stampa</span>. Il rapporto è salvato così com'era quel giorno e non si modifica.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il richiamo è finito (o era una prova): togliere il blocco</summary>
+    <p>Apri la scheda di ogni lotto bloccato (<em>Magazzino e lotti</em>) e usa <span class="tasto">Sblocca il lotto</span>, scrivendo il motivo. Vedi la guida «Lotti e rintracciabilità».</p>
+</details>

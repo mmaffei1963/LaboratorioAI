@@ -1,0 +1,79 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaOrdine
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Ordine " + Model.Numero; var bozza = Model.Stato == StatoOrdine.Bozza; }
+<div class="testa-pagina"><h1>Ordine n. @Model.Numero</h1><span class="tag @(Model.Stato == StatoOrdine.Annullato ? "spento" : "")">@Model.Stato</span></div>
+<p><a asp-action="Index">« Quadro consegne</a></p>
+<p><strong>@Model.Fornitore</strong> · ordine del @Model.DataOrdine.ToString("dd/MM/yyyy")
+   @if (Model.DataConsegnaPrevista is { } d) { <span>· consegna prevista @d.ToString("dd/MM/yyyy")</span> }
+   @if (!string.IsNullOrWhiteSpace(Model.Note)) { <br /><span class="nota">@Model.Note</span> }</p>
+<table class="elenco">
+    <thead><tr><th>Articolo</th><th>Matrice</th><th>Quantità</th><th>Colli</th><th>Note</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@r.Articolo</td><td>@r.Matrice</td><td>@r.Quantita.ToString("0.##") @r.UnitaMisura</td><td>@r.Colli</td><td>@r.Note</td>
+            <td>
+                @if (Model.Stato == StatoOrdine.Inviato)
+                {
+                    <a asp-controller="Accettazioni" asp-action="Nuova" asp-route-idOrdineRiga="@r.IdOrdineRiga" class="pulsante" style="margin:0;padding:.3rem .7rem">Accetta</a>
+                    <a asp-controller="Accettazioni" asp-action="SchedaVuota" asp-route-idOrdineRiga="@r.IdOrdineRiga" target="_blank">Scheda vuota</a>
+                }
+                @if (bozza)
+                {
+                    <form method="post" asp-action="TogliRiga" asp-route-id="@Model.IdOrdine" asp-route-idRiga="@r.IdOrdineRiga" style="display:inline">
+                        <button type="submit" class="piccolo">Togli</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="6">Nessuna riga. Aggiungi gli articoli qui sotto.</td></tr> }
+    </tbody>
+</table>
+
+@if (bozza)
+{
+    <h2>Aggiungi articolo</h2>
+    <form method="post" asp-action="AggiungiRiga" asp-route-id="@Model.IdOrdine" class="modulo">
+        <label asp-for="IdArticolo">Articolo (prima quelli di questo fornitore)</label>
+        <select asp-for="IdArticolo">
+            <option value="">(scegli)</option>
+            @foreach (var a in Model.Articoli)
+            {
+                <option value="@a.IdArticolo">@(a.DelFornitore ? "★ " : "")@a.Descrizione (@a.UnitaMisura)</option>
+            }
+        </select>
+        <label asp-for="IdCategoria">Matrice (se vuota, quella abituale dell'articolo)</label>
+        <select asp-for="IdCategoria">
+            <option value="">(abituale)</option>
+            @foreach (var c in Model.Categorie) { <option value="@c.Id">@c.Nome</option> }
+        </select>
+        <label asp-for="Quantita">Quantità</label><input asp-for="Quantita" type="number" step="0.01" min="0.01" />
+        <label asp-for="UnitaMisura">Unità (se vuota, quella dell'articolo)</label><input asp-for="UnitaMisura" />
+        <label asp-for="Colli">Colli</label><input asp-for="Colli" type="number" min="1" />
+        <label asp-for="NoteRiga">Note della riga</label><input asp-for="NoteRiga" />
+        <button type="submit">Aggiungi</button>
+    </form>
+}
+
+<h2>Stampa e invio</h2>
+<p><a asp-action="Stampa" asp-route-id="@Model.IdOrdine" target="_blank" class="pulsante">Pagina da stampare</a></p>
+@if (Model.Stato is StatoOrdine.Bozza or StatoOrdine.Inviato)
+{
+    <form method="post" asp-action="Invia" asp-route-id="@Model.IdOrdine" class="modulo">
+        <label>Invia per e-mail a</label>
+        <input type="email" name="destinatario" value="@Model.EmailFornitore" placeholder="indirizzo e-mail del fornitore" />
+        <button type="submit">@(bozza ? "Invia l'ordine" : "Invia di nuovo")</button>
+    </form>
+    @if (bozza)
+    {
+        <form method="post" asp-action="SegnaInviato" asp-route-id="@Model.IdOrdine" style="margin-top:.6rem">
+            <button type="submit" class="piccolo">Segna come inviato (telefono o consegna a mano)</button>
+        </form>
+    }
+    <form method="post" asp-action="Annulla" asp-route-id="@Model.IdOrdine" style="margin-top:.6rem"
+          onsubmit="return confirm('Annullare l\'ordine n. @Model.Numero?');">
+        <button type="submit" class="piccolo">Annulla ordine</button>
+    </form>
+}

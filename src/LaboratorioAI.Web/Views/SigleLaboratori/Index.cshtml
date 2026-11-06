@@ -1,0 +1,28 @@
+@{
+    ViewData["Titolo"] = "Sigle laboratori esterni";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Sigle laboratori esterni</h1>
+        <p class="sottotitolo">Sigla usata nel nome dei certificati esterni per Palomar (…-EST-<strong>SIGLA</strong>-idLab-…) e parole chiave che riconoscono il laboratorio nel PDF (separate da virgola, es. <em>sicural</em>). I laboratori sono letti da ArcLab; quelli in cima, non ancora salvati, mostrano una proposta da confermare con «Salva». Una sigla non più valida si disattiva, non si elimina.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-sigle">
+            <thead><tr>
+                <th style="width:5rem" class="numerico">Id lab</th><th>Laboratorio (ArcLab)</th>
+                <th style="width:9rem">Sigla</th><th>Parole chiave nel PDF</th>
+                <th style="width:5rem">Attivo</th><th style="width:9rem"></th>
+            </tr></thead>
+            <tbody id="corpo-sigle"></tbody>
+        </table>
+    </div>
+    <p class="sottotesto" id="msg-sigle"></p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/sigle-laboratori.js" asp-append-version="true"></script>
+}

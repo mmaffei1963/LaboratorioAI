@@ -13,10 +13,12 @@ public class ConfigurazioneUtente : IEntityTypeConfiguration<Utente>
 
         e.Property(x => x.Email).HasMaxLength(256).IsRequired();
         e.Property(x => x.NomeCompleto).HasMaxLength(200).IsRequired();
+        e.Property(x => x.Note).HasMaxLength(500);
         e.Property(x => x.DataCreazione).HasDefaultValueSql("SYSUTCDATETIME()");
 
-        // Un account Entra corrisponde a un solo utente applicativo
-        e.HasIndex(x => x.ObjectIdEntra).IsUnique();
+        // Un account Entra corrisponde a un solo utente applicativo; le persone registrate in anticipo hanno
+        // ObjectIdEntra nullo (indice univoco filtrato sui soli valori presenti).
+        e.HasIndex(x => x.ObjectIdEntra).IsUnique().HasFilter("[ObjectIdEntra] IS NOT NULL");
         e.HasIndex(x => x.Email).IsUnique();
     }
 }

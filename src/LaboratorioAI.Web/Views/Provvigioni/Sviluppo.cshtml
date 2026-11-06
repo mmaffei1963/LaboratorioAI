@@ -1,0 +1,109 @@
+@using System.Globalization
+@model LaboratorioAI.Web.Controllers.ModelloSviluppo
+@{
+    ViewData["Titolo"] = "Elenco in sviluppo";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var s = Model.Scelto;
+    var approvate = Model.Voci.Count(v => !string.IsNullOrEmpty(v.ApprovatoDa));
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Elenco clienti «in sviluppo»</h1>
+        <p class="sottotitolo">Voce 3 dell'accordo (2%): matura solo sui clienti dell'elenco che raggiungono l'obiettivo di ricavi di laboratorio dell'anno. Contano solo le voci <strong>approvate</strong>.</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Provvigioni")">← Provvigioni</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (s is null)
+{
+    <section class="riquadro"><p>Nessun commerciale configurato.</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+            <span class="sottotesto">Commerciale:</span>
+            @foreach (var c in Model.Commerciali)
+            {
+                <a class="pulsante @(c.IdCommerciale == s.IdCommerciale ? "" : "pulsante-tenue")" href="@Url.Action("Sviluppo", "Provvigioni", new { idCommerciale = c.IdCommerciale, anno = Model.Anno })">@c.Nome</a>
+            }
+            <span class="sottotesto" style="margin-left:1rem">Anno:</span>
+            @foreach (var a in new[] { Model.Anno - 1, Model.Anno, Model.Anno + 1 }.Distinct())
+            {
+                <a class="pulsante @(a == Model.Anno ? "" : "pulsante-tenue")" href="@Url.Action("Sviluppo", "Provvigioni", new { idCommerciale = s.IdCommerciale, anno = a })">@a</a>
+            }
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@s.Nome — elenco @Model.Anno</h2><span class="sottotesto">@Model.Voci.Count clienti, @approvate approvati</span></div>
+        @if (Model.Voci.Count == 0)
+        {
+            <p class="sottotesto">Nessun cliente in elenco per questo anno.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Cliente</th><th>Dal trimestre</th><th>Motivo</th><th>Azione</th><th class="numerico">Obiettivo</th><th>Approvato da</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var v in Model.Voci)
+                    {
+                        <tr>
+                            <td>@(Model.NomiClienti.TryGetValue(v.CodiceCliente, out var nome) && nome.Length > 0 ? nome : "—") <span class="sottotesto">(@v.CodiceCliente)</span></td>
+                            <td>T@(((v.ValidoDal.Month - 1) / 3) + 1)</td>
+                            <td>@v.Motivo</td>
+                            <td>@v.AzionePrevista</td>
+                            <td class="numerico">@v.Obiettivo.ToString("N0", it) €</td>
+                            <td>@(string.IsNullOrEmpty(v.ApprovatoDa) ? "in attesa" : v.ApprovatoDa)</td>
+                            <td style="white-space:nowrap">
+                                @if (string.IsNullOrEmpty(v.ApprovatoDa))
+                                {
+                                    <form method="post" asp-action="SviluppoApprova" style="display:inline"><input type="hidden" name="idElencoSviluppo" value="@v.IdElencoSviluppo" /><button class="pulsante pulsante-tenue" type="submit">Approva</button></form>
+                                }
+                                <form method="post" asp-action="SviluppoRimuovi" style="display:inline"><input type="hidden" name="idElencoSviluppo" value="@v.IdElencoSviluppo" /><button class="pulsante pulsante-tenue" type="submit">Rimuovi</button></form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Aggiungi un cliente</h2></div>
+        <form method="post" asp-action="SviluppoAggiungi" class="griglia-filtri">
+            <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+            <input type="hidden" name="anno" value="@Model.Anno" />
+            <label>Cliente (scrivi il nome o il codice e scegli dall'elenco)<input type="text" name="codiceCliente" list="elenco-clienti" required maxlength="20" autocomplete="off" /></label>
+            <datalist id="elenco-clienti">@foreach (var cl in Model.Clienti) { <option value="@cl.Codice" label="@cl.Nome">@cl.Nome</option> }</datalist>
+            <label>Dal trimestre
+                <select name="trimestre"><option value="1">T1</option><option value="2">T2</option><option value="3">T3</option><option value="4">T4</option></select>
+            </label>
+            <label>Obiettivo ricavi lab dell'anno (€)<input type="number" name="obiettivo" min="1" step="1" required /></label>
+            <label>Motivo
+                <select name="motivo"><option>A - Strategico</option><option>B - Dormiente</option><option>C - Calo</option><option>D - Cross-sell</option><option>E - Altro</option></select>
+            </label>
+            <label>Azione prevista<input type="text" name="azione" maxlength="100" placeholder="visita in loco, proposta…" /></label>
+            <label>Note<input type="text" name="note" maxlength="1000" /></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Aggiungi</button></div>
+        </form>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Carica da Excel</h2></div>
+        <p class="sottotesto">File «elenco_in_sviluppo_Zatterin.xlsx», foglio «Elenco in sviluppo» (celle gialle). Le righe caricate restano in attesa di approvazione; i clienti già in elenco sono saltati.</p>
+        <form method="post" asp-action="SviluppoImporta" enctype="multipart/form-data">
+            <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+            <input type="file" name="file" accept=".xlsx" required />
+            <button type="submit" class="pulsante">Carica</button>
+        </form>
+    </section>
+}

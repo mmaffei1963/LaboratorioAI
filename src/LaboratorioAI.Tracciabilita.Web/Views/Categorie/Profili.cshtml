@@ -1,0 +1,26 @@
+@model List<LaboratorioAI.Tracciabilita.Web.Models.RigaProfilo>
+@{ ViewData["Titolo"] = "Profili di controllo"; var tutti = ViewData["Tutti"] as bool? == true; }
+<div class="testa-pagina">
+    <h1>Profili di controllo</h1>
+    <div class="riga-pulsanti">
+        <a class="pulsante pulsante-tenue" asp-action="Categorie">Categorie</a>
+        <a class="pulsante" asp-action="NuovoProfilo">Nuovo profilo</a>
+    </div>
+</div>
+<p class="nota">Un profilo è l'elenco dei controlli da fare all'arrivo della merce (etichettatura, temperatura, certificato…). Più categorie possono condividere lo stesso profilo.</p>
+<p><a asp-action="Profili" asp-route-tutti="@(!tutti)">@(tutti ? "Mostra solo quelli in uso" : "Mostra anche quelli fuori uso")</a></p>
+<table class="elenco">
+    <thead><tr><th>Profilo</th><th>Controlli</th><th>Categorie</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td><a asp-action="ModificaProfilo" asp-route-id="@r.IdProfiloControllo">@r.Nome</a> @if (!r.Attivo) { <span class="tag spento">Fuori uso</span> }</td>
+            <td>@r.Controlli</td>
+            <td>@r.Categorie</td>
+            <td><a class="piccolo" asp-action="ModificaProfilo" asp-route-id="@r.IdProfiloControllo">Modifica</a></td>
+        </tr>
+    }
+    @if (Model.Count == 0) { <tr><td colspan="4">Nessun profilo.</td></tr> }
+    </tbody>
+</table>

@@ -269,7 +269,9 @@ public class RepositoryPortale : IRepositoryPortale
             u.UnitaMisura,
             pr.VerificaValore,
             le.LabEsterno       AS LaboratorioEsterno,
-            ISNULL(m.Accreditato, 0) AS Accreditato,
+            -- Badge «A» (accreditato MARE.A) solo per le prove eseguite da MARE.A: una prova in subappalto
+            -- non è coperta dal nostro accreditamento (Condizioni Generali, Art. 8.2). Corretto l'08/10/2026.
+            CASE WHEN rm.IdLabEsterno IS NULL THEN ISNULL(m.Accreditato, 0) ELSE CAST(0 AS bit) END AS Accreditato,
             pr.Note
         FROM prove pr
         INNER JOIN rigametodo rm      ON rm.IdRigametodo = pr.IdRigaMetodo

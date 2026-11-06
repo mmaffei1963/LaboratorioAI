@@ -66,6 +66,32 @@ public class RepositoryCampioni : IRepositoryCampioni
         return righe.ToList();
     }
 
+    // Stessa regola di SqlDaValidare (stessi join e condizioni), ma restituisce solo il numero.
+    private static readonly string SqlContaDaValidare = $"""
+        SELECT COUNT(*) FROM (
+            SELECT ca.IdCampione
+            FROM Campione ca
+            INNER JOIN Lotto lo         ON lo.IdLotto = ca.IdLotto
+            INNER JOIN commessa cm      ON cm.IdCommessa = lo.IdCommessa
+            INNER JOIN ContattoCliente cc ON cc.IDContatto = cm.IDContatto
+            INNER JOIN Insediamento i   ON i.IDInsediamento = cc.IDInsediamento
+            INNER JOIN Clienti cl       ON cl.IDCliente = i.IDCliente
+            INNER JOIN prove pr         ON pr.IdCampione = ca.IdCampione
+                                        AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}
+            WHERE (ca.IdCertificato IS NULL OR ca.IdCertificato = 0)
+              AND ISNULL(ca.AnalisiChiusa, 0) = 0
+            GROUP BY ca.IdCampione
+            HAVING SUM(CASE WHEN pr.VerificaValore = 1 THEN 0 ELSE 1 END) = 0
+        ) x
+        """;
+
+    public async Task<int> ContaDaValidareAsync(CancellationToken ct = default)
+    {
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return await cn.ExecuteScalarAsync<int>(
+            new CommandDefinition(SqlContaDaValidare, commandTimeout: 30, cancellationToken: ct));
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // CAMPIONE COMPLETO
     // ═══════════════════════════════════════════════════════════════
@@ -116,10 +142,13 @@ public class RepositoryCampioni : IRepositoryCampioni
             le.LabEsterno       AS LaboratorioEsterno,
             CAST(le.NumeroAccredia AS NVARCHAR(50)) AS NumeroLaboratorioEsterno,
             ISNULL(m.Accreditato, 0) AS Accreditato,
-            -- Accreditamento del laboratorio esterno: casella AccrLabEsterno
-            -- della tabella labEstMetodo, legata al metodo da IdMetodo.
+            -- Accreditamento del laboratorio esterno: casella AccrLabEsterno della tabella labEstMetodo,
+            -- per la coppia metodo + laboratorio che ha eseguito la prova (rm.IdLabEsterno). Prova interna
+            -- (nessun laboratorio esterno) = 0. Prima dell'08/10/2026 bastava il metodo accreditato presso
+            -- un qualsiasi laboratorio esterno.
             CASE WHEN EXISTS (SELECT 1 FROM labEstMetodo lem
                               WHERE lem.IdMetodo = m.IdMetodo
+                                AND lem.IdLabEsterno = rm.IdLabEsterno
                                 AND lem.AccrLabEsterno = 1) THEN 1 ELSE 0 END AS AccreditatoEsterno,
             pr.Note
         FROM prove pr

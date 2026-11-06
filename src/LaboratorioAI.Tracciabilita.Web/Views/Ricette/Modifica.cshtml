@@ -1,0 +1,20 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaRicetta
+@{ ViewData["Titolo"] = "Modifica ingrediente"; }
+<h1>Modifica ingrediente</h1>
+<p><a asp-action="Scheda" asp-route-id="@Model.IdRicetta">« @Model.Nome</a></p>
+<form method="post" asp-action="Modifica" asp-route-id="@Model.IdRicetta" asp-route-idRiga="@Model.IdRicettaRiga" class="modulo">
+    <label asp-for="Etichetta">Nome dell'ingrediente</label>
+    <input asp-for="Etichetta" />
+    <label asp-for="LottiPerFornitore">Quanti lotti recenti per ogni fornitore</label>
+    <input asp-for="LottiPerFornitore" type="number" min="1" max="10" />
+    <label asp-for="QuantitaIngrediente">Kg nella ricetta (facoltativo, per i kg consumati calcolati)</label>
+    <input asp-for="QuantitaIngrediente" type="number" step="0.001" min="0.001" />
+    <label>Categorie (matrici) in cui cercare i lotti</label>
+    <div style="max-height:18rem;overflow:auto;border:1px solid #b6c2cc;border-radius:4px;padding:.4rem;background:#fff">
+    @foreach (var c in Model.CategorieDisponibili)
+    {
+        <label style="font-weight:400;margin:0;display:block"><input type="checkbox" name="CategorieScelte" value="@c.IdCategoria" checked="@Model.CategorieScelte.Contains(c.IdCategoria)" style="padding:0" /> @c.Nome</label>
+    }
+    </div>
+    <button type="submit">Salva</button>
+</form>

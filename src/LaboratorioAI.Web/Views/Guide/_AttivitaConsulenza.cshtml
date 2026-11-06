@@ -1,0 +1,65 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Attività e pacchetti consulenza» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A preparare i «mattoni» dei preventivi di consulenza:</p>
+    <ul>
+        <li><strong>Attività</strong>: una per ogni <em>descrizione incarico</em> di ArcLab, con modalità di prezzo, prezzo proposto, testo del contratto e contenuti da spuntare;</li>
+        <li><strong>Pacchetti di settore</strong>: insiemi già pronti di attività e analisi (es. ristorazione, agriturismo) che sostituiscono i modelli Word per settore.</li>
+    </ul>
+    <p>I valori sono solo <strong>proposte</strong>: nel singolo preventivo si possono sempre cambiare.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>In ArcLab c'è una descrizione incarico nuova</summary>
+    <ol class="passi">
+        <li>Apri <strong>Attività</strong> e premi <span class="tasto">Allinea con ArcLab</span>: le descrizioni nuove compaiono nell'elenco.</li>
+        <li>Clicca la nuova attività e compila modalità di prezzo, prezzo proposto, testo nel contratto e contenuti (vedi sotto).</li>
+    </ol>
+    <p class="nota">Le descrizioni si creano e si rinominano <strong>solo in ArcLab</strong>; qui si aggiungono prezzi e testi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare prezzo, testo o contenuti di un'attività</summary>
+    <ol class="passi">
+        <li>Clicca l'attività nell'elenco.</li>
+        <li>Scegli la <strong>modalità di prezzo</strong> (es. a canone annuale o per unità: in questo caso scrivi l'unità, es. «partecipante») e i prezzi proposti.</li>
+        <li>Scrivi il <strong>testo nel contratto</strong> e, per i canoni, quello per il secondo anno e successivi.</li>
+        <li><strong>Contenuti da spuntare:</strong> <em>predefinito</em> = già spuntato quando si aggiunge l'attività; togli <em>attivo</em> per non proporlo più.
+            Per aggiungerne uno scrivilo in <em>Nuovo contenuto</em>.</li>
+        <li>Premi <span class="tasto">Salva</span>. Togli la spunta <em>attiva</em> per non far più scegliere l'attività nei preventivi.</li>
+    </ol>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Modalità di prezzo</th><th>Quando si usa</th></tr></thead>
+        <tbody>
+            <tr><td>UnaTantum</td><td>Prezzo unico (es. DUVRI, piano di emergenza).</td></tr>
+            <tr><td>Annuale</td><td>Canone: prezzo del primo anno e degli anni successivi (es. DVR, HACCP).</td></tr>
+            <tr><td>Oraria</td><td>Tariffa oraria; la quantità sono le ore stimate.</td></tr>
+            <tr><td>PacchettoOre</td><td>Pacchetto di ore a prezzo complessivo.</td></tr>
+            <tr><td>PerUnita</td><td>Prezzo per unità (partecipante, campione…); la quantità è il numero di unità.</td></tr>
+        </tbody>
+    </table>
+</details>
+
+<details class="situazione">
+    <summary>Creare o modificare un pacchetto di settore</summary>
+    <ol class="passi">
+        <li>Apri <strong>Pacchetti di settore</strong>. Per crearne uno nuovo scrivi il nome e premi <span class="tasto">Crea</span>;
+            per modificarne uno premi <span class="tasto">Modifica</span>; per partire da uno simile aprilo e usa <span class="tasto">Duplica pacchetto</span>.</li>
+        <li>Aggiungi le attività, con quantità, prezzi (a zero = da indicare nel preventivo) e contenuti spuntati.</li>
+        <li>Aggiungi le eventuali <strong>analisi di laboratorio</strong> (controlli ArcLab); più controlli si possono raggruppare in una voce con un nome e un prezzo unico.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/pacchetto-consulenza.png" alt="Elenco dei pacchetti di settore con Modifica, revisione Excel e Nuovo pacchetto" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Collegare le analisi dei pacchetti ai controlli ArcLab (revisione in Excel)</summary>
+    <p>Nella pagina dei pacchetti, <span class="tasto">Scarica Excel di revisione</span> prepara un file con le analisi generiche dei pacchetti e i controlli ArcLab
+        che potrebbero corrispondere: in riunione scrivete l'ID del controllo giusto e ricaricate il file con <span class="tasto">Importa revisione</span>.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

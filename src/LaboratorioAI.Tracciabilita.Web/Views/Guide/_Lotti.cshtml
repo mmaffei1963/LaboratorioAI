@@ -1,0 +1,49 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A <strong>trovare un lotto</strong> e leggerne la storia: quando è arrivato, quanto ne resta, cosa è successo, da quali lotti deriva e a chi è arrivato. È la funzione che ti serve in un controllo o quando un fornitore ti chiede «dove è finito questo lotto?».</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Trovare un lotto</summary>
+    <ol class="passi">
+        <li>Scegli <span class="tasto">Materie prime</span> o <span class="tasto">Prodotti finiti</span> (sono due elenchi separati).</li>
+        <li>Scrivi nella casella <strong>Cerca</strong> parte del codice del lotto, dell'articolo o del fornitore. Con la spunta «solo in magazzino» vedi solo quelli ancora presenti.</li>
+        <li>Clicca il <strong>codice</strong> del lotto per aprire la scheda.</li>
+    </ol>
+    <p class="nota">L'elenco mostra 50 lotti per pagina, dal più recente: usa «Precedente» e «Successiva» in fondo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Leggere la scheda del lotto</summary>
+    <ul class="passi">
+        <li>In alto: articolo, fornitore, <strong>stato</strong> (Attivo, Esaurito, Bloccato, Richiamato), scadenza o TMC e <strong>giacenza attuale</strong>.</li>
+        <li><strong>Arrivi</strong>: le accettazioni che hanno portato quel lotto.</li>
+        <li><strong>Movimenti</strong>: carichi, consumi, spedizioni, rettifiche. La giacenza è semplicemente la somma dei movimenti.</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Vedere da dove viene e dove è finito (rintracciabilità)</summary>
+    <ol class="passi">
+        <li>Nella scheda del lotto premi <span class="tasto">Rintracciabilità</span>.</li>
+        <li><strong>A monte</strong>: i lotti e i fornitori da cui deriva (per un prodotto finito: le materie prime usate).</li>
+        <li><strong>A valle</strong>: i prodotti in cui è finito e i <strong>clienti raggiunti</strong>.</li>
+    </ol>
+    <p class="nota">Da lì puoi passare a «Simula o richiama» se il lotto è sospetto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un lotto è «Bloccato» o «Richiamato»: sbloccarlo</summary>
+    <ol class="passi">
+        <li>Apri la scheda del lotto: sotto i dati compare il riquadro <strong>Sblocco del lotto</strong> (solo per i lotti bloccati o richiamati).</li>
+        <li>Scrivi il <strong>motivo</strong> (per esempio «analisi negative, lotto idoneo» o «prova di richiamo»): è obbligatorio.</li>
+        <li>Premi <span class="tasto">Sblocca il lotto</span> e conferma.</li>
+    </ol>
+    <p class="dopo">Il lotto torna <em>Attivo</em> (o <em>Esaurito</em> se non ne resta). Motivo e stato di prima restano nel registro attività.</p>
+    <p class="attenzione">Lo sblocco è riservato a chi ha il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>: per gli altri il riquadro dice che il lotto è fermo.</p>
+    <p class="attenzione">Lo sblocco vale per un lotto alla volta: se un richiamo ne ha bloccati più d'uno, sbloccali uno per uno.
+        Un lotto bloccato o richiamato non può essere spedito.</p>
+</details>

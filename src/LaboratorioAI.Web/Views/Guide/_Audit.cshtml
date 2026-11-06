@@ -1,0 +1,24 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Registro attività (audit)» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Il programma registra le operazioni importanti: <strong>chi</strong> ha fatto <strong>cosa</strong> e <strong>quando</strong>
+        (salvataggi, invii, approvazioni, modifiche di utenti e permessi, rinomine dei certificati…). Il registro non si modifica e non si cancella:
+        serve come evidenza (ISO/IEC 17025) e per capire cosa è successo quando qualcosa non torna.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cercare chi ha fatto un'operazione</summary>
+    <ol class="passi">
+        <li>Scegli l'<strong>area</strong> (es. Condizioni, Taratura, Scadenziario) oppure lasciale tutte.</li>
+        <li>Se serve, scrivi l'<strong>utente</strong> (e-mail) o una parte dell'<strong>azione</strong> (es. «salvata», «inviato», «permessi»).</li>
+        <li>Metti il periodo <em>dal / al</em> e premi <span class="tasto">Cerca</span>.</li>
+    </ol>
+    <p class="nota">Ogni riga ha data e ora, utente, azione, esito e l'oggetto interessato (es. il numero del rapporto). Le operazioni fatte da una casella condivisa
+        risultano a nome della casella.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

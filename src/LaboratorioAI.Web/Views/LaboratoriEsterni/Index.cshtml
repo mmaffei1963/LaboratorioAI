@@ -94,6 +94,163 @@
     </section>
 </div>
 
+<section class="riquadro" id="pannello-da-sistemare">
+    <div class="barra-risultati">
+        <h2>Accreditamenti da sistemare</h2>
+        <span id="conteggio-da-sistemare" class="sottotesto"></span>
+    </div>
+    <p class="sottotesto">
+        Controlli in sola lettura: le correzioni si fanno in ArcLab (flag di accreditamento del metodo, numero ACCREDIA
+        del laboratorio) o sul PC dove gira l'Agente ACCREDIA. Le discrepanze considerano solo i metodi già classificati
+        sulla revisione ACCREDIA oggi confermata.
+    </p>
+    <div id="da-sistemare-controllo"></div>
+    <div id="da-sistemare-stati"></div>
+    <div id="da-sistemare-discrepanze"></div>
+    <div id="da-sistemare-numeri"></div>
+</section>
+
+<section class="riquadro" id="pannello-laboratori-monitorati"
+         data-gestione="@(Utente.HaPermesso(Permessi.LaboratoriEsterniAccreditamento) ? "true" : "false")">
+    <div class="barra-risultati">
+        <h2>Laboratori esterni monitorati (ACCREDIA)</h2>
+        <span id="conteggio-laboratori-monitorati" class="sottotesto"></span>
+    </div>
+    @if (Utente.HaPermesso(Permessi.LaboratoriEsterniAccreditamento))
+    {
+        <div class="azioni-filtri" style="margin-bottom:0.5rem">
+            <label style="flex-direction:row;align-items:center;gap:0.4rem"><input type="checkbox" id="mostra-disattivati" /> Mostra anche i disattivati</label>
+            <div style="flex:1"></div>
+            <button class="pulsante pulsante-secondario" id="btn-aggiungi-laboratorio">Aggiungi laboratorio</button>
+        </div>
+    }
+    <p class="sottotesto">
+        Laboratori esterni attivi per cui viene controllata ogni notte la revisione dell'elenco
+        prove ACCREDIA. Numero e sede sono quelli correnti secondo l'anagrafica ACCREDIA
+        (possono differire dal numero storico in ArcLab per via della rinumerazione 2025).
+    </p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-laboratori-monitorati">
+            <thead>
+                <tr>
+                    <th>Laboratorio</th><th>Numero</th><th>Sede</th><th>Stato ACCREDIA</th>
+                    <th>Ultima revisione confermata</th><th>Note</th><th>Metodi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<div id="finestra-laboratorio" class="finestra nascosto">
+    <div class="finestra-contenuto" style="max-width:640px">
+        <header>
+            <h2 id="titolo-finestra-laboratorio">Laboratorio monitorato</h2>
+            <button class="chiudi" id="chiudi-laboratorio">&times;</button>
+        </header>
+        <div class="griglia-filtri">
+            <label style="grid-column:1/-1">Laboratorio (da ArcLab)
+                <select id="lab-arclab"><option value="">— scegli —</option></select>
+            </label>
+            <label>Numero ACCREDIA<input type="text" id="lab-numero" maxlength="10" placeholder="es. 00253" /></label>
+            <label>Sede<input type="text" id="lab-sede" maxlength="1" placeholder="A" /></label>
+            <label style="grid-column:1/-1">Note<input type="text" id="lab-note" maxlength="500" /></label>
+            <label style="flex-direction:row;align-items:center;gap:0.4rem"><input type="checkbox" id="lab-attivo" checked /> Attivo (controllato ogni giorno)</label>
+        </div>
+        <p class="sottotesto">
+            Numero e sede come sul sito ACCREDIA (numerazione 2025). Se cambi numero o sede la revisione confermata si azzera
+            e va riconfermata; le revisioni già trovate restano nello storico. Disattivare non cancella nulla.
+        </p>
+        <div class="azioni-filtri"><div style="flex:1"></div><button class="pulsante" id="btn-salva-laboratorio">Salva</button></div>
+    </div>
+</div>
+
+<div id="finestra-metodi" class="finestra nascosto">
+    <div class="finestra-contenuto">
+        <header>
+            <h2 id="titolo-finestra-metodi">Verifica metodi</h2>
+            <button class="chiudi" id="chiudi-metodi">&times;</button>
+        </header>
+        <div id="corpo-metodi">
+            <p class="sottotesto">
+                Per ciascun metodo affidato a questo laboratorio (da ArcLab), confronta il riferimento
+                normativo con il PDF dell'elenco prove ACCREDIA confermato e classifica. Il suggerimento
+                (se presente) è solo un aiuto — decide sempre chi guarda il PDF.
+            </p>
+            <p id="metodi-nessuna-revisione" class="avviso nascosto">
+                Nessuna revisione dell'elenco prove confermata per questo laboratorio: conferma prima
+                la revisione ACCREDIA nella sezione qui sopra.
+            </p>
+            <p id="metodi-link-pdf"></p>
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-metodi">
+                    <thead>
+                        <tr>
+                            <th>Parametro — riferimento normativo</th>
+                            <th>Cod. metodo</th>
+                            <th>Flag ArcLab</th>
+                            <th>Voce corrispondente nell'elenco ACCREDIA</th>
+                            <th>Stato</th>
+                            <th>Note</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="riquadro" id="pannello-accreditamenti">
+    <div class="barra-risultati">
+        <h2>Accreditamenti ACCREDIA — revisioni da confermare</h2>
+        <span id="conteggio-accreditamenti" class="sottotesto"></span>
+        @if (Utente.HaPermesso(Permessi.LaboratoriEsterniAccreditamento))
+        {
+            <button class="pulsante pulsante-tenue" id="btn-test-accreditamenti">Esegui controllo ora</button>
+            <button class="pulsante pulsante-tenue" id="btn-riestrai-testo-mancante">Ri-estrai testo mancante</button>
+            <button class="pulsante pulsante-tenue" id="btn-riscarica-pdf-corrotti">Ri-scarica PDF corrotti</button>
+        }
+    </div>
+    <p class="sottotesto">
+        Il controllo notturno segnala qui le nuove revisioni dell'elenco prove pubblicate da
+        ACCREDIA per i laboratori esterni attivi. Nessuna revisione diventa ufficiale senza
+        conferma: scaricare il PDF, verificarlo e confermare (o lasciarlo in attesa in caso di dubbio).
+    </p>
+    <p class="sottotesto">
+        "Esegui controllo ora" avvia lo stesso controllo del job notturno senza aspettare le 3 di
+        notte: gira sul server e questa pagina ne segue l'avanzamento, così anche se ACCREDIA
+        risponde lentamente il controllo prosegue comunque fino alla fine.
+    </p>
+    <p class="sottotesto">
+        "Ri-estrai testo mancante" rilegge dal disco (nessuna nuova chiamata ad ACCREDIA) i PDF già
+        archiviati delle revisioni per cui l'estrazione del testo non era riuscita, e riprova. Usarlo
+        una tantum dopo un aggiornamento dello strumento di estrazione; se non ci sono più revisioni
+        con testo mancante non ha alcun effetto.
+    </p>
+    <p class="sottotesto">
+        "Ri-scarica PDF corrotti" individua le revisioni il cui file è mancante o non è un PDF
+        valido (download da ACCREDIA interrotto a metà) e lo riscarica: non tocca conferma o
+        storico, solo il file, l'hash e il testo estratto di quella revisione.
+    </p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-accreditamenti">
+            <thead>
+                <tr>
+                    <th>Laboratorio</th><th>Nuova revisione</th><th>Data emissione</th>
+                    <th>Rilevata il</th><th>PDF</th>
+                    @if (Utente.HaPermesso(Permessi.LaboratoriEsterniAccreditamento))
+                    {
+                        <th>Conferma</th>
+                    }
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
 @section Script {
     <script type="module" src="~/js/moduli/laboratori-esterni.js" asp-append-version="true"></script>
 }

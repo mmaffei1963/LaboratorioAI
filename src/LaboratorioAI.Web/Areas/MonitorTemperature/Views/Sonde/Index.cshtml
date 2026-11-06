@@ -1,0 +1,122 @@
+@model List<LaboratorioAI.Dati.MonitorTemperature.Models.SondaArcLab>
+
+@{
+    ViewData["Title"] = "Sonde ArcLab";
+}
+
+<div class="mb-4">
+    <h1>Sonde attive (ArcLab)</h1>
+
+    <p>
+        Anagrafica letta direttamente da ArcLab
+        <strong>in sola lettura</strong>.
+    </p>
+
+    <a asp-controller="Monitor" asp-area="MonitorTemperature" asp-action="Index"
+       class="btn btn-secondary">
+        Torna alla dashboard
+    </a>
+
+    <form asp-controller="Sonde" asp-area="MonitorTemperature" asp-action="SincronizzaSonde" method="post" style="display:inline"
+          onsubmit="return confirm('Aggiornare la mappatura delle sonde con i dati di ArcLab? Le sonde nuove vengono aggiunte e i codici di quelle esistenti aggiornati.');">
+        <button type="submit" class="btn btn-primary">Sincronizza mappatura da ArcLab</button>
+    </form>
+    <a asp-controller="Sonde" asp-area="MonitorTemperature" asp-action="AllineaLimiti" class="btn btn-warning">Allinea limiti da ArcLab…</a>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <div class="alert alert-success">@msg</div>
+}
+
+@{
+    var mappa = ViewBag.Mappa as Dictionary<int, MappaSonda> ?? new Dictionary<int, MappaSonda>();
+    // 03/11/2026: seriale attivo per EconormaAcquisizione (per codice sonda) e limiti del monitoraggio (per apparecchiatura).
+    var seriali = ViewBag.Seriali as IReadOnlyDictionary<string, LaboratorioAI.Dati.MonitorTemperature.SerialeAttivoSonda>
+                  ?? new Dictionary<string, LaboratorioAI.Dati.MonitorTemperature.SerialeAttivoSonda>();
+    var limiti = ViewBag.Limiti as Dictionary<string, LaboratorioAI.Dati.MonitorTemperature.DifferenzaLimiti>
+                 ?? new Dictionary<string, LaboratorioAI.Dati.MonitorTemperature.DifferenzaLimiti>();
+    string CodiceDi(LaboratorioAI.Dati.MonitorTemperature.Models.SondaArcLab s) =>
+        mappa.TryGetValue(s.IdApparecchioSonda, out var mm) && !string.IsNullOrWhiteSpace(mm.CodiceEconorma)
+            ? mm.CodiceEconorma! : LaboratorioAI.Dati.MonitorTemperature.ConfrontoLimitiSonde.CodiceSonda(s.NomeSonda);
+    string? SerialeAttivo(LaboratorioAI.Dati.MonitorTemperature.Models.SondaArcLab s) =>
+        seriali.TryGetValue(CodiceDi(s), out var sa) ? sa.SerialeSonda : null;
+    LaboratorioAI.Dati.MonitorTemperature.DifferenzaLimiti? LimitiDi(LaboratorioAI.Dati.MonitorTemperature.Models.SondaArcLab s) =>
+        limiti.TryGetValue(LaboratorioAI.Dati.MonitorTemperature.ConfrontoLimitiSonde.Codice(s.IdApparecchioAssociato), out var l) ? l : null;
+    var limitiDiversi = limiti.Values.Count(l => l.Esito == LaboratorioAI.Dati.MonitorTemperature.EsitoConfrontoLimiti.Diversi);
+    string Norm(string? s) => (s ?? "").Trim().ToUpperInvariant();
+    // Seriali che in ArcLab compaiono su più sonde (probabile errore di anagrafica).
+    var doppi = Model.Where(x => !string.IsNullOrWhiteSpace(x.SerialeSonda))
+        .GroupBy(x => Norm(x.SerialeSonda)).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
+    bool Diverso(LaboratorioAI.Dati.MonitorTemperature.Models.SondaArcLab s) =>
+        SerialeAttivo(s) is string sa && !string.IsNullOrWhiteSpace(sa) && Norm(sa) != Norm(s.SerialeSonda);
+    var nonMappate = Model.Count(x => !mappa.ContainsKey(x.IdApparecchioSonda));
+    var diversi = Model.Count(Diverso);
+}
+
+<div class="alert alert-info">
+    Sonde attive trovate:
+    <strong>@Model.Count</strong>
+</div>
+
+@if (limitiDiversi > 0)
+{
+    <div class="alert alert-danger">
+        <strong>Limiti non allineati:</strong> @limitiDiversi apparecchiature hanno nel monitoraggio limiti diversi da ArcLab (colonna «Limiti monitoraggio» in rosso).
+        Gli allarmi e il Monitor controllo usano quelli del monitoraggio: premi «Allinea limiti da ArcLab…».
+    </div>
+}
+
+@if (diversi > 0 || doppi.Count > 0 || nonMappate > 0)
+{
+    <div class="alert alert-warning">
+        <strong>Da verificare in ArcLab:</strong>
+        @if (diversi > 0) { <span>@diversi sonde hanno in Econorma un seriale attivo diverso da ArcLab (in rosso). </span> }
+        @if (doppi.Count > 0) { <span>Seriali usati da più sonde in ArcLab: @string.Join(", ", doppi). </span> }
+        @if (nonMappate > 0) { <span>@nonMappate sonde non sono ancora nella mappa di LabAI: premi «Sincronizza mappatura da ArcLab». </span> }
+        <br /><small>Il seriale attivo è quello che EconormaAcquisizione legge dalla sonda e registra nello storico dei seriali. ArcLab si corregge in ArcLab.</small>
+    </div>
+}
+
+<table class="table table-striped table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Sonda</th>
+            <th>Seriale sonda (ArcLab)</th>
+            <th>Seriale attivo (Econorma)</th>
+            <th>Codice Econorma</th>
+            <th>Apparecchiatura</th>
+            <th>Seriale apparecchiatura</th>
+            <th>Valore impostato</th>
+            <th>Limite Min</th>
+            <th>Limite Max</th>
+            <th>Limiti monitoraggio</th>
+            <th>Piano</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.NomeSonda</td>
+                @{ mappa.TryGetValue(item.IdApparecchioSonda, out var m); var diverso = Diverso(item); var doppio = doppi.Contains(Norm(item.SerialeSonda)); var sAtt = SerialeAttivo(item); var lim = LimitiDi(item); }
+                <td class="@(doppio ? "table-warning" : "")">@item.SerialeSonda@if (doppio) { <br /><small class="text-danger">usato da più sonde</small> }</td>
+                <td class="@(diverso ? "table-danger fw-bold" : "")">@(sAtt is { Length: > 0 } ? sAtt : "-")@if (diverso) { <br /><small>diverso da ArcLab</small> }</td>
+                <td>@(m?.CodiceEconorma ?? "non mappata")</td>
+                <td>@item.NomeApparecchiatura</td>
+                <td>@(item.SerialeApparecchiatura ?? "-")</td>
+                <td>@(item.ValImpostato?.ToString("0.0") ?? "-")</td>
+                <td>@(item.LimInfInt?.ToString("0.0") ?? "-")</td>
+                <td>@(item.LimSupInt?.ToString("0.0") ?? "-")</td>
+                <td class="@(lim?.Esito == LaboratorioAI.Dati.MonitorTemperature.EsitoConfrontoLimiti.Diversi ? "table-danger fw-bold" : "")">
+                    @if (lim is null || lim.Esito == LaboratorioAI.Dati.MonitorTemperature.EsitoConfrontoLimiti.NonNelMonitor) { <span>non nel monitoraggio</span> }
+                    else { <span>@(lim.MinMonitor?.ToString("0.0") ?? "-") / @(lim.MaxMonitor?.ToString("0.0") ?? "-")</span> }
+                    @if (lim?.Esito == LaboratorioAI.Dati.MonitorTemperature.EsitoConfrontoLimiti.Diversi) { <br /><small>diversi da ArcLab</small> }
+                    @if (lim?.Esito == LaboratorioAI.Dati.MonitorTemperature.EsitoConfrontoLimiti.Conflitto) { <br /><small class="text-danger">in ArcLab le sonde hanno limiti diversi</small> }
+                </td>
+                <td>@(item.NomePiano ?? "-")</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -15,9 +15,11 @@ namespace LaboratorioAI.Core.Servizi;
 public interface IServizioPreventivi
 {
     /// <summary>Compone una riga a partire da un controllo ArcLab esistente (snapshot metodi + prezzo base a cascata).</summary>
+    /// <param name="idInsediamentoArcLab">05/11/2026: insediamento della riga; il prezzo di commessa si cerca prima lì,
+    /// poi su tutte le commesse del cliente, infine il listino.</param>
     Task<RigaPreventivo> ComponiRigaControlloAsync(
         int idControllo, string? nomeControllo, int? idClienteArcLab,
-        decimal scontoPercentuale, CancellationToken ct = default);
+        decimal scontoPercentuale, CancellationToken ct = default, int? idInsediamentoArcLab = null);
 
     /// <summary>Compone una riga "controllo libero" (subappalto) con prezzo concordato e metodi inseriti a mano.</summary>
     RigaPreventivo ComponiRigaLibera(
@@ -51,14 +53,19 @@ public class ServizioPreventivi : IServizioPreventivi
 
     public async Task<RigaPreventivo> ComponiRigaControlloAsync(
         int idControllo, string? nomeControllo, int? idClienteArcLab,
-        decimal scontoPercentuale, CancellationToken ct = default)
+        decimal scontoPercentuale, CancellationToken ct = default, int? idInsediamentoArcLab = null)
     {
         var metodi = await _controlli.RigheDiControlloAsync(idControllo, ct);
         var sommaCosto = metodi.Sum(m => m.Costo ?? 0m);
 
-        decimal? prezzoCommessa = idClienteArcLab is int idc
-            ? await _commesse.PrezzoControlloClienteAsync(idc, idControllo, ct)
-            : null;
+        decimal? prezzoCommessa = null;
+        if (idClienteArcLab is int idc)
+        {
+            if (idInsediamentoArcLab is int idIns)
+                prezzoCommessa = await _commesse.PrezzoControlloClienteAsync(idc, idControllo, ct, idIns);
+            if (prezzoCommessa is not > 0)
+                prezzoCommessa = await _commesse.PrezzoControlloClienteAsync(idc, idControllo, ct);
+        }
 
         var (prezzoBase, origine) = prezzoCommessa is decimal pc && pc > 0
             ? (pc, OriginePrezzoPreventivo.Commessa)
@@ -68,6 +75,7 @@ public class ServizioPreventivi : IServizioPreventivi
         {
             Tipo = TipoRigaPreventivo.ControlloEsistente,
             IdControlloArcLab = idControllo,
+            IdInsediamentoArcLab = idInsediamentoArcLab,
             Descrizione = nomeControllo ?? await _controlli.NomeControlloAsync(idControllo, ct),
             OriginePrezzo = origine,
             PrezzoBase = prezzoBase,
@@ -85,6 +93,7 @@ public class ServizioPreventivi : IServizioPreventivi
                 Libero = false,
                 Descrizione = m.Descrizione,
                 DenominazioneRiga = m.DenominazioneRiga,
+                Denominazione = m.DettagliMetodo,
                 RiferimentoNormativo = m.RifBiblio,
                 UnitaMisura = m.UnitaMisura,
                 CostoMetodoEuro = m.Costo,

@@ -1,0 +1,32 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloQuadroConsegne
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Quadro consegne"; }
+<div class="testa-pagina"><h1>Quadro consegne</h1><a asp-action="Nuovo" class="pulsante">Nuovo ordine</a></div>
+<p>
+    <a asp-action="Index" asp-route-vista="da-consegnare" class="@(Model.Vista == "da-consegnare" ? "pulsante" : "")">Da consegnare</a>
+    <a asp-action="Index" asp-route-vista="bozze" class="@(Model.Vista == "bozze" ? "pulsante" : "")">Bozze</a>
+    <a asp-action="Index" asp-route-vista="ricevuti" class="@(Model.Vista == "ricevuti" ? "pulsante" : "")">Ricevuti</a>
+    <a asp-action="Index" asp-route-vista="tutti" class="@(Model.Vista == "tutti" ? "pulsante" : "")">Tutti</a>
+</p>
+<form method="get" class="riga-modulo">
+    <input type="hidden" name="vista" value="@Model.Vista" />
+    <label>Cerca (numero o fornitore)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Consegna</th><th>Ordine</th><th>Data</th><th>Fornitore</th><th>Articoli</th><th>Stato</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@(r.DataConsegnaPrevista?.ToString("dd/MM/yyyy"))</td>
+            <td><a asp-action="Scheda" asp-route-id="@r.IdOrdine">@r.Numero</a></td>
+            <td>@r.DataOrdine.ToString("dd/MM/yyyy")</td>
+            <td>@r.Fornitore</td>
+            <td>@r.Articoli</td>
+            <td><span class="tag @(r.Stato == StatoOrdine.Annullato ? "spento" : "")">@r.Stato</span></td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="6">Nessun ordine.</td></tr> }
+    </tbody>
+</table>

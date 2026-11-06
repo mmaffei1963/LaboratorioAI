@@ -1,0 +1,92 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var valida = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TaraturaValidazione);
+}
+@* Guida «Taratura termometri» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A tarare un termometro (nostro o di un cliente) <strong>per confronto con un campione di riferimento</strong> (CDR),
+        secondo l'IO 4-01. Inserisci le letture, il programma calcola differenza, incertezza e correzione e prepara il <strong>rapporto</strong> e l'<strong>etichetta</strong>.</p>
+    <p>Qui si gestiscono anche i <strong>CDR</strong>, che servono pure per incubatori e mappature.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Tarare un termometro</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova taratura</span>.</li>
+        <li>Scegli il <strong>Campione di riferimento (CDR)</strong> che hai usato.</li>
+        <li><strong>Strumento in taratura:</strong> scrivi qualche lettera e scegli dall'elenco (strumenti MARE.A), oppure scrivi il nome se è del cliente.
+            Compila <em>Codice strumento</em> e <em>Risoluzione</em> (es. 0,1).</li>
+        <li><strong>Cliente (committente):</strong> lascialo <strong>vuoto</strong> se il termometro è nostro; se è di un cliente, scrivi il nome, sceglilo dall'elenco
+            e scegli l'<em>Insediamento</em> (compare nel rapporto solo se indicato). Con un cliente, l'elenco degli strumenti propone i suoi già tarati.</li>
+        <li>Per i termometri dei clienti scegli il <em>Tipo di termometro</em> (a sonda, a gabbia, pirometro, datalogger) e il <em>Servizio</em>
+            (solo taratura, o termometro nuovo fornito da noi + taratura): passano allo scadenziario.</li>
+        <li>Quando salvi la prima volta la taratura di un cliente, il programma ti mostra le sue tarature ancora in uso dello stesso tipo:
+            spunta quelle che questa sostituisce, così non compaiono più tra le scadenze.</li>
+        <li>Controlla la <em>Data taratura</em>. La scadenza, se la lasci vuota, è un anno dopo.</li>
+        <li><strong>Misure:</strong> premi <span class="tasto">Aggiungi 10 letture</span>. In ogni riga scrivi la temperatura del CDR (<em>T riferimento</em>)
+            e quella letta sul termometro (<em>T strumento</em>). Per un secondo punto di temperatura premi di nuovo <span class="tasto">Aggiungi 10 letture</span>:
+            le nuove righe prendono la lettera B, poi C…</li>
+        <li>Premi <span class="tasto">Calcola</span> e guarda la tabella <strong>Risultati</strong>.</li>
+        <li>Premi <span class="tasto">Salva taratura</span>: il numero di rapporto si assegna da solo.</li>
+        <li>Premi <span class="tasto">Rapporto PDF</span> (o Word) e <span class="tasto">Etichetta</span> per stampare l'etichetta da attaccare al termometro.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/taratura-misure.png" alt="Taratura termometro: misure per punto, Calcola, risultati e pulsanti Salva, Rapporto, Etichetta" loading="lazy" />
+    <p class="dopo"><strong>Cosa succede dopo:</strong> la taratura compare nel <strong>Registro tarature</strong>. Se il termometro è di un cliente,
+        compare anche nello <strong>Scadenziario tarature</strong> (Esterni), segnato «da fatturare».</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho tanti termometri da tarare con lo stesso CDR</summary>
+    <ol class="passi">
+        <li>Fai e salva la taratura del primo termometro.</li>
+        <li>Premi <span class="tasto">Duplica per nuovo termometro</span>: restano CDR, committente, date e temperature di riferimento.</li>
+        <li>Cambia nome e codice dello strumento, correggi le letture e salva.</li>
+    </ol>
+    <p class="nota">La casella <em>copia letture nel duplicato</em> decide se copiare anche le letture del termometro (spuntata) o lasciarle a zero.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riaprire una taratura o ristampare il rapporto</summary>
+    <p>Clicca sulla riga nel <strong>Registro tarature</strong>: si apre con tutte le letture. Da lì puoi correggere e salvare, o rigenerare rapporto ed etichetta.
+        Accanto alla scadenza compare <strong style="color:#9a6700">in scadenza</strong> o <strong style="color:#b3261e">scaduta</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio un controllo in più prima di emettere il rapporto (Analizza AI)</summary>
+    <p>Dopo aver salvato, premi <span class="tasto">Analizza (AI)</span>: il programma controlla le letture (punti con poche letture, temperature fuori dall'intervallo
+        del certificato del CDR, CDR scaduto) e scrive un breve commento. È un aiuto: <strong>la decisione resta tua</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Inserire o aggiornare un campione di riferimento (CDR)</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuovo CDR</span>, oppure clicca un CDR nell'elenco <strong>Campioni di riferimento</strong> per aggiornarlo (es. dopo la nuova taratura LAT).</li>
+        <li>Copia dal certificato LAT: identificazione, centro LAT, numero e date del certificato, risoluzione e fattore k.</li>
+        <li>In <strong>Punti del certificato</strong> inserisci per ogni temperatura: T indicata, T riferimento, differenza, UE e u (premi <span class="tasto">Aggiungi punto</span> per altre righe).</li>
+        <li>Premi <span class="tasto">Salva CDR</span>.</li>
+    </ol>
+    <p class="nota">Un CDR <strong>scaduto</strong> è segnato in rosso nell'elenco: non usarlo finché non è stato ritarato.
+        I campi <em>Instabilità</em>, <em>UE testata</em> e la <em>taratura secondaria</em> servono per incubatori e mappature: se non sai cosa mettere, chiedi alla Qualità.</p>
+</details>
+
+@if (valida)
+{
+    <h2>Solo per Responsabile e Qualità</h2>
+    <details class="situazione">
+        <summary>Validare il calcolo (periodicamente)</summary>
+        <p>Nel riquadro <strong>Validazione del calcolo</strong> premi <span class="tasto">Valida calcoli</span>: il programma rifà tre casi di prova
+            e li confronta con il foglio storico validato. L'esito atteso è <strong style="color:#1a7f37">VALIDATO</strong>; il PDF dell'esito resta nel registro
+            come evidenza. Se compare l'avviso giallo (mai eseguita o troppo vecchia), rifalla.</p>
+    </details>
+    <details class="situazione">
+        <summary>Togliere una taratura sbagliata dal registro</summary>
+        <p>Apri la taratura e premi <span class="tasto">Elimina dal registro</span>. Non si cancella: spuntando <em>Mostra eliminate</em> la rivedi e la puoi ripristinare.</p>
+    </details>
+}
+
+<p class="nota">Dubbi sul metodo: Qualità. Problemi con il programma: Mirko Maffei.</p>

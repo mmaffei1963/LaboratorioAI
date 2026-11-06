@@ -1,0 +1,62 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Consultazione — Ricerca campioni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A trovare <strong>campioni nell'archivio di ArcLab</strong> combinando i filtri che vuoi (date, cliente, controllo,
+        denominazione, metodo…), vederne le prove e scaricare l'elenco in Excel. È <strong>solo consultazione</strong>: da qui non si modifica niente in ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cercare i campioni di un cliente in un periodo</summary>
+    <ol class="passi">
+        <li>Metti le date in <strong>Ricezione da</strong> e <strong>Ricezione a</strong> (o in <em>Prelievo da / a</em>).</li>
+        <li>Scegli il <strong>Cliente</strong>; se serve, anche l'<em>Insediamento</em>.</li>
+        <li>Premi <span class="tasto">Cerca</span> (o Invio).</li>
+    </ol>
+    <img class="schermata" src="/img/guide/consultazione-risultati.png" alt="Ricerca campioni: riquadri con totali e tabella dei campioni trovati" loading="lazy" />
+    <p class="nota">In alto compaiono il numero di campioni e il <strong>totale dei prezzi</strong> della selezione. Più filtri metti, più la ricerca è veloce e precisa.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho solo un pezzo di informazione (numero, denominazione, verbale…)</summary>
+    <ul class="passi">
+        <li><strong>Codice LIM:</strong> il numero del campione, intero (4530/01) o solo il lotto (4530).</li>
+        <li><strong>Denominazione</strong>, <strong>Luogo prelievo</strong>, <strong>Verbale</strong>, <strong>Prelevatore</strong>, <strong>Email</strong>: basta una parte del testo.</li>
+        <li><strong>Controllo</strong> o <strong>Id controllo</strong>: i campioni con quel gruppo di analisi.</li>
+        <li><strong>Metodo</strong> o <strong>Metodo contiene</strong> (es. «glutine»): i campioni che hanno quella prova.</li>
+        <li><strong>Laboratorio esterno</strong>: i campioni con prove mandate fuori.</li>
+        <li><strong>Stato</strong>: in corso, certificato o spedito.</li>
+    </ul>
+    <p class="nota">Premi <span class="tasto">Azzera</span> per ripartire da zero.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere le prove di un campione</summary>
+    <p>Clicca sulla riga del campione: sotto compare <strong>Prove del campione</strong> con i metodi, chi li ha eseguiti (MARE.A o il laboratorio esterno)
+        e se sono <strong>accreditati</strong>. Per le prove in subappalto conta l'accreditamento del laboratorio esterno.</p>
+</details>
+
+<details class="situazione">
+    <summary>Scaricare in Excel</summary>
+    <ul class="passi">
+        <li><span class="tasto">Esporta in Excel</span>: l'elenco dei campioni trovati, una riga per campione.</li>
+        <li><span class="tasto">Esporta risultati (RDP)</span>: i risultati dei rapporti di prova, una riga per prova (solo campioni già certificati).</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Compare «Risultati troncati»</summary>
+    <p>A video si vedono al massimo 500 campioni. I totali in alto contano comunque tutta la selezione, ma per vedere l'elenco completo
+        <strong>restringi i filtri</strong> (periodo più corto, cliente, controllo).</p>
+</details>
+
+<details class="situazione">
+    <summary>Identificativi tecnici (per l'assistenza)</summary>
+    <p>In fondo alla pagina, scrivendo <em>Cod. lotto</em> e <em>Cod. campione</em> ottieni gli identificativi interni di ArcLab.
+        Servono solo quando Mirko o Palomar te li chiedono per una verifica.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

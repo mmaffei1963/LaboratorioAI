@@ -1,0 +1,35 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Domande alla guida» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Mostra le domande fatte a <strong>Chiedi alla guida</strong> (la casella gialla nelle guide), con la risposta data dall'AI,
+        il voto 👍/👎 e il costo stimato. Serve a capire <strong>dove le guide non sono chiare</strong> e quanto costa il servizio.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Capire quali guide migliorare</summary>
+    <ol class="passi">
+        <li>Spunta <strong>solo 👎</strong> e premi <span class="tasto">Cerca</span>: restano le risposte giudicate non utili (righe rosate).</li>
+        <li>Apri <em>risposta</em> sotto la domanda per leggere cosa ha risposto l'AI.</li>
+        <li>Guarda anche <strong>Domande più frequenti</strong> e <strong>Da quali guide si chiede</strong>: una domanda che torna spesso è una situazione da aggiungere alla guida.</li>
+        <li>Le risposte «Non lo trovo nelle guide» indicano un argomento che le guide non coprono.</li>
+    </ol>
+    <p class="nota">Le guide si modificano nel programma (file in <em>Views/Guide</em>): dopo la pubblicazione l'AI usa subito il testo nuovo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Controllare il costo</summary>
+    <p>In alto: costo stimato del <strong>periodo</strong> filtrato, del <strong>mese in corso</strong> e del <strong>mese scorso</strong>.
+        La prima domanda dopo qualche minuto di pausa costa di più (il testo delle guide va caricato), le successive molto meno.
+        Se il costo cresce troppo si possono mettere dei limiti: parlane con chi sviluppa il programma.</p>
+</details>
+
+<details class="situazione">
+    <summary>Esportare in Excel</summary>
+    <p>Imposta i filtri e premi <span class="tasto">Esporta Excel</span>: un foglio con tutte le domande del periodo (data, persona, pagina, domanda, risposta, voto, token e costo).</p>
+</details>
+
+<p class="nota">Conservazione: dopo <strong>12 mesi</strong> testo della domanda, risposta e persona vengono svuotati in automatico; restano data, pagina, voto e costo per i conteggi.</p>

@@ -1,0 +1,1077 @@
+@model List<LaboratorioAI.Dati.MonitorTemperature.Models.StoricoTemperatura>
+
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Monitor generale temperature";
+
+    string periodo =
+        ViewBag.Periodo ?? "24h";
+
+    string codiceSondaSelezionato =
+        ViewBag.CodiceSonda ?? "TUTTE";
+
+    DateTime? dataDa =
+        ViewBag.DataDa as DateTime?;
+
+    DateTime? dataA =
+        ViewBag.DataA as DateTime?;
+
+    bool filtroPersonalizzato =
+        ViewBag.FiltroPersonalizzato ?? false;
+
+    var sondeDisponibili =
+        ViewBag.SondeDisponibili
+        as List<string>
+        ?? new List<string>();
+
+    var datiGrafico =
+        Model
+            .Select(x => new
+            {
+                codiceSonda =
+                    x.CodiceSonda,
+
+                apparecchiatura =
+                    x.Apparecchiatura,
+
+                codiceApparecchiatura =
+                    x.CodiceApparecchiatura,
+
+                dataOra =
+                    x.DataOra,
+
+                temperatura =
+                    x.TemperaturaCorretta,
+
+                limiteMin =
+                    x.LimiteMin,
+
+                limiteMax =
+                    x.LimiteMax
+            })
+            .ToList();
+
+    var sonde =
+        Model
+            .GroupBy(x => new
+            {
+                x.CodiceSonda,
+                x.Apparecchiatura
+            })
+            .Select(g => g.Key)
+            .OrderBy(x =>
+            {
+                var testo =
+                    x.CodiceSonda
+                        .Replace(
+                            "T",
+                            "");
+
+                return int.TryParse(
+                    testo,
+                    out int numero)
+                    ? numero
+                    : 9999;
+            })
+            .ToList();
+
+    string jsonDati =
+        JsonSerializer.Serialize(
+            datiGrafico);
+
+    string descrizioneFiltro;
+
+    if (filtroPersonalizzato)
+    {
+        string da =
+            dataDa.HasValue
+                ? dataDa.Value.ToString("dd/MM/yyyy")
+                : "inizio archivio";
+
+        string a =
+            dataA.HasValue
+                ? dataA.Value.ToString("dd/MM/yyyy")
+                : "oggi";
+
+        descrizioneFiltro =
+            $"Periodo personalizzato: {da} - {a}";
+    }
+    else
+    {
+        descrizioneFiltro =
+            periodo switch
+            {
+                "24h" =>
+                    "Ultime 24 ore",
+
+                "48h" =>
+                    "Ultime 48 ore",
+
+                "7g" =>
+                    "Ultimi 7 giorni",
+
+                "30g" =>
+                    "Ultimi 30 giorni",
+
+                "tutto" =>
+                    "Tutto lo storico",
+
+                _ =>
+                    "Periodo selezionato"
+            };
+    }
+}
+
+<style>
+
+    @@page {
+        size: A4 landscape;
+        margin: 6mm;
+    }
+
+    @@media print {
+
+        html,
+        body {
+            width: 285mm !important;
+            height: 198mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            background: white !important;
+        }
+
+        nav,
+        header,
+        footer,
+        .navbar,
+        .no-print {
+            display: none !important;
+        }
+
+        .container-fluid {
+            width: 100% !important;
+            max-width: none !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        h1 {
+            font-size: 18px !important;
+            margin: 0 0 2mm 0 !important;
+        }
+
+        p {
+            font-size: 10px !important;
+            margin: 0 0 2mm 0 !important;
+        }
+
+        .alert {
+            font-size: 9px !important;
+            padding: 2mm 3mm !important;
+            margin: 0 0 2mm 0 !important;
+        }
+
+        .card {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 170mm !important;
+            margin: 0 !important;
+            border: 1px solid #777 !important;
+            box-shadow: none !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .card-body {
+            width: 100% !important;
+            height: 100% !important;
+            padding: 3mm !important;
+        }
+
+        #titoloSelezione {
+            font-size: 11px !important;
+            margin-bottom: 2mm !important;
+        }
+
+        #contenitoreGrafico {
+            width: 100% !important;
+            height: 155mm !important;
+            margin: 0 !important;
+        }
+
+        #graficoTemperature {
+            width: 100% !important;
+            height: 155mm !important;
+            max-width: 100% !important;
+            max-height: 155mm !important;
+            display: block !important;
+        }
+    }
+
+</style>
+
+<div class="container-fluid mt-4 px-4">
+
+    <h1 class="mb-2">
+        Monitor generale temperature
+    </h1>
+
+    <p class="text-muted mb-3">
+        Visualizzazione delle sonde Econorma
+    </p>
+
+    <div class="alert alert-light border mb-3">
+
+        <strong>
+            Filtro attivo:
+        </strong>
+
+        @descrizioneFiltro
+
+        <span class="mx-2">
+            |
+        </span>
+
+        <strong>
+            Sonda:
+        </strong>
+
+        @(codiceSondaSelezionato == "TUTTE"
+            ? "Tutte"
+            : codiceSondaSelezionato)
+
+        <span class="mx-2">
+            |
+        </span>
+
+        <strong>
+            Misure:
+        </strong>
+
+        @Model.Count
+
+    </div>
+
+    <div class="mb-3 no-print">
+
+        <a asp-action="Index"
+           class="btn btn-secondary me-2">
+            Torna alla dashboard
+        </a>
+
+        <a asp-action="Monitor"
+           asp-route-periodo="24h"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "24h" ? "btn-primary" : "btn-outline-primary") me-1">
+            Ultime 24 ore
+        </a>
+
+        <a asp-action="Monitor"
+           asp-route-periodo="48h"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "48h" ? "btn-primary" : "btn-outline-primary") me-1">
+            Ultime 48 ore
+        </a>
+
+        <a asp-action="Monitor"
+           asp-route-periodo="7g"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "7g" ? "btn-primary" : "btn-outline-primary") me-1">
+            Ultimi 7 giorni
+        </a>
+
+        <a asp-action="Monitor"
+           asp-route-periodo="30g"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "30g" ? "btn-primary" : "btn-outline-primary") me-1">
+            Ultimi 30 giorni
+        </a>
+
+        <a asp-action="Monitor"
+           asp-route-periodo="tutto"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "tutto" ? "btn-primary" : "btn-outline-primary") me-2">
+            Tutto
+        </a>
+
+        <button type="button"
+                class="btn btn-outline-dark"
+                onclick="window.print()">
+            Stampa / PDF
+        </button>
+
+        <a asp-action="EsportaExcelMonitor"
+           asp-route-periodo="@periodo"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           asp-route-dataDa="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : null)"
+           asp-route-dataA="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : null)"
+           class="btn btn-outline-success no-print">
+            Esporta Excel
+        </a>
+
+    </div>
+
+    <div class="card mb-4 no-print">
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-action="Monitor"
+                  class="row g-3 align-items-end">
+
+                <input type="hidden"
+                       name="periodo"
+                       value="@periodo" />
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="codiceSonda">
+
+                        Sonda
+
+                    </label>
+
+                    <select id="codiceSonda"
+                            name="codiceSonda"
+                            class="form-select">
+
+                        <option value="TUTTE"
+                                selected="@(codiceSondaSelezionato == "TUTTE")">
+
+                            Tutte le sonde
+
+                        </option>
+
+                        @foreach (string codice in sondeDisponibili)
+                        {
+                            <option value="@codice"
+                                    selected="@(codiceSondaSelezionato == codice)">
+
+                                @codice
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="dataDa">
+
+                        Data inizio
+
+                    </label>
+
+                    <input type="date"
+                           id="dataDa"
+                           name="dataDa"
+                           value="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="dataA">
+
+                        Data fine
+
+                    </label>
+
+                    <input type="date"
+                           id="dataA"
+                           name="dataA"
+                           value="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-12 col-md-3">
+
+                    <button type="submit"
+                            class="btn btn-primary me-2">
+
+                        Applica filtro
+
+                    </button>
+
+                    <a asp-action="Monitor"
+                       asp-route-periodo="24h"
+                       class="btn btn-outline-secondary">
+
+                        Azzera filtro
+
+                    </a>
+
+                </div>
+
+            </form>
+
+            <div class="small text-muted mt-3">
+
+                Se imposti Data inizio e/o Data fine,
+                il periodo personalizzato ha precedenza
+                sui pulsanti rapidi.
+                La data finale comprende tutta la giornata selezionata.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-warning">
+
+            Nessuna misura trovata
+            con i filtri selezionati.
+
+        </div>
+    }
+    else
+    {
+        <div class="card">
+
+            <div class="card-body">
+
+                <div id="titoloSelezione"
+                     class="mb-3 fw-bold">
+
+                    @(codiceSondaSelezionato == "TUTTE"
+                        ? "Tutte le sonde"
+                        : codiceSondaSelezionato)
+
+                </div>
+
+                <div id="contenitoreGrafico"
+                     style="height: 600px;">
+
+                    <canvas id="graficoTemperature"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@if (Model.Count > 0)
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        const dati =
+            @Html.Raw(jsonDati);
+
+        const paletteColori = [
+            "#0047AB", "#dc3545", "#198754", "#fd7e14",
+            "#6f42c1", "#20c997", "#d63384", "#0dcaf0",
+            "#ffc107", "#6610f2", "#e83e8c", "#adb5bd"
+        ];
+
+        function coloreSonda(indice) {
+            return paletteColori[indice % paletteColori.length];
+        }
+
+        const periodo =
+            "@periodo";
+
+        const filtroPersonalizzato =
+            @filtroPersonalizzato.ToString().ToLowerInvariant();
+
+        const selettore =
+            document.getElementById(
+                "codiceSonda"
+            );
+
+        const titoloSelezione =
+            document.getElementById(
+                "titoloSelezione"
+            );
+
+        function numeroSonda(codice) {
+
+            const numero =
+                parseInt(
+                    codice.replace(
+                        "T",
+                        ""
+                    )
+                );
+
+            if (isNaN(numero)) {
+
+                return 9999;
+            }
+
+            return numero;
+        }
+
+        function formattaDataOraCompleta(timestamp) {
+
+            const data =
+                new Date(
+                    Number(timestamp)
+                );
+
+            return data.toLocaleString(
+                "it-IT",
+                {
+                    day:
+                        "2-digit",
+
+                    month:
+                        "2-digit",
+
+                    year:
+                        "numeric",
+
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit",
+
+                    second:
+                        "2-digit"
+                }
+            );
+        }
+
+        function formattaAsseX(timestamp) {
+
+            const data =
+                new Date(
+                    Number(timestamp)
+                );
+
+            if (
+                !filtroPersonalizzato
+                &&
+                periodo === "24h"
+            ) {
+
+                return data.toLocaleTimeString(
+                    "it-IT",
+                    {
+                        hour:
+                            "2-digit",
+
+                        minute:
+                            "2-digit"
+                    }
+                );
+            }
+
+            const giorno =
+                data.toLocaleDateString(
+                    "it-IT",
+                    {
+                        day:
+                            "2-digit",
+
+                        month:
+                            "2-digit"
+                    }
+                );
+
+            const ora =
+                data.toLocaleTimeString(
+                    "it-IT",
+                    {
+                        hour:
+                            "2-digit",
+
+                        minute:
+                            "2-digit"
+                    }
+                );
+
+            return giorno
+                + " "
+                + ora;
+        }
+
+        function creaSerie(codice) {
+
+            let datiFiltrati;
+
+            if (
+                !codice
+                ||
+                codice === "TUTTE"
+            ) {
+
+                datiFiltrati =
+                    dati;
+            }
+            else {
+
+                datiFiltrati =
+                    dati.filter(
+                        function(x) {
+
+                            return x.codiceSonda
+                                === codice;
+                        }
+                    );
+            }
+
+            const codici =
+                Array.from(
+                    new Set(
+                        datiFiltrati.map(
+                            function(x) {
+
+                                return x.codiceSonda;
+                            }
+                        )
+                    )
+                );
+
+            codici.sort(
+                function(a, b) {
+
+                    return numeroSonda(a)
+                        - numeroSonda(b);
+                }
+            );
+
+            const serie = [];
+
+            codici.forEach(
+                function(codiceSonda, indiceSonda) {
+
+                    const coloreSerie =
+                        codici.length > 1
+                            ? coloreSonda(indiceSonda)
+                            : "#0047AB";
+
+                    const misure =
+                        datiFiltrati
+                            .filter(
+                                function(x) {
+
+                                    return x.codiceSonda
+                                        === codiceSonda;
+                                }
+                            )
+                            .sort(
+                                function(a, b) {
+
+                                    return new Date(a.dataOra)
+                                        - new Date(b.dataOra);
+                                }
+                            );
+
+                    if (misure.length === 0) {
+
+                        return;
+                    }
+
+                    serie.push(
+                        {
+                            label:
+                                codiceSonda
+                                + " - "
+                                + misure[0].apparecchiatura,
+
+                            data:
+                                misure.map(
+                                    function(x) {
+
+                                        return {
+                                            x:
+                                                new Date(
+                                                    x.dataOra
+                                                )
+                                                .getTime(),
+
+                                            y:
+                                                x.temperatura
+                                        };
+                                    }
+                                ),
+
+                            borderColor:
+                                coloreSerie,
+
+                            backgroundColor:
+                                coloreSerie,
+
+                            borderWidth:
+                                codici.length > 1 ? 2.5 : 4,
+
+                            pointRadius:
+                                codici.length > 1
+                                    ? 0
+                                    : 3,
+
+                            pointBackgroundColor:
+                                coloreSerie,
+
+                            pointBorderColor:
+                                coloreSerie,
+
+                            pointHoverRadius:
+                                6,
+
+                            tension:
+                                0.15,
+
+                            fill:
+                                false
+                        }
+                    );
+
+                    if (codici.length === 1) {
+
+                        const limiteMin =
+                            misure[0].limiteMin;
+
+                        const limiteMax =
+                            misure[0].limiteMax;
+
+                        if (
+                            limiteMin !== null
+                            &&
+                            limiteMin !== undefined
+                        ) {
+
+                            serie.push(
+                                {
+                                    label:
+                                        "Limite minimo",
+
+                                    data:
+                                        misure.map(
+                                            function(x) {
+
+                                                return {
+                                                    x:
+                                                        new Date(
+                                                            x.dataOra
+                                                        )
+                                                        .getTime(),
+
+                                                    y:
+                                                        limiteMin
+                                                };
+                                            }
+                                        ),
+
+                                    borderColor:
+                                        "#dc3545",
+
+                                    backgroundColor:
+                                        "#dc3545",
+
+                                    borderDash:
+                                        [8, 5],
+
+                                    borderWidth:
+                                        2,
+
+                                    pointRadius:
+                                        0,
+
+                                    fill:
+                                        false
+                                }
+                            );
+                        }
+
+                        if (
+                            limiteMax !== null
+                            &&
+                            limiteMax !== undefined
+                        ) {
+
+                            serie.push(
+                                {
+                                    label:
+                                        "Limite massimo",
+
+                                    data:
+                                        misure.map(
+                                            function(x) {
+
+                                                return {
+                                                    x:
+                                                        new Date(
+                                                            x.dataOra
+                                                        )
+                                                        .getTime(),
+
+                                                    y:
+                                                        limiteMax
+                                                };
+                                            }
+                                        ),
+
+                                    borderColor:
+                                        "#fd7e14",
+
+                                    backgroundColor:
+                                        "#fd7e14",
+
+                                    borderDash:
+                                        [8, 5],
+
+                                    borderWidth:
+                                        2,
+
+                                    pointRadius:
+                                        0,
+
+                                    fill:
+                                        false
+                                }
+                            );
+                        }
+                    }
+                }
+            );
+
+            return serie;
+        }
+
+        const ctx =
+            document
+                .getElementById(
+                    "graficoTemperature"
+                )
+                .getContext(
+                    "2d"
+                );
+
+        const grafico =
+            new Chart(
+                ctx,
+                {
+                    type:
+                        "line",
+
+                    data:
+                    {
+                        datasets:
+                            creaSerie(
+                                "@codiceSondaSelezionato"
+                            )
+                    },
+
+                    options:
+                    {
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        parsing:
+                            false,
+
+                        interaction:
+                        {
+                            mode:
+                                "nearest",
+
+                            intersect:
+                                false
+                        },
+
+                        plugins:
+                        {
+                            legend:
+                            {
+                                display: true,
+
+                                position: "bottom",
+
+                                labels: {
+                                    boxWidth: 14,
+                                    usePointStyle: true
+                                }
+                            },
+
+                            tooltip:
+                            {
+                                callbacks:
+                                {
+                                    title:
+                                        function(context) {
+
+                                            if (
+                                                !context
+                                                ||
+                                                context.length === 0
+                                            ) {
+
+                                                return "";
+                                            }
+
+                                            return formattaDataOraCompleta(
+                                                context[0].parsed.x
+                                            );
+                                        },
+
+                                    label:
+                                        function(context) {
+
+                                            let testo =
+                                                context.dataset.label
+                                                || "";
+
+                                            if (testo) {
+
+                                                testo += ": ";
+                                            }
+
+                                            if (
+                                                context.parsed.y
+                                                === null
+                                                ||
+                                                context.parsed.y
+                                                === undefined
+                                            ) {
+
+                                                return testo
+                                                    + "-";
+                                            }
+
+                                            return testo
+                                                +
+                                                Number(
+                                                    context.parsed.y
+                                                )
+                                                .toFixed(1)
+                                                +
+                                                " °C";
+                                        }
+                                }
+                            }
+                        },
+
+                        scales:
+                        {
+                            x:
+                            {
+                                type:
+                                    "linear",
+
+                                title:
+                                {
+                                    display:
+                                        true,
+
+                                    text:
+                                        "Data / Ora"
+                                },
+
+                                ticks:
+                                {
+                                    maxTicksLimit:
+                                        12,
+
+                                    maxRotation:
+                                        filtroPersonalizzato
+                                            ? 45
+                                            : 0,
+
+                                    minRotation:
+                                        filtroPersonalizzato
+                                            ? 45
+                                            : 0,
+
+                                    callback:
+                                        function(value) {
+
+                                            return formattaAsseX(
+                                                value
+                                            );
+                                        }
+                                }
+                            },
+
+                            y:
+                            {
+                                title:
+                                {
+                                    display:
+                                        true,
+
+                                    text:
+                                        "Temperatura °C"
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+        window.addEventListener(
+            "beforeprint",
+            function() {
+
+                grafico.resize(
+                    1000,
+                    600
+                );
+            }
+        );
+
+        window.addEventListener(
+            "afterprint",
+            function() {
+
+                grafico.resize();
+            }
+        );
+
+        window.addEventListener(
+            "beforeprint",
+            function() {
+
+                grafico.options.animation =
+                    false;
+
+                grafico.resize(
+                    1050,
+                    560
+                );
+
+                grafico.update(
+                    "none"
+                );
+            }
+        );
+
+        window.addEventListener(
+            "afterprint",
+            function() {
+
+                grafico.options.animation =
+                    true;
+
+                grafico.resize();
+
+                grafico.update(
+                    "none"
+                );
+            }
+        );
+
+    </script>
+}

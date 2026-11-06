@@ -28,6 +28,7 @@ public interface IEsportatoreRicercaErrori
     byte[] Arrotondamento(IReadOnlyList<RigaMetodoArrotondamento> righe);
     byte[] Margine(IReadOnlyList<RigaMetodoMargine> righe, decimal sogliaPct);
     byte[] Doppi(IReadOnlyList<RigaMetodoDoppio> righe);
+    byte[] Denominazioni(IReadOnlyList<RigaDenominazioneSospetta> righe, int annoDa, int annoA);
     byte[] Lotti(IReadOnlyList<RigaLottoErrore> righe, string titolo, int annoDa, int annoA);
     byte[] Coerenza(IReadOnlyList<RigaCoerenzaPrelevatore> righe, int annoDa, int annoA);
     byte[] Stampa(IReadOnlyList<RigaCampioneStampa> righe, string periodo);
@@ -51,6 +52,9 @@ public class EsportatoreRicercaErrori : IEsportatoreRicercaErrori
 
     public byte[] Doppi(IReadOnlyList<RigaMetodoDoppio> righe)
         => Singolo(wb => FoglioDoppi(wb, righe));
+
+    public byte[] Denominazioni(IReadOnlyList<RigaDenominazioneSospetta> righe, int annoDa, int annoA)
+        => Singolo(wb => FoglioDenominazioni(wb, righe, annoDa, annoA));
 
     public byte[] Lotti(IReadOnlyList<RigaLottoErrore> righe, string titolo, int annoDa, int annoA)
         => Singolo(wb => FoglioLotti(wb, righe, titolo, titolo, annoDa, annoA));
@@ -194,6 +198,39 @@ public class EsportatoreRicercaErrori : IEsportatoreRicercaErrori
                 f.Cell(r, 7).Value = x.RifBiblio;
                 f.Cell(r, 8).Value = x.IdUnita;
                 f.Cell(r, 9).Value = x.NMetodi;
+                r++;
+            }
+        });
+    }
+
+    private static void FoglioDenominazioni(XLWorkbook wb, IReadOnlyList<RigaDenominazioneSospetta> righe, int annoDa, int annoA)
+    {
+        string[] intest =
+        {
+            "Segnalazione", "Motivo", "Id metodo", "Id parametro", "Parametro", "Denominazione (DettagliMetodo)",
+            "Metodo (RifBiblio)", $"Rapporti emessi {annoDa}-{annoA}", "Ultimo rapporto", "Verificata corretta", "Verificata da",
+            "Verificata il", "Note"
+        };
+        Foglio(wb, "Denominazioni", "Denominazioni dei metodi da controllare",
+            $"{righe.Count} segnalazioni su {righe.Select(r => r.IdMetodo).Distinct().Count()} metodi; correzioni in ArcLab (Metodo.DettagliMetodo)",
+            intest, righe.Count, (f, r0) =>
+        {
+            int r = r0;
+            foreach (var x in righe)
+            {
+                f.Cell(r, 1).Value = x.Tipo == "ParametroAssente" ? "Non cita il parametro" : "Denominazione condivisa";
+                f.Cell(r, 2).Value = x.Motivo;
+                f.Cell(r, 3).Value = x.IdMetodo;
+                f.Cell(r, 4).Value = x.IdParametro;
+                f.Cell(r, 5).Value = x.NomeParametro;
+                f.Cell(r, 6).Value = x.DettagliMetodo;
+                f.Cell(r, 7).Value = x.RifBiblio;
+                f.Cell(r, 8).Value = x.NRapporti;
+                if (x.UltimoRapporto is DateTime u) { f.Cell(r, 9).Value = u; f.Cell(r, 9).Style.DateFormat.Format = "dd/MM/yyyy"; }
+                f.Cell(r, 10).Value = x.Verificata ? "Sì" : "";
+                f.Cell(r, 11).Value = x.VerificataDa;
+                if (x.VerificataIl is DateTime v) { f.Cell(r, 12).Value = v.ToLocalTime(); f.Cell(r, 12).Style.DateFormat.Format = "dd/MM/yyyy"; }
+                f.Cell(r, 13).Value = x.NoteVerifica;
                 r++;
             }
         });

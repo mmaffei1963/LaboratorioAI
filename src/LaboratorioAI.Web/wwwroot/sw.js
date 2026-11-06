@@ -1,7 +1,7 @@
 // Service worker per la pagina "Prelievo vocale": rende l'app installabile e funzionante offline.
 // Strategia: network-first con cache di ripiego (così vedi sempre la versione aggiornata quando c'è
 // rete, ma la pagina resta usabile offline). Attivo solo su HTTPS/localhost.
-const CACHE = 'labai-prelievo-v3';
+const CACHE = 'labai-prelievo-v4';
 const BASE = [
   '/Prelievo',
   '/css/sito.css',

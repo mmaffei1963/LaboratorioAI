@@ -1,0 +1,34 @@
+@using System.Globalization
+@model List<LaboratorioAI.Core.Entita.RegistrazioneAnalitica>
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+}
+@* Consuntivo per area: registrazioni di una voce (20/10/2026). *@
+@if (Model.Count == 0)
+{
+    <p>Nessuna registrazione nel periodo.</p>
+}
+else
+{
+    <p class="sottotesto">@Model.Count registrazioni · totale <strong>@Model.Sum(x => x.Importo).ToString("N2", it) €</strong></p>
+    <div class="tabella-scorrevole" style="max-height:60vh;overflow-y:auto">
+        <table class="tabella">
+            <thead><tr><th>Data</th><th>Reg.</th><th>Documento</th><th>Centro</th><th>Commessa</th><th>Conto</th><th>Descrizione</th><th class="numerico">Importo</th></tr></thead>
+            <tbody>
+            @foreach (var x in Model)
+            {
+                <tr>
+                    <td>@x.DataRegistrazione.ToString("dd/MM/yyyy")</td>
+                    <td>@x.NumeroRegistrazione/@x.AnnoRegistrazione</td>
+                    <td>@($"{x.TipoDocumento} {x.NumeroDocumento}".Trim())</td>
+                    <td>@x.Centro</td>
+                    <td>@x.Commessa</td>
+                    <td>@x.Conto</td>
+                    <td>@x.Descrizione</td>
+                    <td class="numerico" style="@(x.Importo < 0 ? "color:#B91C1C" : "")">@x.Importo.ToString("N2", it)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

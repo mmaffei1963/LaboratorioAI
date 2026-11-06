@@ -1,0 +1,125 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Direzione
+@model LaboratorioAI.Web.Controllers.ModelloRimborsi
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var inv = CultureInfo.InvariantCulture;
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    var m = Model.InModifica;
+    var mio = Model.SocioCorrente;
+    var catAttive = Model.Categorie.Where(c => c.Attivo || c.IdCategoriaRimborso == m?.IdCategoriaRimborso).ToList();
+}
+@* Compensi soci (21/10/2026): rimborsi spese. Ognuno inserisce e modifica i propri; tutti i soci li vedono. *@
+<style>
+    .cs td, .cs th { padding: 5px 8px !important; }
+    .cs-note { font-size: .78rem; color: #6B7280; }
+    .cs tr.mio td { background: #F8FAFF; }
+    .cs-modulo { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .7rem; }
+    .cs-modulo label { display: flex; flex-direction: column; gap: 3px; font-size: .82rem; font-weight: 600; }
+    .pulsante-attenzione { background: #B45309 !important; color: #fff !important; }
+</style>
+
+@if (ViewData["AvvisoSviluppo"] is string avvSvil) { <section class="riquadro" style="border-left:4px solid #B45309"><strong>@avvSvil</strong></section> }
+<div class="barra-strumenti">
+    <div>
+        <h1>Rimborsi spese soci @Model.Anno</h1>
+        <p class="sottotitolo">Ognuno inserisce i propri rimborsi (trasferte, abbonamenti, software, hardware…) con la ricevuta se ce l'ha. Tutti i soci li vedono. Il totale dell'anno, con le maggiorazioni della categoria, entra nel conguaglio dei compensi e lì non si modifica.</p>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", new { anno = Model.Anno })">Prospetto compensi</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+
+<section class="riquadro">
+    <form method="get" style="display:flex;gap:.6rem;align-items:flex-end">
+        <label>Anno
+            <select name="anno" onchange="this.form.submit()">
+                @foreach (var a in Model.Anni) { <option value="@a" selected="@(a == Model.Anno)">@a</option> }
+            </select>
+        </label>
+        @if (Model.AnnoChiuso) { <strong>Anno chiuso: i rimborsi non si modificano più.</strong> }
+    </form>
+</section>
+
+@if (!Model.AnnoChiuso)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@(m is null ? $"Nuovo rimborso di {mio.Nome}" : "Modifica rimborso")</h2></div>
+        <form method="post" asp-action="SalvaRimborso" enctype="multipart/form-data">
+            @if (m is not null) { <input type="hidden" name="Id" value="@m.IdRimborsoSpesa" /> }
+            <div class="cs-modulo">
+                <label>Data della spesa<input type="date" name="Data" required value="@((m?.Data ?? (DateTime.Today.Year == Model.Anno ? DateTime.Today : new DateTime(Model.Anno, 12, 31))).ToString("yyyy-MM-dd"))" /></label>
+                <label>Categoria
+                    <select name="IdCategoriaRimborso" id="rim-categoria" required>
+                        @foreach (var c in catAttive)
+                        {
+                            <option value="@c.IdCategoriaRimborso" data-km="@(c.ConKm ? "1" : "0")" selected="@(c.IdCategoriaRimborso == m?.IdCategoriaRimborso)">@(c.Nome + (c.Maggiorazione != 0 ? " (+" + c.Maggiorazione.ToString("0.##", it) + "%)" : ""))</option>
+                        }
+                    </select>
+                </label>
+                <label>Importo (€)<input type="number" step="0.01" min="0.01" name="Importo" required value="@(m?.Importo.ToString("0.00", inv))" /></label>
+                <label id="rim-km-riga">Km percorsi<input type="number" step="0.1" min="0" name="Km" value="@(m?.Km?.ToString("0.#", inv))" /></label>
+                <label style="grid-column:1/-1">Descrizione<input type="text" name="Descrizione" required maxlength="500" value="@m?.Descrizione" placeholder="es. abbonamento software Y, disco esterno, spesa per MARE.A… (le trasferte con auto propria si leggono da AZW)" /></label>
+                <label>Ricevuta (PDF o foto, facoltativa)<input type="file" name="ricevuta" accept="application/pdf,image/jpeg,image/png,image/heic,image/webp" /></label>
+            </div>
+            @if (m?.Ricevuta is not null) { <p class="cs-note">Ricevuta già caricata: @m.Ricevuta.NomeFile. Se ne scegli un'altra, la sostituisce.</p> }
+            <div style="display:flex;gap:.4rem;margin-top:.6rem">
+                <button type="submit" class="pulsante">Salva</button>
+                @if (m is not null) { <a class="pulsante pulsante-tenue" href="@Url.Action("Rimborsi", new { anno = Model.Anno })">Annulla</a> }
+            </div>
+        </form>
+    </section>
+}
+
+@foreach (var socio in Model.Soci)
+{
+    var righe = Model.Rimborsi.Where(r => r.IdSocio == socio.IdSocio).ToList();
+    var totale = righe.Sum(r => MotoreCompensiSoci.ImportoRimborso(r.Importo, r.Maggiorazione));
+    var eMio = socio.IdSocio == mio.IdSocio;
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@(socio.Nome + (eMio ? " (tu)" : ""))</h2><span class="sottotesto">@righe.Count rimborsi · totale con maggiorazioni <strong>@Euro(totale)</strong></span></div>
+        @if (righe.Count == 0)
+        {
+            <p class="sottotesto" style="margin:0">Nessun rimborso nel @Model.Anno.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella cs">
+                    <thead><tr><th>Data</th><th>Categoria</th><th>Descrizione</th><th class="numerico">Km</th><th class="numerico">Importo</th><th class="numerico">Maggior.</th><th class="numerico">Rimborsato</th><th>Ricevuta</th>@if (eMio && !Model.AnnoChiuso) { <th></th> }</tr></thead>
+                    <tbody>
+                    @foreach (var r in righe)
+                    {
+                        <tr class="@(eMio ? "mio" : "")">
+                            <td>@r.Data.ToString("dd/MM/yyyy")</td>
+                            <td>@r.Categoria?.Nome</td>
+                            <td>@r.Descrizione</td>
+                            <td class="numerico">@(r.Km?.ToString("N1", it))</td>
+                            <td class="numerico">@r.Importo.ToString("N2", it)</td>
+                            <td class="numerico">@(r.Maggiorazione != 0 ? "+" + r.Maggiorazione.ToString("0.##", it) + "%" : "")</td>
+                            <td class="numerico">@MotoreCompensiSoci.ImportoRimborso(r.Importo, r.Maggiorazione).ToString("N2", it)</td>
+                            <td>@if (r.Ricevuta is not null) { <a href="@Url.Action("Ricevuta", new { id = r.IdRimborsoSpesa })" target="_blank" rel="noopener">@r.Ricevuta.NomeFile</a> }</td>
+                            @if (eMio && !Model.AnnoChiuso)
+                            {
+                                <td style="white-space:nowrap">
+                                    <a class="pulsante pulsante-tenue" href="@Url.Action("Rimborsi", new { anno = Model.Anno, modifica = r.IdRimborsoSpesa })">Modifica</a>
+                                    <form method="post" asp-action="TogliRimborso" asp-route-id="@r.IdRimborsoSpesa" style="display:inline" data-conferma="Conferma: togli">
+                                        <button type="submit" class="pulsante pulsante-tenue">Togli</button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
+
+@section Script {
+    <script type="module" src="~/js/moduli/compensi-soci.js" asp-append-version="true"></script>
+}

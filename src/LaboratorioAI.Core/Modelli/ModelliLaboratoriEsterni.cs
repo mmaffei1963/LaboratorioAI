@@ -83,3 +83,24 @@ public record EsitoLaboratoriEsterni
     public int LaboratoriDistinti =>
         Riepilogo.Select(r => r.LaboratorioEsterno).Distinct().Count(n => n is not null);
 }
+
+/// <summary>
+/// Prova di un campione da inviare a un laboratorio esterno (06/11/2026): una riga dell'Excel, con le colonne della
+/// query Access di MARE.A (cliente/insediamento, lotto/campione, denominazione, prova, metodo, date, temperatura).
+/// </summary>
+public record ProvaDaInviare
+{
+    public int IdCampione { get; init; }
+    public int IdProva { get; init; }
+    public string? ClienteInsediamento { get; init; }
+    public string NumeroCampione { get; init; } = "";
+    public string? DenominazioneCampione { get; init; }
+    public string? Prova { get; init; }
+    public string? RifBiblio { get; init; }
+    public string? RifMetodo { get; init; }
+    public DateTime? DataAnalisi { get; init; }
+    public string? TemperaturaPrelievo { get; init; }
+    public DateTime? DataRicezione { get; init; }
+    public TimeSpan? OraRicezione { get; init; }
+    public string? LabEsterno { get; init; }
+}

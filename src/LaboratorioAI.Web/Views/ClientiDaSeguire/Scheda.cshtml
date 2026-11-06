@@ -1,0 +1,322 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Andamento
+@using LaboratorioAI.Core.Entita
+@using LaboratorioAI.Documenti
+@using LaboratorioAI.Web.Grafici
+@model LaboratorioAI.Web.Controllers.ModelloSchedaCliente
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string E(decimal v) => v.ToString("#,##0", it) + " €";
+    string P(decimal? v) => v is decimal x ? (x > 0 ? "+" : "") + (x * 100m).ToString("0", it) + "%" : "—";
+    var s = Model.Scheda;
+    var i = s.Info;
+    var a = s.Andamento;
+    var l = s.Legionella;
+    var mesi = s.Mesi.Select(m => (m.Anno, m.Mese)).ToList();
+    var attuale = DescrizionePeriodi.Attuale(s.Risultato);
+    var confrontoTxt = DescrizionePeriodi.Confronto(s.Risultato);
+    // Le barre dei mesi confrontati si evidenziano nel grafico.
+    var evidenziati = s.Mesi.Select(m => m.Anno * 100 + m.Mese).Select(k =>
+        (k >= s.Risultato.InizioPeriodo && k <= s.Risultato.UltimoMese) || (k >= s.Risultato.InizioConfronto && k <= s.Risultato.FineConfronto)).ToList();
+    var aperta = s.Assegnazioni.FirstOrDefault(x => x.Assegnazione.Stato is StatoAssegnazioneCliente.Proposta or StatoAssegnazioneCliente.Approvata);
+    string NomeTipo(TipoAzioneCliente t) => t switch { TipoAzioneCliente.Telefonata => "Telefonata", TipoAzioneCliente.Visita => "Visita", TipoAzioneCliente.Email => "Email", TipoAzioneCliente.Offerta => "Offerta", _ => "Altro" };
+    string NomeEsito(EsitoAzioneCliente e) => e switch { EsitoAzioneCliente.Positivo => "Positivo", EsitoAzioneCliente.InTrattativa => "In trattativa", EsitoAzioneCliente.Negativo => "Negativo", EsitoAzioneCliente.NonRaggiunto => "Non raggiunto", _ => "Da definire" };
+    string NomeStato(StatoAssegnazioneCliente st) => st switch { StatoAssegnazioneCliente.Proposta => "In attesa di approvazione", StatoAssegnazioneCliente.Approvata => "In corso", StatoAssegnazioneCliente.Rifiutata => "Rifiutata", _ => "Chiusa" };
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@i.RagioneSociale</h1>
+        <p class="sottotitolo">
+            Codice @i.Codice@(string.IsNullOrWhiteSpace(i.Citta) ? "" : $" · {i.Indirizzo} {i.Citta} {i.Provincia}")
+            @if (!string.IsNullOrWhiteSpace(i.Telefono)) { <text> · tel. </text><a href="tel:@i.Telefono">@i.Telefono</a> }
+            @if (!string.IsNullOrWhiteSpace(i.Email)) { <text> · </text><a href="mailto:@i.Email">@i.Email</a> }
+        </p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante pulsante-tenue" href="javascript:history.back()">← Indietro</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index")">Elenco</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (i.Uscita is { } usc)
+{
+    <section class="riquadro @(i.Rientrato ? "" : "riquadro-errore")" style="@(i.Rientrato ? "background:#fff3cd;border:1px solid #e0c46c" : "")">
+        @if (i.Rientrato)
+        {
+            <strong>Era stato tolto dalla lista il @usc.Data.ToString("dd/MM/yyyy") (@usc.Descrizione), ma dopo ha di nuovo fatturato o mandato campioni: è tornato in lista.</strong>
+            <span class="sottotesto">Se è giusto così, premi «Rimetti in lista» per togliere l'avviso; altrimenti lascialo com'è.</span>
+        }
+        else
+        {
+            <strong>Tolto dalla lista il @usc.Data.ToString("dd/MM/yyyy")@(usc.Da is null ? "" : $" da {usc.Da}"): @usc.Descrizione.</strong>
+            @if (usc.Motivo == MotivoUscitaCliente.AcquisitoDaCliente && usc.Successore is string succ)
+            {
+                <text> Il suo storico è sommato a </text><a href="@Url.Action("Scheda", new { id = succ, periodo = Model.Periodo, confronto = Model.Confronto })">@usc.NomeSuccessore</a><text>.</text>
+            }
+            @if (!string.IsNullOrWhiteSpace(usc.Note) && usc.Motivo != MotivoUscitaCliente.Altro) { <span class="sottotesto"> Nota: @usc.Note</span> }
+            <span class="sottotesto"> Non compare più nelle liste; se torna a lavorare con noi ricompare da solo.</span>
+        }
+        <form method="post" asp-action="Rimetti" style="display:inline;margin-left:0.6rem" onsubmit="return confirm('Rimettere il cliente in lista?')">
+            <input type="hidden" name="codice" value="@i.Codice" />
+            <button type="submit" class="pulsante pulsante-tenue minuto">Rimetti in lista</button>
+        </form>
+    </section>
+}
+@if (i.Assorbiti.Count > 0)
+{
+    <section class="riquadro" style="background:#eef4fb">
+        <strong>Comprende anche lo storico di clienti acquisiti:</strong>
+        @for (var k = 0; k < i.Assorbiti.Count; k++)
+        {
+            var (codA, nomeA) = i.Assorbiti[k];
+            @(k > 0 ? ", " : " ")<a href="@Url.Action("Scheda", new { id = codA, periodo = Model.Periodo, confronto = Model.Confronto })">@nomeA</a>
+        }
+        <span class="sottotesto"> — fatturato, campioni e confronti di questa scheda li sommano.</span>
+    </section>
+}
+
+<section class="riquadro">
+    <dl class="scheda-dati">
+        <div><dt>Commerciale (AZW)</dt><dd>@(i.CommercialeAzw ?? (i.CodiceVenditore is null ? "nessuno" : $"codice {i.CodiceVenditore}"))</dd></div>
+        <div><dt>Assegnato a</dt><dd>@(i.Assegnato ?? (i.PropostaInAttesa ? "proposta in attesa" : "—"))</dd></div>
+        <div><dt>Responsabile cliente</dt><dd>@(i.Responsabile is null ? i.Zona ?? "—" : $"{i.Responsabile} ({i.Zona})")</dd></div>
+        <div><dt>Intermediario</dt><dd>@(i.Intermediario ? "sì" : "no")</dd></div>
+        @if (!string.IsNullOrWhiteSpace(i.Pec)) { <div><dt>PEC</dt><dd>@i.Pec</dd></div> }
+    </dl>
+</section>
+
+<div class="semaforo">
+    @if (a is not null)
+    {
+        var classe = a.Semaforo switch { Semaforo.Rosso => "non-conforme", Semaforo.Giallo => "borderline", Semaforo.Verde => "conforme", _ => "neutro" };
+        <div class="semaforo-voce @classe"><strong>@P(a.Variazione)</strong><span>Analisi @attuale: @E(a.LabUltimi) contro @E(a.LabPrecedenti) (@confrontoTxt)</span></div>
+        <div class="semaforo-voce neutro"><strong>@a.CampioniUltimi</strong><span>Campioni @attuale (erano @a.CampioniPrecedenti)</span></div>
+        <div class="semaforo-voce neutro"><strong>@P(a.VariazioneAnno)</strong><span>Da inizio anno: @E(a.LabAnnoInCorso)</span></div>
+        <div class="semaforo-voce neutro"><strong>@E(a.AltroUltimi)</strong><span>Altri servizi @attuale</span></div>
+    }
+    @if (l is not null)
+    {
+        var classeL = l.Stato switch { StatoLegionella.Perso or StatoLegionella.InRitardo => "non-conforme", StatoLegionella.InCalo or StatoLegionella.DaRicordare => "borderline", _ => "conforme" };
+        <div class="semaforo-voce @classeL"><strong>@EsportatoreClientiDaSeguire.Etichetta(l.Stato)</strong><span>Legionella · prossimo @l.ProssimoAtteso.ToString("dd/MM/yy")</span></div>
+    }
+</div>
+
+@if (a is not null && a.Motivi.Count > 0)
+{
+    <section class="riquadro"><strong>Segnali:</strong> @string.Join(" · ", a.Motivi).
+        @if (a.Semaforo == Semaforo.Nessuno) { <span class="sottotesto">(sotto il fatturato minimo: nessun semaforo)</span> }
+    </section>
+}
+
+<section class="riquadro">
+    <p class="sottotesto">Periodo confrontato: <strong>@attuale</strong> contro <strong>@confrontoTxt</strong> (barre piene; le altre sono più chiare). <a href="@Url.Action("Scheda", new { id = i.Codice, periodo = "12", confronto = 1 })">12 mesi / anno prima</a> · <a href="@Url.Action("Scheda", new { id = i.Codice, periodo = "12", confronto = 2 })">12 mesi / due anni prima</a> · <a href="@Url.Action("Scheda", new { id = i.Codice, periodo = "6", confronto = 1 })">semestre / anno prima</a> · <a href="@Url.Action("Scheda", new { id = i.Codice, periodo = "anno", confronto = 1 })">da inizio anno</a></p>
+    <div class="barra-risultati"><h2>Fatturato mese per mese</h2><span class="sottotesto"><span style="color:#C00000">■</span> analisi · <span style="color:#BBBBBB">■</span> altri servizi · al netto delle note di credito</span></div>
+    @Html.Raw(GraficoMesi.Barre(mesi, s.Mesi.Select(m => m.Laboratorio).ToList(), s.Mesi.Select(m => m.Altro).ToList(), "#C00000", "#BBBBBB", "analisi", "altri servizi", " €", "Fatturato mensile", evidenziati))
+    <div class="barra-risultati" style="margin-top:0.8rem"><h2>Campioni mese per mese</h2><span class="sottotesto"><span style="color:#1F3864">■</span> Legionella · <span style="color:#7F9CC4">■</span> altri campioni</span></div>
+    @Html.Raw(GraficoMesi.Barre(mesi, s.Mesi.Select(m => (decimal)m.CampioniLegionella).ToList(), s.Mesi.Select(m => (decimal)(m.Campioni - m.CampioniLegionella)).ToList(), "#1F3864", "#7F9CC4", "Legionella", "altri", "", "Campioni mensili", evidenziati))
+</section>
+
+<div class="disposizione-doppia" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start">
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Registro azioni</h2></div>
+        <form method="post" asp-action="Azione" class="griglia-filtri">
+            <input type="hidden" name="codice" value="@i.Codice" />
+            <label>Data<input type="date" name="dataAzione" value="@DateTime.Today.ToString("yyyy-MM-dd")" /></label>
+            <label>Tipo
+                <select name="tipo">
+                    @foreach (var t in Enum.GetValues<TipoAzioneCliente>()) { <option value="@t">@NomeTipo(t)</option> }
+                </select>
+            </label>
+            <label>Esito
+                <select name="esito">
+                    @foreach (var e in Enum.GetValues<EsitoAzioneCliente>()) { <option value="@e">@NomeEsito(e)</option> }
+                </select>
+            </label>
+            <label>Richiamare il<input type="date" name="prossimoContatto" /></label>
+            <label style="grid-column:1/-1">Note<textarea name="note" rows="2" maxlength="2000" placeholder="cosa è emerso, cosa è stato proposto"></textarea></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Registra</button></div>
+        </form>
+        @if (s.Azioni.Count == 0)
+        {
+            <p class="sottotesto">Nessuna azione registrata.</p>
+        }
+        else
+        {
+            <table class="tabella" style="margin-top:0.6rem">
+                <thead><tr><th>Data</th><th>Azione</th><th>Note</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var az in s.Azioni)
+                {
+                    <tr style="@(az.Annullata ? "opacity:0.5;text-decoration:line-through" : "")">
+                        <td>@az.DataAzione.ToString("dd/MM/yy")</td>
+                        <td>@NomeTipo(az.Tipo) · @NomeEsito(az.Esito)<br /><span class="sottotesto">@az.NomeUtente@(az.ProssimoContatto is DateTime p ? $" · richiamare il {p:dd/MM/yy}" : "")</span></td>
+                        <td class="sottotesto">@az.Note</td>
+                        <td>
+                            @if (!az.Annullata)
+                            {
+                                <form method="post" asp-action="AnnullaAzione" onsubmit="return confirm('Annullare questa azione?')">
+                                    <input type="hidden" name="id" value="@az.IdAzioneCliente" /><input type="hidden" name="codice" value="@i.Codice" />
+                                    <button type="submit" class="pulsante pulsante-tenue minuto" title="Inserita per errore">Annulla</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+
+    <div>
+        <section class="riquadro">
+            <div class="barra-risultati"><h2>Assegnazione</h2></div>
+            @if (aperta.Assegnazione is not null)
+            {
+                <p>@aperta.Commerciale — <strong>@NomeStato(aperta.Assegnazione.Stato)</strong>
+                    @if (aperta.Assegnazione.DataInizio is DateTime di) { <text>dal @di.ToString("dd/MM/yyyy")</text> }</p>
+                <p class="sottotesto">Proposta da @aperta.Assegnazione.PropostaDa il @aperta.Assegnazione.DataProposta.ToLocalTime().ToString("dd/MM/yyyy")@(aperta.Assegnazione.Motivo is null ? "" : $": {aperta.Assegnazione.Motivo}")</p>
+            }
+            else
+            {
+                <p class="sottotesto">Un cliente MARE.A già esistente si assegna al commerciale per seguirlo (regola della crescita del 30% delle provvigioni). La proposta vale solo dopo l'approvazione.</p>
+                <form method="post" asp-action="Proponi" class="griglia-filtri">
+                    <input type="hidden" name="codice" value="@i.Codice" />
+                    @if (Model.PuoGestire)
+                    {
+                        <label>Commerciale
+                            <select name="idCommerciale">
+                                @foreach (var c in Model.Commerciali) { <option value="@c.IdCommerciale" selected="@((Model.CommercialePredefinito ?? Model.MioCommerciale?.IdCommerciale) == c.IdCommerciale)">@c.Nome</option> }
+                            </select>
+                        </label>
+                    }
+                    <label style="grid-column:1/-1">Motivo<input type="text" name="motivo" maxlength="1000" placeholder="es. cliente in calo, visita fatta, potenziale Legionella" /></label>
+                    <div class="azioni-filtri"><div style="flex:1"></div>
+                        <button type="submit" class="pulsante" @(Model.PuoGestire || Model.MioCommerciale is not null ? "" : "disabled")>Proponi @(Model.PuoGestire ? "" : "a me")</button></div>
+                </form>
+            }
+            @if (s.Assegnazioni.Count(x => x.Assegnazione.Stato is StatoAssegnazioneCliente.Rifiutata or StatoAssegnazioneCliente.Chiusa) > 0)
+            {
+                <details style="margin-top:0.5rem"><summary class="sottotesto">Storico</summary>
+                    <ul class="sottotesto">
+                        @foreach (var (asg, nome) in s.Assegnazioni.Where(x => x.Assegnazione.Stato is StatoAssegnazioneCliente.Rifiutata or StatoAssegnazioneCliente.Chiusa))
+                        { <li>@nome — @NomeStato(asg.Stato) (@asg.DataProposta.ToLocalTime().ToString("dd/MM/yyyy")@(asg.DataFine is DateTime f ? $" – {f:dd/MM/yyyy}" : ""))@(asg.NotaDecisione is null ? "" : $": {asg.NotaDecisione}")</li> }
+                    </ul>
+                </details>
+            }
+        </section>
+
+        @if (l is not null)
+        {
+            <section class="riquadro">
+                <div class="barra-risultati"><h2>Legionella</h2></div>
+                <dl class="scheda-dati">
+                    <div><dt>Stato</dt><dd>@EsportatoreClientiDaSeguire.Etichetta(l.Stato)</dd></div>
+                    <div><dt>Mesi abituali</dt><dd>@EsportatoreClientiDaSeguire.NomiMesi(l.MesiAbituali)</dd></div>
+                    <div><dt>Ultimo campionamento</dt><dd>@l.UltimoCampionamento.ToString("dd/MM/yyyy") (@l.GiorniDallUltimo giorni fa)</dd></div>
+                    <div><dt>Prossimo atteso</dt><dd>@l.ProssimoAtteso.ToString("dd/MM/yyyy") (ogni @l.IntervalloAtteso giorni)</dd></div>
+                    <div><dt>Campioni</dt><dd>@l.CampioniPrecedenti → @l.CampioniUltimi (@l.PuntiPerCampionamento.ToString("0.#", it) per campionamento)</dd></div>
+                    <div><dt>Fatturato Legionella</dt><dd>@E(l.FatturatoPrecedenti) → @E(l.FatturatoUltimi)</dd></div>
+                </dl>
+            </section>
+        }
+
+        <section class="riquadro">
+            <div class="barra-risultati"><h2>Dati del cliente</h2></div>
+            <form method="post" asp-action="Attributi" class="griglia-filtri">
+                <input type="hidden" name="codice" value="@i.Codice" />
+                <label style="flex-direction:row;align-items:center;gap:0.4rem"><input type="checkbox" name="intermediario" value="true" checked="@i.Intermediario" /> Intermediario (campiona per conto di propri clienti)</label>
+                <input type="hidden" name="intermediario" value="false" />
+                <label style="grid-column:1/-1">Note<textarea name="note" rows="2" maxlength="1000">@s.Attributi?.Note</textarea></label>
+                <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Salva</button></div>
+            </form>
+        </section>
+
+        @if (i.Uscita is null)
+        {
+            <section class="riquadro">
+                <div class="barra-risultati"><h2>Togli dalla lista</h2></div>
+                <p class="sottotesto">Per un cliente che non manderà più analisi (acquisito da un nostro cliente, chiuso, perso per sempre): non comparirà più fra i clienti da seguire.
+                    Si può rimettere in lista quando vuoi, e torna da solo se ricomincia a lavorare con noi.</p>
+                <form method="post" asp-action="Togli" class="griglia-filtri" id="form-togli" onsubmit="return confirm('Togliere il cliente dalla lista?')">
+                    <input type="hidden" name="codice" value="@i.Codice" />
+                    <label>Motivo
+                        <select name="motivo" id="togli-motivo">
+                            <option value="AcquisitoDaCliente">Acquisito da un altro nostro cliente</option>
+                            <option value="CessataAttivita">Cessata attività</option>
+                            <option value="NonRecuperabile">Non recuperabile (concorrenza, rapporto chiuso)</option>
+                            <option value="Altro">Altro (scrivi il motivo)</option>
+                        </select>
+                    </label>
+                    <label id="togli-successore-campo">Acquisito da (cerca per nome, codice o città)
+                        <input type="text" name="successore" id="togli-successore" list="togli-elenco" autocomplete="off" placeholder="es. Riccione srl" />
+                        <datalist id="togli-elenco"></datalist>
+                    </label>
+                    <label style="grid-column:1/-1">Nota<input type="text" name="note" maxlength="1000" placeholder="facoltativa, obbligatoria con «Altro»" /></label>
+                    <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Togli dalla lista</button></div>
+                </form>
+            </section>
+        }
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Analisi per controllo</h2><span class="sottotesto">Campioni ArcLab in @confrontoTxt e in @attuale; in evidenza i controlli non più fatti. Valori a listino, non fatturati.</span></div>
+    @if (s.Controlli.Count == 0)
+    {
+        <p class="sottotesto">Nessun campione in ArcLab negli ultimi 24 mesi.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Controllo</th><th class="numerico">Campioni @confrontoTxt</th><th class="numerico">Campioni @attuale</th><th class="numerico">Valore @confrontoTxt</th><th class="numerico">Valore @attuale</th></tr></thead>
+                <tbody>
+                @foreach (var c in s.Controlli)
+                {
+                    <tr class="@(c.CampioniPrecedenti > 0 && c.CampioniUltimi == 0 ? "riga-attenzione" : "")">
+                        <td>@c.Controllo@if (c.CampioniPrecedenti > 0 && c.CampioniUltimi == 0) { <text> </text><span class="etichetta etichetta-non-conforme">perso</span> }<br /><span class="sottotesto">controllo @c.IdControllo</span></td>
+                        <td class="numerico">@c.CampioniPrecedenti</td>
+                        <td class="numerico">@c.CampioniUltimi</td>
+                        <td class="numerico">@E(c.ValorePrecedenti)</td>
+                        <td class="numerico">@E(c.ValoreUltimi)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@section Script {
+<script>
+(() => {
+    const motivo = document.getElementById('togli-motivo');
+    if (!motivo) return;
+    const campo = document.getElementById('togli-successore-campo'), input = document.getElementById('togli-successore'), elenco = document.getElementById('togli-elenco');
+    const aggiorna = () => { campo.style.display = motivo.value === 'AcquisitoDaCliente' ? '' : 'none'; };
+    motivo.addEventListener('change', aggiorna); aggiorna();
+    let attesa;
+    input.addEventListener('input', () => {
+        clearTimeout(attesa);
+        const q = input.value.trim();
+        if (q.length < 2) return;
+        attesa = setTimeout(async () => {
+            const r = await fetch('/ClientiDaSeguire/CercaClienti?q=' + encodeURIComponent(q));
+            if (!r.ok) return;
+            elenco.innerHTML = '';
+            for (const c of await r.json()) {
+                const o = document.createElement('option');
+                o.value = c.codice; o.label = c.nome + (c.citta ? ' (' + c.citta + ')' : ''); o.textContent = o.label;
+                elenco.appendChild(o);
+            }
+        }, 250);
+    });
+})();
+</script>
+}

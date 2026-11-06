@@ -1,0 +1,62 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Materie prime» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> È il <strong>catalogo degli ingredienti</strong> con i loro valori nutrizionali per 100 g, da cui si calcolano le ricette.
+        Ogni materia prima può essere:</p>
+    <ul>
+        <li><strong>Specifica</strong>: i valori della scheda tecnica di quel prodotto e fornitore (da preferire quando c'è);</li>
+        <li><strong>Generica</strong>: valori di riferimento da banche dati ufficiali (CREA per l'Italia, USDA per gli USA, CNF per il Canada).</li>
+    </ul>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cercare un ingrediente</summary>
+    <p>Scrivi in <strong>Cerca</strong> una parte del nome, della marca o del fornitore. Con <em>Tipo</em> e <em>Provenienza</em> restringi
+        (es. solo schede tecniche, solo CREA). Clicca la riga per aprirla.</p>
+</details>
+
+<details class="situazione">
+    <summary>Inserire un ingrediente dalla scheda tecnica del cliente (PDF)</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Da scheda PDF</span> e scegli il file della scheda tecnica.</li>
+        <li>L'AI legge la scheda e <strong>compila i campi</strong> (denominazione, valori per 100 g, fonte). Il tipo diventa <em>Specifica</em>.</li>
+        <li><strong>Controlla ogni valore</strong> con la scheda: l'AI può sbagliare a leggere (unità, virgole, valori per porzione invece che per 100 g).</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/materie-prime-scheda.png" alt="Materia prima: dati, valori per 100 g con somma dei componenti e fonte" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Inserire un ingrediente a mano</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova materia prima</span>.</li>
+        <li>Scrivi denominazione, tipo, marca e fornitore.</li>
+        <li>Compila i <strong>valori per 100 g</strong>. Se l'acqua non è indicata, premi <span class="tasto">Calcola acqua per differenza</span>.</li>
+        <li>Indica la <strong>fonte</strong>: scegli una fonte esistente o descrivi la nuova (es. «Scheda tecnica Eurovo rev.3») e il riferimento del documento.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="nota">In alto a destra compare la <strong>somma dei componenti</strong>: <span style="color:#1a7f37">verde</span> se è vicina a 100 g,
+        <span style="color:#b3261e">rossa</span> se si scosta di più di 5 g. In rosso c'è quasi sempre un valore sbagliato o mancante.
+        I nutrienti aggiuntivi (sodio, trans, colesterolo, vitamine…) servono solo per le etichette USA e Canada.</p>
+</details>
+
+<details class="situazione">
+    <summary>Togliere un ingrediente</summary>
+    <p>Usa il pulsante di eliminazione sulla riga: l'ingrediente non compare più nell'elenco ma <strong>resta in archivio</strong>
+        (le ricette già fatte non cambiano).</p>
+</details>
+
+<details class="situazione">
+    <summary>Aggiornare le banche dati (CREA, USDA, CNF)</summary>
+    <ul class="passi">
+        <li><span class="tasto">Importa CREA</span>: scegli il file Excel scaricato dal CREA.</li>
+        <li><span class="tasto">Importa USDA</span> / <span class="tasto">Importa CNF (Canada)</span>: scrivi il percorso della cartella con i file CSV scaricati.</li>
+    </ul>
+    <p class="nota">Si fa raramente, quando esce una nuova versione della banca dati. I valori già presenti vengono aggiornati, non duplicati.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

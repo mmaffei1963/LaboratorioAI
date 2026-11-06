@@ -22,9 +22,11 @@ public class ValidazioneController : Controller
         _audit = audit;
     }
 
-    public IActionResult Index()
+    /// <param name="campione">IdCampione da aprire subito (collegamento dalla maschera di ArcLab).</param>
+    public IActionResult Index(int? campione)
     {
         ViewData["Titolo"] = "Da Validare";
+        ViewData["CampioneIniziale"] = campione;
         return View();
     }
 
@@ -67,6 +69,102 @@ public class ValidazioneController : Controller
         return Json(risultato);
     }
 
+    /// <summary>
+    /// Colori e segnalazioni dei limiti normativi (fase 1b): confronto con le schede limite validate e controlli
+    /// tecnici. Separato dal giudizio AI. In cache 2 minuti; ?aggiorna=true ricalcola.
+    /// </summary>
+    [HttpGet("api/validazione/segnalazioni")]
+    public async Task<IActionResult> Segnalazioni([FromServices] LaboratorioAI.Dati.Limiti.ServizioSegnalazioniLimiti servizio,
+        [FromServices] ILogger<ValidazioneController> log, bool aggiorna, CancellationToken ct)
+    {
+        try
+        {
+            var esiti = await servizio.CalcolaAsync(aggiorna, ct);
+            return Json(esiti.ToDictionary(e => e.Key.ToString(), e => new
+            {
+                // 26/10/2026: verde senza nessun confronto con una scheda = «Nessun limite di legge» (azzurro).
+                Colore = e.Value.Colore == LaboratorioAI.Core.Limiti.ColoreRilievo.Verde && !e.Value.Confrontato
+                    ? "azzurro" : e.Value.Colore.ToString().ToLowerInvariant(),
+                Rilievi = e.Value.Rilievi.Select(r => new
+                {
+                    Colore = r.Colore.ToString().ToLowerInvariant(), r.Regola, r.Testo, r.IdProva, r.IdParametro, r.CodiceScheda
+                })
+            }));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogError(ex, "Segnalazioni limiti non calcolate");
+            return StatusCode(500, new { messaggio = "Segnalazioni dei limiti non disponibili: " + ex.Message });
+        }
+    }
+
+    // ── Validazione da LaboratorioAI: giudizio + chiusura analisi da riportare in ArcLab (18/10/2026) ──
+
+    private static object Riga(LaboratorioAI.Core.Entita.GiudizioDaRiportare g) => new
+    {
+        id = g.IdGiudizioDaRiportare, g.IdCampione, g.IdGiudizio, g.CodGiudizio, g.GiudizioTesto, g.Automatico,
+        stato = g.Stato.ToString(), g.ValidatoDa, DataValidazione = g.DataValidazione.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
+        DataRiportato = g.DataRiportato?.ToLocalTime().ToString("dd/MM/yyyy HH:mm"), g.ColoreLimiti
+    };
+
+    [HttpGet("api/validazione/campione/{idCampione:int}/giudizio")]
+    public async Task<IActionResult> Giudizio(int idCampione, [FromServices] LaboratorioAI.Dati.Validazione.ServizioValidazioneGiudizio servizio,
+        [FromServices] IContestoUtente utente, CancellationToken ct)
+    {
+        var s = await servizio.SchedaAsync(idCampione, ct);
+        return Json(new
+        {
+            arcLab = s.ArcLab is null ? null : new
+            {
+                s.ArcLab.AnalisiChiusa, s.ArcLab.GiudizioConf, s.ArcLab.NumeroCampione, s.ArcLab.ProveNonVerificate,
+                giudizi = s.ArcLab.Giudizi.Select(g => new { g.IdGiudizio, g.CodGiudizio, g.Giudizio })
+            },
+            proposti = s.Proposti.Select(g => new { g.IdGiudizio, g.CodGiudizio, g.Giudizio, g.GiudizioConformita }),
+            validazione = s.Validazione is null ? null : Riga(s.Validazione),
+            s.ColoreLimiti, s.MotivoBlocco,
+            puoValidare = utente.HaPermesso(Permessi.ValidazioneConferma),
+            senzaGiudizio = LaboratorioAI.Core.Validazione.RegoleGiudizio.SenzaGiudizio
+        });
+    }
+
+    [HttpGet("api/validazione/validati")]
+    public async Task<IActionResult> Validati([FromServices] LaboratorioAI.Dati.Validazione.ServizioValidazioneGiudizio servizio, CancellationToken ct)
+    {
+        try { return Json((await servizio.ElencoAsync(ct)).Select(Riga)); }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        { return StatusCode(500, new { messaggio = "Stato delle validazioni non disponibile: " + ex.Message }); }
+    }
+
+    public record RichiestaValida(int IdCampione, int? IdGiudizio, bool ConfermaColore);
+
+    [HttpPost("api/validazione/valida")]
+    [RichiedePermesso(Permessi.ValidazioneConferma)]
+    public async Task<IActionResult> Valida([FromBody] RichiestaValida r, [FromServices] LaboratorioAI.Dati.Validazione.ServizioValidazioneGiudizio servizio,
+        [FromServices] IContestoUtente utente, CancellationToken ct)
+    {
+        var op = new LaboratorioAI.Dati.Limiti.OperatoreLimiti(utente.IdUtente ?? 0, utente.NomeCompleto ?? utente.Email ?? "?");
+        var esito = await servizio.ValidaAsync(r.IdCampione, r.IdGiudizio, r.ConfermaColore, op, ct);
+        if (esito.Riuscita)
+            await _audit.RegistraAsync(AreaFunzionale.Validazione, "campione.validato", EsitoOperazione.Successo,
+                tipoEntita: "Campione", idEntita: r.IdCampione.ToString(), dettaglio: new { r.IdGiudizio, r.ConfermaColore, esito.Messaggio }, ct: ct);
+        return Json(new { riuscita = esito.Riuscita, messaggio = esito.Messaggio, chiedeConferma = esito.ChiedeConferma });
+    }
+
+    public record RichiestaAnnulla(int Id, string? Nota);
+
+    [HttpPost("api/validazione/annulla")]
+    [RichiedePermesso(Permessi.ValidazioneConferma)]
+    public async Task<IActionResult> Annulla([FromBody] RichiestaAnnulla r, [FromServices] LaboratorioAI.Dati.Validazione.ServizioValidazioneGiudizio servizio,
+        [FromServices] IContestoUtente utente, CancellationToken ct)
+    {
+        var op = new LaboratorioAI.Dati.Limiti.OperatoreLimiti(utente.IdUtente ?? 0, utente.NomeCompleto ?? utente.Email ?? "?");
+        var esito = await servizio.AnnullaAsync(r.Id, r.Nota, op, ct);
+        if (esito.Riuscita)
+            await _audit.RegistraAsync(AreaFunzionale.Validazione, "campione.validazione-annullata", EsitoOperazione.Successo,
+                tipoEntita: "GiudizioDaRiportare", idEntita: r.Id.ToString(), dettaglio: new { r.Nota }, ct: ct);
+        return Json(new { riuscita = esito.Riuscita, messaggio = esito.Messaggio });
+    }
+
     /// <summary>Dettaglio del campione con le prove.</summary>
     [HttpGet("api/validazione/campione/{idCampione:int}")]
     public async Task<IActionResult> Campione(int idCampione, CancellationToken ct)
@@ -95,6 +193,7 @@ public class ValidazioneController : Controller
             },
             Prove = campione.Prove.Select(p => new
             {
+                p.IdProva,
                 Parametro = p.DenominazioneRiga ?? p.Parametro,
                 p.RiferimentoNormativo,
                 Valore = p.ValoreFormattato,

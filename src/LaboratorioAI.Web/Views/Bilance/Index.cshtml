@@ -15,8 +15,9 @@
     </div>
 </div>
 
-<section class="riquadro">
-    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+<section class="riquadro" id="riquadro-registro" data-puo-eliminare="@(Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.BilanceValidazione) ? "true" : "false")">
+    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto" style="margin-left:auto"></span>
+        <label class="casella" style="margin-left:14px" title="Mostra anche le righe eliminate dal registro (restano nel database)"><input type="checkbox" id="mostra-eliminate" /> Mostra eliminate</label></div>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-registro">
             <thead><tr><th>N° rapporto</th><th>Bilancia</th><th class="numerico">Portata g</th><th>Data</th><th>Scadenza</th></tr></thead>
@@ -91,10 +92,17 @@
         <label>Responsabile<input type="text" id="t-responsabile" value="@responsabile" /></label>
     </div>
 
+    <h3>Committente <span class="sottotesto">(cliente e insediamento ArcLab; vuoto = taratura interna MARE.A)</span></h3>
+    <div class="griglia-filtri">
+        <label>Cliente<input type="text" id="c-cliente" list="lista-c-clienti" placeholder="anagrafica ArcLab (vuoto = interno)" />
+            <datalist id="lista-c-clienti"></datalist></label>
+        <label>Insediamento<select id="c-insediamento" disabled><option value="">—</option></select></label>
+    </div>
+
     <h3>Bilancia</h3>
     <div class="griglia-filtri">
-        <label>Origine<select id="b-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select></label>
-        <label>Identificazione<input type="text" id="b-identificazione" list="lista-b" /><datalist id="lista-b"></datalist></label>
+        <label>Origine<select id="b-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Del cliente</option></select></label>
+        <label>Identificazione<input type="text" id="b-identificazione" list="lista-b" placeholder="interno: da ArcLab · cliente: marca, matricola" /><datalist id="lista-b"></datalist></label>
         <label>Modello<input type="text" id="b-modello" /></label>
         <label>Tipo<input type="text" id="b-tipo" /></label>
         <label>SDA<input type="text" id="b-sda" /></label>
@@ -122,6 +130,7 @@
     <div class="azioni-filtri"><button type="button" class="pulsante pulsante-tenue" id="btn-ecc-riga">Aggiungi posizione</button></div>
 
     <h3>Prova di ripetibilità <span class="sottotesto">(un carico, 5 letture)</span></h3>
+    <p id="hint-rip" class="sottotesto"></p>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-rip"><thead><tr><th>n.</th><th class="numerico">Lettura g</th><th></th></tr></thead><tbody></tbody></table>
     </div>
@@ -131,11 +140,13 @@
     <p id="hint-lin" class="sottotesto"></p>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-lin">
-            <thead><tr><th>Carico nom. g</th><th class="numerico">Lettura g</th><th>V. conv. g</th><th>u massa g</th><th>mpe g</th><th>Composizione</th><th></th></tr></thead>
+            <thead><tr><th>N.</th><th>Carico nom. g</th><th class="numerico">Lettura g</th><th>V. conv. g</th><th>u massa g</th><th>mpe g</th><th>Composizione</th><th></th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
     <div class="azioni-filtri"><button type="button" class="pulsante pulsante-tenue" id="btn-lin-riga">Aggiungi punto</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-lin-gruppo"
+                title="Porta i punti a 5 (con la portata compilata propone 0, 25, 50, 75, 100%)">Aggiungi 5 punti</button>
         <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button></div>
 
     <div id="pannello-risultati-taratura" class="nascosto">
@@ -159,6 +170,11 @@
         <label class="casella"><input type="checkbox" id="t-copia-letture" checked /> copia letture nel duplicato</label>
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica">Duplica per altra bilancia</button>
         <div style="flex:1"></div>
+        @if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.BilanceValidazione))
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-elimina-registro" style="color:var(--rosso)"
+                    title="Toglie dal registro (non cancella: si ripristina con «Mostra eliminate»)">Elimina dal registro</button>
+        }
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>

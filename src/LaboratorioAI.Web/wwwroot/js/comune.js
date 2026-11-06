@@ -59,7 +59,7 @@ export function etichettaGiudizio(giudizio) {
         Conforme:       ['conforme',    'Conforme'],
         NonConforme:    ['non-conforme','Non conforme'],
         Borderline:     ['borderline',  'Borderline'],
-        NonDeterminato: ['neutro',      'Non determinato']
+        NonDeterminato: ['neutro',      'Da verificare']
     };
     const [classe, testo] = mappa[giudizio] ?? mappa.NonDeterminato;
     return `<span class="etichetta etichetta-${classe}">${testo}</span>`;

@@ -1,0 +1,117 @@
+﻿@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Manualistica: modelli";
+    var puoCaricare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ManualisticaModelliGestisci);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Manualistica: modelli</h1>
+        <p class="sottotitolo">I modelli Word da cui si generano i documenti per i clienti. Un modello si carica come revisione in bozza, si controlla, si manda in approvazione e diventa utilizzabile quando viene approvato. Resta registrato chi lo ha caricato e chi lo ha approvato. Niente si cancella: la revisione superata passa a «obsoleto».</p>
+    </div>
+    @if (puoCaricare)
+    {
+        <div class="azioni">
+            <button class="pulsante" id="btn-carica">Carica modelli</button>
+        </div>
+    }
+</div>
+
+@if (puoCaricare)
+{
+    <section class="riquadro" id="pannello-carica" hidden>
+        <h2>Caricamento</h2>
+        <p class="sottotitolo">I file entrano nel manuale scelto qui sopra, quello che stai guardando. Si possono scegliere più file in una volta: ognuno viene esaminato per conto suo, e quelli con problemi non fermano gli altri. Il modello si riconosce dal nome del file; se il nome non basta, carica quel file da solo indicando quale modello è.</p>
+        <div class="griglia-filtri">
+            <label>File Word
+                <input type="file" id="f-file" accept=".docx" multiple />
+            </label>
+            <label>Modello (solo per un file alla volta)
+                <select id="f-modello">
+                    <option value="">riconosci dal nome del file</option>
+                </select>
+            </label>
+            <div class="azioni-riga" style="align-items:flex-end">
+                <button class="pulsante" id="btn-invia">Carica</button>
+                <button class="pulsante pulsante-secondario" id="btn-annulla">Chiudi</button>
+            </div>
+        </div>
+        <div id="esiti-carica"></div>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Manuale
+            <select id="f-tipo"></select>
+        </label>
+        <label>Mostra
+            <select id="f-stato">
+                <option value="">tutti i modelli</option>
+                <option value="mancante">senza modello caricato</option>
+                <option value="Bozza">in bozza</option>
+                <option value="InApprovazione">in approvazione</option>
+                <option value="Approvato">approvati</option>
+            </select>
+        </label>
+        <label>Cerca<input type="search" id="f-testo" placeholder="codice o nome del documento…" /></label>
+        <div class="azioni-riga" style="align-items:flex-end">
+            <button class="pulsante pulsante-secondario" id="btn-ricarica">Aggiorna</button>
+        </div>
+    </div>
+
+    <p class="sottotitolo" id="riepilogo"></p>
+    <p id="chi-approva" hidden></p>
+
+    <div class="barra-selezione" id="barra-selezione" hidden>
+        <span id="conteggio-selezione"></span>
+        <div class="azioni-riga">
+            <button class="pulsante pulsante-piccolo" id="btn-massa-approvazione" hidden>Manda in approvazione</button>
+            <button class="pulsante pulsante-piccolo" id="btn-massa-approva" hidden>Approva</button>
+            <button class="pulsante pulsante-secondario pulsante-piccolo" id="btn-deseleziona">Togli la selezione</button>
+        </div>
+    </div>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-modelli">
+            <thead>
+                <tr>
+                    <th class="col-spunta"><input type="checkbox" id="spunta-tutti" title="Seleziona tutte le righe mostrate" /></th>
+                    <th>Documento</th>
+                    <th>Quando esce</th>
+                    <th>Revisione</th>
+                    <th>Stato</th>
+                    <th>Approvazione</th>
+                    <th>Controllo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<dialog id="dlg-controllo">
+    <form method="dialog">
+        <h2 id="dlg-titolo">Controllo dei marcatori</h2>
+        <div id="dlg-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+<dialog id="dlg-conferma">
+    <form method="dialog">
+        <h2 id="conferma-titolo">Conferma</h2>
+        <div id="conferma-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="no">Annulla</button>
+            <button class="pulsante" value="si" id="conferma-si">Procedi</button>
+        </menu>
+    </form>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/manualistica-modelli.js" asp-append-version="true"></script>
+}

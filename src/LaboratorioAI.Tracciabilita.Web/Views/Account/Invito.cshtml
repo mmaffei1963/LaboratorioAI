@@ -1,0 +1,18 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloImpostaPassword
+@{
+    ViewData["Titolo"] = "Scegli la password";
+}
+<h1>Benvenuto in Tracciato@(string.IsNullOrEmpty(Model.Nome) ? "" : ", " + Model.Nome)</h1>
+<p>Scegli la password con cui entrerai. Almeno 12 caratteri, non una parola comune e senza la tua e-mail dentro: una frase facile da ricordare va benissimo.</p>
+
+<form method="post" class="modulo" autocomplete="off">
+    <div asp-validation-summary="All" class="errore"></div>
+
+    <label for="Password">Password</label>
+    <input asp-for="Password" type="password" autocomplete="new-password" autofocus />
+
+    <label for="Conferma">Ripeti la password</label>
+    <input asp-for="Conferma" type="password" autocomplete="new-password" />
+
+    <button type="submit">Salva password</button>
+</form>

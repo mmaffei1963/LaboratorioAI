@@ -189,6 +189,9 @@ function cruscottoBody() {
         lottiVettore: !!sel.vettore,
         coerenza: !!sel.coerenza,
         stampa: !!sel.stampa,
+        prezziMarea: !!sel.prezzimarea,
+        commesseMarea: !!sel.commessemarea,
+        senzaContratto: !!sel.senzacontratto,
         annoDa: +$('k-da').value || 0,
         annoA: +$('k-a').value || 0,
         sogliaPct: parseFloat($('k-soglia').value) || 15
@@ -204,6 +207,9 @@ const APRI = {
     ricevitore: { btn: 'r-cerca', sync: () => { $('r-da').value = $('k-da').value; $('r-a').value = $('k-a').value; } },
     vettore: { btn: 'v-cerca', sync: () => { $('v-da').value = $('k-da').value; $('v-a').value = $('k-a').value; } },
     coerenza: { btn: 'c-cerca', sync: () => { $('c-da').value = $('k-da').value; $('c-a').value = $('k-a').value; } },
+    senzacontratto: { btn: 'y-cerca', sync: () => { $('y-uso').value = '1'; $('y-testo').value = ''; } },
+    commessemarea: { btn: 'w-cerca', sync: () => { $('w-caso').value = ''; $('w-testo').value = ''; } },
+    prezzimarea: { btn: 'z-cerca', sync: () => { $('z-caso').value = 'Prezzo diverso'; $('z-testo').value = ''; } },
     stampa: {
         btn: 's-cerca', sync: () => {
             $('s-da').value = `${(+$('k-da').value)}-01-01`; $('s-a').value = `${(+$('k-a').value)}-12-31`;
@@ -241,3 +247,157 @@ async function eseguiCruscotto() {
 
 $('k-esegui')?.addEventListener('click', eseguiCruscotto);
 $('k-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/esporta-tutto', 'POST', cruscottoBody(), 'RicercaErrori_Cruscotto.xlsx'));
+
+// ── 9. Denominazioni dei metodi (09/10/2026) ───────────────────
+// Le segnalazioni giudicate corrette si salvano in LabAI («è corretta», con nota facoltativa) e spariscono dall'elenco
+// finché in ArcLab non cambiano denominazione o parametro. Nessuna finestra del browser: la nota si scrive nella riga.
+{
+    const annoOggi = new Date().getFullYear();
+    if ($('n-da') && !$('n-da').value) $('n-da').value = annoOggi - 1;
+    if ($('n-a') && !$('n-a').value) $('n-a').value = annoOggi;
+}
+const filtriDenominazioni = () => ({
+    annoDa: +$('n-da').value || 0, annoA: +$('n-a').value || 0, ancheVerificate: $('n-verificate').checked
+});
+
+function rigaDenominazione(r) {
+    const tipo = r.tipo === 'ParametroAssente'
+        ? '<span class="etichetta etichetta-attesa">non cita il parametro</span>'
+        : '<span class="etichetta etichetta-non-conforme">denominazione condivisa</span>';
+    const rapporti = r.nRapporti > 0 ? `<strong style="color:#b21a1a">${esc(r.nRapporti)}</strong>` : '0';
+    const verifica = r.verificata
+        ? `<span class="etichetta etichetta-conforme">corretta</span> <span class="sottotesto">${esc(r.verificataDa ?? '')} ${esc(r.verificataIl ?? '')}</span>
+           ${r.noteVerifica ? `<div class="sottotesto">${esc(r.noteVerifica)}</div>` : ''}
+           <button type="button" class="pulsante pulsante-tenue" data-annulla data-id="${r.idMetodo}" data-tipo="${esc(r.tipo)}">Annulla</button>`
+        : `<div class="n-verifica" style="display:flex;gap:0.3rem;align-items:center">
+             <input type="text" placeholder="nota (facoltativa)" maxlength="500" style="min-width:9rem" />
+             <button type="button" class="pulsante pulsante-tenue" data-corretta data-id="${r.idMetodo}" data-tipo="${esc(r.tipo)}">È corretta</button>
+           </div>`;
+    return `<tr>
+        <td>${tipo}<div class="sottotesto">${esc(r.motivo)}</div></td>
+        <td>${esc(r.idMetodo)}</td><td>${esc(r.nomeParametro)}</td><td><strong>${esc(r.dettagliMetodo)}</strong></td>
+        <td>${esc(r.rifBiblio)}</td><td class="numerico">${rapporti}</td><td>${esc(r.ultimoRapporto ?? '')}</td>
+        <td>${verifica}</td></tr>`;
+}
+
+function cercaDenominazioni() {
+    esegui($('n-cerca'), $('n-info'), $('n-tab'),
+        '/api/ricerca-errori/denominazioni', 'POST', filtriDenominazioni(), rigaDenominazione,
+        d => `${d.totale} segnalazioni su ${d.metodi} metodi; ${d.conRapporti} metodi con rapporti emessi nel ${d.annoDa}–${d.annoA}`, 8);
+}
+
+async function salvaVerifica(btn, corretta) {
+    const note = corretta ? btn.parentElement.querySelector('input')?.value ?? '' : '';
+    btn.disabled = true;
+    try {
+        await chiamata('/api/ricerca-errori/denominazioni/verifica', 'POST',
+            { idMetodo: +btn.dataset.id, tipo: btn.dataset.tipo, corretta, note });
+        cercaDenominazioni();
+    } catch (e) {
+        btn.disabled = false;
+        $('n-info').innerHTML = `<span style="color:#b21a1a">${esc(e.message)}</span>`;
+    }
+}
+
+$('n-cerca')?.addEventListener('click', cercaDenominazioni);
+$('n-verificate')?.addEventListener('change', cercaDenominazioni);
+$('n-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/denominazioni/esporta', 'POST', filtriDenominazioni(), 'RicercaErrori_Denominazioni.xlsx'));
+$('n-tab')?.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.hasAttribute('data-corretta')) salvaVerifica(b, true);
+    else if (b.hasAttribute('data-annulla')) salvaVerifica(b, false);
+});
+
+// ── 10. Prezzi commesse ArcLab ↔ Marea (28/10/2026) ─────────────
+// data della commessa ArcLab e, se c'è, dell'ultimo rinnovo
+const dateCommessa = r => r.dataCommessa || r.dataUltimoRinnovo
+    ? `${esc(r.dataCommessa ?? '—')}${r.dataUltimoRinnovo ? `<br><span class="sottotesto">rinnovo ${esc(r.dataUltimoRinnovo)}</span>` : ''}` : '';
+let prezziMarea = null;
+function disegnaPrezziMarea() {
+    const tab = $('z-tab'); if (!tab || !prezziMarea) return;
+    const caso = $('z-caso').value, t = $('z-testo').value.trim().toLowerCase();
+    const righe = prezziMarea.righe.filter(r => (!caso || r.caso.includes(caso))
+        && (!t || `${r.cliente} ${r.idCliente} ${r.controllo} ${r.idControllo} ${r.insediamento ?? ''}`.toLowerCase().includes(t)));
+    const riepilogo = Object.entries(prezziMarea.casi).map(([k, v]) => `${k.toLowerCase()} ${v}`).join(' · ');
+    const diversi = prezziMarea.casi['Prezzo diverso'] || 0;
+    $('z-info').innerHTML = `<strong style="color:${diversi ? '#b21a1a' : '#1a7f37'}">${diversi} commesse con prezzo diverso da Marea</strong> · `
+        + esc(`${righe.length} righe mostrate su ${prezziMarea.totale}` + (riepilogo ? ` — ${riepilogo}` : ''));
+    tab.tBodies[0].innerHTML = righe.map(r => `<tr>
+        <td>${esc(r.caso)}</td><td>${esc(r.cliente)} <span class="sottotesto">(${esc(r.idCliente)})</span></td><td>${esc(r.insediamento ?? '')}</td>
+        <td>${esc(r.controllo)} <span class="sottotesto">(ID ${esc(r.idControllo)})</span></td><td>${esc(r.idCommessa ?? '')}</td>
+        <td class="numerico">${num(r.prezzoArcLab)}</td><td class="numerico">${esc(r.prezzoMarea ?? '—')}</td>
+        <td class="numerico" style="font-weight:600;color:${(r.differenza ?? 0) < 0 ? '#b21a1a' : 'inherit'}">${r.differenza == null ? '' : num(r.differenza)}</td>
+        <td>${dateCommessa(r)}</td><td>${esc(r.ultimoCampione ?? '')}</td><td>${esc(r.ultimaModificaMarea ?? '')}</td>
+    </tr>`).join('') || '<tr><td colspan="11">Nessun risultato.</td></tr>';
+}
+async function cercaPrezziMarea() {
+    const btn = $('z-cerca'); btn.disabled = true; const t = btn.textContent; btn.textContent = 'Ricerca…';
+    try { prezziMarea = await (await chiamata('/api/ricerca-errori/prezzi-marea', 'GET')).json(); disegnaPrezziMarea(); }
+    catch (e) { $('z-info').innerHTML = `<span style="color:#b21a1a">${esc(e.message)}</span>`; }
+    finally { btn.disabled = false; btn.textContent = t; }
+}
+$('z-cerca')?.addEventListener('click', cercaPrezziMarea);
+$('z-caso')?.addEventListener('change', disegnaPrezziMarea);
+$('z-testo')?.addEventListener('input', disegnaPrezziMarea);
+$('z-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/prezzi-marea/esporta', 'POST', {}, 'RicercaErrori_PrezziArcLabMarea.xlsx'));
+
+// ── 11. Commesse ArcLab ↔ Marea oltre ai prezzi (28/10/2026) ────
+let commesseMarea = null;
+function disegnaCommesseMarea() {
+    const tab = $('w-tab'); if (!tab || !commesseMarea) return;
+    const caso = $('w-caso').value, t = $('w-testo').value.trim().toLowerCase();
+    const righe = commesseMarea.righe.filter(r => (!caso || r.caso === caso)
+        && (!t || `${r.cliente ?? ''} ${r.idCliente ?? ''} ${r.controllo ?? ''} ${r.idControllo ?? ''} ${r.insediamento ?? ''}`.toLowerCase().includes(t)));
+    const riepilogo = Object.entries(commesseMarea.casi).map(([k, v]) => `${k.toLowerCase()} ${v}`).join(' · ');
+    $('w-info').innerHTML = `<strong style="color:${commesseMarea.totale ? '#b21a1a' : '#1a7f37'}">${commesseMarea.totale} differenze</strong> · `
+        + esc(`${righe.length} mostrate` + (riepilogo ? ` — ${riepilogo}` : ''));
+    tab.tBodies[0].innerHTML = righe.map(r => `<tr>
+        <td>${esc(r.caso)}</td><td>${esc(r.cliente ?? '')}${r.idCliente != null ? ` <span class="sottotesto">(${esc(r.idCliente)})</span>` : ''}</td>
+        <td>${esc(r.insediamento ?? '')}</td>
+        <td>${esc(r.controllo ?? '')}${r.idControllo != null ? ` <span class="sottotesto">(ID ${esc(r.idControllo)})</span>` : ''}</td>
+        <td>${esc(r.idCommessaArcLab ?? '')}</td><td>${esc(r.idCommessaMarea ?? '')}</td><td>${esc(r.dettaglio)}</td>
+        <td>${dateCommessa(r)}</td><td>${esc(r.ultimoCampione ?? '')}</td><td>${esc(r.ultimaModificaMarea ?? '')}</td>
+    </tr>`).join('') || '<tr><td colspan="10">Nessun risultato.</td></tr>';
+}
+async function cercaCommesseMarea() {
+    const btn = $('w-cerca'); btn.disabled = true; const t = btn.textContent; btn.textContent = 'Ricerca…';
+    try { commesseMarea = await (await chiamata('/api/ricerca-errori/commesse-marea', 'GET')).json(); disegnaCommesseMarea(); }
+    catch (e) { $('w-info').innerHTML = `<span style="color:#b21a1a">${esc(e.message)}</span>`; }
+    finally { btn.disabled = false; btn.textContent = t; }
+}
+$('w-cerca')?.addEventListener('click', cercaCommesseMarea);
+$('w-caso')?.addEventListener('change', disegnaCommesseMarea);
+$('w-testo')?.addEventListener('input', disegnaCommesseMarea);
+$('w-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/commesse-marea/esporta', 'POST', {}, 'RicercaErrori_CommesseArcLabMarea.xlsx'));
+
+// ── 12. Commesse attive senza numero di contratto (28/10/2026) ──
+let senzaContratto = null;
+function disegnaSenzaContratto() {
+    const tab = $('y-tab'); if (!tab || !senzaContratto) return;
+    const uso = $('y-uso').value, t = $('y-testo').value.trim().toLowerCase();
+    const limite = anni => { const d = new Date(); d.setFullYear(d.getFullYear() - anni); return d.toISOString().slice(0, 10); };
+    const righe = senzaContratto.righe.filter(r =>
+        (!uso || (uso === 'mai' ? !r.ultimoCampioneIso : (r.ultimoCampioneIso && r.ultimoCampioneIso >= limite(+uso))))
+        && (!t || `${r.ragioneSociale ?? ''} ${r.codContabilita ?? ''} ${r.controllo ?? ''} ${r.idControllo ?? ''} ${r.insediamento ?? ''}`.toLowerCase().includes(t)));
+    $('y-info').innerHTML = `<strong style="color:${senzaContratto.totale ? '#b21a1a' : '#1a7f37'}">${senzaContratto.totale} commesse senza contratto</strong> · `
+        + esc(`${senzaContratto.ultimoAnno} con campioni nell'ultimo anno, ${senzaContratto.maiUsate} mai usate · ${righe.length} mostrate`
+        + (righe.length > 2000 ? ' (in tabella le prime 2000: per tutte usa Esporta Excel)' : ''));
+    tab.tBodies[0].innerHTML = righe.slice(0, 2000).map(r => `<tr>
+        <td>${esc(r.idCommessa)}${r.codCommessa ? ` <span class="sottotesto">(${esc(r.codCommessa)})</span>` : ''}</td>
+        <td>${esc(r.ragioneSociale ?? '')} <span class="sottotesto">(${esc(r.codContabilita ?? '')})</span></td><td>${esc(r.insediamento ?? '')}</td>
+        <td>${esc(r.controllo ?? '')}${r.idControllo != null ? ` <span class="sottotesto">(ID ${esc(r.idControllo)})</span>` : ''}</td>
+        <td>${esc((r.descrIncarico ?? '').trim())}</td><td class="numerico">${r.prezzo == null ? '' : num(r.prezzo)}</td>
+        <td>${esc(r.dataCommessa ?? '')}</td><td>${esc(r.ultimoCampione ?? 'mai')}</td><td class="numerico">${esc(r.lotti)}</td>
+    </tr>`).join('') || '<tr><td colspan="9">Nessun risultato.</td></tr>';
+}
+async function cercaSenzaContratto() {
+    const btn = $('y-cerca'); btn.disabled = true; const t = btn.textContent; btn.textContent = 'Ricerca…';
+    try { senzaContratto = await (await chiamata('/api/ricerca-errori/senza-contratto', 'GET')).json(); disegnaSenzaContratto(); }
+    catch (e) { $('y-info').innerHTML = `<span style="color:#b21a1a">${esc(e.message)}</span>`; }
+    finally { btn.disabled = false; btn.textContent = t; }
+}
+$('y-cerca')?.addEventListener('click', cercaSenzaContratto);
+$('y-uso')?.addEventListener('change', disegnaSenzaContratto);
+$('y-testo')?.addEventListener('input', disegnaSenzaContratto);
+$('y-esporta')?.addEventListener('click', () => scarica('/api/ricerca-errori/senza-contratto/esporta', 'POST', {}, 'RicercaErrori_CommesseSenzaContratto.xlsx'));

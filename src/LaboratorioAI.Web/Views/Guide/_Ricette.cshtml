@@ -1,0 +1,55 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Ricette nutrizionali» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A calcolare la <strong>dichiarazione nutrizionale</strong> di un prodotto partendo dalla ricetta (Reg. UE 1169/2011):
+        scegli gli ingredienti dal catalogo <em>Materie prime</em>, scrivi le quantità e il programma calcola i valori per 100 g e per porzione,
+        già arrotondati per l'etichetta. Si possono preparare anche i pannelli <strong>Nutrition Facts</strong> per USA e Canada.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Calcolare la dichiarazione nutrizionale di un prodotto</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova ricetta</span>. Scrivi la <strong>Denominazione</strong>, il <strong>Committente</strong> (scegli dall'elenco) e il lotto.</li>
+        <li>Indica l'<strong>unità di consumo</strong> (la porzione) in grammi e, se serve, in pezzi.</li>
+        <li><strong>Ingredienti:</strong> scrivi nella casella di ricerca e clicca la materia prima trovata; poi scrivi la <strong>quantità in kg</strong>. Ripeti per ogni ingrediente.</li>
+        <li>Se il prodotto si cuoce e perde acqua, scrivi il <strong>Calo peso (%)</strong> oppure il <strong>Peso cotto (kg)</strong>.</li>
+        <li>La <strong>Dichiarazione nutrizionale</strong> si aggiorna da sola: valori per 100 g, per porzione e % delle assunzioni di riferimento (RI).
+            Sotto la tabella trovi i <strong>valori arrotondati per l'etichetta</strong>.</li>
+        <li>Premi <span class="tasto">Salva ricetta</span>, poi <span class="tasto">Rapporto PDF</span> (o Word, Excel) per il cliente.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/ricette-dichiarazione.png" alt="Ricetta: ingredienti con quantità e dichiarazione nutrizionale calcolata" loading="lazy" />
+    <p class="nota">Se compare un <strong>avviso giallo</strong> sopra la tabella, indica un ingrediente i cui valori non sommano a circa 100 g. Correggi la materia prima prima di consegnare il rapporto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un ingrediente non c'è nel catalogo</summary>
+    <p>Aggiungilo prima in <strong>Nutrizionale → Materie prime</strong> (meglio dalla scheda tecnica del cliente), poi torna alla ricetta e cercalo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un controllo in più prima di consegnare (Verifica AI)</summary>
+    <p>Dopo aver salvato, premi <span class="tasto">Verifica AI</span>: l'AI guarda ingredienti e risultati e segnala valori poco plausibili per quel tipo di prodotto
+        (es. proteine troppo alte per un biscotto). È un aiuto: <strong>la responsabilità del rapporto resta di chi lo firma</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Etichetta per USA o Canada</summary>
+    <ol class="passi">
+        <li>Compila <em>Zuccheri aggiunti</em> e <em>Descrizione porzione (USA)</em> (es. «1/4 crust») e salva.</li>
+        <li>Premi <span class="tasto">Nutrition Facts (USA)</span> o <span class="tasto">Valeur nutritive (Canada)</span>: compare l'anteprima del pannello.</li>
+        <li><span class="tasto">Verifica congruità (AI)</span> per un controllo, poi <span class="tasto">Scarica pannello PDF</span> (o Word).</li>
+    </ol>
+    <p class="nota">Per questi pannelli servono i nutrienti aggiuntivi (sodio, trans, colesterolo, vitamina D, calcio, ferro, potassio) nelle materie prime:
+        le banche dati USDA e CNF li hanno già.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riaprire o correggere una ricetta</summary>
+    <p>Cerca la ricetta per denominazione o committente nella casella in alto e clicca la riga. Modifica, salva e rigenera il rapporto.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

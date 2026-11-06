@@ -1,0 +1,78 @@
+@{
+    ViewData["Titolo"] = "Utenti e ruoli";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Utenti e ruoli</h1>
+        <p class="sottotitolo">
+            Chi può entrare in LaboratorioAI e cosa può fare. Ogni persona ha uno o più ruoli, che si sommano; chi entra
+            per la prima volta senza essere registrato riceve solo «Consultazione». Le modifiche valgono subito e restano
+            nel registro attività.
+        </p>
+    </div>
+</div>
+
+<div class="riga-pulsanti" style="margin-bottom:12px">
+    <button type="button" class="pulsante" data-scheda="persone" id="sch-persone">Persone</button>
+    <button type="button" class="pulsante pulsante-tenue" data-scheda="ruoli" id="sch-ruoli">Ruoli e permessi</button>
+</div>
+
+<!-- ══ Persone ══ -->
+<div id="pannello-persone">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <input type="search" id="filtro-persone" placeholder="Cerca per nome, e-mail o ruolo" style="flex:1;max-width:26rem" />
+            <label class="casella" style="margin-left:12px"><input type="checkbox" id="mostra-disattivati" /> Mostra disattivati</label>
+            <button type="button" class="pulsante" id="btn-nuova-persona" style="margin-left:auto">Aggiungi persona</button>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-persone">
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Ruoli</th><th>Ultimo accesso</th><th>Stato</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro nascosto" id="editor-persona">
+        <h2 id="editor-titolo">Persona</h2>
+        <div class="griglia-campi">
+            <label>E-mail (account Microsoft con cui entra)<input type="email" id="p-email" /></label>
+            <label>Nome<input type="text" id="p-nome" /></label>
+            <label style="grid-column:1/-1">Note (es. chi usa una casella condivisa)<input type="text" id="p-note" maxlength="500" /></label>
+        </div>
+        <h3 style="margin-top:14px">Ruoli</h3>
+        <div class="gruppo-caselle" id="p-ruoli"></div>
+        <p class="nota-campo" id="p-nota-amm"></p>
+        <div class="riga-pulsanti">
+            <button type="button" class="pulsante" id="btn-salva-persona">Salva</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-attiva-persona"></button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-chiudi-persona">Chiudi</button>
+        </div>
+    </section>
+</div>
+
+<!-- ══ Ruoli e permessi ══ -->
+<div id="pannello-ruoli" class="nascosto">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <span id="nota-ruoli"></span>
+            <button type="button" class="pulsante" id="btn-salva-ruoli" style="margin-left:auto" disabled>Salva le modifiche</button>
+        </div>
+        @* 21/10/2026: riga dei ruoli e colonna dei permessi restano ferme mentre si scorre (si vede sempre a chi si danno i permessi). *@
+        <style>
+            .matrice-ruoli { max-height: 75vh; overflow: auto; }
+            .matrice-ruoli #tabella-ruoli thead th { position: sticky; top: 0; z-index: 3; }
+            .matrice-ruoli #tabella-ruoli thead th:first-child { left: 0; z-index: 4; }
+            .matrice-ruoli #tabella-ruoli tbody td:first-child { position: sticky; left: 0; z-index: 2; background: var(--bianco, #fff); }
+            .matrice-ruoli #tabella-ruoli tbody tr.area td { background: var(--grigio-100, #f3f4f6); }
+        </style>
+        <div class="tabella-scorrevole matrice-ruoli">
+            <table class="tabella" id="tabella-ruoli"><thead></thead><tbody></tbody></table>
+        </div>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/utenti.js" asp-append-version="true"></script>
+}

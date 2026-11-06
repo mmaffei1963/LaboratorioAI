@@ -28,8 +28,12 @@
         <button type="button" class="pulsante pulsante-secondario nascosto" id="btn-analizza-tutti">Analizza tutti</button>
     </div>
     <div class="azioni-filtri">
-        <label style="min-width:9rem">Rinominati (Palomar)</label>
-        <input type="text" id="cartella-palomar" style="flex:1;min-width:22rem" placeholder="cartella di prelievo Palomar (file rinominati)" value="@ViewData["CartellaPalomar"]" />
+        <label style="min-width:9rem" title="Certificati con sole prove esterne: Palomar compila ArcLab">Palomar solo esterni</label>
+        <input type="text" id="cartella-palomar" style="flex:1;min-width:22rem" placeholder="es. ...\Palomar\ESTERNI" value="@ViewData["CartellaPalomar"]" />
+    </div>
+    <div class="azioni-filtri">
+        <label style="min-width:9rem" title="Campioni con anche prove nostre: solo portale, nessun campo ArcLab">Palomar misti</label>
+        <input type="text" id="cartella-palomar-misti" style="flex:1;min-width:22rem" placeholder="es. ...\Palomar\INTERNI_ESTERNI (Impostazioni documenti)" value="@ViewData["CartellaPalomarMisti"]" />
     </div>
     <div class="azioni-filtri">
         <label style="min-width:9rem">Archivio smistato</label>
@@ -46,14 +50,52 @@
         <div style="flex:1"></div>
         <button type="button" class="pulsante pulsante-tenue" id="btn-svuota">Svuota esiti</button>
     </div>
+    <h3 style="margin:0.4rem 0">Solo esterni <span class="sottotesto">— tutte le prove del campione sono di laboratori esterni: Palomar compila ArcLab (fatturato interscambio)</span></h3>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-cert">
             <thead>
                 <tr>
-                    <th>File</th><th>Laboratorio</th><th>Nostro cod.</th><th>Cliente / prodotto</th>
+                    <th>File</th><th>Laboratorio</th><th>Nostro cod.</th><th>Cliente / prodotto</th><th>Tipo</th>
                     <th>Criticità</th><th>Avviso</th><th>Nome file proposto</th><th></th>
                 </tr>
             </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <h3 style="margin:1rem 0 0.4rem">Misti <span class="sottotesto">— il campione ha anche prove fatte da noi: cartella INTERNI_ESTERNI, nessun import in ArcLab, valori da inserire a mano nel nostro certificato</span></h3>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-misti">
+            <thead>
+                <tr>
+                    <th>File</th><th>Laboratorio</th><th>Nostro cod.</th><th>Cliente / prodotto</th><th>Tipo</th>
+                    <th>Criticità</th><th>Avviso</th><th>Nome file proposto</th><th></th>
+                </tr>
+            </thead>
+            <tbody><tr class="vuota"><td colspan="9" class="sottotesto">Nessun certificato misto.</td></tr></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap">
+        <h2 style="margin:0">Registro di controllo</h2>
+        <label>Ultimi
+            <select id="reg-giorni">
+                <option value="1">1 giorno</option>
+                <option value="7" selected>7 giorni</option>
+                <option value="30">30 giorni</option>
+                <option value="90">90 giorni</option>
+            </select>
+        </label>
+        <label class="casella"><input type="checkbox" id="reg-solo-problemi" /> solo problemi (errori e non consegnati a Palomar)</label>
+        <label class="casella"><input type="checkbox" id="reg-da-inserire" /> solo misti da inserire in ArcLab</label>
+        <label class="casella"><input type="checkbox" id="reg-annullati" /> mostra annullati</label>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-registro">Aggiorna</button>
+    </div>
+    <p class="sottotesto" id="reg-msg"></p>
+    <div class="tabella-scorrevole" style="max-height:28rem">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th>Data/ora</th><th>Esito</th><th>Tipo / ArcLab</th><th>Certificato</th><th>Messaggio</th><th>File Palomar</th><th></th></tr></thead>
             <tbody></tbody>
         </table>
     </div>

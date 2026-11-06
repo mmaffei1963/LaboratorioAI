@@ -1,0 +1,98 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Indicatori economici (Direzione)» (13/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Gli stessi indicatori del report Power BI («Indicatori MAREA» e «Indicatori area»), calcolati da LaboratorioAI
+        sulla contabilità analitica di AZW: fatturato, spese fisse e variabili, margine di contribuzione, personale, EBITDA, utile, fatturato di pareggio.
+        Insieme all'andamento per territorio e al rendimento dei commerciali forma il cruscotto Direzione. <strong>Riservato</strong>
+        a soci e direzione di laboratorio.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Vedere gli indicatori di MAREA o di un'area</summary>
+    <ol class="passi">
+        <li>Menu <strong>Direzione → Indicatori economici</strong>.</li>
+        <li>Scegli l'<strong>Area</strong> (o «Tutta MAREA») e gli anni <strong>Dal</strong> / <strong>Al</strong>, poi <span class="tasto">Mostra</span>.</li>
+        <li>Per portare la tabella in Excel premi <span class="tasto">Esporta Excel</span>.</li>
+    </ol>
+    <p class="nota">Per un'area, alle spese fisse si aggiunge 1/5 delle spese fisse dell'Amministrazione (centro 03), come in Power BI.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere come va il fatturato sul territorio (e la sede di Pesaro)</summary>
+    <ol class="passi">
+        <li>Menu <strong>Direzione → Andamento territorio</strong>.</li>
+        <li>Scegli il <strong>Dettaglio</strong> (regione, provincia o comune) e, se vuoi, restringi a una <strong>Regione</strong> o <strong>Provincia</strong>.</li>
+        <li>Filtra per <strong>Area</strong>, <strong>Voce di ricavo</strong>, <strong>Chi fa il lavoro</strong> (commessa AZW), <strong>Responsabile cliente</strong> (zona AZW)
+            o <strong>Commerciale</strong>, poi <span class="tasto">Mostra</span>.</li>
+        <li>In alto il riquadro <strong>Sede di Pesaro</strong> mette a confronto Pesaro e Urbino e il resto delle Marche con Rimini e Forlì-Cesena:
+            crescita media annua prima e dopo l'apertura (2022).</li>
+    </ol>
+    <p class="nota">Il territorio è la <strong>sede del cliente</strong> in AZW, non l'insediamento delle analisi: così ci sono anche consulenze e formazione.
+        Il commerciale è quello attuale del cliente (in AZW non c'è lo storico). Le note di credito sono già sottratte.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere quanto costa e quanto rende un commerciale</summary>
+    <ol class="passi">
+        <li>Menu <strong>Direzione → Rendimento commerciali</strong>. Scegli un <strong>Commerciale</strong> (o tutti) e gli anni, poi <span class="tasto">Mostra</span>.</li>
+        <li>Per ogni commerciale la tabella mette a confronto il <strong>costo</strong> (stipendio dalla sua voce AZW + provvigioni) con il fatturato
+            <strong>portato</strong> (incassi su cui ha maturato provvigioni) e <strong>seguito</strong> (clienti con il suo codice venditore oggi).</li>
+        <li>La riga <strong>Contributo</strong> dice se nell'anno si ripaga: margine di contribuzione del portato meno il costo. Sotto c'è il cumulato dall'arrivo.</li>
+        <li>Apri <em>Clienti portati</em> per l'elenco con i nomi; <span class="tasto">Esporta Excel</span> crea un foglio per commerciale.</li>
+    </ol>
+    <p class="nota">La linea viola segna il primo anno di costo. Il seguito negli anni prima mostra come andavano quei clienti prima di lui. Il portato esiste solo
+        da quando c'è l'accordo provvigioni. Se compare l'avviso «Nessuna voce di costo», in AZW manca una voce di personale con il suo nome.</p>
+</details>
+
+<details class="situazione">
+    <summary>Farmi commentare i numeri dall'AI</summary>
+    <ol class="passi">
+        <li>In <strong>Indicatori economici</strong>, <strong>Andamento territorio</strong> o <strong>Rendimento commerciali</strong> imposta i filtri e premi <span class="tasto">Mostra</span>.</li>
+        <li>Nel riquadro <strong>Commento AI</strong> premi <span class="tasto">Genera commento sui dati mostrati</span> e attendi 20–40 secondi.</li>
+        <li>Il commento ha sempre le stesse parti: in sintesi, dove cresciamo e dove perdiamo, clienti, sede di Pesaro (solo territorio) o «si ripaga?» (solo commerciali), da approfondire.</li>
+        <li>Per allegarlo a un verbale o a una mail usa <em>scarica come testo</em>; i commenti di prima sono in <strong>Commenti precedenti</strong>.</li>
+    </ol>
+    <p class="nota">I numeri li calcola LaboratorioAI; l'AI li legge e li commenta, senza calcolarne di nuovi. Riceve i totali per zona, il confronto di Pesaro,
+        il progressivo dell'anno e i <strong>nomi dei primi 30 clienti</strong> di ogni elenco (principali, in crescita, in calo, nuovi, persi). Sotto ogni commento
+        c'è <em>Dati inviati all'AI</em>: lì si verifica ogni affermazione. Ogni commento resta in archivio con data, autore, filtri e costo (qualche centesimo).</p>
+</details>
+
+<details class="situazione">
+    <summary>Aggiornare subito i dati da AZW</summary>
+    <p>Premi <span class="tasto">Aggiorna da AZW</span> (in Indicatori economici o in Andamento territorio): rilegge l'ultima copia del file AZW, come fa ogni notte.
+        Ci vuole qualche minuto. Se il file non è stato ancora aggiornato da <em>Copia.bat</em>, i numeri restano quelli.</p>
+</details>
+
+<details class="situazione">
+    <summary>I numeri sono diversi da Power BI</summary>
+    <p>Fatturato, spese variabili, materie prime, margine, personale, ammortamenti, imposte e utili coincidono al centesimo con Power BI.
+        Sono diversi per scelta:</p>
+    <ul class="passi">
+        <li><strong>Valore aggiunto, EBITDA, EBIT, ROS</strong>: qui escludono ammortamenti e imposte, come da definizione (in Power BI l'EBITDA coincide con l'utile).</li>
+        <li><strong>Spese fisse e pareggio del totale MAREA</strong>: qui non si aggiunge 1/5 dell'Amministrazione, che nel totale è già compresa.</li>
+    </ul>
+    <p class="nota">Se una differenza non rientra in questi casi, controlla la data del file AZW in alto: Power BI e LaboratorioAI potrebbero aver letto due aggiornamenti diversi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Classificare una voce di costo nuova</summary>
+    <ol class="passi">
+        <li>Se in alto compare «voci nuove da verificare» o «voci senza tipo», apri <strong>Classificazione voci</strong>.</li>
+        <li>Spunta <em>solo da verificare o senza tipo</em>: le righe in giallo sono quelle da sistemare.</li>
+        <li>Scegli <strong>Tipo</strong> (fisso o variabile), <strong>Macrocategoria</strong> (es. Personale per uno stipendio) e se è <strong>materia prima</strong>, poi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="nota">Le voci nuove create in AZW arrivano da sole a ogni importazione notturna, con una proposta fatta con le regole di Power BI. Una voce di costo senza tipo
+        resta fuori da fisse e variabili e compare nella riga «Costi non classificati». Ogni modifica finisce nel registro attività.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il file AZW non è aggiornato</summary>
+    <p>I dati arrivano dal file AZW che lo script <em>Copia.bat</em> aggiorna ogni notte sul PC di Mirko Maffei. Se in alto compare l'avviso rosso,
+        quella notte il PC era spento o lo script non è andato: rilanciarlo e poi premere «Aggiorna da AZW».</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

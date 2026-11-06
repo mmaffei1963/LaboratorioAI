@@ -5,7 +5,13 @@ using Microsoft.Extensions.Options;
 namespace LaboratorioAI.IA;
 
 /// <summary>Esito di una chiamata al modello.</summary>
-public record RispostaModello(string Testo, int TokenInput, int TokenOutput, string Modello);
+public record RispostaModello(string Testo, int TokenInput, int TokenOutput, string Modello)
+{
+    /// <summary>Token di input scritti nella cache (prompt caching), pagati 1,25 volte.</summary>
+    public int TokenCacheScritti { get; init; }
+    /// <summary>Token di input letti dalla cache, pagati 0,1 volte.</summary>
+    public int TokenCacheLetti { get; init; }
+}
 
 /// <summary>Chiamata all'API Anthropic.</summary>
 public interface IClientAnthropic
@@ -14,6 +20,19 @@ public interface IClientAnthropic
 
     /// <summary>Interroga il modello allegando un PDF (blocco «document»), es. una scheda tecnica.</summary>
     Task<RispostaModello> InterrogaConPdfAsync(string prompt, byte[] pdf, CancellationToken ct = default);
+
+    /// <summary>
+    /// Interroga il modello con istruzioni di sistema lunghe e stabili (es. il testo delle guide), messe in cache per 5 minuti:
+    /// le domande successive con lo stesso testo costano circa un decimo sull'input (11/10/2026).
+    /// </summary>
+    Task<RispostaModello> InterrogaConSistemaAsync(string sistema, string messaggio, int? tokenMassimi = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Come <see cref="InterrogaConSistemaAsync"/> ma con un tempo massimo dedicato, per i lavori lunghi eseguiti in
+    /// background (es. estrazione dei limiti da un testo di legge, 17/10/2026). Le altre chiamate restano a TimeoutSecondi.
+    /// </summary>
+    Task<RispostaModello> InterrogaLungaAsync(string sistema, string messaggio, int tokenMassimi, int timeoutSecondi, CancellationToken ct = default,
+        string? modello = null);
 }
 
 /// <summary>
@@ -34,8 +53,9 @@ public class ClientAnthropic : IClientAnthropic
         _opzioni = opzioni.Value;
     }
 
+    // 20/10/2026: temperatura 0 per l'analisi dei risultati: due campioni uguali devono avere lo stesso giudizio.
     public Task<RispostaModello> InterrogaAsync(string prospetto, CancellationToken ct = default) =>
-        InviaAsync([new MessaggioApi { Role = "user", Content = prospetto }], ct);
+        InviaAsync([new MessaggioApi { Role = "user", Content = prospetto }], ct, temperatura: 0);
 
     public Task<RispostaModello> InterrogaConPdfAsync(string prompt, byte[] pdf, CancellationToken ct = default)
     {
@@ -57,7 +77,27 @@ public class ClientAnthropic : IClientAnthropic
         return InviaAsync([new MessaggioApi { Role = "user", Content = contenuto }], ct);
     }
 
-    private async Task<RispostaModello> InviaAsync(List<MessaggioApi> messaggi, CancellationToken ct)
+    public Task<RispostaModello> InterrogaConSistemaAsync(string sistema, string messaggio, int? tokenMassimi = null, CancellationToken ct = default)
+    {
+        var blocchiSistema = new object[]
+        {
+            new { type = "text", text = sistema, cache_control = new { type = "ephemeral" } }
+        };
+        return InviaAsync([new MessaggioApi { Role = "user", Content = messaggio }], ct, blocchiSistema, tokenMassimi);
+    }
+
+    public Task<RispostaModello> InterrogaLungaAsync(string sistema, string messaggio, int tokenMassimi, int timeoutSecondi, CancellationToken ct = default,
+        string? modello = null)
+    {
+        var blocchiSistema = new object[]
+        {
+            new { type = "text", text = sistema, cache_control = new { type = "ephemeral" } }
+        };
+        return InviaAsync([new MessaggioApi { Role = "user", Content = messaggio }], ct, blocchiSistema, tokenMassimi, timeoutSecondi, modello);
+    }
+
+    private async Task<RispostaModello> InviaAsync(List<MessaggioApi> messaggi, CancellationToken ct,
+        object[]? sistema = null, int? tokenMassimi = null, int? timeoutSecondi = null, string? modello = null, double? temperatura = null)
     {
         if (!_opzioni.Configurato)
             throw new InvalidOperationException(
@@ -65,8 +105,10 @@ public class ClientAnthropic : IClientAnthropic
 
         var richiesta = new RichiestaApi
         {
-            Model = _opzioni.Modello,
-            MaxTokens = _opzioni.TokenMassimi,
+            Model = string.IsNullOrWhiteSpace(modello) ? _opzioni.Modello : modello,
+            MaxTokens = tokenMassimi ?? _opzioni.TokenMassimi,
+            System = sistema,
+            Temperature = temperatura,
             Messages = messaggi
         };
 
@@ -77,16 +119,29 @@ public class ClientAnthropic : IClientAnthropic
         messaggio.Headers.Add("x-api-key", _opzioni.ChiaveApi);
         messaggio.Headers.Add("anthropic-version", _opzioni.VersioneApi);
 
-        using var risposta = await _http.SendAsync(messaggio, ct);
+        // 17/10/2026: il tempo massimo è applicato qui, per chiamata (l'HttpClient non ha più un suo timeout).
+        var secondi = timeoutSecondi ?? _opzioni.TimeoutSecondi;
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(secondi));
+        HttpResponseMessage risposta;
+        try
+        {
+            risposta = await _http.SendAsync(messaggio, cts.Token);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Il modello non ha risposto entro {secondi} secondi.");
+        }
+        using var _r = risposta;
 
         if (!risposta.IsSuccessStatusCode)
         {
-            var dettaglio = await risposta.Content.ReadAsStringAsync(ct);
+            var dettaglio = await risposta.Content.ReadAsStringAsync(cts.Token);
             throw new HttpRequestException(
                 $"Chiamata al modello non riuscita ({(int)risposta.StatusCode}): {dettaglio}");
         }
 
-        var corpo = await risposta.Content.ReadFromJsonAsync<RispostaApi>(ct)
+        var corpo = await risposta.Content.ReadFromJsonAsync<RispostaApi>(cts.Token)
             ?? throw new InvalidOperationException("Risposta del modello non interpretabile.");
 
         var testo = string.Concat(corpo.Content
@@ -97,7 +152,11 @@ public class ClientAnthropic : IClientAnthropic
             testo,
             corpo.Usage?.InputTokens ?? 0,
             corpo.Usage?.OutputTokens ?? 0,
-            corpo.Model ?? _opzioni.Modello);
+            corpo.Model ?? _opzioni.Modello)
+        {
+            TokenCacheScritti = corpo.Usage?.CacheCreationInputTokens ?? 0,
+            TokenCacheLetti = corpo.Usage?.CacheReadInputTokens ?? 0
+        };
     }
 
     /// <summary>Stima del costo di una chiamata, in euro.</summary>
@@ -111,6 +170,10 @@ public class ClientAnthropic : IClientAnthropic
     {
         [JsonPropertyName("model")]      public string Model { get; set; } = "";
         [JsonPropertyName("max_tokens")] public int MaxTokens { get; set; }
+        [JsonPropertyName("system"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public object[]? System { get; set; }
+        [JsonPropertyName("temperature"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Temperature { get; set; }
         [JsonPropertyName("messages")]   public List<MessaggioApi> Messages { get; set; } = [];
     }
 
@@ -139,5 +202,7 @@ public class ClientAnthropic : IClientAnthropic
     {
         [JsonPropertyName("input_tokens")]  public int InputTokens { get; set; }
         [JsonPropertyName("output_tokens")] public int OutputTokens { get; set; }
+        [JsonPropertyName("cache_creation_input_tokens")] public int? CacheCreationInputTokens { get; set; }
+        [JsonPropertyName("cache_read_input_tokens")] public int? CacheReadInputTokens { get; set; }
     }
 }

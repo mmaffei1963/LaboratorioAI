@@ -14,8 +14,8 @@ namespace LaboratorioAI.Documenti;
 /// </summary>
 public interface IGeneratoreRapportoIncubatore
 {
-    byte[] GeneraPdf(DatiRapportoIncubatore dati);
-    byte[] GeneraWord(DatiRapportoIncubatore dati);
+    byte[] GeneraPdf(DatiRapportoIncubatore dati, string? percorsoWwwRoot = null);
+    byte[] GeneraWord(DatiRapportoIncubatore dati, string? percorsoWwwRoot = null);
     string NomeFile(DatiRapportoIncubatore dati, string estensione);
 }
 
@@ -24,9 +24,9 @@ public class GeneratoreRapportoIncubatore : IGeneratoreRapportoIncubatore
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
-    public byte[] GeneraPdf(DatiRapportoIncubatore d)
+    public byte[] GeneraPdf(DatiRapportoIncubatore d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();
         using var ms = new MemoryStream();
@@ -34,9 +34,9 @@ public class GeneratoreRapportoIncubatore : IGeneratoreRapportoIncubatore
         return ms.ToArray();
     }
 
-    public byte[] GeneraWord(DatiRapportoIncubatore d)
+    public byte[] GeneraWord(DatiRapportoIncubatore d, string? percorsoWwwRoot = null)
     {
-        var doc = Costruisci(d);
+        var doc = Costruisci(d, percorsoWwwRoot);
         var tmp = Path.Combine(Path.GetTempPath(), "labai_inc_" + Guid.NewGuid().ToString("N") + ".rtf");
         try
         {
@@ -48,12 +48,12 @@ public class GeneratoreRapportoIncubatore : IGeneratoreRapportoIncubatore
 
     public string NomeFile(DatiRapportoIncubatore d, string estensione)
     {
-        var nome = new string((d.MisuratoreIdentificazione ?? "Incubatore")
-            .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
-        return $"Rapporto_Taratura_Incubatore_{nome}_{d.DataTaratura:yyyyMMdd}.{estensione}";
+        var nome = NomiFileRapporti.Slug(d.ApparecchiaturaIdentificazione, "Incubatore");
+        var cli = NomiFileRapporti.Slug(d.Committente, "");
+        return $"Rapporto_Taratura_Incubatore{(cli.Length == 0 ? "" : "_" + cli)}_{nome}_{d.DataTaratura:yyyyMMdd}.{estensione}";
     }
 
-    private static Document Costruisci(DatiRapportoIncubatore d)
+    private static Document Costruisci(DatiRapportoIncubatore d, string? percorsoWwwRoot)
     {
         var r = d.Risultato;
         var doc = new Document();
@@ -62,15 +62,7 @@ public class GeneratoreRapportoIncubatore : IGeneratoreRapportoIncubatore
         normale.Font.Size = 9;
 
         var sec = doc.AddSection();
-        sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(1.0);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(1.0);
-        sec.PageSetup.LeftMargin = Unit.FromCentimeter(2);
-        sec.PageSetup.RightMargin = Unit.FromCentimeter(2);
-
-        var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
-        Piccolo(sec, "Sede legale e operativa: Via E. Toti, 2 • 47841 Cattolica (RN) • Tel 0541 830442 • Fax 0541 830460");
-        Piccolo(sec, "info@mare-a.com • www.mare-a.com • Cod. Fisc. e P. Iva 03670240401 • Laboratorio Analisi");
+        CartaIntestataRapporti.Applica(sec, percorsoWwwRoot);   // 03/11/2026: come i termometri
 
         var tit = sec.AddParagraph("RAPPORTO DI TARATURA");
         tit.Format.Alignment = ParagraphAlignment.Center; tit.Format.Font.Bold = true; tit.Format.Font.Size = 13;
@@ -83,7 +75,8 @@ public class GeneratoreRapportoIncubatore : IGeneratoreRapportoIncubatore
         RigaInfo(t, "Rapporto n°", d.NumeroRapporto, "Data taratura", d.DataTaratura.ToString("dd/MM/yyyy", It));
         RigaInfo(t, "Rif. istruzione", d.RiferimentoIstruzione ?? "—",
             "Data scadenza", d.DataScadenza is DateOnly s ? s.ToString("dd/MM/yyyy", It) : "—");
-        RigaInfo(t, "Committente", d.Committente ?? "—", "Redatto da", d.RedattoDa ?? "—");
+        RigaInfo(t, "Committente", CartaIntestataRapporti.Committente(d.Committente), "Redatto da", d.RedattoDa ?? "—");
+        if (!string.IsNullOrWhiteSpace(d.Insediamento)) RigaInfo(t, "Insediamento", d.Insediamento!, "", "");
 
         // Strumenti
         Titolo(sec, "Strumenti");

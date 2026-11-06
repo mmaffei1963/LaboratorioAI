@@ -12,8 +12,9 @@ namespace LaboratorioAI.Core.Servizi;
 /// 2. temperatura reale tr = t_rif + correzione; differenza Dw = tw − tr;
 /// 3. budget d'incertezza del misuratore:
 ///    u_c = √(u_rip² + u(CR)² + u_ris² + u_mappa² + u(stCR)²),
-///    con u_rip = s(Dw)/√n, u(CR) = UE(CR)/k interpolata alla temperatura di
-///    esercizio fra i due punti di certificato che la racchiudono, u_ris =
+///    con u_rip = s(Dw)/√n, u(CR) = UE(CR)/k presa, in modo cautelativo, come il
+///    valore più alto fra i due punti di certificato che racchiudono la temperatura
+///    di esercizio (scelta del Responsabile di Laboratorio, 5/10/2026), u_ris =
 ///    risoluzione/(2√3), u_mappa = dispersione mappatura/(2√3), u(stCR) instabilità CDR;
 /// 4. U = k·u_c; fattore di correzione = Tr − Tw; limiti allarme = nominale −
 ///    correzione ± (tolleranza − U); conforme se U ≤ tolleranza/2.
@@ -33,10 +34,10 @@ public class ServizioTaraturaIncubatori : IServizioTaraturaIncubatori
 
         double correzione = CorrezioneNominale(d.Certificato, N);
 
-        // u(CR): incertezza estesa del CDR interpolata alla temperatura di esercizio
-        // fra i due punti di certificato che la racchiudono (coerente con la
-        // correzione, anch'essa interpolata). Fuori intervallo: punto più vicino.
-        double uCr = IncertezzaCdrInterpolata(d.Certificato, N) / k;
+        // u(CR): incertezza estesa del CDR alla temperatura di esercizio, cautelativa:
+        // la maggiore fra i due punti di certificato che la racchiudono (non si
+        // interpola, per non sottostimare U). Fuori intervallo: punto più vicino.
+        double uCr = IncertezzaCdrCautelativa(d.Certificato, N) / k;
 
         double uRis = d.RisoluzioneStrumento / (2.0 * Math.Sqrt(3.0));
         double uMappa = d.DispersioneMappatura / (2.0 * Math.Sqrt(3.0));
@@ -91,18 +92,18 @@ public class ServizioTaraturaIncubatori : IServizioTaraturaIncubatori
     }
 
     /// <summary>
-    /// Incertezza estesa del CDR alla temperatura di esercizio, interpolata
-    /// linearmente (su T indicata) fra i due punti di certificato che la
-    /// racchiudono. Fuori dall'intervallo del certificato: punto più vicino.
+    /// Incertezza estesa del CDR alla temperatura di esercizio, cautelativa: la
+    /// maggiore fra i due punti di certificato che la racchiudono (su T indicata).
+    /// Fuori dall'intervallo del certificato: punto più vicino. Con incertezza
+    /// uniforme sul certificato coincide con il foglio storico.
     /// </summary>
-    private static double IncertezzaCdrInterpolata(IReadOnlyList<PuntoCertificatoCdr> cert, double N)
+    private static double IncertezzaCdrCautelativa(IReadOnlyList<PuntoCertificatoCdr> cert, double N)
     {
         var lower = cert.Where(c => N - c.TIndicata >= 0).OrderByDescending(c => c.TIndicata).FirstOrDefault();
         var upper = cert.Where(c => c.TIndicata - N > 0).OrderBy(c => c.TIndicata).FirstOrDefault();
         if (lower is null || upper is null)
             return cert.OrderBy(c => Math.Abs(c.TIndicata - N)).First().IncertezzaEstesa;
-        double t = (N - lower.TIndicata) / (upper.TIndicata - lower.TIndicata);
-        return lower.IncertezzaEstesa + t * (upper.IncertezzaEstesa - lower.IncertezzaEstesa);
+        return Math.Max(lower.IncertezzaEstesa, upper.IncertezzaEstesa);
     }
 
     /// <summary>

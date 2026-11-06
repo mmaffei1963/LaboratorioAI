@@ -1,0 +1,127 @@
+@{
+    ViewData["Titolo"] = "Manualistica: voci della check list";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Manualistica: voci della check list</h1>
+        <p class="sottotitolo">Le voci delle tendine non si scrivono a mano: stanno già dentro i modelli approvati, ed è da lì che si leggono. Così il dizionario non può divergere dai documenti che genera. Il passo della check list invece dai modelli non si ricava: si assegna qui, una volta.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Manuale
+            <select id="f-tipo"></select>
+        </label>
+        <div class="azioni-riga" style="align-items:flex-end">
+            <button class="pulsante pulsante-secondario" id="btn-anteprima">Leggi i modelli</button>
+            <button class="pulsante" id="btn-scrivi" disabled>Scrivi le voci</button>
+        </div>
+    </div>
+
+    <p class="sottotitolo" id="riepilogo">Premi «Leggi i modelli» per vedere cosa contengono.</p>
+
+    <div id="esito"></div>
+</section>
+
+<section class="riquadro" id="riquadro-segnalazioni" hidden>
+    <h2>Da guardare</h2>
+    <p class="sottotitolo">Non bloccano la scrittura, ma quasi sempre si correggono nel modello, non qui. Una tendina sbagliata nel modello arriva al consulente e da lì al cliente.</p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-segnalazioni">
+            <thead>
+                <tr><th>Domanda</th><th>Cosa non torna</th><th>Dove</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro" id="riquadro-voci" hidden>
+    <div class="barra-strumenti">
+        <div>
+            <h2>Le domande</h2>
+            <p class="sottotitolo">Il passo dice in quale schermata della check list il consulente si vede questa domanda. Finché è vuoto la domanda esiste ma non compare da nessuna parte.</p>
+        </div>
+        <div class="azioni">
+            <button class="pulsante pulsante-secondario" id="btn-proponi">Proponi i passi mancanti</button>
+        </div>
+    </div>
+
+    <div class="griglia-filtri">
+        <label>Mostra
+            <select id="f-passo">
+                <option value="">tutte le domande</option>
+                <option value="-">senza passo</option>
+            </select>
+        </label>
+        <label>Cerca<input type="search" id="f-testo" placeholder="codice o nome della domanda…" /></label>
+        <div class="azioni-riga" style="align-items:flex-end">
+            <button class="pulsante pulsante-secondario" id="btn-ricarica">Aggiorna</button>
+        </div>
+    </div>
+
+    <p class="sottotitolo" id="riepilogo-voci"></p>
+
+    <div class="barra-selezione" id="barra-selezione" hidden>
+        <span id="conteggio-selezione"></span>
+        <div class="azioni-riga">
+            <select id="f-passo-massa">
+                <option value="">assegna il passo…</option>
+            </select>
+            <button class="pulsante pulsante-piccolo" id="btn-massa-passo">Assegna</button>
+            <button class="pulsante pulsante-secondario pulsante-piccolo" id="btn-deseleziona">Togli la selezione</button>
+        </div>
+    </div>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-voci">
+            <thead>
+                <tr>
+                    <th class="col-spunta"><input type="checkbox" id="spunta-tutte" title="Seleziona tutte le righe mostrate" /></th>
+                    <th>Domanda</th>
+                    <th>Passo</th>
+                    <th>Voci</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<dialog id="dlg-opzioni">
+    <form method="dialog">
+        <h2 id="opzioni-titolo">Voci della tendina</h2>
+        <div id="opzioni-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+<dialog id="dlg-conferma">
+    <form method="dialog">
+        <h2>Scrivere le voci?</h2>
+        <div id="conferma-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="no">Annulla</button>
+            <button class="pulsante" value="si">Scrivi</button>
+        </menu>
+    </form>
+</dialog>
+
+<dialog id="dlg-avviso">
+    <form method="dialog">
+        <h2>Attenzione</h2>
+        <div id="avviso-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/manualistica-voci.js" asp-append-version="true"></script>
+}

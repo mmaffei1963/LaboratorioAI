@@ -1,0 +1,202 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloAccordo
+@{
+    var a = Model.Accordo;
+    ViewData["Titolo"] = a.Nome;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var bozza = a.Stato == StatoAccordo.Bozza;
+    var dis = bozza ? "" : "disabled";
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Num(decimal v) => v.ToString("0.####", it);
+    string Iso(DateTime? d) => d is null ? "" : d.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    var lab = a.Tipo == TipoAccordo.Laboratorio;
+    var voci = a.Voci.OrderBy(v => (int)v.Voce).ToList();
+    var soglie = a.Soglie.Where(s => s.Soglia > 0m).OrderBy(s => s.Soglia).ToList();
+    var n = 0;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@a.Nome</h1>
+        <p class="sottotitolo">
+            @Model.Commerciale.Nome · @EtichetteProvvigioni.Tipo(a.Tipo) · <strong>@EtichetteProvvigioni.Stato(a.Stato)</strong>
+            @if (Model.Periodo is { } p)
+            {
+                <span> · in vigore dal @p.Dal.ToString("dd/MM/yyyy", it) @(p.Al.Year >= 9999 ? "(in corso)" : "al " + p.Al.ToString("dd/MM/yyyy", it))</span>
+            }
+        </p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Index", "AccordiProvvigioni", new { idCommerciale = a.IdCommerciale })">← Accordi</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    @if (bozza)
+    {
+        <p><strong>Bozza:</strong> puoi modificare tutto. Il calcolo non la usa finché non la attivi. Quando la attivi, l'accordo attivo precedente si chiude il giorno prima della sua data di inizio.</p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <form method="post" asp-action="Attiva"><input type="hidden" name="id" value="@a.IdAccordo" />
+                <label class="sottotesto"><input type="checkbox" required /> confermo: da questa data il calcolo usa questo accordo</label>
+                <button type="submit" class="pulsante">Attiva</button></form>
+            <form method="post" asp-action="Annulla"><input type="hidden" name="id" value="@a.IdAccordo" /><button type="submit" class="pulsante pulsante-tenue">Annulla bozza</button></form>
+        </div>
+    }
+    else if (a.Stato == StatoAccordo.Attivo)
+    {
+        <p><strong>Accordo attivo:</strong> non si modifica. Per cambiare percentuali, basi o soglie crea una nuova versione: parte in bozza, la provi con l'anteprima e la attivi da una data.</p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <form method="post" asp-action="Duplica"><input type="hidden" name="id" value="@a.IdAccordo" /><button type="submit" class="pulsante">Duplica come nuova versione</button></form>
+            <form method="post" asp-action="RiportaInBozza"><input type="hidden" name="id" value="@a.IdAccordo" /><button type="submit" class="pulsante pulsante-tenue" title="Solo per l'ultima versione e se nessun trimestre chiuso cade nel suo periodo">Riporta in bozza</button></form>
+        </div>
+    }
+    else
+    {
+        <p><strong>Accordo annullato:</strong> non entra nel calcolo.</p>
+        <form method="post" asp-action="Duplica"><input type="hidden" name="id" value="@a.IdAccordo" /><button type="submit" class="pulsante pulsante-tenue">Duplica come nuova versione</button></form>
+    }
+</section>
+
+@if (Model.Anteprima is not null)
+{
+    var totA = Model.Anteprima.Sum(r => r.Attuale);
+    var totB = Model.Anteprima.Sum(r => r.ConBozza);
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Anteprima: accordo in vigore e questa bozza</h2><span class="sottotesto">Differenza totale: <strong>@Euro(totB - totA)</strong></span></div>
+        <p class="sottotesto">Provvigione per trimestre di incasso se questa bozza fosse attiva dal @a.ValidoDal.ToString("dd/MM/yyyy", it). Salva voci e soglie prima di guardare l'anteprima.</p>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Trimestre</th><th class="numerico">In vigore</th><th class="numerico">Con questa bozza</th><th class="numerico">Differenza</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.Anteprima)
+                {
+                    <tr><td>@r.Trimestre</td><td class="numerico">@Euro(r.Attuale)</td><td class="numerico">@Euro(r.ConBozza)</td><td class="numerico">@Euro(r.ConBozza - r.Attuale)</td></tr>
+                }
+                @foreach (var r in Model.AnteprimaPremi ?? new List<LaboratorioAI.Web.Controllers.RigaAnteprimaPremio>())
+                {
+                    <tr><td>Premio @r.Anno</td><td class="numerico">@Euro(r.Attuale)</td><td class="numerico">@Euro(r.ConBozza)</td><td class="numerico">@Euro(r.ConBozza - r.Attuale)</td></tr>
+                }
+                <tr><td><strong>Totale provvigioni</strong></td><td class="numerico"><strong>@Euro(totA)</strong></td><td class="numerico"><strong>@Euro(totB)</strong></td><td class="numerico"><strong>@Euro(totB - totA)</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Dati dell'accordo</h2></div>
+    <form method="post" asp-action="SalvaTestata" class="griglia-filtri">
+        <input type="hidden" name="id" value="@a.IdAccordo" />
+        <label>Nome<input type="text" name="nome" value="@a.Nome" maxlength="150" required @dis /></label>
+        <label>Valido dal<input type="date" name="validoDal" value="@Iso(a.ValidoDal)" required @dis /></label>
+        <label>Riferimento al documento<input type="text" name="riferimentoDocumento" value="@a.RiferimentoDocumento" maxlength="300" placeholder="es. integrazione firmata il …" @dis /></label>
+        @if (lab)
+        {
+            <label>Mesi del primo anno (cliente nuovo e extra laboratorio)<input type="number" name="mesiPrimoAnno" value="@a.MesiPrimoAnno" min="1" @dis /></label>
+            <label>Mesi senza fatture per tornare «nuovo»<input type="number" name="mesiPausa" value="@a.MesiPausa" min="1" @dis /></label>
+            <label>Clienti esistenti: rapporto iniziato prima del<input type="date" name="dataClientiEsistenti" value="@Iso(a.DataClientiEsistenti)" @dis /></label>
+            <input type="hidden" name="anniConvenzione" value="@a.AnniConvenzione" />
+        }
+        else
+        {
+            <label>Durata delle convenzioni (anni)<input type="number" name="anniConvenzione" value="@a.AnniConvenzione" min="1" @dis /></label>
+            <label>Fine del rapporto di lavoro (se nota)<input type="date" name="dataFineRapporto" value="@Iso(a.DataFineRapporto)" @dis /></label>
+            <input type="hidden" name="mesiPrimoAnno" value="@a.MesiPrimoAnno" />
+            <input type="hidden" name="mesiPausa" value="@a.MesiPausa" />
+        }
+        <label>Fattore orario (1 = tempo pieno)<input type="text" inputmode="decimal" name="fattoreOrario" value="@Num(a.FattoreOrario)" @dis /></label>
+        <label style="grid-column:1/-1">Note<textarea name="note" rows="2" maxlength="2000" @dis>@a.Note</textarea></label>
+        @if (bozza)
+        {
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Salva dati</button></div>
+        }
+    </form>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Voci</h2></div>
+    <p class="sottotesto">Per ogni voce: la percentuale (0 = voce non prevista), la base di calcolo (quali righe di fattura contano) e la spiegazione di come si applica. Le basi si gestiscono in <a href="@Url.Action("Basi", "AccordiProvvigioni")">Basi di calcolo</a>.</p>
+    <form method="post" asp-action="SalvaVoci">
+        <input type="hidden" name="id" value="@a.IdAccordo" />
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Voce</th><th style="width:7rem">%</th><th>Base di calcolo</th><th>Come si applica</th></tr></thead>
+                <tbody>
+                @for (var k = 0; k < voci.Count; k++)
+                {
+                    var v = voci[k];
+                    <tr>
+                        <td><strong>@EtichetteProvvigioni.Voce(v.Voce)</strong><input type="hidden" name="voci[@k].IdVoceAccordo" value="@v.IdVoceAccordo" /></td>
+                        <td><input type="text" inputmode="decimal" name="voci[@k].Percentuale" value="@Num(v.Percentuale)" style="width:5rem" @dis /></td>
+                        <td>
+                            <select name="voci[@k].IdBaseCalcolo" @dis>
+                                @foreach (var b in Model.Basi)
+                                {
+                                    if (b.IdBaseCalcolo == v.IdBaseCalcolo)
+                                    {
+                                        <option value="@b.IdBaseCalcolo" selected>@b.Nome</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@b.IdBaseCalcolo">@b.Nome</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <td><textarea name="voci[@k].Descrizione" rows="2" maxlength="1000" style="width:100%" @dis>@v.Descrizione</textarea></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @if (bozza)
+        {
+            <div style="margin-top:0.6rem;text-align:right"><button type="submit" class="pulsante">Salva voci</button></div>
+        }
+    </form>
+</section>
+
+@if (lab)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Premio annuale</h2></div>
+        <p class="sottotesto">Incassato nell'anno dai clienti nuovi (base della voce «Cliente nuovo», al netto delle note di credito). Premio a gradino: vale la soglia più alta raggiunta. Soglie e premi sono moltiplicati per il fattore orario. Per togliere una soglia mettila a 0.</p>
+        <form method="post" asp-action="SalvaSoglie">
+            <input type="hidden" name="id" value="@a.IdAccordo" />
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Soglia di incassato (€)</th><th>Premio (€)</th></tr></thead>
+                    <tbody>
+                    @foreach (var sg in soglie)
+                    {
+                        <tr>
+                            <td><input type="hidden" name="soglie[@n].IdSogliaAccordo" value="@sg.IdSogliaAccordo" /><input type="text" inputmode="decimal" name="soglie[@n].Soglia" value="@Num(sg.Soglia)" @dis /></td>
+                            <td><input type="text" inputmode="decimal" name="soglie[@n].Premio" value="@Num(sg.Premio)" @dis /></td>
+                        </tr>
+                        n++;
+                    }
+                    @if (bozza)
+                    {
+                        for (var k = 0; k < 2; k++)
+                        {
+                            <tr>
+                                <td><input type="hidden" name="soglie[@n].IdSogliaAccordo" value="0" /><input type="text" inputmode="decimal" name="soglie[@n].Soglia" placeholder="nuova soglia" /></td>
+                                <td><input type="text" inputmode="decimal" name="soglie[@n].Premio" placeholder="premio" /></td>
+                            </tr>
+                            n++;
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+            @if (bozza)
+            {
+                <div style="margin-top:0.6rem;text-align:right"><button type="submit" class="pulsante">Salva soglie</button></div>
+            }
+        </form>
+    </section>
+}

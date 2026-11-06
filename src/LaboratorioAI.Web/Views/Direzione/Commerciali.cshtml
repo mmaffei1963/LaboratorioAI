@@ -1,0 +1,51 @@
+@{
+    ViewData["Titolo"] = "Rendimento commerciali";
+}
+@* Cruscotto Direzione, fase 3 (13/10/2026): quanto costa ogni commerciale e quanto rende. Definizioni decise da Mirko Maffei il 13/10/2026. *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Rendimento commerciali</h1>
+        <p class="sottotitolo">Costo di ogni commerciale (stipendio da AZW + provvigioni) a confronto con il fatturato che porta e che segue, e con il margine che ne deriva. Riservato alla Direzione.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-tenue" href="/Direzione">Indicatori economici</a>
+        <a class="pulsante pulsante-tenue" href="/Direzione/Territorio">Andamento territorio</a>
+        @if (ViewData["PuoModificare"] is true)
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-importa" title="Rilegge il file AZW (ultima copia di Copia.bat). Qualche minuto.">Aggiorna da AZW</button>
+        }
+    </div>
+</div>
+
+<p class="sottotesto" id="aggiornamento"></p>
+
+<section class="riquadro">
+    <div class="azioni-filtri">
+        <label>Commerciale <select id="f-commerciale"><option value="">Tutti</option></select></label>
+        <label>Dal <input type="number" id="f-dal" min="2018" style="width:6rem" /></label>
+        <label>Al <input type="number" id="f-al" min="2018" style="width:6rem" /></label>
+        <button type="button" class="pulsante" id="btn-cerca">Mostra</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Esporta Excel</button>
+    </div>
+</section>
+
+<div id="schede"><p class="sottotesto">Caricamento… (il calcolo delle provvigioni richiede qualche secondo)</p></div>
+
+<section class="riquadro" id="commento-ai"></section>
+
+<section class="riquadro">
+    <h2>Come si calcolano</h2>
+    <ul class="sottotesto" style="line-height:1.6">
+        <li><strong>Costo</strong> = voce di personale intestata alla persona in AZW (es. ZAT, CAR: costo aziendale completo) + provvigioni calcolate da LaboratorioAI (pagina Provvigioni, premi compresi). La voce si riconosce dal nome del commerciale.</li>
+        <li><strong>Portato</strong> = incassi su cui è stata calcolata una provvigione, al netto delle note di credito. Esiste solo da quando c'è l'accordo provvigioni; i clienti già esistenti non contano.</li>
+        <li><strong>Seguito</strong> = fatturato dei clienti che <em>oggi</em> hanno il suo codice venditore in AZW (senza storico). Negli anni prima del suo arrivo mostra come andavano quei clienti.</li>
+        <li><strong>Margine portato</strong> = portato × margine di contribuzione % delle aree in cui è registrato il suo costo (pesate sul costo). <strong>Contributo</strong> = margine portato − costo: se è positivo, nell'anno il commerciale si ripaga. Il <strong>cumulato</strong> parte dal primo anno di costo.</li>
+        <li><strong>Incassato</strong> = quota incassata delle fatture emesse nell'anno ai clienti seguiti.</li>
+    </ul>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/direzione-commerciali.js" asp-append-version="true"></script>
+}

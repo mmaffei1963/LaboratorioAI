@@ -1,0 +1,28 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Non fatturare» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Elenca i campioni che in ArcLab hanno il flag <strong>«non fatturare»</strong> nel periodo, raggruppati per prelevatore e per ricevitore,
+        con il valore che non viene fatturato. Serve a controllare che il flag sia stato messo per un motivo giusto (es. campione compreso in un contratto HACCP)
+        e non per errore. Solo consultazione.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Controllare i «non fatturare» del mese</summary>
+    <ol class="passi">
+        <li>Metti il periodo in <strong>Data ricezione da / a</strong>.</li>
+        <li>Se vuoi, restringi per <em>Cliente</em>, <em>Insediamento</em>, <em>Contratto HACCP</em>, <em>Prelevatore</em> o <em>Ricevitore</em>.
+            Spunta i controlli (180, 203, 2513 o altro) solo se ti interessano quelli: nessuna spunta = tutti.</li>
+        <li>Premi <span class="tasto">Cerca</span>: in alto i totali, poi i riepiloghi per <strong>prelevatore</strong> e per <strong>ricevitore</strong>
+            (numero di campioni, quanti in contratto HACCP, valore in €).</li>
+        <li>Clicca una riga del riepilogo per vedere sotto solo quei campioni.</li>
+        <li><span class="tasto">Esporta in Excel</span> per l'elenco completo.</li>
+    </ol>
+    <p class="nota">Attenzione ai campioni <strong>senza contratto HACCP</strong>: sono quelli per cui il «non fatturare» va giustificato.
+        Il flag si corregge in ArcLab.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

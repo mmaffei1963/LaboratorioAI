@@ -1,0 +1,325 @@
+@using System.Globalization
+@using LaboratorioAI.Web.Servizi
+@model LaboratorioAI.Web.Controllers.ModelloCompensiSoci
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Num(decimal v) => v == 0m ? "" : v.ToString("N2", it);
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Neg(decimal v) => v < 0m ? "neg" : "";
+    var p = Model.Prospetto;
+    var r = p?.Risultato;
+    var anno = Model.Anno;
+    var nomiMesi = new[] { "", "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
+}
+@* Compensi soci (21/10/2026). Definizione: claude/definizione-compensi-soci.md *@
+<style>
+    .cs td.neg, .cs th.neg, .neg { color: #B91C1C; }
+    .cs td, .cs th { padding: 5px 8px !important; }
+    .cs tr.totale td, .cs tr.totale th { font-weight: 700; border-top: 2px solid #9CA3AF; }
+    .cs tr.forte td { font-weight: 700; background: #F9FAFB; }
+    .cs [data-reg-tipo] { cursor: pointer; text-decoration: underline dotted; }
+    .cs [data-reg-tipo]:hover { background: #EEF2FF; }
+    .cs-note { font-size: .78rem; color: #6B7280; }
+    .cs-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; }
+    .cs-cifre .valore { font-size: 1.35rem; font-weight: 700; }
+    .pulsante-attenzione { background: #B45309 !important; color: #fff !important; }
+    dialog.cs-dlg { max-width: 64rem; width: 96%; border: 1px solid #ccc; border-radius: .5rem; padding: 1rem 1.2rem; }
+    @@media print {
+        .cs-nostampa { display: none !important; }
+        @@page { size: A4 landscape; margin: 10mm; }
+        .cs { font-size: 8pt; }
+        .tabella-scorrevole { overflow: visible !important; }
+    }
+</style>
+
+@if (ViewData["AvvisoSviluppo"] is string avvSvil) { <section class="riquadro" style="border-left:4px solid #B45309"><strong>@avvSvil</strong></section> }
+<div class="barra-strumenti">
+    <div>
+        <h1>Compensi soci @anno</h1>
+        <p class="sottotitolo">Conguaglio dei compensi dei soci come nel foglio Excel: base, incarichi, RSPP e indennità del laboratorio da AZW, rimborsi spese, assicurazione, premio e recupero dall'anno prima, contro i compensi percepiti in AZW. La differenza passa all'anno dopo. Clic su una cifra sottolineata per vedere le registrazioni AZW.</p>
+    </div>
+    <div class="cs-nostampa" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        @if (p is not null)
+        {
+            <a class="pulsante" href="@Url.Action("Esporta", new { anno })">Esporta Excel</a>
+            <button type="button" class="pulsante pulsante-tenue" id="cs-stampa">Stampa / PDF</button>
+        }
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Trasferte", new { anno = anno ?? DateTime.Today.Year })">Rimborsi trasferte</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Rimborsi", new { anno = anno ?? DateTime.Today.Year })">Altri rimborsi spese</a>
+        @if (Model.PuoGestire)
+        {
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Gestione", new { anno })">Impostazioni</a>
+        }
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+
+<section class="riquadro cs-nostampa">
+    <form method="get" style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end">
+        <label>Anno
+            <select name="anno" onchange="this.form.submit()">
+                @foreach (var a in Model.Anni)
+                {
+                    <option value="@a" selected="@(a == anno)">@a</option>
+                }
+            </select>
+        </label>
+        <span class="sottotesto">Dati AZW importati il @(Model.UltimaImportazioneAzw?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—") (pulsante «⟳ AZW» in alto per aggiornarli).</span>
+    </form>
+</section>
+
+@if (Model.Importazione is { } imp)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Controllo con il foglio Excel «@imp.Foglio»</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella cs">
+                <thead><tr><th>Socio</th><th class="numerico">Totale Excel</th><th class="numerico">Totale calcolato</th><th class="numerico">Scarto</th><th class="numerico">Differenza Excel</th><th class="numerico">Differenza calcolata</th><th class="numerico">Scarto</th><th class="numerico">Percepito Excel</th><th class="numerico">Percepito AZW</th></tr></thead>
+                <tbody>
+                @foreach (var c in imp.Confronto)
+                {
+                    var s1 = c.TotaleCalcolato - c.TotaleExcel; var s2 = c.DifferenzaCalcolata - c.DifferenzaExcel;
+                    <tr>
+                        <td>@c.Nome</td>
+                        <td class="numerico">@Euro(c.TotaleExcel)</td><td class="numerico">@Euro(c.TotaleCalcolato)</td>
+                        <td class="numerico @(Math.Abs(s1) > 0.05m ? "neg" : "")">@(Math.Abs(s1) <= 0.05m ? "ok" : Euro(s1))</td>
+                        <td class="numerico">@Euro(c.DifferenzaExcel)</td><td class="numerico">@Euro(c.DifferenzaCalcolata)</td>
+                        <td class="numerico @(Math.Abs(s2) > 0.05m ? "neg" : "")">@(Math.Abs(s2) <= 0.05m ? "ok" : Euro(s2))</td>
+                        <td class="numerico">@Euro(c.PercepitoExcel)</td><td class="numerico">@Euro(c.PercepitoAzw)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @foreach (var a in imp.Avvisi) { <p class="sottotesto" style="margin:.3rem 0 0">@a</p> }
+        <p class="cs-note" style="margin-bottom:0">«ok» = uguale entro 5 centesimi (il foglio tiene i decimali che qui sono arrotondati al centesimo).</p>
+    </section>
+}
+
+@if (p is null || r is null)
+{
+    <section class="riquadro">
+        @if (Model.Anni.Count == 0)
+        {
+            <p>Non c'è ancora nessun anno. @(Model.PuoGestire ? "Crealo dalle Impostazioni, oppure caricalo dal vecchio foglio Excel." : "Lo crea chi gestisce i compensi.")</p>
+        }
+        else
+        {
+            <p>Anno @anno non trovato.</p>
+        }
+    </section>
+}
+else
+{
+    var tot = r.Totali;
+    <section class="riquadro">
+        <div class="cs-cifre">
+            <div><div class="sottotesto">Totale dovuto ai soci</div><div class="valore">@Euro(tot.Totale)</div></div>
+            <div><div class="sottotesto">Compensi percepiti</div><div class="valore">@Euro(tot.Percepito)</div></div>
+            <div><div class="sottotesto">Differenza (passa al @(p.Anno.Anno + 1))</div><div class="valore @Neg(tot.Differenza)">@Euro(tot.Differenza)</div></div>
+            <div><div class="sottotesto">Stato dell'anno</div>
+                <div class="valore" style="font-size:1.05rem">@(p.Anno.Chiuso ? "Chiuso il " + (p.Anno.DataChiusura?.ToLocalTime().ToString("dd/MM/yyyy") ?? "") : "Aperto")</div>
+                <div class="sottotesto">@(p.Anno.Chiuso ? "cifre AZW fissate alla chiusura" : "cifre AZW lette ogni volta")</div>
+            </div>
+        </div>
+        @if (Model.PuoGestire)
+        {
+            <div class="cs-nostampa" style="margin-top:.6rem">
+                @if (p.Anno.Chiuso)
+                {
+                    <form method="post" asp-action="Riapri" asp-route-anno="@p.Anno.Anno" style="display:inline" data-conferma="Conferma: riapri l'anno">
+                        <button type="submit" class="pulsante pulsante-tenue">Riapri l'anno</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-action="Chiudi" asp-route-anno="@p.Anno.Anno" style="display:inline" data-conferma="Conferma: chiudi il @p.Anno.Anno">
+                        <button type="submit" class="pulsante pulsante-tenue">Chiudi l'anno</button>
+                    </form>
+                    <span class="cs-note">La chiusura fissa RSPP, base laboratorio e percepiti letti da AZW e blocca i rimborsi dell'anno. Si può riaprire.</span>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Prospetto @p.Anno.Anno</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella cs">
+                <thead><tr><th></th>@foreach (var s in r.Soci) { <th class="numerico">@s.Nome</th> }<th class="numerico">Totale</th></tr></thead>
+                <tbody>
+                @foreach (var (et, val, forte) in EsportazioneCompensi.Righe)
+                {
+                    <tr class="@(forte ? "forte" : "")">
+                        <td>@et</td>
+                        @foreach (var s in r.Soci)
+                        {
+                            var v = val(s);
+                            if (et == "RSPP" && v != 0)
+                            {
+                                <td class="numerico" data-reg-tipo="rspp" data-anno="@p.Anno.Anno" data-socio="@s.IdSocio" data-titolo="RSPP @s.Nome @p.Anno.Anno (fatturato: la quota è il @p.Anno.PercentualeRspp.ToString("0.##", it)%)">@Num(v)</td>
+                            }
+                            else if (et == "Compensi percepiti")
+                            {
+                                <td class="numerico" data-reg-tipo="percepito" data-anno="@p.Anno.Anno" data-socio="@s.IdSocio" data-titolo="Compensi percepiti @s.Nome @p.Anno.Anno (in AZW i costi sono negativi)">@(Num(v) + (s.RettificaPercepito != 0 ? " *" : ""))</td>
+                            }
+                            else
+                            {
+                                <td class="numerico @Neg(v)">@Num(v)</td>
+                            }
+                        }
+                        <td class="numerico @Neg(val(tot))">@Num(val(tot))</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="cs-note" style="margin-top:.4rem">
+            <div>@(p.Anno.TrasferteDaAzw ? "Rimborsi trasferte: trasferte con mezzo privato registrate in AZW (km × costo al km + autostrada + vitto e alloggio + costi diversi), per data della trasferta." : "Rimborsi trasferte non letti da AZW per questo anno: sono già compresi negli altri rimborsi.") <a href="@Url.Action("Trasferte", new { anno = p.Anno.Anno })">Elenco delle trasferte</a></div>
+            @foreach (var s in r.Soci)
+            {
+                var orig = p.OrigineRecupero.GetValueOrDefault(s.IdSocio) ?? "";
+                <div>@(s.Nome + ": recupero " + orig + (s.RettificaPercepito != 0 ? "; percepito AZW " + Euro(s.PercepitoAzw) + " con rettifica " + Euro(s.RettificaPercepito) + " (*)" : "") + ".")</div>
+            }
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Indennità di direzione del laboratorio</h2></div>
+        <p style="margin-top:0">
+            Base laboratorio usata <strong>@Euro(r.BaseLaboratorioUsata)</strong>
+            @if (r.BaseLaboratorioManuale)
+            {
+                <span>(scritta a mano: @p.Anno.NotaBaseLaboratorio; calcolata da AZW @Euro(r.BaseLaboratorioCalcolata))</span>
+            }
+            × @p.Anno.PercentualeIndennitaLaboratorio.ToString("0.##", it)% = @Euro(r.IndennitaLaboratorioLorda),
+            meno premi dell'area laboratorio @Euro(r.TotalePremiLaboratorio) = <strong>@Euro(r.IndennitaLaboratorioLorda - r.TotalePremiLaboratorio)</strong>.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(22rem,1fr));gap:1rem">
+            <div class="tabella-scorrevole">
+                <table class="tabella cs">
+                    <thead><tr><th>Voce AZW</th><th class="numerico">Importo @p.Anno.Anno</th><th class="numerico">%</th><th class="numerico">Quota</th></tr></thead>
+                    <tbody>
+                    @foreach (var v in r.VociLaboratorio)
+                    {
+                        <tr>
+                            <td>@v.Voce <span class="cs-note">@v.Descrizione</span></td>
+                            <td class="numerico" data-reg-tipo="voce" data-anno="@p.Anno.Anno" data-voce="@v.Voce" data-titolo="Voce @v.Voce @p.Anno.Anno">@Num(v.ImportoAzw)</td>
+                            <td class="numerico">@v.Percentuale.ToString("0.##", it)%</td>
+                            <td class="numerico">@Num(v.Quota)</td>
+                        </tr>
+                    }
+                    <tr class="totale"><td>Base calcolata da AZW</td><td></td><td></td><td class="numerico">@Num(r.BaseLaboratorioCalcolata)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tabella-scorrevole">
+                <table class="tabella cs">
+                    <thead><tr><th>Premi area laboratorio</th><th class="numerico">Importo</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in r.Premi)
+                    {
+                        <tr><td>@x.Nome @(x.IdSocio is int id ? $"(socio: {p.Soci.FirstOrDefault(s => s.IdSocio == id)?.Nome})" : "")</td><td class="numerico">@Num(x.Importo)</td></tr>
+                    }
+                    <tr class="totale"><td>Totale</td><td class="numerico">@Num(r.TotalePremiLaboratorio)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Compensi percepiti per mese (AZW)</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella cs">
+                <thead><tr><th>Socio</th>@for (var m = 1; m <= 12; m++) { <th class="numerico">@nomiMesi[m]</th> }<th class="numerico">Totale</th></tr></thead>
+                <tbody>
+                @foreach (var s in r.Soci)
+                {
+                    <tr>
+                        <td>@s.Nome</td>
+                        @for (var m = 1; m <= 12; m++)
+                        {
+                            var mm = m;
+                            <td class="numerico">@Num(p.PercepitiMese.Where(x => x.IdSocio == s.IdSocio && x.Mese == mm).Sum(x => x.Importo))</td>
+                        }
+                        <td class="numerico"><strong>@Num(p.PercepitiMese.Where(x => x.IdSocio == s.IdSocio).Sum(x => x.Importo))</strong></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="cs-note" style="margin-bottom:0">Il mese è quello della data di registrazione in AZW.@(p.Anno.Chiuso ? " Anno chiuso: nel prospetto vale il percepito fissato alla chiusura; questa tabella mostra AZW di oggi." : "")</p>
+    </section>
+
+    @if (Model.Aree is { Count: > 0 } aree)
+    {
+        string Pc(decimal? v) => v is decimal d ? (d * 100m).ToString("0.0", it) + "%" : "—";
+        var operative = aree.Where(x => !x.DaRipartire).ToList();
+        var ammA = aree.FirstOrDefault(x => x.DaRipartire);
+        <section class="riquadro">
+            <div class="barra-risultati"><h2>Accessori dei soci e marginalità per area @p.Anno.Anno</h2><span class="sottotesto">fatturato e margine dal consuntivo per area@(p.Anno.Anno == DateTime.Today.Year ? " (da inizio anno a oggi)" : "")</span></div>
+            <div class="tabella-scorrevole">
+                <table class="tabella cs">
+                    <thead><tr><th>Area</th><th class="numerico">Fatturato</th><th class="numerico">Margine prima AMM</th>
+                        <th class="numerico">Indennità lab.</th><th class="numerico">Premi area lab</th><th class="numerico">RSPP</th><th class="numerico">Resp. area</th><th class="numerico">Premio</th><th class="numerico">Assicur.</th><th class="numerico">Ammin.</th>
+                        <th class="numerico">Totale accessori</th><th class="numerico">% fatturato</th><th class="numerico">% margine</th>
+                        <th class="numerico">Margine dopo AMM</th><th class="numerico">Accessori + quota AMM</th><th class="numerico">% margine dopo AMM</th><th class="numerico">Rimborsi (a parte)</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in aree)
+                    {
+                        <tr class="@(x.DaRipartire ? "forte" : "")">
+                            <td>@x.Etichetta</td><td class="numerico">@Num(x.Fatturato)</td><td class="numerico @Neg(x.Margine)">@Num(x.Margine)</td>
+                            <td class="numerico">@Num(x.IndennitaLaboratorio)</td><td class="numerico">@Num(x.PremiLaboratorio)</td><td class="numerico">@Num(x.Rspp)</td><td class="numerico">@Num(x.ResponsabileArea)</td><td class="numerico">@Num(x.Premio)</td><td class="numerico">@Num(x.Assicurazione)</td><td class="numerico">@Num(x.Amministratore)</td>
+                            <td class="numerico"><strong>@Num(x.TotaleAccessori)</strong></td><td class="numerico">@(x.DaRipartire ? "" : Pc(x.SuFatturato))</td><td class="numerico">@(x.DaRipartire ? "" : Pc(x.SuMargine))</td>
+                            <td class="numerico @Neg(x.MargineConAmm)">@(x.DaRipartire ? "" : Num(x.MargineConAmm))</td><td class="numerico">@(x.DaRipartire ? "" : Num(x.AccessoriConAmm))</td><td class="numerico">@(x.DaRipartire ? "" : Pc(x.SuMargineConAmm))</td>
+                            <td class="numerico">@Num(x.Rimborsi)</td>
+                        </tr>
+                    }
+                    <tr class="totale"><td>Totale</td><td class="numerico">@Num(aree.Sum(x => x.Fatturato))</td><td class="numerico">@Num(aree.Sum(x => x.Margine))</td>
+                        <td class="numerico">@Num(aree.Sum(x => x.IndennitaLaboratorio))</td><td class="numerico">@Num(aree.Sum(x => x.PremiLaboratorio))</td><td class="numerico">@Num(aree.Sum(x => x.Rspp))</td><td class="numerico">@Num(aree.Sum(x => x.ResponsabileArea))</td><td class="numerico">@Num(aree.Sum(x => x.Premio))</td><td class="numerico">@Num(aree.Sum(x => x.Assicurazione))</td><td class="numerico">@Num(aree.Sum(x => x.Amministratore))</td>
+                        <td class="numerico">@Num(aree.Sum(x => x.TotaleAccessori))</td><td class="numerico">@Pc(aree.Sum(x => x.Fatturato) > 0 ? aree.Sum(x => x.TotaleAccessori) / aree.Sum(x => x.Fatturato) : null)</td><td class="numerico">@Pc(aree.Sum(x => x.Margine) > 0 ? aree.Sum(x => x.TotaleAccessori) / aree.Sum(x => x.Margine) : null)</td>
+                        <td></td><td></td><td></td><td class="numerico">@Num(aree.Sum(x => x.Rimborsi))</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="cs-note" style="margin-bottom:0">Indennità di laboratorio e premi dell'area laboratorio al Laboratorio; quota RSPP alla Sicurezza; il resto di ogni socio secondo la sua ripartizione (quota fissa all'amministrazione, il resto in percentuale), impostabile nei dati dei soci. «Dopo AMM»: quanto va all'amministrazione@(ammA is null ? "" : $" ({Num(ammA.TotaleAccessori)} €)") è diviso in parti uguali sulle altre @operative.Count aree, come nel consuntivo. Il margine del consuntivo è già al netto dei compensi pagati ai soci.</p>
+        </section>
+
+        <section class="riquadro">
+            <div class="barra-risultati"><h2>Compensi ancora da pagare ai soci, per area (@p.Anno.Anno)</h2><span class="sottotesto">costo già maturato e non ancora in contabilità</span></div>
+            <div class="tabella-scorrevole">
+                <table class="tabella cs">
+                    <thead><tr><th>Area</th><th class="numerico">Differenza da pagare</th><th class="numerico">Margine prima AMM</th><th class="numerico">Margine rettificato</th><th class="numerico">Quota AMM</th><th class="numerico">Margine dopo AMM</th><th class="numerico">Margine dopo AMM rettificato</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in aree)
+                    {
+                        <tr class="@(x.DaRipartire ? "forte" : "")">
+                            <td>@x.Etichetta</td><td class="numerico @Neg(-x.MaturatoNonPagato)">@Num(x.MaturatoNonPagato)</td>
+                            <td class="numerico @Neg(x.Margine)">@Num(x.Margine)</td><td class="numerico @Neg(x.MargineRettificato)">@Num(x.MargineRettificato)</td>
+                            <td class="numerico">@(x.DaRipartire ? "" : Num(x.QuotaMaturatoAmm))</td>
+                            <td class="numerico @Neg(x.MargineConAmm)">@(x.DaRipartire ? "" : Num(x.MargineConAmm))</td><td class="numerico @Neg(x.MargineConAmmRettificato)">@(x.DaRipartire ? "" : Num(x.MargineConAmmRettificato))</td>
+                        </tr>
+                    }
+                    <tr class="totale"><td>Totale</td><td class="numerico">@Num(aree.Sum(x => x.MaturatoNonPagato))</td><td class="numerico">@Num(aree.Sum(x => x.Margine))</td><td class="numerico">@Num(aree.Sum(x => x.MargineRettificato))</td><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="cs-note" style="margin-bottom:0">Differenza da pagare = la differenza del prospetto (@Euro(tot.Differenza)), cioè tutto quello che i soci devono ancora ricevere, compreso il debito degli anni prima. Divisa sulle aree con la ripartizione del socio, o con quella apposita della differenza (Vaccarini: Igiene). Vale solo per le analisi: la contabilità non cambia.</p>
+        </section>
+    }
+}
+
+<dialog class="cs-dlg" id="cs-dettaglio">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+        <h2 id="cs-dettaglio-titolo" style="margin:0;font-size:1.05rem"></h2>
+        <button type="button" class="pulsante pulsante-tenue" id="cs-chiudi">Chiudi</button>
+    </div>
+    <div id="cs-dettaglio-corpo" style="margin-top:.6rem"></div>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/compensi-soci.js" asp-append-version="true"></script>
+}

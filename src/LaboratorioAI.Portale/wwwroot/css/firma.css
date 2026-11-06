@@ -1,0 +1,76 @@
+/* ═══════════════════════════════════════════════════════════
+   Pagina di approvazione delle Condizioni Generali (10/10/2026)
+   Leggibile da telefono; nessun testo delle caselle troncato.
+   ═══════════════════════════════════════════════════════════ */
+
+.pagina-firma { background: var(--grigio-100); }
+.testata-firma {
+    display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+    background: var(--bianco); border-bottom: 3px solid var(--rosso);
+}
+.contenuto-firma { max-width: 820px; margin: 0 auto; padding: 20px 16px 40px; line-height: 1.5; }
+.contenuto-firma h1 { font-size: 1.35rem; margin: 6px 0 6px; }
+.sottotitolo-firma { color: var(--grigio-700); margin-bottom: 4px; }
+.cliente-firma { margin-bottom: 14px; }
+
+.blocco-firma {
+    background: var(--bianco); border-radius: var(--raggio); box-shadow: var(--ombra-sm);
+    padding: 18px 20px; margin-bottom: 14px;
+}
+.blocco-firma h2 { font-size: 1.02rem; margin-bottom: 8px; color: var(--grigio-900); }
+.riquadro-vessatorie { border: 2px solid var(--rosso); }
+.nota-firma { font-size: .86rem; color: var(--grigio-700); margin: 6px 0; }
+
+.documenti-firma { display: flex; flex-direction: column; gap: 8px; }
+.documento-firma {
+    display: block; padding: 11px 14px; border: 1.5px solid var(--grigio-300); border-radius: var(--raggio);
+    color: var(--grigio-900); text-decoration: none; font-weight: 600; background: var(--grigio-100);
+}
+.documento-firma:hover { border-color: var(--rosso); }
+.documento-firma.aperto { border-color: var(--verde); background: var(--verde-bg); }
+.aperto-il { display: block; font-weight: 400; font-size: .8rem; color: var(--verde); }
+.cosa-cambia { margin-top: 10px; font-size: .9rem; }
+
+.casella-firma { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.casella-firma input { width: 20px; height: 20px; margin-top: 3px; flex-shrink: 0; accent-color: var(--rosso); }
+.casella-firma input:disabled + span { color: var(--grigio-500); }
+
+.elenco-clausole { margin: 10px 0 0 30px; font-size: .92rem; }
+.elenco-clausole li { margin-bottom: 5px; }
+.leggi summary { display: inline; cursor: pointer; color: var(--rosso); font-size: .82rem; }
+.leggi p { background: var(--grigio-100); padding: 8px 10px; border-radius: 4px; margin: 4px 0 6px; white-space: pre-wrap; }
+
+.campi-firma { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 14px; }
+.campi-firma select, .campi-firma input {
+    width: 100%; padding: 9px 11px; border: 1.5px solid var(--grigio-300); border-radius: var(--raggio); font: inherit;
+}
+
+.pulsante-firma {
+    display: inline-block; background: var(--rosso); color: var(--bianco); border: none; border-radius: var(--raggio);
+    padding: 11px 22px; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none;
+}
+.pulsante-firma:disabled { background: var(--grigio-300); cursor: not-allowed; }
+.pulsante-tenue-firma {
+    background: var(--bianco); color: var(--grigio-700); border: 1.5px solid var(--grigio-300); border-radius: var(--raggio);
+    padding: 7px 14px; cursor: pointer; font: inherit;
+}
+
+.riquadro-firma { margin: 12px 0; }
+.etichetta-firma { font-size: .86rem; font-weight: 600; margin-bottom: 4px; }
+.tela-firma {
+    display: block; width: 100%; height: 160px; background: var(--bianco);
+    border: 1.5px dashed var(--grigio-500); border-radius: var(--raggio); touch-action: none; cursor: crosshair;
+}
+.tela-firma.firmata { border-style: solid; border-color: var(--verde); }
+
+.errore-firma { color: var(--rosso); font-weight: 600; margin-top: 10px; }
+.esito-ok { border: 2px solid var(--verde); background: var(--verde-bg); }
+
+.velo-firma {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center;
+    padding: 16px; z-index: 10;
+}
+.finestra-firma { background: var(--bianco); border-radius: 8px; padding: 22px; max-width: 480px; box-shadow: var(--ombra-md); }
+.pulsanti-finestra { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+
+.piede-firma { font-size: .76rem; color: var(--grigio-500); text-align: center; margin-top: 20px; }

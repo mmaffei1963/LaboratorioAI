@@ -160,14 +160,15 @@ public class TaraturaController : Controller
 
     // ═══════════════ Tarature ══════════════════════════════════════
     [HttpGet("api/taratura/elenco")]
-    public async Task<IActionResult> Elenco(CancellationToken ct)
+    public async Task<IActionResult> Elenco([FromQuery] bool eliminate, CancellationToken ct)
     {
-        var righe = await _ctx.Tarature.AsNoTracking().Where(t => t.Attivo)
+        // eliminate=true: anche le righe eliminate dal registro (Attivo = false), per «Mostra eliminate» (09/10/2026).
+        var righe = await _ctx.Tarature.AsNoTracking().Where(t => eliminate || t.Attivo)
             .OrderByDescending(t => t.DataTaratura)
             .Take(500)
             .Select(t => new
             {
-                t.IdTaratura, t.NumeroRapporto, t.StrumentoIdentificazione, t.StrumentoCodice, t.Committente,
+                t.IdTaratura, t.Attivo, t.NumeroRapporto, t.StrumentoIdentificazione, t.StrumentoCodice, t.Committente,
                 DataTaratura = t.DataTaratura.ToString("dd/MM/yyyy"),
                 DataScadenza = t.DataScadenza.HasValue ? t.DataScadenza.Value.ToString("dd/MM/yyyy") : null,
                 Scaduta = t.DataScadenza.HasValue && t.DataScadenza.Value < DateTime.Today,
@@ -176,6 +177,46 @@ public class TaraturaController : Controller
             })
             .ToListAsync(ct);
         return Json(righe);
+    }
+
+    // ── Eliminazione dal registro (09/10/2026) ──────────────────────
+    // Nessuna cancellazione fisica: Attivo = false, con motivo obbligatorio nel registro delle operazioni.
+    // Il numero di rapporto non viene riusato (la numerazione conta anche le righe eliminate).
+    // Solo i responsabili (permesso di validazione del calcolo).
+    [HttpPost("api/taratura/{id:int}/elimina")]
+    [RichiedePermesso(Permessi.TaraturaValidazione)]
+    public async Task<IActionResult> Elimina(int id, [FromBody] RichiestaEliminazioneRegistro req, CancellationToken ct)
+    {
+        var motivo = req?.Motivo?.Trim();
+        if (string.IsNullOrEmpty(motivo)) return BadRequest(new { messaggio = "Indica il motivo dell'eliminazione." });
+        var t = await _ctx.Tarature.FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
+        if (!t.Attivo) return Json(new { messaggio = "La taratura era già eliminata dal registro." });
+        t.Attivo = false;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Taratura, "taratura.eliminata", EsitoOperazione.Successo,
+            tipoEntita: "Taratura", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto, Motivo = motivo }, ct: ct);
+        return Json(new { messaggio = "La taratura " + (t.NumeroRapporto ?? "") + " è stata eliminata dal registro." });
+    }
+
+    [HttpPost("api/taratura/{id:int}/ripristina")]
+    [RichiedePermesso(Permessi.TaraturaValidazione)]
+    public async Task<IActionResult> Ripristina(int id, CancellationToken ct)
+    {
+        var t = await _ctx.Tarature.FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
+        if (t.Attivo) return Json(new { messaggio = "La taratura è già nel registro." });
+        t.Attivo = true;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Taratura, "taratura.ripristinata", EsitoOperazione.Successo,
+            tipoEntita: "Taratura", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto }, ct: ct);
+        return Json(new { messaggio = "La taratura " + (t.NumeroRapporto ?? "") + " è stata ripristinata nel registro." });
     }
 
     [HttpGet("api/taratura/{id:int}")]
@@ -187,7 +228,8 @@ public class TaraturaController : Controller
         return Json(new
         {
             t.IdTaratura, t.IdCampioneRiferimento, t.StrumentoIdentificazione, t.StrumentoCodice,
-            t.RisoluzioneStrumento, t.FattoreCopertura, t.IdClienteArcLab, t.Committente,
+            t.RisoluzioneStrumento, t.FattoreCopertura, t.IdClienteArcLab, t.Committente, t.IdInsediamentoArcLab, t.Insediamento,
+            TipoTermometro = (int)t.TipoTermometro, Servizio = (int)t.Servizio,
             t.NumeroRapporto, DataTaratura = t.DataTaratura, DataScadenza = t.DataScadenza,
             t.RiferimentoIstruzione, t.Responsabile, t.Note, Misure = misure
         });
@@ -196,6 +238,23 @@ public class TaraturaController : Controller
     [HttpGet("api/taratura/clienti")]
     public async Task<IActionResult> Clienti(CancellationToken ct) =>
         Json((await _anagrafiche.ClientiAsync(ct)).Select(c => new { c.Id, c.Nome }));
+
+    // 03/11/2026: insediamenti del cliente e strumenti del cliente già tarati (per riproporli)
+    [HttpGet("api/taratura/insediamenti/{idCliente:int}")]
+    public async Task<IActionResult> Insediamenti(int idCliente, CancellationToken ct) =>
+        Json((await _anagrafiche.InsediamentiAsync(idCliente, ct)).Select(i => new { i.Id, i.Nome }));
+
+    [HttpGet("api/taratura/strumenti-cliente")]
+    public async Task<IActionResult> StrumentiCliente([FromQuery] int? idCliente, [FromQuery] string? committente, CancellationToken ct)
+    {
+        var nome = committente?.Trim();
+        if (idCliente is null && string.IsNullOrEmpty(nome)) return Json(Array.Empty<object>());
+        var righe = await _ctx.Tarature.AsNoTracking()
+            .Where(t => t.Attivo && (idCliente != null ? t.IdClienteArcLab == idCliente : t.Committente == nome))
+            .Select(t => new { I = t.StrumentoIdentificazione, C = t.StrumentoCodice, D = t.DataTaratura })
+            .ToListAsync(ct);
+        return Json(CommittenteTaratura.Distinti(righe.Select(r => ((string?)r.I, r.C, r.D))));
+    }
 
     [HttpGet("api/taratura/strumenti")]
     public async Task<IActionResult> Strumenti(CancellationToken ct) =>
@@ -234,6 +293,12 @@ public class TaraturaController : Controller
         t.FattoreCopertura = req.FattoreCopertura <= 0 ? 2.0 : req.FattoreCopertura;
         t.IdClienteArcLab = req.IdClienteArcLab;
         t.Committente = Vuoto(req.Committente);
+        t.IdInsediamentoArcLab = t.Committente is null ? null : req.IdInsediamentoArcLab;   // 03/11/2026
+        t.Insediamento = t.Committente is null ? null : CommittenteTaratura.Testo(req.Insediamento);
+        t.TipoTermometro = Enum.IsDefined(typeof(LaboratorioAI.Core.Tarature.TipoTermometro), req.TipoTermometro)
+            ? (LaboratorioAI.Core.Tarature.TipoTermometro)req.TipoTermometro : LaboratorioAI.Core.Tarature.TipoTermometro.NonIndicato;
+        t.Servizio = req.Servizio == (int)LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.FornituraETaratura
+            ? LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.FornituraETaratura : LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.SoloTaratura;
         t.DataTaratura = req.DataTaratura.ToDateTime(TimeOnly.MinValue);
         t.DataScadenza = req.DataScadenza?.ToDateTime(TimeOnly.MinValue) ?? req.DataTaratura.AddYears(1).ToDateTime(TimeOnly.MinValue);
         t.RiferimentoIstruzione = Vuoto(req.RiferimentoIstruzione);
@@ -250,6 +315,7 @@ public class TaraturaController : Controller
         // Taratura di un termometro CLIENTE (esterno): compare anche nell'elenco esterni dello scadenziario,
         // già segnata «da fatturare». Le tarature di strumenti interni (senza committente) non vi finiscono.
         bool esterna = t.IdClienteArcLab.HasValue || !string.IsNullOrWhiteSpace(t.Committente);
+        IReadOnlyList<object> candidati = Array.Empty<object>();
         if (esterna)
         {
             var te = await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTaraturaOrigine == t.IdTaratura, ct);
@@ -264,16 +330,35 @@ public class TaraturaController : Controller
             te.DataTaratura = t.DataTaratura;
             te.DataScadenza = t.DataScadenza;
             te.Cliente = t.Committente;
+            te.TipoTermometro = t.TipoTermometro;   // 03/11/2026
+            te.Servizio = t.Servizio;
             te.DataUltimaModifica = ora;
             te.IdUtente = _utente.IdUtente;
             await _ctx.SaveChangesAsync(ct);
+            // 03/11/2026: tarature dello stesso cliente e tipologia che questa potrebbe rinnovare (da spuntare)
+            if (nuovo) candidati = await RinnovoTermometriEsterni.CandidatiAsync(_ctx, te, ct);
         }
 
         await _audit.RegistraAsync(
             AreaFunzionale.Taratura, "taratura.salvata", EsitoOperazione.Successo,
             tipoEntita: "Taratura", idEntita: t.IdTaratura.ToString(),
             dettaglio: new { t.StrumentoIdentificazione, t.NumeroRapporto, Esterna = esterna }, ct: ct);
-        return Json(new { t.IdTaratura, t.NumeroRapporto });
+        return Json(new { t.IdTaratura, t.NumeroRapporto, candidatiRinnovo = candidati });
+    }
+
+    /// <summary>
+    /// 03/11/2026: segna come rinnovate dalla taratura <paramref name="id"/> (termometro del cliente) le tarature
+    /// spuntate dello scadenziario, così non compaiono più tra le scadenze.
+    /// </summary>
+    [HttpPost("api/taratura/{id:int}/rinnova")]
+    public async Task<IActionResult> Rinnova(int id, [FromBody] RichiestaRinnovo req, CancellationToken ct)
+    {
+        var te = await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTaraturaOrigine == id, ct);
+        if (te is null) return NotFound(new { messaggio = "La taratura non è nello scadenziario dei clienti." });
+        var n = await RinnovoTermometriEsterni.RinnovaAsync(_ctx, te, req.Ids ?? new(), ct);
+        await _audit.RegistraAsync(AreaFunzionale.Taratura, "taratura.rinnova", EsitoOperazione.Successo,
+            tipoEntita: "Taratura", idEntita: id.ToString(), dettaglio: new { Rinnovate = req.Ids, Numero = n }, ct: ct);
+        return Json(new { rinnovate = n });
     }
 
     [HttpPost("api/taratura/{id:int}/rapporto")]
@@ -313,6 +398,7 @@ public class TaraturaController : Controller
             RiferimentoIstruzione = t.RiferimentoIstruzione,
             RedattoDa = redattoDa,
             Committente = t.Committente,
+            Insediamento = t.Insediamento,
             StrumentoIdentificazione = t.StrumentoIdentificazione,
             StrumentoCodice = t.StrumentoCodice,
             RisoluzioneStrumento = t.RisoluzioneStrumento,
@@ -683,6 +769,10 @@ public record RichiestaSalvaTaratura
     public double FattoreCopertura { get; init; } = 2.0;
     public int? IdClienteArcLab { get; init; }
     public string? Committente { get; init; }
+    public int? IdInsediamentoArcLab { get; init; }   // 03/11/2026
+    public string? Insediamento { get; init; }
+    public int TipoTermometro { get; init; }   // 03/11/2026: vedi TermometroEsternoDto
+    public int Servizio { get; init; } = 1;
     public string? NumeroRapporto { get; init; }
     public DateOnly DataTaratura { get; init; }
     public DateOnly? DataScadenza { get; init; }
@@ -702,4 +792,10 @@ public record RichiestaAnalisiTaratura
 {
     /// <summary>Se vero, rigenera l'analisi anche se ne esiste già una in archivio.</summary>
     public bool Forza { get; init; }
+}
+
+/// <summary>Eliminazione dal registro di una taratura/mappatura (termometri, incubatori, bilance, mappature): motivo obbligatorio.</summary>
+public record RichiestaEliminazioneRegistro
+{
+    public string? Motivo { get; init; }
 }

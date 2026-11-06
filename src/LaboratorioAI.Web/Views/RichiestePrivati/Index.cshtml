@@ -1,0 +1,109 @@
+@{
+    ViewData["Titolo"] = "Richieste analisi privati";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Richieste analisi privati</h1>
+        <p class="sottotitolo">Ordine di Accettazione da firmare al banco quando un privato consegna un campione (Mod. Com. 05B), da consegnare con le Condizioni di Fornitura per i privati (Mod. Com. 05A) e l'informativa privacy (Mod. Com. 05C).
+            Prove e prezzi dalle commesse di «Spettabile cliente» (MAF2) in ArcLab, in sola lettura; prezzi stampati IVA inclusa.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-tenue" href="/api/richieste-privati/modulo">Ordine in bianco</a>
+        <button class="pulsante" id="btn-nuova">Nuova richiesta</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <details id="dett-registro" open>
+        <summary style="cursor:pointer;font-weight:600">Registro richieste <span id="conteggio" class="sottotesto"></span></summary>
+        <div class="griglia-filtri" style="margin-top:0.5rem">
+            <label>Numero, cliente, codice fiscale o campione<input type="search" id="r-testo" placeholder="es. 12 oppure Rossi" /></label>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:20rem;margin-top:0.5rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>N°</th><th>Cliente</th><th>Campione</th><th class="numerico">Totale € (IVA incl.)</th><th>Giudizio</th><th>Data</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati">
+        <h2 id="form-titolo">Nuova richiesta</h2>
+        <span id="form-stato" class="sottotesto"></span>
+    </div>
+
+    <h3>1. Dati del cliente</h3>
+    <div class="griglia-filtri">
+        <label>Nome e cognome *<input type="text" id="f-nome" maxlength="200" autocomplete="off" /></label>
+        <label>Codice fiscale<input type="text" id="f-cf" maxlength="20" autocomplete="off" style="text-transform:uppercase" /></label>
+        <label>Indirizzo<input type="text" id="f-indirizzo" maxlength="300" autocomplete="off" /></label>
+        <label>Telefono<input type="tel" id="f-telefono" maxlength="50" autocomplete="off" /></label>
+        <label>E-mail per il Rapporto di Prova<input type="email" id="f-email" maxlength="255" autocomplete="off" /></label>
+        <label>Ritiro del Rapporto di Prova in laboratorio
+            <select id="f-ritiro"><option value="0">No, via e-mail</option><option value="1">Sì, lo ritira in laboratorio</option></select></label>
+        <label>Pagamento
+            <select id="f-pagamento"><option value="1">Anticipato, alla consegna del campione</option><option value="2">Alla consegna del Rapporto di Prova</option></select></label>
+    </div>
+
+    <h3>2. Campione consegnato <span class="sottotesto">(prelievo eseguito dal cliente)</span></h3>
+    <div class="griglia-filtri">
+        <label>Descrizione (matrice ArcLab)<input type="text" id="f-descrizione" list="lista-matrici" maxlength="300" autocomplete="off" /></label>
+        <datalist id="lista-matrici"></datalist>
+        <label>Punto di prelievo<input type="text" id="f-punto" maxlength="300" placeholder="es. rubinetto della cucina, dopo aver fatto scorrere l'acqua" /></label>
+        <label>Data e ora del prelievo<input type="datetime-local" id="f-dataprelievo" /></label>
+        <label>Contenitore (ArcLab)<select id="f-contenitore"><option value="">—</option></select></label>
+        <label>Contenitore fornito da
+            <select id="f-contenitore-da"><option value="">—</option><option value="1">Laboratorio</option><option value="0">Cliente</option></select></label>
+        <label>Temperatura di ricevimento (°C)<input type="number" id="f-temperatura" step="0.1" min="-30" max="60" /></label>
+    </div>
+
+    <h3>3. Prove richieste e prezzo</h3>
+    <div class="griglia-filtri">
+        <label style="grid-column:1 / -1">Cerca il controllo (commesse di Spettabile cliente – MAF2): nome, ID o una prova
+            <input type="search" id="f-controllo" autocomplete="off" placeholder="es. pozzo, potabilità, 3452, legionella" /></label>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:26rem;margin-top:0.4rem">
+        <table class="tabella" id="tabella-catalogo">
+            <thead><tr><th style="width:55%">Controllo</th><th class="numerico">ID</th><th class="numerico">Prezzo € (IVA incl.)</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <h4 style="margin:1rem 0 0.3rem">Controlli scelti</h4>
+    <div class="tabella-scorrevole" style="margin-top:0.5rem">
+        <table class="tabella" id="tabella-righe">
+            <thead><tr><th>Controllo</th><th>Metodi</th><th class="numerico">Giorni</th><th class="numerico">Prezzo € (IVA incl.)</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="griglia-filtri" style="margin-top:0.5rem">
+        <label>Tempi di consegna (giorni lavorativi)<input type="number" id="f-tempi" min="1" max="120" /></label>
+        <label>Comunicazione anticipata dei fuori limite
+            <select id="f-fuorilimite"><option value="0">Non richiesta</option><option value="1">Richiesta</option></select></label>
+        <label class="casella" style="flex-direction:row;align-items:flex-end"><input type="checkbox" id="f-giudizio" /> Giudizio di conformità e pareri richiesti</label>
+        <label id="riga-norma" class="nascosto" style="grid-column:span 2">Norma o limiti da applicare *
+            <input type="text" id="f-norma" list="lista-norme" maxlength="500" autocomplete="off" placeholder="scegli dall'elenco o scrivi" /></label>
+        <datalist id="lista-norme"></datalist>
+        <label id="riga-supplemento" class="nascosto">Supplemento giudizio € (IVA incl.)<input type="number" id="f-supplemento" step="0.01" min="0" /></label>
+        <label>Consenso comunicazioni commerciali (facoltativo)
+            <select id="f-consenso"><option value="">Lo sceglie il cliente sul modulo</option><option value="0">No</option><option value="1">Sì</option></select></label>
+        <label style="grid-column:span 2">Note interne<input type="text" id="f-note" maxlength="2000" /></label>
+    </div>
+    <p id="f-tempi-nota" class="sottotesto"></p>
+    <p style="font-size:1.1rem;margin-bottom:0"><strong>Totale IVA inclusa: € <span id="f-totale">0,00</span></strong></p>
+    <p class="sottotesto" style="margin-top:0.2rem">di cui imponibile € <span id="f-imponibile">0,00</span> e IVA 22% € <span id="f-iva">0,00</span></p>
+
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Chiudi</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-elimina">Elimina</button>
+        <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-modulo">Ordine di Accettazione (Word)</button>
+        <button type="button" class="pulsante" id="btn-salva">Salva</button>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/richieste-privati.js" asp-append-version="true"></script>
+}

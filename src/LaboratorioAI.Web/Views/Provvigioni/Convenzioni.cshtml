@@ -1,0 +1,184 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloConvenzioni
+@{
+    ViewData["Titolo"] = "Convenzioni";
+    var s = Model.Scelto;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Iso(DateTime d) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    string Nome(string cod) => Model.NomiClienti.TryGetValue(cod, out var n) && n.Length > 0 ? n : "—";
+    var daVerificare = Model.Voci.Count(v => v.DataDaVerificare || !v.OrigineConfermata);
+    var segnalatiDa = ViewData["SegnalatiDa"] as IReadOnlyDictionary<string, string> ?? new Dictionary<string, string>();
+    var condizioni = ViewData["Condizioni"] as IReadOnlyList<LaboratorioAI.Web.Controllers.CondizioneElenco> ?? new List<LaboratorioAI.Web.Controllers.CondizioneElenco>();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Convenzioni pluriennali</h1>
+        <p class="sottotitolo">Le convenzioni vengono dalle commesse <strong>continuative</strong> di ArcLab con il riferimento del commerciale: inizio = prima commessa continuativa del cliente. Qui si controllano e si correggono <strong>data di inizio</strong>, <strong>origine</strong> e <strong>chi ha segnalato</strong> il cliente. Le correzioni non vengono più sovrascritte.</p>
+        <div class="sottotesto" style="margin-top:0.4rem;line-height:1.5">
+            <strong>Indicata</strong> = il contratto l'ha procurato il commerciale (ha trovato lui il cliente): 15% sulle fatture del primo anno, 10% dal secondo al quinto.<br />
+            <strong>Segnalata</strong> = il cliente è arrivato da MARE.A (già cliente o rivolto direttamente a noi) o da un segnalatore esterno, e il commerciale lo segue: 10% per cinque anni.
+            Esempio su 2.000 € l'anno: indicata 300 € il primo anno poi 200 €; segnalata 200 € ogni anno.
+            Se il rapporto di lavoro finisce, smettono di maturare gli anni 2–5 delle indicate e le segnalate.
+            Chi ha segnalato il cliente si indica in «Segnalato da» (elenco nella pagina <a href="@Url.Action("Index", "Segnalatori", new { idCommerciale = s?.IdCommerciale })">Segnalatori</a>).
+        </div>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = s?.IdCommerciale })">← Provvigioni</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (s is null)
+{
+    <section class="riquadro"><p>Nessun commerciale configurato.</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>@s.Nome — @Model.Voci.Count convenzioni</h2>
+            <form method="post" asp-action="ConvenzioniSincronizza" style="display:inline">
+                <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+                <button type="submit" class="pulsante pulsante-tenue">Aggiorna da ArcLab</button>
+            </form>
+        </div>
+        @if (s.IdMansioneArcLab is null)
+        {
+            <p><strong>Il commerciale non ha il codice di riferimento ArcLab:</strong> impostalo nella pagina Provvigioni.</p>
+        }
+        @if (daVerificare > 0)
+        {
+            <p class="sottotesto"><strong>@daVerificare da controllare</strong>: data caricata in blocco in ArcLab (01/01/2022, la data reale non è nota) oppure origine solo proposta. L'origine proposta è «segnalata» se il cliente aveva fatture nei 24 mesi prima dell'inizio, altrimenti «indicata». Salva la riga per confermarla.</p>
+        }
+        @if (Model.Voci.Count == 0)
+        {
+            <p class="sottotesto">Nessuna convenzione. Premi «Aggiorna da ArcLab» dopo un'importazione.</p>
+        }
+        else
+        {
+            <label class="sottotesto" style="display:block;margin:0.4rem 0">Filtra per cliente
+                <input type="search" id="filtro-convenzioni" placeholder="scrivi parte del nome o del codice" autocomplete="off" style="max-width:24rem" />
+                <span id="conteggio-convenzioni"></span>
+            </label>
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-convenzioni">
+                    <thead><tr><th>Cliente</th><th>Inizio</th><th>Fine (5 anni)</th><th>Origine</th><th>Da</th><th>Correggi e conferma</th><th>Segnalato da</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var v in Model.Voci)
+                    {
+                        <tr>
+                            <td>@Nome(v.CodiceCliente) <span class="sottotesto">(@v.CodiceCliente)</span><div class="sottotesto">@v.Descrizione</div></td>
+                            <td style="white-space:nowrap">
+                                @v.DataInizio.ToString("dd/MM/yyyy", it)
+                                @if (v.DataDaVerificare)
+                                {
+                                    <div><strong>data da verificare</strong></div>
+                                }
+                            </td>
+                            <td style="white-space:nowrap">@v.DataInizio.AddYears(5).AddDays(-1).ToString("dd/MM/yyyy", it)</td>
+                            <td>@(v.Origine == OrigineConvenzione.IndicataDalCommerciale ? "Indicata (15% / 10%)" : "Segnalata (10%)")<div class="sottotesto">@(v.OrigineConfermata ? "confermata" : "proposta")</div></td>
+                            <td>@(v.Fonte == FonteConvenzione.ArcLab ? "ArcLab" : "a mano")</td>
+                            <td>
+                                <form method="post" asp-action="ConvenzioneModifica" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+                                    <input type="hidden" name="idConvenzione" value="@v.IdConvenzione" />
+                                    <input type="date" name="dataInizio" value="@Iso(v.DataInizio)" required />
+                                    <select name="origine">
+                                        @if (v.Origine == OrigineConvenzione.IndicataDalCommerciale)
+                                        {
+                                            <option value="@((int)OrigineConvenzione.IndicataDalCommerciale)" selected>Indicata</option>
+                                            <option value="@((int)OrigineConvenzione.SegnalataDaAzienda)">Segnalata</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@((int)OrigineConvenzione.IndicataDalCommerciale)">Indicata</option>
+                                            <option value="@((int)OrigineConvenzione.SegnalataDaAzienda)" selected>Segnalata</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="pulsante pulsante-tenue">Salva</button>
+                                </form>
+                            </td>
+                            <td>
+                                @if (segnalatiDa.TryGetValue(v.CodiceCliente, out var da))
+                                {
+                                    <div>@da</div>
+                                }
+                                else if (v.Origine == OrigineConvenzione.SegnalataDaAzienda)
+                                {
+                                    <div class="sottotesto">MARE.A (predefinito)</div>
+                                }
+                                @if (condizioni.Count > 0)
+                                {
+                                    <details>
+                                        <summary class="sottotesto" style="cursor:pointer">@(segnalatiDa.ContainsKey(v.CodiceCliente) ? "aggiungi" : "indica")</summary>
+                                        <form method="post" asp-controller="Segnalatori" asp-action="Assegna" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;margin-top:0.3rem">
+                                            <input type="hidden" name="codiceCliente" value="@v.CodiceCliente" />
+                                            <input type="hidden" name="dataInizio" value="@Iso(v.DataInizio)" />
+                                            <input type="hidden" name="ritorno" value="convenzioni" />
+                                            <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+                                            <select name="idCondizione" required>
+                                                @foreach (var c in condizioni) { <option value="@c.IdCondizione">@c.Testo</option> }
+                                            </select>
+                                            <button type="submit" class="pulsante pulsante-tenue">Salva</button>
+                                        </form>
+                                    </details>
+                                }
+                            </td>
+                            <td>
+                                <form method="post" asp-action="ConvenzioneRimuovi" style="display:inline"><input type="hidden" name="idConvenzione" value="@v.IdConvenzione" /><button class="pulsante pulsante-tenue" type="submit">Rimuovi</button></form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    @if (Model.Controllo is { } k)
+    {
+        <section class="riquadro">
+            <details>
+                <summary style="cursor:pointer;font-weight:600">Controllo con il codice venditore AZW (@k.SoloCodiceVenditore.Count + @k.SoloRiferimentoArcLab.Count incongruenze)</summary>
+                <p class="sottotesto">I clienti «propri» per il calcolo sono quelli con commesse con il suo riferimento in ArcLab (@k.ClientiConRiferimento clienti). Il codice venditore di AZW serve solo come controllo: dove i due non coincidono, correggi il codice in AZW o il riferimento della commessa in ArcLab.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(22rem,1fr));gap:1rem">
+                    <div>
+                        <h3>Codice venditore del commerciale, ma nessuna sua commessa in ArcLab (@k.SoloCodiceVenditore.Count)</h3>
+                        <ul>@foreach (var c in k.SoloCodiceVenditore) { <li>@Nome(c) <span class="sottotesto">(@c)</span></li> }</ul>
+                    </div>
+                    <div>
+                        <h3>Sue commesse in ArcLab, ma senza il suo codice venditore (@k.SoloRiferimentoArcLab.Count)</h3>
+                        <ul>@foreach (var c in k.SoloRiferimentoArcLab) { <li>@Nome(c) <span class="sottotesto">(@c)</span></li> }</ul>
+                    </div>
+                </div>
+            </details>
+        </section>
+    }
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Aggiungi a mano</h2></div>
+        <p class="sottotesto">Solo per le eccezioni: una convenzione che in ArcLab non risulta come commessa continuativa del commerciale.</p>
+        <form method="post" asp-action="ConvenzioneAggiungi" class="griglia-filtri">
+            <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+            <label>Cliente (scrivi il nome o il codice e scegli dall'elenco)<input type="text" name="codiceCliente" list="elenco-clienti" required maxlength="20" autocomplete="off" /></label>
+            <datalist id="elenco-clienti">@foreach (var cl in Model.Clienti) { <option value="@cl.Codice" label="@cl.Nome">@cl.Nome</option> }</datalist>
+            <label>Data di inizio del contratto<input type="date" name="dataInizio" required /></label>
+            <label>Origine
+                <select name="origine">
+                    <option value="@((int)OrigineConvenzione.IndicataDalCommerciale)">Indicata dal commerciale (15% poi 10%)</option>
+                    <option value="@((int)OrigineConvenzione.SegnalataDaAzienda)">Segnalata da MARE.A (10%)</option>
+                </select>
+            </label>
+            <label>Descrizione<input type="text" name="descrizione" maxlength="200" /></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Registra</button></div>
+        </form>
+    </section>
+}
+
+@section Script {
+    <script type="module" src="~/js/moduli/convenzioni.js" asp-append-version="true"></script>
+}

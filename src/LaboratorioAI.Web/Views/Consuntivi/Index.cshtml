@@ -1,0 +1,308 @@
+@using System.Globalization
+@using System.Text.Json
+@using LaboratorioAI.Core.Direzione
+@model LaboratorioAI.Web.Controllers.ModelloConsuntivo
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var r = Model.Risultato;
+    var aree = r.Aree;
+    string Num(decimal v) => v == 0m ? "" : v.ToString("N2", it);
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Neg(decimal v) => v < 0m ? "neg" : "";
+    string Iso(DateTime d) => d.ToString("yyyy-MM-dd");
+    var oggi = DateTime.Today;
+    var fineMesePrec = new DateTime(oggi.Year, oggi.Month, 1).AddDays(-1);
+    var rapidi = new List<(string Etichetta, DateTime Dal, DateTime Al)>
+    {
+        ($"Da inizio {fineMesePrec.Year} a fine {fineMesePrec.ToString("MMMM", it)}", new DateTime(fineMesePrec.Year, 1, 1), fineMesePrec),
+        ($"Anno {oggi.Year - 1}", new DateTime(oggi.Year - 1, 1, 1), new DateTime(oggi.Year - 1, 12, 31)),
+        ($"Solo {fineMesePrec.ToString("MMMM yyyy", it)}", new DateTime(fineMesePrec.Year, fineMesePrec.Month, 1), fineMesePrec),
+    };
+    var periodo = $"dal {r.Dal:dd/MM/yyyy} al {r.Al:dd/MM/yyyy}";
+    var periodoPrec = $"dal {r.DalPrecedente:dd/MM/yyyy} al {r.AlPrecedente:dd/MM/yyyy}";
+    var t = r.Totali; var tp = r.TotaliPrecedenti;
+    // 22/10/2026: rettifica con i compensi soci ancora da pagare (solo soci, solo anno intero).
+    bool? conRett = Model.RettificaChiesta ? true : null;
+    var rett = Model.Rettifica; var rettP = Model.RettificaPrecedente;
+    var annoIntero = LaboratorioAI.Web.Controllers.ConsuntiviController.AnnoIntero(r.Dal, r.Al);
+}
+@* Consuntivo per area (20/10/2026). Definizione: claude/definizione-consuntivi.md *@
+<style>
+    .cons td.neg, .cons th.neg, .cons-cifre .neg { color: #B91C1C; }
+    .cons td, .cons th { padding: 5px 8px !important; }
+    .cons th.area, .cons td.numerico { min-width: 7.5rem; }
+    .cons tr.sezione td { background: #F3F4F6; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+    .cons tr.totale td, .cons tr.totale th { font-weight: 700; border-top: 2px solid #9CA3AF; }
+    .cons tr.utile td { font-weight: 700; background: #F9FAFB; }
+    .cons td.cliccabile { cursor: pointer; }
+    .cons td.cliccabile:hover { background: #EEF2FF; text-decoration: underline; }
+    .cons td.prec { color: #6B7280; }
+    .cons-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; }
+    .cons-cifre .valore { font-size: 1.45rem; font-weight: 700; }
+    .barra-mese { display: inline-block; height: .55rem; border-radius: 2px; vertical-align: middle; margin-left: .3rem; }
+    .cons-grafici { display: grid; grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr)); gap: 1rem; }
+    .cons-grafici figure { margin: 0; min-width: 0; }
+    .cons-grafici figcaption { font-weight: 600; font-size: .9rem; margin-bottom: .3rem; }
+    .cons-grafici svg { width: 100%; height: auto; display: block; font-family: inherit; }
+    .cons-leg { display: inline-block; width: .8rem; height: .8rem; border-radius: 2px; vertical-align: middle; margin-right: .25rem; }
+    @@media (max-width: 640px) { .cons-grafici { grid-template-columns: 1fr; } }
+    dialog.cons-dlg { max-width: 64rem; width: 96%; border: 1px solid #ccc; border-radius: .5rem; padding: 1rem 1.2rem; }
+    @@media print {
+        .cons-filtri, .cons-nostampa { display: none !important; }
+        @@page { size: A4 landscape; margin: 10mm; }
+        .cons { font-size: 8pt; }
+        .tabella-scorrevole { overflow: visible !important; }
+        .cons-grafici { grid-template-columns: 1fr 1fr; break-inside: avoid; }
+    }
+</style>
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Consuntivo per area</h1>
+        <p class="sottotitolo">Costi e ricavi della contabilità analitica di AZW per area, @periodo, confrontati con lo stesso periodo dell'anno prima. Il risultato dell'amministrazione è diviso in parti uguali sulle altre aree. Clic su un importo per vedere le registrazioni.</p>
+    </div>
+    <div class="cons-nostampa" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        <a class="pulsante" href="@Url.Action("Esporta", new { dal = Iso(r.Dal), al = Iso(r.Al), rettifica = conRett })">Esporta Excel</a>
+        <button type="button" class="pulsante pulsante-tenue" id="cons-stampa">Stampa / PDF</button>
+    </div>
+</div>
+
+<section class="riquadro cons-filtri">
+    <form method="get" style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end">
+        <label>Dal<input type="date" name="dal" value="@Iso(r.Dal)" required /></label>
+        <label>Al<input type="date" name="al" value="@Iso(r.Al)" required /></label>
+        @if (Model.VedeCompensiSoci)
+        {
+            <label style="display:inline-flex;gap:.3rem;align-items:center" title="Toglie dall'utile i compensi ancora da pagare ai soci. Solo per un anno intero (1/1–31/12).">
+                <input type="checkbox" name="rettifica" value="true" @(Model.RettificaChiesta ? "checked" : "") /> Rettifica compensi soci
+            </label>
+        }
+        <button type="submit" class="pulsante">Calcola</button>
+        @foreach (var q in rapidi)
+        {
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Index", new { dal = Iso(q.Dal), al = Iso(q.Al), rettifica = conRett })">@q.Etichetta</a>
+        }
+    </form>
+    @if (Model.RettificaChiesta && annoIntero is null)
+    {
+        <p class="avviso" style="margin:.6rem 0 0">La rettifica con i compensi soci si può fare solo su un anno intero (dal 1° gennaio al 31 dicembre): per esempio con il pulsante «Anno @(oggi.Year - 1)».</p>
+    }
+    <p class="sottotesto" style="margin-bottom:0">
+        Dati AZW: ultima registrazione @(Model.UltimaRegistrazione?.ToString("dd/MM/yyyy") ?? "—"),
+        importati il @(Model.UltimaImportazione?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—").
+        @if (Model.UltimaRegistrazione is null)
+        {
+            <strong>Nessuna registrazione: serve un'importazione AZW (Amministrazione → Provvigioni o Direzione → «Importa AZW ora»).</strong>
+        }
+    </p>
+    @if (!string.IsNullOrEmpty(Model.AvvisoImportazione))
+    {
+        <p class="avviso" style="margin:.6rem 0 0">Ultima importazione AZW: @Model.AvvisoImportazione</p>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="cons-cifre">
+        <div><div class="sottotesto">Utile o perdita MARE.A</div><div class="valore @Neg(t.UtileMarea)">@Euro(t.UtileMarea)</div>
+            <div class="sottotesto">anno prima <span class="@Neg(tp.UtileMarea)">@Euro(tp.UtileMarea)</span> · differenza <span class="@Neg(t.UtileMarea - tp.UtileMarea)">@Euro(t.UtileMarea - tp.UtileMarea)</span></div></div>
+        <div><div class="sottotesto">Ricavi</div><div class="valore">@Euro(t.TotaleRicavi)</div>
+            <div class="sottotesto">anno prima @Euro(tp.TotaleRicavi) · differenza <span class="@Neg(t.TotaleRicavi - tp.TotaleRicavi)">@Euro(t.TotaleRicavi - tp.TotaleRicavi)</span></div></div>
+        <div><div class="sottotesto">Costi</div><div class="valore">@Euro(-t.TotaleCosti)</div>
+            <div class="sottotesto">anno prima @Euro(-tp.TotaleCosti) · differenza @Euro(-(t.TotaleCosti - tp.TotaleCosti))</div></div>
+        @if (rett is { Presente: true })
+        {
+            <div><div class="sottotesto">Utile MARE.A rettificato con i compensi soci da pagare</div><div class="valore @Neg(rett.UtileMareaRettificato)">@Euro(rett.UtileMareaRettificato)</div>
+                <div class="sottotesto">da pagare ai soci @Euro(rett.Totale)@(rettP is { Presente: true } ? " · anno prima " + Euro(rettP.UtileMareaRettificato) : "")</div></div>
+        }
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Risultato per area</h2><span class="sottotesto">anno prima: @periodoPrec</span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella cons">
+            <thead><tr><th></th>@foreach (var a in aree) { <th class="numerico area">@a.Etichetta</th> }<th class="numerico">Totale</th></tr></thead>
+            <tbody>
+            @foreach (var (et, val, forte, vuotoAmm) in new (string, Dictionary<string, decimal>, bool, bool)[]
+                     { ("Ricavi", t.Ricavi, false, false), ("Costi", t.Costi, false, false), ("Utile o perdita per area", t.Utile, true, false),
+                       ("Contributo amministrazione", t.Contributo, false, false), ("Utile o perdita con contributo AMM", t.UtileConContributo, true, true),
+                       ("Con contributo AMM, anno prima", tp.UtileConContributo, false, true) })
+            {
+                <tr class="@(forte ? "utile" : "")">
+                    <td>@et</td>
+                    @foreach (var a in aree)
+                    {
+                        var v = val.GetValueOrDefault(a.Codice);
+                        <td class="numerico @Neg(v)">@(a.DaRipartire && vuotoAmm ? "" : Num(v))</td>
+                    }
+                    <td class="numerico @Neg(val.Values.Sum())">@Num(val.Values.Sum())</td>
+                </tr>
+            }
+            <tr>
+                <td>Differenza sull'anno prima (con contributo)</td>
+                @foreach (var a in aree)
+                {
+                    var d = t.UtileConContributo.GetValueOrDefault(a.Codice) - tp.UtileConContributo.GetValueOrDefault(a.Codice);
+                    <td class="numerico @Neg(d)">@(a.DaRipartire ? "" : Num(d))</td>
+                }
+                <td class="numerico @Neg(t.UtileMarea - tp.UtileMarea)">@Num(t.UtileMarea - tp.UtileMarea)</td>
+            </tr>
+            @if (rett is not null)
+            {
+                <tr class="sezione"><td colspan="@(aree.Count + 2)">Rettifica: compensi soci ancora da pagare (@rett.Anno)</td></tr>
+                if (!rett.Presente)
+                {
+                    <tr><td colspan="@(aree.Count + 2)" class="sottotesto">L'anno @rett.Anno non è presente nei compensi soci: la rettifica non si può fare.</td></tr>
+                }
+                else
+                {
+                    var righeRett = new List<(string, Dictionary<string, decimal>, bool, bool, bool)>
+                    {
+                        ("Compensi soci ancora da pagare", rett.DaPagare, false, false, true),
+                        ("Utile o perdita rettificato", rett.UtileRettificato, true, false, false),
+                        ("Contributo amministrazione dei compensi da pagare", rett.QuotaAmm, false, false, true),
+                        ("Utile rettificato con contributo AMM", rett.UtileConContributoRettificato, true, true, false),
+                    };
+                    if (rettP is { Presente: true }) righeRett.Add(("Rettificato con contributo AMM, anno prima", rettP.UtileConContributoRettificato, false, true, false));
+                    foreach (var (et, val, forte, vuotoAmm, cambiaSegno) in righeRett)
+                    {
+                        <tr class="@(forte ? "utile" : "")">
+                            <td>@et</td>
+                            @foreach (var a in aree)
+                            {
+                                var v = val.GetValueOrDefault(a.Codice) * (cambiaSegno ? -1m : 1m);
+                                <td class="numerico @Neg(v)">@(a.DaRipartire && vuotoAmm ? "" : Num(v))</td>
+                            }
+                            @{ var tot = val.Values.Sum() * (cambiaSegno ? -1m : 1m); }
+                            <td class="numerico @Neg(tot)">@Num(tot)</td>
+                        </tr>
+                    }
+                    if (rettP is not { Presente: true })
+                    {
+                        <tr><td colspan="@(aree.Count + 2)" class="sottotesto">L'anno @(rett.Anno - 1) non è presente nei compensi soci: niente confronto con l'anno prima.</td></tr>
+                    }
+                    <tr><td colspan="@(aree.Count + 2)" class="sottotesto">Da pagare = differenza del prospetto dei compensi soci, compreso il debito degli anni prima, divisa sulle aree come in Compensi soci → «Compensi ancora da pagare ai soci, per area». È una riga di analisi: la contabilità non cambia.</td></tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@{
+    // Dati dei grafici (20/10/2026): disegnati in SVG da consuntivi.js, senza librerie esterne.
+    var nomiMesi = new[] { "", "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
+    var operative = aree.Where(a => !a.DaRipartire).ToList();
+    var datiGrafici = new
+    {
+        periodo = $"{r.Dal:dd/MM/yy}–{r.Al:dd/MM/yy}",
+        precedente = $"{r.DalPrecedente:dd/MM/yy}–{r.AlPrecedente:dd/MM/yy}",
+        aree = aree.Select(a => a.Etichetta),
+        ricavi = aree.Select(a => t.Ricavi.GetValueOrDefault(a.Codice)),
+        costi = aree.Select(a => -t.Costi.GetValueOrDefault(a.Codice)),
+        areeOperative = operative.Select(a => a.Etichetta),
+        utile = operative.Select(a => t.UtileConContributo.GetValueOrDefault(a.Codice)),
+        utilePrec = operative.Select(a => tp.UtileConContributo.GetValueOrDefault(a.Codice)),
+        mesi = r.Mesi.Select(m => nomiMesi[m.Mese]),
+        progressivo = r.Mesi.Select((m, i) => r.Mesi.Take(i + 1).Sum(x => x.Utile.Values.Sum())),
+        progressivoPrec = r.MesiPrecedenti.Select((m, i) => r.MesiPrecedenti.Take(i + 1).Sum(x => x.Utile.Values.Sum())),
+        vociCosto = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => v.Descrizione),
+        costoVoci = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => -v.Totale),
+        costoVociPrec = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => -v.TotalePrecedente),
+    };
+}
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Grafici</h2><span class="sottotesto"><span class="cons-leg" style="background:#2563EB"></span>@periodo <span class="cons-leg" style="background:#9CA3AF;margin-left:.8rem"></span>anno prima</span></div>
+    <div class="cons-grafici">
+        <figure><figcaption>Utile o perdita per area, con contributo AMM</figcaption><div id="graf-utile"></div></figure>
+        <figure><figcaption>Utile MARE.A progressivo, mese per mese</figcaption><div id="graf-progressivo"></div></figure>
+        <figure><figcaption>Ricavi e costi per area (<span style="color:#16A34A">ricavi</span>, <span style="color:#DC2626">costi</span>)</figcaption><div id="graf-ricavi-costi"></div></figure>
+        <figure><figcaption>Le 10 voci di costo più alte</figcaption><div id="graf-voci"></div></figure>
+    </div>
+    <script type="application/json" id="cons-dati-grafici">@Html.Raw(JsonSerializer.Serialize(datiGrafici))</script>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Costi e ricavi per voce</h2><span class="sottotesto">C = costi (DARE negativo), R = ricavi; importi netti dare/avere</span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella cons" id="cons-voci" data-dal="@Iso(r.Dal)" data-al="@Iso(r.Al)">
+            <thead><tr><th>Voce</th>@foreach (var a in aree) { <th class="numerico area">@a.Etichetta</th> }<th class="numerico">Totale</th><th class="numerico">Anno prima</th><th class="numerico">Differenza</th></tr></thead>
+            <tbody>
+            @foreach (var (titolo, voci, tot, totP) in new (string, List<VoceConsuntivo>, Dictionary<string, decimal>, Dictionary<string, decimal>)[]
+                     { ("Costi", r.Costi, t.Costi, tp.Costi), ("Ricavi", r.Ricavi, t.Ricavi, tp.Ricavi) })
+            {
+                <tr class="sezione"><td colspan="@(aree.Count + 4)">@titolo</td></tr>
+                @foreach (var v in voci)
+                {
+                    <tr>
+                        <td class="cliccabile" data-voce="@v.Voce" data-nome="@v.Descrizione">@v.Descrizione</td>
+                        @foreach (var a in aree)
+                        {
+                            var x = v.Valori.GetValueOrDefault(a.Codice);
+                            if (x == 0m) { <td class="numerico"></td> }
+                            else { <td class="numerico cliccabile @Neg(x)" data-voce="@v.Voce" data-area="@a.Codice" data-nome="@v.Descrizione · @a.Etichetta">@Num(x)</td> }
+                        }
+                        <td class="numerico @Neg(v.Totale)"><strong>@Num(v.Totale)</strong></td>
+                        <td class="numerico prec">@Num(v.TotalePrecedente)</td>
+                        <td class="numerico @Neg(v.Totale - v.TotalePrecedente)">@Num(v.Totale - v.TotalePrecedente)</td>
+                    </tr>
+                }
+                <tr class="totale">
+                    <td>Totale @titolo.ToLowerInvariant()</td>
+                    @foreach (var a in aree) { var x = tot.GetValueOrDefault(a.Codice); <td class="numerico @Neg(x)">@Num(x)</td> }
+                    <td class="numerico @Neg(tot.Values.Sum())">@Num(tot.Values.Sum())</td>
+                    <td class="numerico prec">@Num(totP.Values.Sum())</td>
+                    <td class="numerico @Neg(tot.Values.Sum() - totP.Values.Sum())">@Num(tot.Values.Sum() - totP.Values.Sum())</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati">
+        <h2>Andamento mese per mese</h2>
+        <span class="cons-nostampa">
+            <label style="display:inline"><input type="radio" name="cons-misura" value="utile" checked /> Utile o perdita</label>
+            <label style="display:inline;margin-left:.8rem"><input type="radio" name="cons-misura" value="ricavi" /> Ricavi</label>
+        </span>
+    </div>
+    @foreach (var (misura, titolo, valori) in new (string, string, Func<MeseConsuntivo, IReadOnlyDictionary<string, decimal>>)[]
+             { ("utile", "Utile o perdita per area (senza contributo AMM)", m => m.Utile), ("ricavi", "Ricavi per area", m => m.Ricavi) })
+    {
+        var massimo = r.Mesi.Count == 0 ? 0m : r.Mesi.Max(m => Math.Abs(valori(m).Values.Sum()));
+        <div class="tabella-scorrevole cons-mesi" data-misura="@misura" @(misura == "utile" ? "" : "hidden")>
+            <p class="sottotesto">@titolo</p>
+            <table class="tabella cons">
+                <thead><tr><th>Mese</th>@foreach (var a in aree) { <th class="numerico area">@a.Etichetta</th> }<th class="numerico">Totale</th><th style="min-width:9rem"></th></tr></thead>
+                <tbody>
+                @foreach (var m in r.Mesi)
+                {
+                    var v = valori(m); var tot = v.Values.Sum();
+                    var larghezza = massimo == 0m ? 0 : (int)Math.Round(Math.Abs(tot) / massimo * 100m);
+                    <tr>
+                        <td>@(new DateTime(m.Anno, m.Mese, 1).ToString("MMMM yyyy", it))</td>
+                        @foreach (var a in aree) { var x = v.GetValueOrDefault(a.Codice); <td class="numerico @Neg(x)">@Num(x)</td> }
+                        <td class="numerico @Neg(tot)"><strong>@Num(tot)</strong></td>
+                        <td><span class="barra-mese" style="width:@(larghezza * 0.08m)rem;background:@(tot < 0 ? "#DC2626" : "#16A34A")"></span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    <p class="sottotesto" style="margin-bottom:0">Il mese è quello della data di registrazione in AZW. I mesi parziali (periodo che inizia o finisce a metà mese) contano solo i giorni del periodo.</p>
+</section>
+
+<dialog class="cons-dlg" id="cons-dettaglio">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+        <h2 id="cons-dettaglio-titolo" style="margin:0;font-size:1.05rem"></h2>
+        <button type="button" class="pulsante pulsante-tenue" id="cons-chiudi">Chiudi</button>
+    </div>
+    <div id="cons-dettaglio-corpo" style="margin-top:.6rem"></div>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/consuntivi.js" asp-append-version="true"></script>
+}

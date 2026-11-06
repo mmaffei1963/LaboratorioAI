@@ -1,0 +1,277 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Andamento
+@using LaboratorioAI.Web.Controllers
+@model ModelloSubentri
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string E(decimal v) => v.ToString("#,##0", it) + " €";
+    string D(DateTime? d) => d?.ToString("dd/MM/yy") ?? "—";
+    var r = Model.Riepilogo;
+    var tutti = r.Risultato.Persi;
+    int N(EsitoSubentro e) => tutti.Count(p => p.Esito == e);
+    decimal V(EsitoSubentro e) => tutti.Where(p => p.Esito == e).Sum(p => p.Perso.ValorePrecedenti);
+    var nonPersi = tutti.Where(p => p.NonPerso).ToList();
+    object Rotta(string esito) => new { esito, filtro = Model.Filtro, periodo = Model.Periodo, confronto = Model.Confronto, servizio = (int)r.Ambito };
+    var unita = AmbitiSubentri.Unita(r.Ambito);
+    var nomeServizio = AmbitiSubentri.Nome(r.Ambito);
+}
+@* «Cambi di gestione» (subentri, 12/10/2026). Regole in Core/Andamento/MotoreSubentri.cs. *@
+
+<div class="barra-strumenti">
+    <div>
+        <p class="sottotesto"><a href="/ClientiDaSeguire?vista=legionella">← Clienti da seguire · Legionella</a></p>
+        <h1>Cambi di gestione</h1>
+        <p class="sottotitolo">Servizio: <strong>@nomeServizio</strong>. Sedi che lo avevano in <strong>@r.Risultato.Confronto</strong> e non hanno
+            @(r.Ambito == AmbitoSubentri.Legionella ? "mandato nessun campione" : $"avuto {unita}") in <strong>@r.Risultato.Attuale</strong> (mesi interi, stessi mesi dell'anno). Il programma cerca nello stesso posto (stesso nome o stesso indirizzo) un cliente arrivato dopo.
+            Dati ArcLab copiati all'importazione @(r.UltimaImportazione is DateTime u ? $"del {u.ToLocalTime():dd/MM/yyyy HH:mm}" : "(nessuna importazione)").</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante pulsante-tenue" href="/ClientiDaSeguire/Subentri/Excel?periodo=@Model.Periodo&confronto=@Model.Confronto&servizio=@((int)r.Ambito)">Esporta Excel</a>
+        <form method="post" action="/ClientiDaSeguire/Subentri/ViesBlocco" style="display:inline"
+              onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Verifica in corso…';">
+            <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+            <button type="submit" class="pulsante pulsante-tenue" title="Controlla sul servizio europeo VIES le P.IVA dei casi C e D non verificate negli ultimi 30 giorni (fino a 60 per volta, circa mezzo minuto).">Verifica P.IVA (VIES)</button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+@if (r.InsediamentiCopiati == 0)
+{
+    <section class="riquadro riquadro-errore"><strong>Mancano gli insediamenti ArcLab:</strong> serve un'importazione AZW
+        («Importa AZW ora» in Clienti da seguire, oppure quella notturna).</section>
+}
+
+<div class="semaforo">
+    <a class="semaforo-voce conforme" href="@Url.Action("Index", Rotta("a"))" style="text-decoration:none"><strong>@N(EsitoSubentro.SubentratoAttivo)</strong><span>A · nuovo gestore nostro@(Model.VedeImporti ? " · " + E(V(EsitoSubentro.SubentratoAttivo)) : "")</span></a>
+    <a class="semaforo-voce conforme" href="@Url.Action("Index", Rotta("e"))" style="text-decoration:none"><strong>@N(EsitoSubentro.ClienteAttivoAltrove)</strong><span>E · attivo da altra sede@(Model.VedeImporti ? " · " + E(V(EsitoSubentro.ClienteAttivoAltrove)) : "")</span></a>
+    <a class="semaforo-voce borderline" href="@Url.Action("Index", Rotta("c"))" style="text-decoration:none"><strong>@N(EsitoSubentro.SubentratoNonAttivo)</strong><span>C · nuovo gestore da chiamare</span></a>
+    <a class="semaforo-voce non-conforme" href="@Url.Action("Index", Rotta("d"))" style="text-decoration:none"><strong>@N(EsitoSubentro.NessunSubentro)</strong><span>D · da ricontattare@(Model.VedeImporti ? " · " + E(V(EsitoSubentro.NessunSubentro)) : "")</span></a>
+    <a class="semaforo-voce neutro" href="@Url.Action("Index", Rotta("verifica"))" style="text-decoration:none"><strong>@tutti.Count(p => p.DaVerificare)</strong><span>Da verificare a mano</span></a>
+</div>
+<p class="sottotesto" style="margin-top:-0.4rem">
+    Periodo: <strong>@r.Risultato.Attuale</strong> contro <strong>@r.Risultato.Confronto</strong>. Su @tutti.Count sedi «perse», @nonPersi.Count non lo sono davvero@(Model.VedeImporti ? $" ({E(nonPersi.Sum(p => p.Perso.ValorePrecedenti))} su {E(tutti.Sum(p => p.Perso.ValorePrecedenti))} a listino nel periodo di confronto)" : "").
+    @if (N(EsitoSubentro.AnagraficaDoppia) > 0) { <text>Anagrafiche doppie (B): @N(EsitoSubentro.AnagraficaDoppia). </text> }
+    Le proposte con affidabilità bassa (solo stesso indirizzo) non contano finché qualcuno non le conferma.
+</p>
+
+<section class="riquadro">
+    <form method="get" action="/ClientiDaSeguire/Subentri" class="azioni-filtri" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <select name="esito">
+            @foreach (var (v, t) in new[] { ("tutti", "Tutti gli esiti"), ("a", "A – nuovo gestore nostro"), ("b", "B – anagrafica doppia"), ("c", "C – nuovo gestore non attivo"),
+                ("d", "D – nessun subentro"), ("e", "E – attivo da altra sede"), ("verifica", "Da verificare a mano"), ("confermati", "Già decisi") })
+            {
+                <option value="@v" selected="@(Model.Esito == v)">@t</option>
+            }
+        </select>
+        <input type="text" name="filtro" value="@Model.Filtro" placeholder="cliente, sede, città o codice" />
+        <label>Servizio
+            <select name="servizio">
+                <optgroup label="Laboratorio">
+                    @foreach (var a in AmbitiSubentri.Tutti.Where(x => !AmbitiSubentri.DiConsulenza(x)))
+                    {
+                        <option value="@((int)a)" selected="@(r.Ambito == a)">@AmbitiSubentri.Nome(a)</option>
+                    }
+                </optgroup>
+                <optgroup label="Consulenza e formazione">
+                    @foreach (var a in AmbitiSubentri.Tutti.Where(AmbitiSubentri.DiConsulenza))
+                    {
+                        <option value="@((int)a)" selected="@(r.Ambito == a)">@AmbitiSubentri.Nome(a)</option>
+                    }
+                </optgroup>
+            </select>
+        </label>
+        <label>Periodo
+            <select name="periodo">
+                @foreach (var (v, t) in new[] { ("12", "ultimi 12 mesi"), ("6", "ultimi 6 mesi"), ("3", "ultimi 3 mesi"), ("anno", "da inizio anno") })
+                {
+                    <option value="@v" selected="@(Model.Periodo == v)">@t</option>
+                }
+            </select>
+        </label>
+        <label>contro
+            <select name="confronto">
+                <option value="1" selected="@(Model.Confronto == 1)">stessi mesi dell'anno prima</option>
+                <option value="2" selected="@(Model.Confronto == 2)">stessi mesi di due anni prima</option>
+            </select>
+        </label>
+        <button type="submit" class="pulsante">Cerca</button>
+        <span class="sottotesto">@Model.Righe.Count sedi</span>
+    </form>
+</section>
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella tabella-subentri">
+            <thead><tr><th>Esito</th><th>Sede persa</th><th>Ultima attività</th><th>Nuovo gestore trovato</th><th>Decisione</th></tr></thead>
+            <tbody>
+            @foreach (var p in Model.Righe)
+            {
+                var i = p.Perso.Insediamento;
+                var s = p.Successore;
+                var vies = TestiSubentri.Vies(r, i.PartitaIva);
+                r.Decisioni.TryGetValue(i.IdInsediamento, out var decisioni);
+                var ultimaConferma = decisioni?.FirstOrDefault(d => d.Confermato);
+                <tr id="sede-@i.IdInsediamento">
+                    <td>
+                        <span class="etichetta @(p.DaVerificare ? "etichetta-attesa" : TestiSubentri.Classe(p.Esito))">@TestiSubentri.Esito(p.Esito)</span>
+                        @if (p.DaVerificare) { <br /><span class="sottotesto">da verificare</span> }
+                        @if (p.SenzaIndirizzo) { <br /><span class="sottotesto" title="Senza indirizzo in ArcLab si può abbinare solo per nome">sede senza indirizzo</span> }
+                    </td>
+                    <td>
+                        @if (Model.VedeImporti && !string.IsNullOrEmpty(i.CodiceCliente))
+                        {
+                            <a href="/ClientiDaSeguire/Scheda/@i.CodiceCliente"><strong>@i.RagioneSociale</strong></a>
+                        }
+                        else
+                        {
+                            <strong>@i.RagioneSociale</strong>
+                        }
+                        @if (i.CodiceCliente is not null && r.Intermediari.Contains(i.CodiceCliente)) { <text> </text><span class="etichetta etichetta-outsourcing">intermediario</span> }
+                        <br /><span class="sottotesto">@i.CodiceCliente · P.IVA @(i.PartitaIva ?? "—")</span>
+                        @if (vies is not null) { <text> </text><span class="etichetta @vies.Classe" title="@vies.Dettaglio">@vies.Testo</span> }
+                        <br />@i.Nome<br /><span class="sottotesto">@i.Indirizzo · @i.Citta</span>
+                        @if (p.CampioniClienteAltrove > 0) { <br /><span class="sottotesto">Il cliente ha @p.CampioniClienteAltrove @unita da altre sedi nel periodo</span> }
+                    </td>
+                    <td>
+                        ultima @D(p.Perso.UltimaAttivitaAmbito)<br />
+                        <span class="sottotesto">@p.Perso.AmbitoPrecedenti @unita in @r.Risultato.Confronto@(Model.VedeImporti ? " · " + E(p.Perso.ValorePrecedenti) : "")</span>
+                    </td>
+                    <td>
+                        @if (s is not null)
+                        {
+                            var n = s.Stato.Insediamento;
+                            if (Model.VedeImporti && !string.IsNullOrEmpty(n.CodiceCliente))
+                            {
+                                <a href="/ClientiDaSeguire/Scheda/@n.CodiceCliente"><strong>@n.RagioneSociale</strong></a>
+                            }
+                            else
+                            {
+                                <strong>@n.RagioneSociale</strong>
+                            }
+                            <br /><span class="sottotesto">@n.CodiceCliente · P.IVA @(n.PartitaIva ?? "—")</span>
+                            <br />@n.Nome<span class="sottotesto"> · @n.Indirizzo</span>
+                            <br /><span class="sottotesto">
+                                @(s.Stato.CampioniUltimi > 0 ? $"{s.Stato.CampioniUltimi} {unita} nel periodo (dal {D(s.Stato.PrimoCampione)})" : s.Stato.UltimoCampione is null ? $"nessuna attività per questo servizio" : $"ultima attività {D(s.Stato.UltimoCampione)}")
+                                @(Model.VedeImporti && s.Stato.ValoreUltimi > 0 ? " · " + E(s.Stato.ValoreUltimi) : "")
+                                · affidabilità @TestiSubentri.Affidabilita(s.Affidabilita)
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="sottotesto">—</span>
+                        }
+                        @if (p.AltriCandidati.Count > 0)
+                        {
+                            <details class="altri-candidati"><summary>Altri possibili (@p.AltriCandidati.Count)</summary>
+                                @foreach (var c in p.AltriCandidati)
+                                {
+                                    var ci = c.Stato.Insediamento;
+                                    <form method="post" action="/ClientiDaSeguire/Subentri/Conferma" class="riga-candidato">
+                                        <input type="hidden" name="idPrecedente" value="@i.IdInsediamento" /><input type="hidden" name="idSuccessivo" value="@ci.IdInsediamento" />
+                                        <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                        <span>@ci.RagioneSociale · @ci.Nome <span class="sottotesto">(@ci.CodiceCliente, @(c.Stato.CampioniUltimi) @unita nel periodo, @TestiSubentri.Affidabilita(c.Affidabilita))</span></span>
+                                        <button type="submit" class="pulsante pulsante-tenue">È questo</button>
+                                    </form>
+                                }
+                            </details>
+                        }
+                    </td>
+                    <td class="cella-decisione">
+                        @if (p.Confermato && ultimaConferma is not null)
+                        {
+                            <span class="etichetta etichetta-conforme">@(ultimaConferma.IdInsediamentoSuccessivo is null ? "nessun subentro" : "confermato")</span>
+                            <br /><span class="sottotesto">@ultimaConferma.NomeUtente, @ultimaConferma.DataDecisione.ToLocalTime().ToString("dd/MM/yy")@(ultimaConferma.Note is null ? "" : " · " + ultimaConferma.Note)</span>
+                            <form method="post" action="/ClientiDaSeguire/Subentri/Annulla">
+                                <input type="hidden" name="id" value="@ultimaConferma.IdSubentroInsediamento" />
+                                <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                <button type="submit" class="pulsante pulsante-tenue">Annulla</button>
+                            </form>
+                        }
+                        else
+                        {
+                            @if (s is not null)
+                            {
+                                <form method="post" action="/ClientiDaSeguire/Subentri/Conferma" style="display:inline">
+                                    <input type="hidden" name="idPrecedente" value="@i.IdInsediamento" /><input type="hidden" name="idSuccessivo" value="@s.Stato.Insediamento.IdInsediamento" />
+                                    <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                    <button type="submit" class="pulsante" title="Sì, è lo stesso posto con un nuovo gestore">Conferma</button>
+                                </form>
+                                <form method="post" action="/ClientiDaSeguire/Subentri/Scarta" style="display:inline">
+                                    <input type="hidden" name="idPrecedente" value="@i.IdInsediamento" /><input type="hidden" name="idSuccessivo" value="@s.Stato.Insediamento.IdInsediamento" />
+                                    <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                    <button type="submit" class="pulsante pulsante-tenue" title="No, non è lo stesso posto: non proporlo più">Scarta</button>
+                                </form>
+                            }
+                            <details class="altro-abbinamento"><summary>Altro…</summary>
+                                <form method="post" action="/ClientiDaSeguire/Subentri/Conferma" class="form-abbina">
+                                    <input type="hidden" name="idPrecedente" value="@i.IdInsediamento" /><input type="hidden" name="idSuccessivo" value="" />
+                                    <input type="hidden" name="manuale" value="true" />
+                                    <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                    <label>Cerca il nuovo gestore<input type="text" class="cerca-insediamento" placeholder="nome, cliente, città…" autocomplete="off" /></label>
+                                    <div class="risultati-insediamento"></div>
+                                    <input type="text" name="note" maxlength="1000" placeholder="nota (facoltativa)" />
+                                </form>
+                                <form method="post" action="/ClientiDaSeguire/Subentri/Conferma">
+                                    <input type="hidden" name="idPrecedente" value="@i.IdInsediamento" /><input type="hidden" name="manuale" value="true" />
+                                    <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                    <input type="text" name="note" maxlength="1000" placeholder="es. hotel chiuso, passato a un concorrente" />
+                                    <button type="submit" class="pulsante pulsante-tenue" title="Nessun nuovo gestore: chiuso o passato ad altri">Nessun subentro</button>
+                                </form>
+                                @if (vies is null && i.PartitaIva is not null)
+                                {
+                                    <form method="post" action="/ClientiDaSeguire/Subentri/Vies">
+                                        <input type="hidden" name="partitaIva" value="@i.PartitaIva" />
+                                        <input type="hidden" name="esito" value="@Model.Esito" /><input type="hidden" name="filtro" value="@Model.Filtro" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" /><input type="hidden" name="servizio" value="@((int)r.Ambito)" />
+                                        <button type="submit" class="pulsante pulsante-tenue">Verifica P.IVA su VIES</button>
+                                    </form>
+                                }
+                            </details>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.Righe.Count == 0)
+    {
+        <p class="vuoto">Nessuna sede con questi filtri.</p>
+    }
+</section>
+
+<script type="module">
+    // Abbinamento manuale: cerca l'insediamento del nuovo gestore e lo collega con un clic.
+    for (const form of document.querySelectorAll('.form-abbina')) {
+        const campo = form.querySelector('.cerca-insediamento');
+        const elenco = form.querySelector('.risultati-insediamento');
+        let timer;
+        campo.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(async () => {
+                const q = campo.value.trim();
+                if (q.length < 2) { elenco.replaceChildren(); return; }
+                const r = await fetch('/ClientiDaSeguire/Subentri/Cerca?q=' + encodeURIComponent(q));
+                const dati = r.ok ? await r.json() : [];
+                elenco.replaceChildren(...dati.map(d => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'pulsante pulsante-tenue voce-insediamento';
+                    b.textContent = `${d.ragioneSociale} · ${d.nome ?? ''} · ${d.indirizzo ?? ''} ${d.citta ?? ''} (${d.codiceCliente ?? 's.c.'})`;
+                    b.addEventListener('click', () => {
+                        form.querySelector('input[name=idSuccessivo]').value = d.idInsediamento;
+                        form.submit();
+                    });
+                    return b;
+                }));
+                if (dati.length === 0) elenco.textContent = 'Nessun insediamento trovato.';
+            }, 300);
+        });
+        campo.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+        // Senza un insediamento scelto il modulo non parte (altrimenti registrerebbe «nessun subentro»).
+        form.addEventListener('submit', e => { if (!form.querySelector('input[name=idSuccessivo]').value) e.preventDefault(); });
+    }
+</script>

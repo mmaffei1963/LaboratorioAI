@@ -1,0 +1,1605 @@
+@model List<LaboratorioAI.Dati.MonitorTemperature.Models.DifferenzaTemperatura>
+
+@using System.Text.Json
+@using System.Globalization
+
+@{
+    ViewData["Title"] =
+        "Monitor Differenze";
+
+    string periodo =
+        ViewBag.Periodo ?? "24h";
+
+    decimal soglia =
+        ViewBag.Soglia ?? 1.0m;
+
+    string vista =
+        ViewBag.Vista ?? "grafici";
+
+    string codiceSondaSelezionato =
+        ViewBag.CodiceSonda ?? "TUTTE";
+
+    DateTime? dataDa =
+        ViewBag.DataDa as DateTime?;
+
+    DateTime? dataA =
+        ViewBag.DataA as DateTime?;
+
+    bool filtroPersonalizzato =
+        ViewBag.FiltroPersonalizzato ?? false;
+
+    var sondeDisponibili =
+        ViewBag.SondeDisponibili
+        as List<string>
+        ?? new List<string>();
+
+    var gruppi =
+        Model
+            .GroupBy(x => new
+            {
+                x.IdSonda,
+                x.CodiceSonda,
+                x.Apparecchiatura,
+                x.CodiceApparecchiatura,
+                x.Congelatore
+            })
+            .OrderBy(g =>
+            {
+                string numero =
+                    g.Key.CodiceSonda
+                        .Replace("T", "")
+                        .Trim();
+
+                return int.TryParse(
+                    numero,
+                    out int n)
+                    ? n
+                    : 9999;
+            })
+            .ToList();
+
+    var riepilogoTabella =
+        gruppi
+            .Select(g =>
+            {
+                var ultima =
+                    g.OrderByDescending(
+                        x => x.DataOra)
+                    .First();
+
+                return new
+                {
+                    g.Key.IdSonda,
+                    g.Key.CodiceSonda,
+                    g.Key.Apparecchiatura,
+                    g.Key.Congelatore,
+
+                    Ultima =
+                        ultima,
+
+                    DifferenzaMassima =
+                        g.Max(
+                            x =>
+                                Math.Abs(
+                                    x.Differenza)),
+
+                    FuoriOriginaleMassimo =
+                        g.Max(
+                            x =>
+                                x.FuoriLimiteOriginale),
+
+                    FuoriControlloMassimo =
+                        g.Max(
+                            x =>
+                                x.FuoriLimiteControllo)
+                };
+            })
+            .ToList();
+
+    string descrizioneFiltro;
+
+    if (filtroPersonalizzato)
+    {
+        string da =
+            dataDa.HasValue
+                ? dataDa.Value.ToString(
+                    "dd/MM/yyyy")
+                : "inizio archivio";
+
+        string a =
+            dataA.HasValue
+                ? dataA.Value.ToString(
+                    "dd/MM/yyyy")
+                : "oggi";
+
+        descrizioneFiltro =
+            $"Periodo personalizzato: {da} - {a}";
+    }
+    else
+    {
+        descrizioneFiltro =
+            periodo switch
+            {
+                "24h" =>
+                    "Ultime 24 ore",
+
+                "48h" =>
+                    "Ultime 48 ore",
+
+                "7g" =>
+                    "Ultimi 7 giorni",
+
+                "30g" =>
+                    "Ultimi 30 giorni",
+
+                "tutto" =>
+                    "Tutto lo storico",
+
+                _ =>
+                    "Periodo selezionato"
+            };
+    }
+}
+
+<style>
+
+    @@page {
+        size: A4 landscape;
+        margin: 6mm;
+    }
+
+    @@media print {
+
+        nav,
+        header,
+        footer,
+        .navbar,
+        .no-print {
+            display: none !important;
+        }
+
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+        }
+
+        .container-fluid {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        h1 {
+            font-size: 18px !important;
+            margin-bottom: 2mm !important;
+        }
+
+        p {
+            font-size: 10px !important;
+            margin-bottom: 2mm !important;
+        }
+
+        .alert {
+            font-size: 9px !important;
+            padding: 2mm 3mm !important;
+            margin-bottom: 2mm !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .card-header {
+            padding: 4px 6px !important;
+        }
+
+        .card-body {
+            padding: 6px !important;
+        }
+
+        .table {
+            font-size: 8px !important;
+        }
+
+        .table th,
+        .table td {
+            padding: 3px 4px !important;
+        }
+
+        canvas {
+            max-height: 150mm !important;
+        }
+    }
+
+</style>
+
+
+<div class="container-fluid mt-4 px-4">
+
+    <h1 class="mb-2">
+        Monitor Differenze
+    </h1>
+
+    <p class="text-muted mb-3">
+
+        Confronto tra i valori originali Econorma
+        e quelli del Monitor Controllo.
+        Nei grafici sono visualizzate
+        esclusivamente le letture
+        in cui è stata applicata una correzione.
+
+    </p>
+
+    <div class="alert alert-light border mb-3">
+
+        <strong>
+            Filtro attivo:
+        </strong>
+
+        @descrizioneFiltro
+
+        <span class="mx-2">
+            |
+        </span>
+
+        <strong>
+            Sonda:
+        </strong>
+
+        @(codiceSondaSelezionato == "TUTTE"
+            ? "Tutte"
+            : codiceSondaSelezionato)
+
+        <span class="mx-2">
+            |
+        </span>
+
+        <strong>
+            Soglia:
+        </strong>
+
+        @soglia.ToString("0.0") °C
+
+        <span class="mx-2">
+            |
+        </span>
+
+        <strong>
+            Vista:
+        </strong>
+
+        @(vista == "grafici"
+            ? "Grafici"
+            : "Tabella")
+
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 no-print">
+
+        <a asp-controller="Monitor" asp-area="MonitorTemperature"
+           asp-action="Index"
+           class="btn btn-secondary">
+
+            Dashboard
+
+        </a>
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           class="btn btn-outline-secondary">
+
+            Monitor
+
+        </a>
+
+        <a asp-controller="MonitorControllo" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           class="btn btn-outline-secondary">
+
+            Monitor Controllo
+
+        </a>
+
+        <span class="mx-2">
+        </span>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           asp-route-soglia="@soglia"
+           asp-route-vista="grafici"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           asp-route-dataDa="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : null)"
+           asp-route-dataA="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : null)"
+           class="btn @(vista == "grafici" ? "btn-dark" : "btn-outline-dark")">
+
+            Grafici
+
+        </a>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           asp-route-soglia="@soglia"
+           asp-route-vista="tabella"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           asp-route-dataDa="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : null)"
+           asp-route-dataA="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : null)"
+           class="btn @(vista == "tabella" ? "btn-dark" : "btn-outline-dark")">
+
+            Tabella
+
+        </a>
+
+        <button type="button"
+                class="btn btn-outline-dark"
+                onclick="window.print()">
+
+            Stampa / PDF
+
+        </button>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="EsportaExcel"
+           asp-route-periodo="@periodo"
+           asp-route-soglia="@soglia.ToString("0.0", CultureInfo.InvariantCulture)"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           asp-route-dataDa="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : null)"
+           asp-route-dataA="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : null)"
+           class="btn btn-outline-success no-print">
+
+            Esporta Excel
+
+        </a>
+
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 no-print">
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="24h"
+           asp-route-soglia="@soglia"
+           asp-route-vista="@vista"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "24h" ? "btn-primary" : "btn-outline-primary")">
+
+            24 ore
+
+        </a>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="48h"
+           asp-route-soglia="@soglia"
+           asp-route-vista="@vista"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "48h" ? "btn-primary" : "btn-outline-primary")">
+
+            48 ore
+
+        </a>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="7g"
+           asp-route-soglia="@soglia"
+           asp-route-vista="@vista"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "7g" ? "btn-primary" : "btn-outline-primary")">
+
+            7 giorni
+
+        </a>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="30g"
+           asp-route-soglia="@soglia"
+           asp-route-vista="@vista"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "30g" ? "btn-primary" : "btn-outline-primary")">
+
+            30 giorni
+
+        </a>
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="tutto"
+           asp-route-soglia="@soglia"
+           asp-route-vista="@vista"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "tutto" ? "btn-primary" : "btn-outline-primary")">
+
+            Tutto
+
+        </a>
+
+    </div>
+
+    <div class="card mb-4 no-print">
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-controller="Differenze" asp-area="MonitorTemperature"
+                  asp-action="Index"
+                  class="row g-3 align-items-end">
+
+                <input type="hidden"
+                       name="periodo"
+                       value="@periodo" />
+
+                <input type="hidden"
+                       name="vista"
+                       value="@vista" />
+
+                <div class="col-12 col-md-2">
+
+                    <label class="form-label fw-bold"
+                           for="codiceSonda">
+
+                        Sonda
+
+                    </label>
+
+                    <select id="codiceSonda"
+                            name="codiceSonda"
+                            class="form-select">
+
+                        <option value="TUTTE"
+                                selected="@(codiceSondaSelezionato == "TUTTE")">
+
+                            Tutte le sonde
+
+                        </option>
+
+                        @foreach (
+                            string codice
+                            in sondeDisponibili)
+                        {
+                            <option value="@codice"
+                                    selected="@(codiceSondaSelezionato == codice)">
+
+                                @codice
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 col-md-2">
+
+                    <label class="form-label fw-bold"
+                           for="dataDa">
+
+                        Data inizio
+
+                    </label>
+
+                    <input type="date"
+                           id="dataDa"
+                           name="dataDa"
+                           value="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-12 col-md-2">
+
+                    <label class="form-label fw-bold"
+                           for="dataA">
+
+                        Data fine
+
+                    </label>
+
+                    <input type="date"
+                           id="dataA"
+                           name="dataA"
+                           value="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-12 col-md-2">
+
+                    <label class="form-label fw-bold"
+                           for="soglia">
+
+                        Soglia differenza °C
+
+                    </label>
+
+                    <input type="number"
+                           id="soglia"
+                           name="soglia"
+                           value="@soglia.ToString("0.0", CultureInfo.InvariantCulture)"
+                           step="0.1"
+                           min="0"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-12 col-md-4">
+
+                    <button type="submit"
+                            class="btn btn-primary me-2">
+
+                        Applica filtro
+
+                    </button>
+
+                    <a asp-controller="Differenze" asp-area="MonitorTemperature"
+                       asp-action="Index"
+                       asp-route-periodo="24h"
+                       asp-route-soglia="1.0"
+                       asp-route-vista="grafici"
+                       class="btn btn-outline-secondary">
+
+                        Azzera filtro
+
+                    </a>
+
+                </div>
+
+            </form>
+
+            <div class="small text-muted mt-3">
+
+                Se imposti Data inizio e/o Data fine,
+                il periodo personalizzato ha precedenza
+                sui pulsanti rapidi.
+                La data finale comprende tutta
+                la giornata selezionata.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (gruppi.Count == 0)
+    {
+        <div class="alert alert-success">
+
+            Nessuna sonda presenta una differenza
+            pari o superiore a
+
+            <strong>
+                @soglia.ToString("0.0") °C
+            </strong>
+
+            nel periodo selezionato.
+
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+
+            Sonde con differenza significativa:
+
+            <strong>
+                @gruppi.Count
+            </strong>
+
+            &nbsp;|&nbsp;
+
+            Soglia:
+
+            <strong>
+                @soglia.ToString("0.0") °C
+            </strong>
+
+        </div>
+
+        @if (vista == "tabella")
+        {
+            <div class="card">
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-striped table-bordered table-hover align-middle mb-0">
+
+                            <thead class="table-dark">
+
+                                <tr>
+
+                                    <th>Sonda</th>
+                                    <th>Apparecchiatura</th>
+                                    <th>Ultima lettura</th>
+                                    <th class="text-end">Originale</th>
+                                    <th class="text-end">Controllo</th>
+                                    <th class="text-end">Δ</th>
+                                    <th class="text-end">Δ max</th>
+                                    <th class="text-end">Lim. min</th>
+                                    <th class="text-end">Lim. max</th>
+                                    <th class="text-end">Fuori limite originale</th>
+                                    <th class="text-end">Fuori limite controllo</th>
+                                    <th>Esito correzione</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var riga in riepilogoTabella)
+                                {
+                                    var ultima =
+                                        riga.Ultima;
+
+                                    string esito;
+                                    string classeEsito;
+
+                                    if (
+                                        ultima.FuoriLimiteControllo
+                                        > 0)
+                                    {
+                                        esito =
+                                            "ANCORA FUORI";
+
+                                        classeEsito =
+                                            "bg-danger";
+                                    }
+                                    else if (
+                                        ultima.FuoriLimiteOriginale
+                                        > 0
+                                        &&
+                                        Math.Abs(
+                                            ultima.Differenza)
+                                        > 0)
+                                    {
+                                        esito =
+                                            "RIENTRATA";
+
+                                        classeEsito =
+                                            "bg-success";
+                                    }
+                                    else if (
+                                        Math.Abs(
+                                            ultima.Differenza)
+                                        == 0)
+                                    {
+                                        esito =
+                                            "NON CORRETTA";
+
+                                        classeEsito =
+                                            "bg-secondary";
+                                    }
+                                    else
+                                    {
+                                        esito =
+                                            "CORRETTA";
+
+                                        classeEsito =
+                                            "bg-warning text-dark";
+                                    }
+
+                                    <tr>
+
+                                        <td class="fw-bold">
+                                            @riga.CodiceSonda
+                                        </td>
+
+                                        <td>
+
+                                            @riga.Apparecchiatura
+
+                                            @if (riga.Congelatore)
+                                            {
+                                                <div class="small text-muted">
+
+                                                    Congelatore:
+                                                    freddo eccessivo non considerato
+                                                    fuori limite operativo
+
+                                                </div>
+                                            }
+
+                                        </td>
+
+                                        <td class="fw-bold">
+
+                                            @ultima.DataOra.ToString(
+                                                "dd/MM/yyyy HH:mm")
+
+                                        </td>
+
+                                        <td class="text-end text-danger fw-semibold">
+
+                                            @ultima.TemperaturaOriginale.ToString("0.0")
+                                            °C
+
+                                        </td>
+
+                                        <td class="text-end text-primary fw-semibold">
+
+                                            @ultima.TemperaturaControllo.ToString("0.0")
+                                            °C
+
+                                        </td>
+
+                                        <td class="text-end fw-bold">
+
+                                            @if (ultima.Differenza > 0)
+                                            {
+                                                <span>+</span>
+                                            }
+
+                                            @ultima.Differenza.ToString("0.0")
+                                            °C
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @riga.DifferenzaMassima.ToString("0.0")
+                                            °C
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @(ultima.LimiteMin.HasValue
+                                                ? ultima.LimiteMin.Value.ToString("0.0") + " °C"
+                                                : "-")
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @(ultima.LimiteMax.HasValue
+                                                ? ultima.LimiteMax.Value.ToString("0.0") + " °C"
+                                                : "-")
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @if (
+                                                ultima.FuoriLimiteOriginale
+                                                > 0)
+                                            {
+                                                <span class="text-danger fw-bold">
+
+                                                    +@ultima.FuoriLimiteOriginale.ToString("0.0")
+                                                    °C
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">
+                                                    0,0 °C
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @if (
+                                                ultima.FuoriLimiteControllo
+                                                > 0)
+                                            {
+                                                <span class="text-danger fw-bold">
+
+                                                    +@ultima.FuoriLimiteControllo.ToString("0.0")
+                                                    °C
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">
+                                                    0,0 °C
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                        <td>
+
+                                            <span class="badge @classeEsito">
+
+                                                @esito
+
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+        else
+        {
+            var gruppiConCorrezioni =
+                gruppi
+                    .Where(g =>
+                        g.Any(x =>
+                            Math.Abs(
+                                x.Differenza)
+                            > 0))
+                    .ToList();
+
+            @if (gruppiConCorrezioni.Count == 0)
+            {
+                <div class="alert alert-success">
+
+                    Nel periodo selezionato
+                    non sono presenti correzioni effettivamente applicate.
+
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+
+                    @foreach (var gruppo in gruppiConCorrezioni)
+                    {
+                        var misureCorrette =
+                            gruppo
+                                .Where(x =>
+                                    Math.Abs(
+                                        x.Differenza)
+                                    > 0)
+                                .OrderBy(
+                                    x => x.DataOra)
+                                .ToList();
+
+                        if (
+                            misureCorrette.Count
+                            == 0)
+                        {
+                            continue;
+                        }
+
+                        var ultimaCorrezione =
+                            misureCorrette.Last();
+
+                        decimal differenzaMassima =
+                            misureCorrette.Max(
+                                x =>
+                                    Math.Abs(
+                                        x.Differenza));
+
+                        decimal fuoriOriginaleMassimo =
+                            misureCorrette.Max(
+                                x =>
+                                    x.FuoriLimiteOriginale);
+
+                        decimal fuoriControlloMassimo =
+                            misureCorrette.Max(
+                                x =>
+                                    x.FuoriLimiteControllo);
+
+                        string idCanvas =
+                            "grafico_"
+                            +
+                            gruppo.Key.IdSonda;
+
+                        var datiGrafico =
+                            misureCorrette
+                                .Select(x => new
+                                {
+                                    dataOra =
+                                        x.DataOra,
+
+                                    originale =
+                                        x.TemperaturaOriginale,
+
+                                    controllo =
+                                        x.TemperaturaControllo,
+
+                                    differenza =
+                                        x.Differenza,
+
+                                    limiteMin =
+                                        x.LimiteMin,
+
+                                    limiteMax =
+                                        x.LimiteMax,
+
+                                    fuoriOriginale =
+                                        x.FuoriLimiteOriginale,
+
+                                    fuoriControllo =
+                                        x.FuoriLimiteControllo
+                                })
+                                .ToList();
+
+                        string json =
+                            JsonSerializer.Serialize(
+                                datiGrafico);
+
+                        string classeCard =
+                            fuoriControlloMassimo > 0
+                                ? "border-danger border-3"
+                                : fuoriOriginaleMassimo > 0
+                                    ? "border-success border-2"
+                                    : "border-warning border-2";
+
+                        string esitoUltima;
+                        string classeEsitoUltima;
+
+                        if (
+                            ultimaCorrezione.FuoriLimiteControllo
+                            > 0)
+                        {
+                            esitoUltima =
+                                "ANCORA FUORI";
+
+                            classeEsitoUltima =
+                                "bg-danger";
+                        }
+                        else if (
+                            ultimaCorrezione.FuoriLimiteOriginale
+                            > 0)
+                        {
+                            esitoUltima =
+                                "RIENTRATA";
+
+                            classeEsitoUltima =
+                                "bg-success";
+                        }
+                        else
+                        {
+                            esitoUltima =
+                                "CORRETTA";
+
+                            classeEsitoUltima =
+                                "bg-warning text-dark";
+                        }
+
+                        <div class="col-12 col-lg-6">
+
+                            <div class="card h-100 @classeCard">
+
+                                <div class="card-header">
+
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+
+                                        <div>
+
+                                            <div class="fw-bold fs-5">
+
+                                                @gruppo.Key.CodiceSonda
+
+                                            </div>
+
+                                            <div class="text-muted">
+
+                                                @gruppo.Key.Apparecchiatura
+
+                                            </div>
+
+                                            @if (gruppo.Key.Congelatore)
+                                            {
+                                                <div class="small text-muted">
+
+                                                    Congelatore:
+                                                    conta come fuori limite
+                                                    solo il superamento del limite massimo.
+
+                                                </div>
+                                            }
+
+                                        </div>
+
+                                        <div class="text-end">
+
+                                            <span class="badge bg-warning text-dark">
+
+                                                Δ max
+                                                @differenzaMassima.ToString("0.0")
+                                                °C
+
+                                            </span>
+
+                                            <br />
+
+                                            <span class="badge @classeEsitoUltima mt-2">
+
+                                                @esitoUltima
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div style="height: 310px;">
+
+                                        <canvas id="@idCanvas"></canvas>
+
+                                    </div>
+
+                                    <div class="row mt-3">
+
+                                        <div class="col-md-6">
+
+                                            <strong>
+                                                Ultima correzione:
+                                            </strong>
+
+                                            <br />
+
+                                            <span class="fw-bold">
+
+                                                @ultimaCorrezione.DataOra.ToString(
+                                                    "dd/MM/yyyy HH:mm")
+
+                                            </span>
+
+                                            <hr />
+
+                                            <strong>
+                                                Originale:
+                                            </strong>
+
+                                            <span class="text-danger fw-semibold">
+                                                @ultimaCorrezione.TemperaturaOriginale.ToString("0.0")
+                                                °C
+                                            </span>
+
+                                            <br />
+
+                                            <strong>
+                                                Monitor Controllo:
+                                            </strong>
+
+                                            <span class="text-primary fw-semibold">
+                                                @ultimaCorrezione.TemperaturaControllo.ToString("0.0")
+                                                °C
+                                            </span>
+
+                                            <br />
+
+                                            <strong>
+                                                Correzione Δ:
+                                            </strong>
+
+                                            @if (ultimaCorrezione.Differenza > 0)
+                                            {
+                                                <span>+</span>
+                                            }
+
+                                            @ultimaCorrezione.Differenza.ToString("0.0")
+                                            °C
+
+                                        </div>
+
+                                        <div class="col-md-6">
+
+                                            <strong>
+                                                Limite minimo:
+                                            </strong>
+
+                                            @(ultimaCorrezione.LimiteMin.HasValue
+                                                ? ultimaCorrezione.LimiteMin.Value.ToString("0.0") + " °C"
+                                                : "-")
+
+                                            <br />
+
+                                            <strong>
+                                                Limite massimo:
+                                            </strong>
+
+                                            @(ultimaCorrezione.LimiteMax.HasValue
+                                                ? ultimaCorrezione.LimiteMax.Value.ToString("0.0") + " °C"
+                                                : "-")
+
+                                            <hr />
+
+                                            <strong>
+                                                Originale fuori limite:
+                                            </strong>
+
+                                            @if (
+                                                ultimaCorrezione.FuoriLimiteOriginale
+                                                > 0)
+                                            {
+                                                <span class="text-danger fw-bold">
+
+                                                    +@ultimaCorrezione.FuoriLimiteOriginale.ToString("0.0")
+                                                    °C
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success fw-bold">
+                                                    NO
+                                                </span>
+                                            }
+
+                                            <br />
+
+                                            <strong>
+                                                Controllo fuori limite:
+                                            </strong>
+
+                                            @if (
+                                                ultimaCorrezione.FuoriLimiteControllo
+                                                > 0)
+                                            {
+                                                <span class="text-danger fw-bold">
+
+                                                    +@ultimaCorrezione.FuoriLimiteControllo.ToString("0.0")
+                                                    °C
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success fw-bold">
+                                                    NO
+                                                </span>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <script type="application/json"
+                                id="dati_@gruppo.Key.IdSonda">
+
+                            @Html.Raw(json)
+
+                        </script>
+                    }
+
+                </div>
+            }
+        }
+    }
+
+</div>
+
+
+@if (vista == "grafici")
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        document
+            .querySelectorAll(
+                'script[id^="dati_"]'
+            )
+            .forEach(
+                function(elementoDati) {
+
+                    const idSonda =
+                        elementoDati.id
+                            .replace(
+                                "dati_",
+                                ""
+                            );
+
+                    const canvas =
+                        document.getElementById(
+                            "grafico_"
+                            + idSonda
+                        );
+
+                    if (!canvas) {
+                        return;
+                    }
+
+                    const dati =
+                        JSON.parse(
+                            elementoDati.textContent
+                        );
+
+                    if (
+                        !dati
+                        ||
+                        dati.length === 0
+                    ) {
+                        return;
+                    }
+
+                    const labels =
+                        dati.map(
+                            function(x) {
+
+                                const d =
+                                    new Date(
+                                        x.dataOra
+                                    );
+
+                                return d.toLocaleString(
+                                    "it-IT",
+                                    {
+                                        day:
+                                            "2-digit",
+
+                                        month:
+                                            "2-digit",
+
+                                        hour:
+                                            "2-digit",
+
+                                        minute:
+                                            "2-digit"
+                                    }
+                                );
+
+                            }
+                        );
+
+                    const originali =
+                        dati.map(
+                            function(x) {
+                                return x.originale;
+                            }
+                        );
+
+                    const controllo =
+                        dati.map(
+                            function(x) {
+                                return x.controllo;
+                            }
+                        );
+
+                    const limiteMin =
+                        dati.map(
+                            function(x) {
+                                return x.limiteMin;
+                            }
+                        );
+
+                    const limiteMax =
+                        dati.map(
+                            function(x) {
+                                return x.limiteMax;
+                            }
+                        );
+
+                    new Chart(
+                        canvas,
+                        {
+                            type:
+                                "line",
+
+                            data:
+                            {
+                                labels:
+                                    labels,
+
+                                datasets:
+                                [
+                                    {
+                                        label:
+                                            "Originale",
+
+                                        data:
+                                            originali,
+
+                                        borderColor:
+                                            "#C1121F",
+
+                                        backgroundColor:
+                                            "#C1121F",
+
+                                        borderWidth:
+                                            4,
+
+                                        pointRadius:
+                                            3,
+
+                                        pointHoverRadius:
+                                            6,
+
+                                        tension:
+                                            0.15,
+
+                                        fill:
+                                            false
+                                    },
+
+                                    {
+                                        label:
+                                            "Monitor Controllo",
+
+                                        data:
+                                            controllo,
+
+                                        borderColor:
+                                            "#0047AB",
+
+                                        backgroundColor:
+                                            "#0047AB",
+
+                                        borderWidth:
+                                            4,
+
+                                        pointRadius:
+                                            3,
+
+                                        pointHoverRadius:
+                                            6,
+
+                                        tension:
+                                            0.15,
+
+                                        fill:
+                                            false
+                                    },
+
+                                    {
+                                        label:
+                                            "Limite minimo",
+
+                                        data:
+                                            limiteMin,
+
+                                        borderColor:
+                                            "#198754",
+
+                                        backgroundColor:
+                                            "#198754",
+
+                                        borderWidth:
+                                            2,
+
+                                        borderDash:
+                                            [7, 5],
+
+                                        pointRadius:
+                                            0,
+
+                                        fill:
+                                            false
+                                    },
+
+                                    {
+                                        label:
+                                            "Limite massimo",
+
+                                        data:
+                                            limiteMax,
+
+                                        borderColor:
+                                            "#fd7e14",
+
+                                        backgroundColor:
+                                            "#fd7e14",
+
+                                        borderWidth:
+                                            2,
+
+                                        borderDash:
+                                            [7, 5],
+
+                                        pointRadius:
+                                            0,
+
+                                        fill:
+                                            false
+                                    }
+                                ]
+                            },
+
+                            options:
+                            {
+                                responsive:
+                                    true,
+
+                                maintainAspectRatio:
+                                    false,
+
+                                interaction:
+                                {
+                                    mode:
+                                        "index",
+
+                                    intersect:
+                                        false
+                                },
+
+                                plugins:
+                                {
+                                    legend:
+                                    {
+                                        display:
+                                            true
+                                    },
+
+                                    tooltip:
+                                    {
+                                        callbacks:
+                                        {
+                                            title:
+                                                function(context) {
+
+                                                    if (
+                                                        !context
+                                                        ||
+                                                        context.length === 0
+                                                    ) {
+                                                        return "";
+                                                    }
+
+                                                    const indice =
+                                                        context[0]
+                                                            .dataIndex;
+
+                                                    const d =
+                                                        new Date(
+                                                            dati[indice]
+                                                                .dataOra
+                                                        );
+
+                                                    return d
+                                                        .toLocaleString(
+                                                            "it-IT"
+                                                        );
+
+                                                },
+
+                                            afterBody:
+                                                function(context) {
+
+                                                    if (
+                                                        !context
+                                                        ||
+                                                        context.length === 0
+                                                    ) {
+                                                        return "";
+                                                    }
+
+                                                    const indice =
+                                                        context[0]
+                                                            .dataIndex;
+
+                                                    const riga =
+                                                        dati[indice];
+
+                                                    let testo =
+                                                        [];
+
+                                                    testo.push(
+                                                        "Δ correzione: "
+                                                        +
+                                                        (
+                                                            riga.differenza
+                                                            > 0
+                                                                ? "+"
+                                                                : ""
+                                                        )
+                                                        +
+                                                        Number(
+                                                            riga.differenza
+                                                        )
+                                                        .toFixed(1)
+                                                        +
+                                                        " °C"
+                                                    );
+
+                                                    if (
+                                                        Number(
+                                                            riga.fuoriOriginale
+                                                        )
+                                                        > 0
+                                                    ) {
+                                                        testo.push(
+                                                            "Originale fuori limite: +"
+                                                            +
+                                                            Number(
+                                                                riga.fuoriOriginale
+                                                            )
+                                                            .toFixed(1)
+                                                            +
+                                                            " °C"
+                                                        );
+                                                    }
+                                                    else {
+                                                        testo.push(
+                                                            "Originale fuori limite: NO"
+                                                        );
+                                                    }
+
+                                                    if (
+                                                        Number(
+                                                            riga.fuoriControllo
+                                                        )
+                                                        > 0
+                                                    ) {
+                                                        testo.push(
+                                                            "Controllo fuori limite: +"
+                                                            +
+                                                            Number(
+                                                                riga.fuoriControllo
+                                                            )
+                                                            .toFixed(1)
+                                                            +
+                                                            " °C"
+                                                        );
+                                                    }
+                                                    else {
+                                                        testo.push(
+                                                            "Controllo fuori limite: NO"
+                                                        );
+                                                    }
+
+                                                    return testo;
+
+                                                }
+                                        }
+                                    }
+                                },
+
+                                scales:
+                                {
+                                    x:
+                                    {
+                                        ticks:
+                                        {
+                                            maxTicksLimit:
+                                                8,
+
+                                            maxRotation:
+                                                0,
+
+                                            minRotation:
+                                                0
+                                        }
+                                    },
+
+                                    y:
+                                    {
+                                        title:
+                                        {
+                                            display:
+                                                true,
+
+                                            text:
+                                                "°C"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+
+                }
+            );
+
+    </script>
+}

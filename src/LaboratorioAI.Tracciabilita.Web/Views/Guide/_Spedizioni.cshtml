@@ -1,0 +1,39 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A registrare <strong>quali lotti di prodotto finito sono partiti e per quale cliente</strong>. È questo che permette, in caso di richiamo, di sapere a chi dare l'avviso.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Registrare una spedizione</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova spedizione</span>.</li>
+        <li>Controlla la <strong>data</strong> e scegli il <strong>cliente</strong> (se non c'è, aggiungilo prima in <em>Clienti</em>).</li>
+        <li>Facoltativi: <strong>numero e data del documento di trasporto</strong> e le note.</li>
+        <li>In <strong>Lotti spediti</strong> scegli il lotto di prodotto finito e, se vuoi, la <strong>quantità</strong>. Hai fino a 8 righe per spedizione.</li>
+        <li>Premi <span class="tasto">Registra la spedizione</span>.</li>
+    </ol>
+    <p class="dopo">Se scrivi la quantità, la giacenza del lotto cala (fino a zero). Senza quantità la spedizione conta solo come tracciatura.</p>
+    <p class="nota">Compaiono i lotti di prodotto finito attivi degli ultimi 90 giorni. Un lotto <strong>bloccato o richiamato non si può spedire</strong>. Un secondo invio identico per errore viene fermato.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho sbagliato una spedizione: annullarla</summary>
+    <ol class="passi">
+        <li>Dall'elenco apri la spedizione.</li>
+        <li>Premi <span class="tasto">Annulla la spedizione</span>.</li>
+    </ol>
+    <p class="dopo">I movimenti vengono stornati (la giacenza torna com'era) e la spedizione resta nell'elenco come annullata. Poi registra quella giusta.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cercare una spedizione</summary>
+    <p>Usa <strong>Cerca</strong> (cliente, documento o lotto) e, se serve, <strong>Dal / Al</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Più di 8 lotti in una consegna</summary>
+    <p>Registra due spedizioni allo stesso cliente con lo stesso documento di trasporto. Se il programma segnala un documento duplicato, aggiungi una nota che distingua le due.</p>
+</details>

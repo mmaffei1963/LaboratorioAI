@@ -116,8 +116,28 @@ public record EsitoRicerca<T>
 /// <summary>Voce di un elenco anagrafico usato per i filtri a tendina.</summary>
 public record VoceAnagrafica(int Id, string Nome);
 
+/// <summary>Cliente ArcLab con campioni recenti (invio massivo delle approvazioni, 10/10/2026).</summary>
+public record ClienteConCampioni(int IdCliente, string? RagioneSociale, string? PartitaIva, string? Email, int NumeroCampioni, DateTime? UltimoCampione);
+
 /// <summary>Laboratorio esterno con la frase da riportare in offerta per le prove in subappalto.</summary>
 public record VoceLaboratorioEsterno(int Id, string Nome, string? Frase);
 
 /// <summary>Insediamento, con il riferimento al cliente per i filtri a cascata.</summary>
 public record VoceInsediamento(int Id, string Nome, int IdCliente);
+
+/// <summary>Punto di prelievo già usato in un insediamento, con quante volte (prelievo vocale, 13/10/2026).</summary>
+public record PuntoPrelievoUsato(int IdInsediamento, string Punto, int Volte);
+
+/// <summary>
+/// Dettaglio di un cliente per la precompilazione in Preventivi: Partita IVA e indirizzo di
+/// fatturazione (sede legale), entrambi letti direttamente dalla tabella Clienti — l'offerta è
+/// intestata al cliente, non a un insediamento/sede specifico.
+/// </summary>
+public record DettaglioCliente(
+    int IdCliente, string? PartitaIva, string? Indirizzo, string? Cap, string? Citta, string? Provincia, string? Email);
+
+/// <summary>
+/// Insediamento del cliente con indirizzo completo ed email di contatto (Insediamento.Email), per il
+/// richiamo ai recapiti riportato in fondo alle offerte/preventivi.
+/// </summary>
+public record InsediamentoContatto(string Nome, string? Indirizzo, string? Email);

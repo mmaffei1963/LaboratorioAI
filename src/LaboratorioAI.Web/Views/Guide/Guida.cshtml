@@ -1,0 +1,16 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+<div class="barra-strumenti">
+    <div>
+        <p class="sottotesto"><a href="/Guide">← Tutte le guide</a></p>
+        <h1>Guida · @Model.Titolo</h1>
+        <p class="sottotitolo">@Model.Descrizione Aggiornata il @Model.Aggiornata.ToString("dd/MM/yyyy").</p>
+    </div>
+    <div class="riga-pulsanti">
+        <a class="pulsante pulsante-tenue" href="@Model.Percorsi[0]">Apri la funzione</a>
+        <button type="button" class="pulsante pulsante-tenue" onclick="document.querySelectorAll('.guida details').forEach(d => d.open = true); window.print()">Stampa</button>
+    </div>
+</div>
+<partial name="_ChiediGuida" />
+<div class="guida guida-pagina">
+    <partial name="_@Model.Codice" model="Model" />
+</div>

@@ -1,0 +1,58 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Per il <strong>personale MARE.A</strong>: creare le aziende clienti del servizio, le loro sedi e i loro utenti, mandare gli inviti per scegliere la password e consultare il registro delle attività. Il gestore non vede i dati di tracciabilità delle aziende.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Aprire una nuova azienda</summary>
+    <ol class="passi">
+        <li>In <strong>Aziende e utenti</strong> premi <span class="tasto">Nuova azienda</span>.</li>
+        <li>Compila i dati e premi <span class="tasto">Crea azienda</span>.</li>
+        <li>Nella scheda dell'azienda aggiungi almeno una <strong>sede</strong> (nome, sigla, indirizzo) e un <strong>utente</strong>.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Aggiungere un utente e dargli l'accesso</summary>
+    <ol class="passi">
+        <li>Nella scheda dell'azienda, sezione <strong>Utenti</strong>: scrivi nome, e-mail, ruolo e sede.</li>
+        <li>Premi <span class="tasto">Crea e genera invito</span>.</li>
+        <li>Copia il <strong>link d'invito</strong> (vale 7 giorni, una volta sola) e mandalo alla persona: lo apre e sceglie la propria password.</li>
+    </ol>
+    <p class="attenzione">L'invio dell'e-mail dell'invito dal programma non è ancora collegato: il link va mandato a mano.</p>
+</details>
+
+<details class="situazione">
+    <summary>Dare o cambiare il ruolo a un utente</summary>
+    <ol class="passi">
+        <li>Nella scheda dell'azienda, riga dell'utente, scegli il ruolo nell'elenco e premi <span class="tasto">Cambia ruolo</span>.</li>
+        <li>Il cambio vale <strong>subito</strong>, alla richiesta successiva dell'utente.</li>
+    </ol>
+    <dl class="glossario">
+        <dt>Consultazione</dt><dd>Solo lettura: vede tutto, non registra né corregge nulla.</dd>
+        <dt>Ricevimento merci, Produzione</dt><dd>Lavoro di ogni giorno: ordini, accettazioni, magazzino, ricette, produzioni, spedizioni, richiami.</dd>
+        <dt>Qualità, Amministratore azienda</dt><dd>Come sopra, più: <strong>Impostazioni</strong>, <strong>categorie e profili di controllo</strong>, <strong>sblocco dei lotti</strong>.</dd>
+    </dl>
+    <p class="attenzione">Un utente senza nessun ruolo è trattato come «Consultazione». Dopo aver creato un utente controlla che il ruolo sia quello giusto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un utente ha perso la password</summary>
+    <p>Nella riga dell'utente premi <span class="tasto">Reimposta password</span>: compare un nuovo link d'invito da mandargli. Dopo 5 tentativi sbagliati l'accesso si blocca per 15 minuti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Disattivare un utente o sospendere un'azienda</summary>
+    <ul class="passi">
+        <li>Utente: <span class="tasto">Disattiva</span> (e <span class="tasto">Riattiva</span> se serve). Non si cancella.</li>
+        <li>Azienda: nel riquadro <strong>Servizio</strong> cambia lo stato (Attivo, Sospeso, In chiusura) con <span class="tasto">Cambia</span>.</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Vedere chi ha fatto cosa</summary>
+    <p>Apri <strong>Registro attività</strong>: azienda, data, utente, azione, dettaglio e indirizzo IP, per tutte le aziende.</p>
+</details>

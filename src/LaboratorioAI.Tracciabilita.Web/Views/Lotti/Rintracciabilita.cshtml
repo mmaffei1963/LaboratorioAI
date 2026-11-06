@@ -1,0 +1,52 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloRintracciabilita
+@{ ViewData["Titolo"] = "Rintracciabilità " + Model.Codice; }
+<p><a asp-action="Scheda" asp-route-id="@Model.IdLotto" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@Model.Pagina">« Scheda del lotto</a></p>
+<h1>Rintracciabilità del lotto @Model.Codice</h1>
+<p>@Model.Articolo</p>
+@if (Model.Troncato)
+{
+    <p class="avviso ko">La ricerca si è fermata al limite di livelli: il risultato potrebbe essere incompleto.</p>
+}
+@if (Model.ABMonte.Count == 0 && Model.AValle.Count == 0 && Model.Clienti.Count == 0)
+{
+    <p class="avviso">Per questo lotto non risultano ancora produzioni né spedizioni registrate in Tracciato.
+       I lotti importati dal vecchio programma contengono gli arrivi e i movimenti di magazzino, ma non le produzioni passate:
+       il collegamento ai prodotti e ai clienti compare dal momento in cui si registra la produzione con «Oggi ho prodotto» e le spedizioni.</p>
+}
+<div class="scheda">
+    <h2>A monte — da cosa è fatto (@Model.ProduzioniMonte produzioni)</h2>
+    <table class="elenco">
+        <thead><tr><th>Livello</th><th>Lotto</th><th>Articolo</th><th>Fornitore</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.ABMonte)
+        {
+            <tr><td>@r.Livello</td><td><a asp-action="Scheda" asp-route-id="@r.IdLotto">@r.Codice</a></td><td>@r.Articolo</td><td>@r.Fornitore</td></tr>
+        }
+        @if (Model.ABMonte.Count == 0) { <tr><td colspan="4">Nessun ingrediente collegato.</td></tr> }
+        </tbody>
+    </table>
+</div>
+<div class="scheda">
+    <h2>A valle — dove è finito (@Model.ProduzioniValle produzioni)</h2>
+    <table class="elenco">
+        <thead><tr><th>Livello</th><th>Lotto</th><th>Articolo</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.AValle)
+        {
+            <tr><td>@r.Livello</td><td><a asp-action="Scheda" asp-route-id="@r.IdLotto">@r.Codice</a></td><td>@r.Articolo</td></tr>
+        }
+        @if (Model.AValle.Count == 0) { <tr><td colspan="3">Nessun prodotto ottenuto da questo lotto.</td></tr> }
+        </tbody>
+    </table>
+    <h2>Clienti raggiunti</h2>
+    <table class="elenco">
+        <thead><tr><th>Data</th><th>Cliente</th><th>Documento</th><th>Lotto spedito</th><th>Quantità</th></tr></thead>
+        <tbody>
+        @foreach (var c in Model.Clienti)
+        {
+            <tr><td>@c.Data.ToString("dd/MM/yyyy")</td><td>@c.Cliente</td><td>@c.NumeroDocumento</td><td>@c.LottoCodice</td><td>@c.Quantita?.ToString("0.##")</td></tr>
+        }
+        @if (Model.Clienti.Count == 0) { <tr><td colspan="5">Nessuna spedizione registrata.</td></tr> }
+        </tbody>
+    </table>
+</div>

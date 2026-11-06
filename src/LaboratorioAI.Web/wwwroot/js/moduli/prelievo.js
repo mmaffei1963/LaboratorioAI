@@ -1,5 +1,6 @@
 // Prelievo vocale — cattura offline dei dati del prelievo (lotto → campioni), riepilogo da digitare in ArcLab.
-// Tutto lato client: stato in localStorage, nessuna chiamata al server.
+// Tutto lato client: stato in localStorage. Le tendine (13/10/2026) usano gli elenchi di ArcLab scaricati
+// quando c'è rete e tenuti sul dispositivo; si può sempre scrivere a mano un valore che non è in elenco.
 const $ = id => document.getElementById(id);
 const esc = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 async function api(url, opt) {
@@ -41,6 +42,32 @@ function render() {
 
 function costruisciLotto(lotto, li) {
     const el = $('tpl-lotto').content.firstElementChild.cloneNode(true);
+    // Tendina insediamenti: solo quelli del cliente scelto (se il nome corrisponde a un cliente in elenco).
+    const dlIns = document.createElement('datalist');
+    dlIns.id = `dl-ins-${li}`;
+    dlIns.className = 'dl-insediamenti';
+    el.appendChild(dlIns);
+    el.querySelector('[data-f="localita"]').setAttribute('list', dlIns.id);
+    // Tendina punti di prelievo: quelli già usati nell'insediamento scelto (condivisa dai campioni del lotto).
+    const dlPunti = document.createElement('datalist');
+    dlPunti.id = `dl-punti-${li}`;
+    dlPunti.className = 'dl-punti';
+    el.appendChild(dlPunti);
+    // Si leggono i valori dai campi (non dal modello): questi ascoltatori scattano prima dell'aggiornamento del modello.
+    const inCliente = el.querySelector('[data-f="cliente"]'), inLocalita = el.querySelector('[data-f="localita"]');
+    const dlLuoghi = document.createElement('datalist');
+    dlLuoghi.id = `dl-luoghi-${li}`;
+    dlLuoghi.className = 'dl-luoghi';
+    el.appendChild(dlLuoghi);
+    const aggiornaIns = () => {
+        const cli = inCliente.value || lotto.cliente, loc = inLocalita.value || lotto.localita;
+        riempi(dlIns, insediamentiDi(cli));
+        riempi(dlPunti, puntiDi({ cliente: cli, localita: loc }));
+        riempi(dlLuoghi, puntiDi({ cliente: cli, localita: loc }, luoghiPerIns));
+    };
+    aggiornaIns();
+    inCliente.addEventListener('input', aggiornaIns);
+    inLocalita.addEventListener('input', aggiornaIns);
     el.querySelector('.titolo-lotto').textContent = `Lotto ${li + 1}` + (lotto.cliente ? ` — ${lotto.cliente}` : '');
     el.querySelectorAll('[data-f]').forEach(inp => legaCampo(inp, lotto, () => {
         el.querySelector('.titolo-lotto').textContent = `Lotto ${li + 1}` + (lotto.cliente ? ` — ${lotto.cliente}` : '');
@@ -60,6 +87,8 @@ function costruisciCampione(camp, lotto, li, ci) {
         `Campione ${ci + 1}` + (camp.denominazione ? ` — ${camp.denominazione.slice(0, 40)}` : '');
     titolo();
 
+    el.querySelector('[data-f="punto"]').setAttribute('list', `dl-punti-${li}`);
+    el.querySelector('[data-f="luogo"]').setAttribute('list', `dl-luoghi-${li}`);
     const rigaRitardo = el.querySelector('.riga-ritardo');
     const aggiornaRitardo = () => rigaRitardo.style.display = camp.shelfLife ? '' : 'none';
     aggiornaRitardo();
@@ -115,6 +144,82 @@ function mostraMancanti(el, camp) {
         const inp = el.querySelector(`[data-f="${map[nome]}"]`);
         if (inp) inp.classList.add('campo-mancante');
     });
+}
+
+// ── Elenchi di ArcLab per le tendine (13/10/2026) ──
+const CHIAVE_ANAG = 'prelievo-anagrafiche-v3';
+try { localStorage.removeItem('prelievo-anagrafiche-v1'); localStorage.removeItem('prelievo-anagrafiche-v2'); } catch { }
+const norm = s => (s ?? '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+let clientiPerNome = new Map();     // nome normalizzato → [id cliente]
+let insPerCliente = new Map();      // id cliente → [{ id, nome }]
+let puntiPerIns = {};               // id insediamento → [punti di prelievo già usati]
+let luoghiPerIns = {};              // id insediamento → [luoghi di prelievo già usati]
+
+function riempi(dl, valori) {
+    if (typeof dl === 'string') dl = $(dl);
+    if (!dl) return;
+    const frag = document.createDocumentFragment();
+    for (const v of valori) { const o = document.createElement('option'); o.value = v; frag.appendChild(o); }
+    dl.replaceChildren(frag);
+}
+function insediamentiDi(nomeCliente) {
+    const ids = clientiPerNome.get(norm(nomeCliente)) || [];
+    return [...new Set(ids.flatMap(id => (insPerCliente.get(id) || []).map(i => i.nome)))];
+}
+// Punti già usati nell'insediamento del lotto (cliente + località scelti dalle tendine).
+function puntiDi(lotto, fonte = puntiPerIns) {
+    const ids = clientiPerNome.get(norm(lotto.cliente)) || [];
+    const loc = norm(lotto.localita);
+    if (!loc) return [];
+    const insIds = ids.flatMap(id => (insPerCliente.get(id) || []).filter(i => norm(i.nome) === loc).map(i => i.id));
+    return [...new Set(insIds.flatMap(id => fonte[id] || []))];
+}
+function usaElenchi(v) {
+    clientiPerNome = new Map(); insPerCliente = new Map();
+    for (const c of v.clienti || []) {
+        const k = norm(c.nome);
+        if (!clientiPerNome.has(k)) clientiPerNome.set(k, []);
+        clientiPerNome.get(k).push(c.id);
+    }
+    for (const i of v.insediamenti || []) {
+        if (!insPerCliente.has(i.idCliente)) insPerCliente.set(i.idCliente, []);
+        insPerCliente.get(i.idCliente).push({ id: i.id, nome: i.nome });
+    }
+    puntiPerIns = v.punti || {};
+    luoghiPerIns = (v.luoghi && !Array.isArray(v.luoghi)) ? v.luoghi : {};
+    riempi('dl-clienti', [...new Set((v.clienti || []).map(c => c.nome))]);
+    riempi('dl-controlli', (v.controlli || []).map(c => `${c.id} - ${c.nome}`));
+    riempi('dl-matrici', v.matrici || []);
+    riempi('dl-imballaggi', v.imballaggi || []);
+    // aggiorna le tendine insediamenti dei lotti già a video
+    document.querySelectorAll('.lotto').forEach((el, li) => {
+        const dl = el.querySelector('.dl-insediamenti');
+        if (dl && giro.lotti[li]) riempi(dl, insediamentiDi(giro.lotti[li].cliente));
+        const dp = el.querySelector('.dl-punti');
+        if (dp && giro.lotti[li]) riempi(dp, puntiDi(giro.lotti[li]));
+        const dlu = el.querySelector('.dl-luoghi');
+        if (dlu && giro.lotti[li]) riempi(dlu, puntiDi(giro.lotti[li], luoghiPerIns));
+    });
+    const quando = v.aggiornato ? new Date(v.aggiornato).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    $('stato-elenchi').textContent = `Elenchi di ArcLab del ${quando}: ${(v.clienti || []).length} clienti, ${(v.controlli || []).length} controlli, `
+        + `${(v.matrici || []).length} matrici. Scegli dalla tendina o scrivi a mano se il valore non c'è.`;
+}
+function caricaElenchiLocali() {
+    try { const v = JSON.parse(localStorage.getItem(CHIAVE_ANAG)); if (v && Array.isArray(v.clienti)) { usaElenchi(v); return true; } } catch { }
+    return false;
+}
+async function scaricaElenchi(manuale) {
+    if (!navigator.onLine) {
+        if (manuale) $('stato-elenchi').textContent = 'Sei offline: gli elenchi si aggiornano quando torna la rete. Intanto si può scrivere a mano.';
+        return;
+    }
+    try {
+        const v = await api('/api/prelievo/anagrafiche');
+        usaElenchi(v);
+        try { localStorage.setItem(CHIAVE_ANAG, JSON.stringify(v)); } catch { /* spazio pieno: restano in memoria per questa sessione */ }
+    } catch (e) {
+        if (manuale) $('stato-elenchi').textContent = 'Elenchi non aggiornati: ' + e.message;
+    }
 }
 
 // ── Dettatura vocale (dove supportata; altrimenti si usa il microfono della tastiera) ──
@@ -243,3 +348,6 @@ if (!MIC_DISPONIBILE) {
 }
 if (giro.lotti.length === 0) giro.lotti.push(nuovoLotto());
 render();
+caricaElenchiLocali();
+scaricaElenchi(false);
+$('btn-aggiorna-elenchi')?.addEventListener('click', () => scaricaElenchi(true));

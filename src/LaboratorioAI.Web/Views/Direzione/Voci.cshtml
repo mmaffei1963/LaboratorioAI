@@ -1,0 +1,34 @@
+@{
+    ViewData["Titolo"] = "Classificazione voci";
+    var puoModificare = ViewData["PuoModificare"] is true;
+}
+@* Cruscotto Direzione (13/10/2026): classificazione delle voci AZW (fisso/variabile, macrocategoria, materie prime). *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Classificazione voci</h1>
+        <p class="sottotitolo">Come ogni voce di costo di AZW entra negli indicatori: spesa fissa o variabile, macrocategoria (es. Personale), materie prime. All'inizio è uguale a Power BI; le voci nuove arrivano da sole con una proposta da verificare.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-tenue" href="/Direzione">Indicatori economici</a>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="azioni-filtri">
+        <label class="casella"><input type="checkbox" id="f-ricavi" /> mostra anche le voci di ricavo</label>
+        <label class="casella"><input type="checkbox" id="f-verifica" /> solo da verificare o senza tipo</label>
+        <span class="sottotesto" id="stato"></span>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-voci" data-modifica="@(puoModificare ? "1" : "0")">
+            <thead><tr><th>Voce</th><th>Descrizione AZW</th><th>Tipo</th><th>Macrocategoria</th><th>Materie prime</th><th class="numerico">Importo ultimi 3 anni</th><th></th></tr></thead>
+            <tbody><tr><td colspan="7" class="sottotesto">Caricamento…</td></tr></tbody>
+        </table>
+    </div>
+    <p class="nota">Una voce di costo <strong>senza tipo</strong> non entra né nelle spese fisse né in quelle variabili (compare nella riga «Costi non classificati» degli indicatori). Ogni modifica è registrata nel registro attività.</p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/direzione-voci.js" asp-append-version="true"></script>
+}

@@ -37,8 +37,8 @@ public static class SetRiferimentoIncubatori
     private static IReadOnlyList<PuntoCertificatoCdr> Cert() =>
     [
         // Nota: il foglio storico usa un'unica incertezza estesa del CDR (0,06) per
-        // tutti i punti; qui è uniforme così che u(CR) interpolata resti 0,06 nei
-        // casi VAL e riproduca il foglio. In esercizio si inseriscono i valori
+        // tutti i punti; qui è uniforme così che u(CR) resti 0,06 nei casi VAL e
+        // riproduca il foglio (u(CR) è il valore più alto dei due punti vicini). In esercizio si inseriscono i valori
         // per-punto reali del certificato del CDR (es. 0,03 attorno a 0 °C).
         new() { TIndicata = -25.08, TRiferimento = -25.04, IncertezzaEstesa = 0.06 },
         new() { TIndicata =   0.00, TRiferimento =   0.00, IncertezzaEstesa = 0.06 },

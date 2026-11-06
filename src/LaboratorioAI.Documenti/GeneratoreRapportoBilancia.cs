@@ -15,8 +15,8 @@ namespace LaboratorioAI.Documenti;
 /// </summary>
 public interface IGeneratoreRapportoBilancia
 {
-    byte[] GeneraPdf(DatiRapportoBilancia dati);
-    byte[] GeneraWord(DatiRapportoBilancia dati);
+    byte[] GeneraPdf(DatiRapportoBilancia dati, string? percorsoWwwRoot = null);
+    byte[] GeneraWord(DatiRapportoBilancia dati, string? percorsoWwwRoot = null);
     string NomeFile(DatiRapportoBilancia dati, string estensione);
 }
 
@@ -25,9 +25,9 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
-    public byte[] GeneraPdf(DatiRapportoBilancia d)
+    public byte[] GeneraPdf(DatiRapportoBilancia d, string? percorsoWwwRoot = null)
     {
-        var (doc, tmp) = Costruisci(d);
+        var (doc, tmp) = Costruisci(d, percorsoWwwRoot);
         try
         {
             var renderer = new PdfDocumentRenderer { Document = doc };
@@ -39,9 +39,9 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
         finally { Pulisci(tmp); }
     }
 
-    public byte[] GeneraWord(DatiRapportoBilancia d)
+    public byte[] GeneraWord(DatiRapportoBilancia d, string? percorsoWwwRoot = null)
     {
-        var (doc, tmp) = Costruisci(d);
+        var (doc, tmp) = Costruisci(d, percorsoWwwRoot);
         var rtf = Path.Combine(Path.GetTempPath(), "labai_bil_" + Guid.NewGuid().ToString("N") + ".rtf");
         try
         {
@@ -53,14 +53,14 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
 
     public string NomeFile(DatiRapportoBilancia d, string estensione)
     {
-        var nome = new string((d.BilanciaIdentificazione ?? "Bilancia")
-            .Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
-        return $"Rapporto_Taratura_Bilancia_{nome}_{d.DataTaratura:yyyyMMdd}.{estensione}";
+        var nome = NomiFileRapporti.Slug(d.BilanciaIdentificazione, "Bilancia");
+        var cli = NomiFileRapporti.Slug(d.Committente, "");
+        return $"Rapporto_Taratura_Bilancia{(cli.Length == 0 ? "" : "_" + cli)}_{nome}_{d.DataTaratura:yyyyMMdd}.{estensione}";
     }
 
     private static void Pulisci(string? f) { if (f != null && File.Exists(f)) File.Delete(f); }
 
-    private static (Document, string? Grafico) Costruisci(DatiRapportoBilancia d)
+    private static (Document, string? Grafico) Costruisci(DatiRapportoBilancia d, string? percorsoWwwRoot)
     {
         var r = d.Risultato;
         var doc = new Document();
@@ -68,14 +68,7 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
         normale.Font.Name = "Arial"; normale.Font.Size = 9;
 
         var sec = doc.AddSection();
-        sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(0.8);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(0.7);
-        sec.PageSetup.LeftMargin = Unit.FromCentimeter(1.5);
-        sec.PageSetup.RightMargin = Unit.FromCentimeter(1.5);
-
-        var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
-        Piccolo(sec, "Laboratorio Analisi • Via E. Toti, 2 — 47841 Cattolica (RN)");
+        CartaIntestataRapporti.Applica(sec, percorsoWwwRoot, margineLato: 1.5, margineMinimo: 0.8);   // 03/11/2026: come i termometri
 
         var tit = sec.AddParagraph("RAPPORTO DI TARATURA — BILANCIA");
         tit.Format.Alignment = ParagraphAlignment.Center; tit.Format.Font.Bold = true; tit.Format.Font.Size = 13;
@@ -87,7 +80,8 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
         RigaInfo(t, "Operatore", d.Operatore ?? d.RedattoDa ?? "—", "Identificativo rapporto", d.NumeroRapporto);
         RigaInfo(t, "Rapporto del", d.DataTaratura.ToString("dd/MM/yyyy", It),
             "Scadenza taratura", d.DataScadenza is DateOnly s ? s.ToString("dd/MM/yyyy", It) : "—");
-        RigaInfo(t, "Procedura", d.RiferimentoIstruzione ?? "—", "Committente", d.Committente ?? "—");
+        RigaInfo(t, "Procedura", d.RiferimentoIstruzione ?? "—", "Committente", CartaIntestataRapporti.Committente(d.Committente));
+        if (!string.IsNullOrWhiteSpace(d.Insediamento)) RigaInfo(t, "Insediamento", d.Insediamento!, "", "");
 
         Titolo(sec, "Bilancia in taratura");
         var b = TabellaInfo(sec);

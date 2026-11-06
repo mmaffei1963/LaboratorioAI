@@ -1,0 +1,60 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestisci = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ProvvigioniGestisci);
+}
+@* Guida «Accordi provvigioni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Qui stanno le <strong>regole</strong> con cui si calcolano le provvigioni di ogni commerciale: le <strong>voci</strong> (percentuali),
+        la <strong>base di calcolo</strong> di ogni voce (quali righe di fattura contano) e le soglie del premio. Ogni accordo ha <strong>versioni</strong> con una data
+        di inizio: quando cambiano le regole non si modifica l'accordo in vigore, se ne crea una nuova versione.</p>
+    @if (!gestisci)
+    {
+        <p class="nota">Tu hai l'accesso in <strong>sola lettura</strong>.</p>
+    }
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Leggere l'accordo di un commerciale</summary>
+    <p>Scegli il commerciale e apri la versione <strong>attiva</strong>. Nella sezione <strong>Voci</strong> ogni riga ha la percentuale (0 = voce non prevista),
+        la base di calcolo e la spiegazione di come si applica. Sotto, le eventuali soglie del <strong>premio annuale</strong>.</p>
+</details>
+
+@if (gestisci)
+{
+    <details class="situazione">
+        <summary>Cambiare le regole (nuova versione)</summary>
+        <ol class="passi">
+            <li>Apri l'accordo attivo e premi <span class="tasto">Duplica come nuova versione</span>: nasce una <strong>bozza</strong>.</li>
+            <li>In <strong>Dati dell'accordo</strong> metti la data di inizio (deve essere dopo l'ultimo trimestre chiuso) e premi <span class="tasto">Salva dati</span>.</li>
+            <li>Cambia percentuali e basi nelle <strong>Voci</strong> e premi <span class="tasto">Salva voci</span>; se serve, le soglie del premio e <span class="tasto">Salva soglie</span>.</li>
+            <li>Guarda l'<strong>Anteprima</strong>: confronta trimestre per trimestre l'accordo in vigore con la bozza e mostra la differenza totale.</li>
+            <li>Quando è tutto giusto premi <span class="tasto">Attiva</span>.</li>
+        </ol>
+        <p class="nota">Un accordo attivo non si modifica più. <span class="tasto">Riporta in bozza</span> funziona solo sull'ultima versione e se nessun trimestre chiuso cade nel suo periodo.
+            <span class="tasto">Annulla bozza</span> scarta una bozza non più utile.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Accordo per un commerciale nuovo</summary>
+        <p>In fondo alla pagina, <strong>Nuovo accordo</strong>: crea una bozza con tutte le voci a 0%. Compila voci e soglie, guarda l'anteprima e attiva.
+            Senza un accordo attivo il commerciale non ha calcolo.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Basi di calcolo: su quali fatture si applica la percentuale</summary>
+        <ol class="passi">
+            <li>Apri <strong>Basi di calcolo</strong> (link nella sezione Voci).</li>
+            <li>Una base è un insieme di <strong>centri di costo</strong> e <strong>voci AZW</strong> (es. «Laboratorio» = centro 04 con le voci di analisi).
+                Aprila e spunta centri e voci; accanto a ogni voce c'è il fatturato recente per orientarsi. <em>Tutto il centro</em> include anche le voci future.</li>
+            <li>Premi <span class="tasto">Salva base</span>.</li>
+        </ol>
+        <p class="nota">Una base usata da un accordo con trimestri già chiusi <strong>non si modifica</strong>: duplicala, modifica la copia e assegnala alle voci di una nuova versione.</p>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

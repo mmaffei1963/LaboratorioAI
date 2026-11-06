@@ -22,6 +22,12 @@ public class Taratura
     // ── Cliente (anagrafica ArcLab, opzionale: interno se assente) ──
     public int? IdClienteArcLab { get; set; }
     public string? Committente { get; set; }
+    /// <summary>03/11/2026: insediamento del cliente (ArcLab), stampato in testata solo se indicato.</summary>
+    public int? IdInsediamentoArcLab { get; set; }
+    public string? Insediamento { get; set; }
+    /// <summary>03/11/2026: per i termometri dei clienti, tipo e servizio (passano allo scadenziario).</summary>
+    public Tarature.TipoTermometro TipoTermometro { get; set; }
+    public Tarature.ServizioTaraturaTermometro Servizio { get; set; } = Tarature.ServizioTaraturaTermometro.SoloTaratura;
 
     // ── Rapporto ────────────────────────────────────────────────────
     public string? NumeroRapporto { get; set; }

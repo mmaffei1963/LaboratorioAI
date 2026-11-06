@@ -1,0 +1,29 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloArticolo
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = Model.IdArticolo == 0 ? "Nuovo articolo" : "Articolo"; }
+<h1>@(Model.IdArticolo == 0 ? "Nuovo articolo" : Model.Descrizione)</h1>
+<p><a asp-action="Articoli">« Agenda prodotti</a></p>
+<form method="post" asp-action="SalvaArticolo" class="modulo">
+    <div asp-validation-summary="ModelOnly" class="errore"></div>
+    <input type="hidden" asp-for="IdArticolo" />
+    <label asp-for="Descrizione"></label><input asp-for="Descrizione" autofocus /><span asp-validation-for="Descrizione" class="errore"></span>
+    <label asp-for="Codice"></label><input asp-for="Codice" />
+    <label asp-for="Tipo"></label><select asp-for="Tipo" asp-items="Html.GetEnumSelectList<TipoArticolo>()"></select>
+    <label asp-for="IdCategoria"></label>
+    <select asp-for="IdCategoria">
+        <option value="">(nessuna)</option>
+        @foreach (var c in Model.Categorie) { <option value="@c.Id" selected="@(Model.IdCategoria == c.Id)">@c.Nome</option> }
+    </select>
+    <label asp-for="UnitaMisura"></label><input asp-for="UnitaMisura" /><span asp-validation-for="UnitaMisura" class="errore"></span>
+    <label style="font-weight:400"><input type="checkbox" asp-for="Bio" style="padding:0" /> @Html.DisplayNameFor(m => m.Bio)</label>
+    <label asp-for="Note"></label><input asp-for="Note" />
+    <label>Fornitori di questo articolo</label>
+    <div style="max-height:16rem;overflow:auto;border:1px solid #b6c2cc;border-radius:4px;padding:.4rem;background:#fff">
+    @foreach (var f in Model.Fornitori)
+    {
+        <label style="font-weight:400;margin:0;display:block"><input type="checkbox" name="FornitoriScelti" value="@f.Id" checked="@Model.FornitoriScelti.Contains(f.Id)" style="padding:0" /> @f.Nome</label>
+    }
+    </div>
+    <label style="font-weight:400"><input type="checkbox" asp-for="Attivo" style="padding:0" /> @Html.DisplayNameFor(m => m.Attivo)</label>
+    <button type="submit">Salva</button>
+</form>

@@ -1,0 +1,109 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var massiva = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ValidazioneAnalizzaLotto);
+}
+@* Guida «Da Validare» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Mostra i <strong>campioni che in ArcLab aspettano la validazione</strong> e permette di farli controllare
+        all'<strong>AI</strong> prima di validarli: l'AI legge i risultati, i limiti e il tipo di campione e dà un giudizio con un commento.
+        <strong>La validazione vera si fa sempre in ArcLab</strong>: da qui non si valida e non si modifica niente.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Controllare un campione prima di validarlo</summary>
+    <ol class="passi">
+        <li>Apri <strong>Ciclo analitico → Da Validare</strong>: a sinistra c'è l'elenco dei campioni in attesa (in alto quanti sono e quanti già analizzati).</li>
+        <li>Clicca un campione: a destra compaiono i risultati con unità, limite di riferimento, metodo ed esito.</li>
+        <li>Premi <span class="tasto">Analizza con AI</span>: dopo qualche secondo compare il giudizio con il commento.</li>
+        <li>Leggi il commento, poi valida (o correggi) il campione in ArcLab.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/validazione-dettaglio.png" alt="Da Validare: elenco dei campioni e dettaglio con risultati e Analizza con AI" loading="lazy" />
+    <p class="nota">Il numero di giorni accanto al cliente dice da quanto il campione è in laboratorio: normale fino a 5 giorni, giallo fino a 10, <strong>rosso oltre 10</strong>.
+        Parti da quelli rossi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cosa vuol dire il giudizio dell'AI</summary>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Giudizio</th><th>Cosa vuol dire</th></tr></thead>
+        <tbody>
+            <tr><td><span class="etichetta etichetta-conforme">Conforme</span></td><td>Risultati coerenti ed entro i limiti.</td></tr>
+            <tr><td><span class="etichetta etichetta-borderline">Borderline</span></td><td>Qualcosa è vicino al limite o poco coerente: guarda con attenzione.</td></tr>
+            <tr><td><span class="etichetta etichetta-non-conforme">Non conforme</span></td><td>Uno o più valori fuori limite, o un'incoerenza da verificare prima di validare.</td></tr>
+            <tr><td><span class="etichetta etichetta-neutro">Non determinato</span></td><td>L'AI non ha elementi sufficienti (es. limiti mancanti).</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">L'AI è un secondo paio d'occhi: <strong>non sostituisce</strong> la tua valutazione né quella del responsabile.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il campione era già stato analizzato</summary>
+    <p>L'analisi resta in archivio: compare <span class="tasto">Usa analisi archiviata</span> per rivederla senza rifarla,
+        e <span class="tasto">Riesegui</span> per rifarla (per esempio se in ArcLab sono cambiati i risultati).
+        Nell'elenco a sinistra i campioni già analizzati mostrano il giudizio.</p>
+</details>
+
+<details class="situazione">
+    <summary>Trovare un campione nell'elenco</summary>
+    <p>Scrivi nella casella sopra l'elenco una parte del cliente, del numero di campione o della matrice. <span class="tasto">Aggiorna</span> (in alto)
+        rilegge l'elenco da ArcLab.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cosa vogliono dire i colori dei limiti (viola, rosso, arancione, grigio, verde)</summary>
+    <p>Ogni campione è confrontato in automatico con le <strong>schede limite validate</strong> (Limiti normativi). È un controllo
+        separato dal giudizio AI: non serve premere nulla, e <span class="tasto">Aggiorna</span> lo ricalcola.</p>
+    <ul>
+        <li><span class="limiti limiti-viola">Da correggere</span> errore probabile nei dati: unità mancante, metodo senza regole di arrotondamento,
+            parametro ripetuto un numero di volte diverso da 5 (unità campionarie; 9 per l'istamina), subappalto senza frase del laboratorio esterno, prelievo dopo la ricezione, prova iniziata oltre i tempi massimi,
+            E. coli maggiore dei coliformi totali, limite di quantificazione sopra il limite di legge.</li>
+        <li><span class="limiti limiti-rosso">Limite superato</span> superato un limite di legge (sicurezza) o il valore di parametro
+            di un parametro indicatore delle acque o delle piscine (es. coliformi): campione non conforme.</li>
+        <li><span class="limiti limiti-arancione">Da segnalare</span> criterio di igiene di processo superato, valore tra m e M,
+            oltre l'80% di un limite di legge, soglia Legionella superata, oppure <em>dipende dalla fase</em>: il valore supera il limite
+            alla produzione ma non quello in commercio — verifica in che fase è stato prelevato.</li>
+        <li><span class="limiti limiti-grigio">Non confrontabile</span> risultato mancante, unità diversa da quella della norma, oppure matrice
+            degli alimenti non ancora abbinata a una categoria (Limiti normativi → Categorie e matrici).</li>
+        <li><span class="limiti limiti-verde">Nei limiti</span> nessun rilievo.</li>
+    </ul>
+    <ol class="passi">
+        <li>Con il menu <strong>Limiti</strong> sopra l'elenco vedi solo i campioni di un colore; con <strong>Ordina</strong> scegli se metterli per gravità o per giacenza.</li>
+        <li>Apri il campione: il riquadro <strong>Limiti normativi</strong> elenca i rilievi e le prove interessate hanno una barra colorata a sinistra.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Validare il campione (giudizio e chiusura dell'analisi)</summary>
+    <p>Solo per chi ha il permesso «Validare il campione» (responsabili). LaboratorioAI <strong>non scrive in ArcLab</strong>: registra la validazione
+        e ArcLab la riceve da Palomar, che inserisce il giudizio e chiude l'analisi. Un campione, un solo giudizio.</p>
+    <ol class="passi">
+        <li>Apri il campione (dall'elenco, oppure dal pulsante della maschera di ArcLab). Nel riquadro <strong>Validazione</strong> vedi cosa c'è già in ArcLab:
+            giudizio e analisi chiusa/aperta, e se il cliente richiede il giudizio di conformità.</li>
+        <li>Scegli il giudizio tra quelli previsti per la matrice. Se il cliente <strong>non</strong> richiede il giudizio puoi non scegliere: va il 212
+            «Senza giudizio professionale» in automatico. Se il cliente lo <strong>richiede</strong>, la scelta è obbligatoria (il 212 si può scegliere a mano).</li>
+        <li>Premi <span class="tasto">Valida</span>. Se il campione è rosso o viola nei limiti viene chiesta una conferma in più.</li>
+        <li>Il campione mostra «Validato · attesa ArcLab» finché ArcLab non lo riceve; poi «In ArcLab» e sparisce dall'elenco.</li>
+        <li>Sbagliato? Finché è «in attesa» c'è <span class="tasto">Annulla validazione</span>; dopo, la correzione si fa in ArcLab.</li>
+    </ol>
+    <p class="nota">Non si può validare se in ArcLab ci sono prove non verificate, se c'è già un giudizio o se l'analisi è già chiusa.
+        «Giudizio diverso in ArcLab» vuol dire che in ArcLab qualcuno ha messo un altro giudizio: controllare lì.</p>
+</details>
+
+@if (massiva)
+{
+    <details class="situazione">
+        <summary>Analizzare tutti i campioni in una volta (Analisi massiva)</summary>
+        <ol class="passi">
+            <li>Premi <span class="tasto">Analisi massiva</span> in alto e conferma: vengono analizzati solo i campioni non ancora analizzati.</li>
+            <li>Aspetta (può richiedere alcuni minuti): alla fine compaiono i totali Conformi / Borderline / Non conformi e l'elenco.</li>
+            <li>Clicca un campione dell'elenco per aprirlo e leggere il commento. Parti dai <strong>Non conformi</strong> e dai <strong>Borderline</strong>.</li>
+        </ol>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

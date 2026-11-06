@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LaboratorioAI.Core\LaboratorioAI.Core.csproj" />
+    <ProjectReference Include="..\LaboratorioAI.Dati\LaboratorioAI.Dati.csproj" />
   </ItemGroup>
   <!-- Font incorporati per PDFsharp (build cross-platform, senza font di sistema): il generatore
        PDF li risolve tramite FontResolverLabAI, così funziona su qualsiasi server. -->

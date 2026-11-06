@@ -1,0 +1,48 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Certificati emessi» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A ritrovare un <strong>rapporto di prova già emesso</strong> e leggerne i risultati, con la possibilità di farlo
+        <strong>analizzare dall'AI</strong> (controllo a posteriori) o di scaricarlo in Excel. Solo consultazione: niente si modifica in ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Trovare un certificato</summary>
+    <ol class="passi">
+        <li>Nella casella in alto scrivi il <strong>numero del certificato</strong>, il <strong>nome del cliente</strong> o la <strong>denominazione del campione</strong>
+            (basta una parte).</li>
+        <li>Premi <span class="tasto">Cerca</span> (o Invio).</li>
+        <li>Clicca un certificato nell'elenco a sinistra: a destra compare il dettaglio.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/certificati-dettaglio.png" alt="Certificati emessi: elenco a sinistra e dettaglio con risultati delle prove" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Cosa trovo nel dettaglio</summary>
+    <ul class="passi">
+        <li>Data di emissione e <strong>tempo di risposta</strong> (giorni tra ricezione e certificato).</li>
+        <li>Campione, cliente, denominazione e matrice.</li>
+        <li>Per ogni parametro: valore, unità, limite di riferimento, metodo, chi l'ha eseguito, se è accreditato, e l'esito
+            (<span class="esito-ok">Verificato</span> / <span class="esito-ko">Non verificato</span> rispetto al limite).</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Far controllare il certificato all'AI</summary>
+    <ol class="passi">
+        <li>Apri il certificato e premi <span class="tasto">Analizza con AI</span>: dopo qualche secondo compare un giudizio con il commento.</li>
+        <li>Se il certificato era già stato analizzato, compare <span class="tasto">Usa analisi archiviata</span>: mostra quella senza rifarla
+            (il pulsante principale diventa <em>Rianalizza</em>).</li>
+    </ol>
+    <p class="nota">L'analisi AI è un aiuto per accorgersi di valori strani o incoerenze: <strong>non sostituisce</strong> la validazione del responsabile.</p>
+</details>
+
+<details class="situazione">
+    <summary>Scaricare il certificato in Excel</summary>
+    <p>Con il certificato aperto premi <span class="tasto">Esporta Excel</span>: scarica i risultati delle prove in un foglio.</p>
+</details>
+
+<p class="nota">Il PDF ufficiale del rapporto resta quello di ArcLab / Portale. Dubbi o problemi: Mirko Maffei.</p>

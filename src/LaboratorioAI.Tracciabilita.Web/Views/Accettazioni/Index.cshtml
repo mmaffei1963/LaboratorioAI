@@ -1,0 +1,26 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoAccettazioni
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Accettazioni"; }
+<div class="testa-pagina"><h1>Accettazioni in entrata</h1><a asp-action="Nuova" class="pulsante">Accetta merce senza ordine</a></div>
+<p class="nota">Per accettare la merce di un ordine apri il <a asp-controller="Ordini" asp-action="Index">quadro consegne</a>, l'ordine, e premi «Accetta» sulla riga.</p>
+<form method="get" class="riga-modulo">
+    <label>Cerca (fornitore, articolo, lotto)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Arrivo</th><th>Fornitore</th><th>Articolo</th><th>Lotto</th><th>Quantità</th><th>Ordine</th><th>Giudizio</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@r.DataArrivo.ToString("dd/MM/yyyy")</td><td>@r.Fornitore</td><td>@r.Articolo</td>
+            <td>@if (r.IdLotto is { } il) { <a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@il">@r.Lotto</a> }</td>
+            <td>@r.Quantita.ToString("0.##") @r.UnitaMisura</td><td>@r.NumeroOrdine</td>
+            <td><span class="tag @(r.Giudizio == GiudizioAccettazione.Respinto ? "spento" : "")">@r.Giudizio</span></td>
+            <td><a asp-action="Etichetta" asp-route-id="@r.IdAccettazione" target="_blank">Etichetta</a>
+                <a asp-action="Correggi" asp-route-id="@r.IdAccettazione">Correggi</a></td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="8">Nessuna accettazione.</td></tr> }
+    </tbody>
+</table>

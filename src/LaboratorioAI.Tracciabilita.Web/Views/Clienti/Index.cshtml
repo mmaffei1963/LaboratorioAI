@@ -1,0 +1,24 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoClienti
+@{ ViewData["Titolo"] = "Clienti"; }
+<div class="testa-pagina"><h1>Agenda clienti</h1><span class="nota">@Model.Totale trovati</span></div>
+<p><a asp-controller="Spedizioni" asp-action="Index">« Spedizioni</a> <a asp-action="Nuovo" class="pulsante">Nuovo cliente</a></p>
+<form method="get" class="riga-modulo">
+    <label>Cerca (nome, città, partita IVA)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <label style="flex-direction:row;align-items:center;gap:.4rem">
+        <input type="checkbox" name="conNonAttivi" value="true" checked="@Model.ConNonAttivi" /> Anche quelli non più in uso</label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Cliente</th><th>Città</th><th>Telefono</th><th>E-mail</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var c in Model.Righe)
+    {
+        <tr>
+            <td><a asp-action="Modifica" asp-route-id="@c.IdCliente">@c.RagioneSociale</a></td>
+            <td>@c.Citta</td><td>@c.Telefono</td><td>@c.Email</td>
+            <td>@if (!c.Attivo) { <span class="tag spento">non in uso</span> }</td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="5">Nessun cliente trovato.</td></tr> }
+    </tbody>
+</table>

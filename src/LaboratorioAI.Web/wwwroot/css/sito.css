@@ -75,6 +75,11 @@ body {
     transition: all .15s;
 }
 .pulsante-esci:hover { border-color: var(--rosso); color: #ff9a9a; }
+.pulsante-home {
+    color: var(--bianco); text-decoration: none; font-weight: 600;
+    border: 1px solid #555; padding: 5px 14px; border-radius: var(--raggio);
+}
+.pulsante-home:hover { border-color: var(--bianco); }
 
 /* ── Navigazione ─────────────────────────────────────────── */
 .navigazione {
@@ -103,20 +108,33 @@ body {
 /* Menù a tendina per macroaree */
 .navigazione .gruppo { position: relative; }
 .navigazione .gruppo-testo {
-    display: inline-block; padding: 12px 18px; cursor: default;
-    color: var(--grigio-700); font-size: .85rem; font-weight: 600;
-    border-bottom: 3px solid transparent; white-space: nowrap;
+    display: inline-block; padding: 12px 18px; cursor: pointer;
+    color: var(--grigio-700); font-size: .85rem; font-weight: 600; font-family: inherit;
+    background: none; border: none; border-bottom: 3px solid transparent; border-radius: 0;
+    white-space: nowrap; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none;
 }
-.navigazione .gruppo:hover .gruppo-testo,
-.navigazione .gruppo:focus-within .gruppo-testo { color: var(--rosso); background: var(--rosso-chiaro); }
+/* 13/10/2026: apertura al tocco (classe "aperto", iPhone/iPad) e, solo con il mouse, al passaggio. */
+.navigazione .gruppo.aperto .gruppo-testo { color: var(--rosso); background: var(--rosso-chiaro); }
+@media (hover: hover) {
+    .navigazione .gruppo:hover .gruppo-testo,
+    .navigazione .gruppo:focus-within .gruppo-testo { color: var(--rosso); background: var(--rosso-chiaro); }
+}
 .navigazione .gruppo .menu {
     position: absolute; top: 100%; left: 0; z-index: 40;
     background: var(--bianco); border: 1px solid var(--grigio-300);
     border-radius: 0 0 6px 6px; box-shadow: 0 6px 18px rgba(0,0,0,.10);
     min-width: 220px; display: none; flex-direction: column; padding: 4px 0;
 }
-.navigazione .gruppo:hover .menu,
-.navigazione .gruppo:focus-within .menu { display: flex; }
+.navigazione .gruppo.aperto .menu { display: flex; }
+@media (hover: hover) {
+    .navigazione .gruppo:hover .menu,
+    .navigazione .gruppo:focus-within .menu { display: flex; }
+}
+/* Schermi stretti: la tendina non esce dallo schermo e le voci vanno a capo. */
+@media (max-width: 640px) {
+    .navigazione .gruppo .menu { min-width: min(260px, 90vw); max-width: 90vw; }
+    .navigazione .gruppo .menu a { white-space: normal; padding: 11px 16px; }
+}
 .navigazione .gruppo .menu a {
     padding: 9px 16px; text-decoration: none; color: var(--grigio-700);
     font-size: .84rem; font-weight: 500; white-space: nowrap;
@@ -338,6 +356,11 @@ body {
 
 .tabella-scorrevole { overflow-x: auto; }
 .riga-cliccabile { cursor: pointer; }
+/* Registri tarature/mappature: righe eliminate (Attivo = false), visibili con «Mostra eliminate» (09/10/2026) */
+.riga-eliminata td { color: var(--grigio-500); text-decoration: line-through; }
+.riga-eliminata .etichetta-eliminata, .riga-eliminata .btn-ripristina { display: inline-block; text-decoration: none; }
+.etichetta-eliminata { font-size: .75rem; color: var(--rosso); margin-left: 6px; }
+.riga-eliminata .btn-ripristina { margin-left: 6px; padding: 2px 8px; font-size: .78rem; }
 .riga-attiva, .riga-attiva:hover { background: #EEF4FF; }
 
 .accreditato {
@@ -380,6 +403,35 @@ body {
     color: var(--grigio-900); background: var(--bianco);
 }
 .griglia-filtri input:focus, .griglia-filtri select:focus { outline: none; border-color: var(--rosso); }
+
+/* Suggerimenti di ricerca personalizzati (es. "Aggiungi controllo esistente"): il datalist nativo
+   del browser non rispetta la larghezza del campo, quindi qui si costruisce a mano, largo quanto
+   il campo a cui appartiene. */
+.campo-con-suggerimenti { position: relative; }
+.elenco-suggerimenti {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 30; margin-top: 2px;
+    background: var(--bianco); border: 1px solid var(--grigio-300); border-radius: var(--raggio);
+    box-shadow: 0 6px 18px rgba(0,0,0,.12); max-height: 18rem; overflow-y: auto; padding: 4px 0;
+}
+.elenco-suggerimenti .voce-suggerimento {
+    padding: 9px 14px; cursor: pointer; font-size: .84rem; font-weight: 400;
+    text-transform: none; color: var(--grigio-900); letter-spacing: normal;
+}
+.elenco-suggerimenti .voce-suggerimento:hover,
+.elenco-suggerimenti .voce-suggerimento.evidenziata { color: var(--rosso); background: var(--rosso-chiaro); }
+
+/* Variante non a tendina: elenco di risultati mostrato sempre visibile sotto un campo (es. verifica
+   metodo già presente nel controllo in subappalto a campo libero), non sovrapposto al resto del form. */
+.elenco-inline {
+    border: 1px solid var(--grigio-300); border-radius: var(--raggio);
+    max-height: 12rem; overflow-y: auto; margin: 4px 0 8px;
+}
+.elenco-inline .voce-suggerimento {
+    padding: 8px 12px; cursor: pointer; font-size: .84rem; color: var(--grigio-900);
+    border-bottom: 1px solid var(--grigio-100);
+}
+.elenco-inline .voce-suggerimento:last-child { border-bottom: none; }
+.elenco-inline .voce-suggerimento:hover { color: var(--rosso); background: var(--rosso-chiaro); }
 
 .azioni-filtri { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 .azioni-dettaglio { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
@@ -430,6 +482,9 @@ body {
     background: var(--bianco); border-radius: 8px; max-width: 900px; width: 100%;
     max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
 }
+
+/* La finestra di verifica metodi ha più colonne delle altre: le serve più spazio. */
+#finestra-metodi .finestra-contenuto { max-width: 1400px; }
 .finestra-contenuto header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 18px 24px; border-bottom: 1px solid var(--grigio-300); position: sticky;
@@ -676,3 +731,336 @@ details summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
     .finestra-contenuto { max-height: 94vh; }
     .finestra-contenuto header, .finestra-contenuto > div { padding-left: 14px; padding-right: 14px; }
 }
+
+/* ── Caselle azzerabili (js/campi-azzerabili.js): × per svuotare un singolo campo ── */
+.campo-azzerabile { position: relative; display: inline-flex; flex-direction: column; }
+.campo-azzerabile > input, .campo-azzerabile > select { width: 100%; box-sizing: border-box; padding-right: 28px; }
+.campo-azzerabile > select { padding-right: 46px; }
+.azzera-campo {
+    position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+    border: none; background: transparent; cursor: pointer; padding: 0 4px;
+    font-size: 1rem; line-height: 1; color: var(--grigio-700); display: none;
+}
+.campo-azzerabile > select ~ .azzera-campo { right: 24px; }
+.campo-azzerabile > input[type=date] ~ .azzera-campo { right: 34px; }
+.campo-azzerabile.pieno .azzera-campo { display: block; }
+.azzera-campo:hover { color: var(--rosso); }
+
+/* ── Pagina principale a cartelle (08/10/2026) ───────────── */
+.home-testata { margin-bottom: 18px; }
+.home-testata h1 { font-size: 1.6rem; margin-bottom: 4px; }
+.home-cartelle {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px;
+}
+.home-cartella {
+    font: inherit; text-align: left; cursor: pointer; color: var(--grigio-900);
+    background: var(--bianco); border: 1px solid #DDDDDD; border-radius: 8px;
+    padding: 16px; min-height: 132px; display: flex; flex-direction: column; gap: 10px;
+    box-shadow: var(--ombra-sm); transition: box-shadow .15s, transform .15s, border-color .15s;
+}
+.home-cartella:hover, .home-cartella:focus-visible {
+    box-shadow: var(--ombra-md); transform: translateY(-2px); border-color: var(--rosso); outline: none;
+}
+.home-icona {
+    width: 48px; height: 48px; border-radius: 10px; background: var(--rosso-chiaro); color: var(--rosso);
+    display: flex; align-items: center; justify-content: center;
+}
+.home-cartella-nome { font-size: 1.05rem; font-weight: 600; line-height: 1.2; }
+.home-cartella-sotto { font-size: .8rem; color: var(--grigio-500); line-height: 1.3; }
+
+.home-finestra {
+    padding: 0; border: 1px solid var(--grigio-300); border-radius: 8px; width: min(920px, 94vw);
+    max-height: 82vh; box-shadow: 0 18px 50px rgba(0,0,0,.35); overflow: hidden;
+}
+.home-finestra::backdrop { background: rgba(26,26,26,.35); }
+.home-finestra header {
+    background: var(--rosso); color: var(--bianco); display: flex; align-items: center; gap: 10px;
+    padding: 0 0 0 16px; height: 46px;
+}
+.home-finestra header h2 { font-size: 1rem; flex: 1; margin: 0; }
+.home-chiudi {
+    width: 52px; height: 46px; border: 0; background: rgba(0,0,0,.2); color: var(--bianco);
+    font-size: 1rem; cursor: pointer;
+}
+.home-chiudi:hover { background: rgba(0,0,0,.35); }
+.home-voci {
+    padding: 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+    overflow: auto; max-height: calc(82vh - 46px);
+}
+.home-voce {
+    display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--grigio-900);
+    border: 1px solid #E2E2E2; border-radius: 8px; padding: 14px; transition: border-color .15s, background .15s;
+}
+.home-voce:hover, .home-voce:focus-visible { border-color: var(--rosso); background: var(--rosso-chiaro); outline: none; }
+.home-voce strong { font-size: .92rem; }
+.home-voce span { font-size: .8rem; color: var(--grigio-500); line-height: 1.35; }
+.navigazione { flex-wrap: wrap; }
+/* Contatori della home: bollino sulla cartella (somma) e etichetta sulla funzione. */
+.home-cartella-riga { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.home-conta {
+    min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px; background: var(--rosso); color: var(--bianco);
+    font-size: .9rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+}
+.home-conta[hidden], .home-conta-voce[hidden] { display: none; }
+/* Ricerca delle funzioni */
+.home-cerca {
+    margin-top: 14px; display: flex; align-items: center; gap: 8px; max-width: 560px;
+    background: var(--bianco); border: 1px solid #CCCCCC; border-radius: 8px; padding: 0 12px; color: var(--grigio-500);
+}
+.home-cerca:focus-within { border-color: var(--rosso); box-shadow: 0 0 0 3px var(--rosso-chiaro); }
+.home-cerca input { flex: 1; border: 0; outline: none; padding: 11px 0; font: inherit; font-size: .95rem; background: transparent; }
+.home-risultati { margin-bottom: 22px; }
+.home-risultati[hidden], .home-cartelle[hidden] { display: none; }
+.home-risultati .home-voci { padding: 0; max-height: none; }
+.home-voce small.home-voce-cartella { font-size: .72rem; color: var(--rosso); text-transform: uppercase; letter-spacing: .04em; }
+
+/* Preferiti (stellina) */
+.home-preferiti { margin-bottom: 22px; }
+.home-preferiti h2 { font-size: 1rem; margin: 0 0 8px; color: var(--grigio-700); }
+.home-preferiti-elenco { display: flex; flex-wrap: wrap; gap: 10px; }
+.home-preferito {
+    display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--grigio-900);
+    background: var(--bianco); border: 1px solid #DDDDDD; border-radius: 8px; padding: 8px 12px 8px 8px;
+    box-shadow: var(--ombra-sm); transition: border-color .15s, box-shadow .15s;
+}
+.home-preferito:hover, .home-preferito:focus-visible { border-color: var(--rosso); box-shadow: var(--ombra-md); outline: none; }
+.home-preferito-icona {
+    width: 32px; height: 32px; border-radius: 7px; background: var(--rosso-chiaro); color: var(--rosso);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.home-preferito-testo { display: flex; flex-direction: column; line-height: 1.2; }
+.home-preferito-testo strong { font-size: .9rem; }
+.home-preferito-testo small { font-size: .75rem; color: var(--grigio-500); }
+.home-preferito .home-conta-voce {
+    padding: 2px 8px; border-radius: 10px; background: #FEE2E2; color: var(--rosso); font-size: .75rem; font-weight: 700; font-style: normal;
+}
+.home-preferiti-vuoto { font-size: .85rem; color: var(--grigio-500); margin: 0; }
+.home-preferiti-vuoto[hidden] { display: none; }
+.home-voce-blocco { position: relative; display: flex; }
+.home-voce-blocco .home-voce { flex: 1; padding-right: 44px; }
+.home-stella {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border: 0; border-radius: 6px;
+    background: transparent; color: var(--grigio-500); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.home-stella svg path { fill: none; }
+.home-stella:hover, .home-stella:focus-visible { background: var(--grigio-100); color: var(--rosso); outline: none; }
+.home-stella[aria-pressed="true"] { color: var(--rosso); }
+.home-stella[aria-pressed="true"] svg path { fill: currentColor; }
+.home-voce .home-conta-voce {
+    align-self: flex-start; margin-top: 4px; padding: 2px 9px; border-radius: 10px; background: #FEE2E2;
+    color: var(--rosso); font-size: .78rem; font-weight: 700; font-style: normal;
+}
+
+@media (max-width: 1100px) { .home-cartelle { grid-template-columns: repeat(3, minmax(0, 1fr)); } .home-voci { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px)  { .home-cartelle { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-voci { grid-template-columns: 1fr; } }
+
+/* Sola lettura (11/10/2026): avviso in testa alle pagine consultate senza permesso di modifica */
+.avviso-sola-lettura { background: #FFF7E6; border: 1px solid #F5D9A8; color: #7A4B00;
+                       padding: 6px 12px; border-radius: var(--raggio); font-size: .8rem; margin-bottom: 12px; }
+/* Utenti e ruoli (11/10/2026) */
+#tabella-ruoli th.ruolo { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-size: .72rem; padding: 6px 2px; }
+#tabella-ruoli td.cella-permesso { text-align: center; padding: 2px; }
+#tabella-ruoli tr.area td { background: var(--grigio-100, #F3F4F6); font-weight: 700; font-size: .78rem; }
+#tabella-ruoli td.modificata { background: #FEF3C7; }
+.chip-ruolo { display: inline-block; padding: 1px 8px; margin: 1px 3px 1px 0; border-radius: 10px; background: #EEF2FF; color: #3730A3; font-size: .72rem; white-space: nowrap; }
+
+/* ── Guide d'uso (11/10/2026) ─────────────────────────────── */
+.pulsante-guida {
+    color: #1a1a1a; background: #FFD84D; text-decoration: none; font-weight: 700;
+    padding: 5px 14px; border-radius: var(--raggio); border: 1px solid #E8B800;
+}
+.pulsante-guida:hover { background: #FFE680; }
+.pannello-guida {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100vw); background: var(--bianco);
+    box-shadow: -6px 0 24px rgba(0,0,0,.18); transform: translateX(105%); transition: transform .2s ease;
+    z-index: 1000; display: flex; flex-direction: column;
+}
+.pannello-guida.aperto { transform: translateX(0); }
+.pannello-guida-testa { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--grigio-300); background: var(--grigio-100); }
+.pannello-guida-testa strong { flex: 1; }
+.pannello-guida-testa a { font-size: .8rem; }
+.pannello-guida-testa button { background: none; border: none; font-size: 1.1rem; cursor: pointer; }
+#pannello-guida-corpo { overflow-y: auto; padding: 14px 18px 40px; }
+.guida { font-size: .9rem; line-height: 1.5; }
+.guida h2 { font-size: 1.05rem; margin: 18px 0 6px; color: var(--rosso-scuro); }
+.guida p { margin: 6px 0; }
+.guida ul, .guida ol { margin: 6px 0 6px 22px; }
+.guida-intro { background: #FFFBEA; border: 1px solid #F5E3A3; border-radius: var(--raggio); padding: 10px 14px; }
+.guida details.situazione { border: 1px solid var(--grigio-300); border-radius: var(--raggio); margin: 8px 0; background: var(--bianco); }
+.guida details.situazione > summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style: none; }
+.guida details.situazione > summary::before { content: '▸ '; color: var(--rosso); }
+.guida details.situazione[open] > summary::before { content: '▾ '; }
+.guida details.situazione[open] > summary { border-bottom: 1px solid var(--grigio-100); background: #FAFAFA; }
+.guida details.situazione > *:not(summary) { margin-left: 14px; margin-right: 14px; }
+.guida ol.passi > li { margin: 5px 0; }
+.guida .tasto { display: inline-block; padding: 0 7px; border: 1px solid #999; border-bottom-width: 2px; border-radius: 4px; background: #F7F7F7; font-weight: 600; font-size: .85em; white-space: nowrap; }
+.guida .dopo { background: #EEF7F0; border-left: 4px solid var(--verde); padding: 6px 10px; }
+.guida .nota { color: var(--grigio-700); font-size: .85rem; }
+.guida img.schermata { display: block; max-width: 100%; border: 1px solid var(--grigio-300); border-radius: 4px; margin: 8px 0; box-shadow: var(--ombra-sm); }
+.guida .tabella-guida { margin: 8px 0; font-size: .85rem; }
+.guida dl.glossario dt { font-weight: 700; margin-top: 6px; }
+.guida dl.glossario dd { margin-left: 14px; }
+.guida-pagina { max-width: 860px; }
+.elenco-guide { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.scheda-guida { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--grigio-300); border-radius: var(--raggio); text-decoration: none; color: inherit; background: var(--bianco); }
+.scheda-guida:hover { border-color: var(--rosso); box-shadow: var(--ombra-md); }
+.scheda-guida small { color: var(--grigio-500); }
+@media print {
+    .intestazione, .navigazione, .pie, .pannello-guida, .barra-strumenti .riga-pulsanti, .chiedi-guida { display: none !important; }
+    .guida details.situazione { break-inside: avoid; }
+}
+.guida .schermate-telefono { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
+.guida .schermate-telefono figure { flex: 1 1 140px; max-width: 220px; margin: 0; }
+.guida .schermate-telefono figcaption { font-size: .75rem; color: var(--grigio-500); text-align: center; }
+
+/* «Chiedi alla guida» (11/10/2026) */
+.chiedi-guida { background: #FFF8D6; border: 1px solid #E8B800; border-radius: var(--raggio); padding: 10px 12px; margin: 0 0 14px; max-width: 860px; }
+.chiedi-titolo { display: block; font-weight: 700; margin-bottom: 6px; }
+.chiedi-riga { display: flex; gap: 8px; align-items: stretch; }
+.chiedi-riga textarea { flex: 1; resize: vertical; min-height: 2.6em; font: inherit; font-size: .9rem; padding: 6px 8px; border: 1px solid var(--grigio-300); border-radius: 4px; }
+.chiedi-riga .pulsante { align-self: flex-start; }
+.chiedi-risposta { white-space: pre-wrap; background: var(--bianco); border: 1px solid var(--grigio-300); border-radius: 4px; padding: 8px 10px; margin-top: 8px; font-size: .9rem; line-height: 1.5; }
+.chiedi-risposta.errore { color: var(--rosso-scuro); }
+.chiedi-voti { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: .85rem; }
+.chiedi-voti button { background: var(--bianco); border: 1px solid var(--grigio-300); border-radius: 4px; cursor: pointer; padding: 1px 8px; font-size: 1rem; }
+.chiedi-voti button.scelto { border-color: var(--rosso); background: #FFF0F0; }
+.chiedi-voti button:disabled:not(.scelto) { opacity: .4; cursor: default; }
+.chiedi-grazie { color: var(--grigio-700); }
+.chiedi-avviso { font-size: .75rem; color: var(--grigio-700); margin: 6px 0 0; }
+#pannello-guida-corpo .chiedi-guida { margin-bottom: 10px; }
+/* Pagina «Domande alla guida» */
+.domande-cifre { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.domande-cifre div { background: var(--bianco); border: 1px solid var(--grigio-300); border-radius: var(--raggio); padding: 8px 14px; min-width: 120px; }
+.domande-cifre strong { display: block; font-size: 1.25rem; }
+.domande-cifre span { font-size: .8rem; color: var(--grigio-700); }
+.domande-colonne { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-bottom: 12px; }
+tr.domanda-negativa td { background: #FFF0F0; }
+.domanda-testo { max-width: 380px; }
+.domanda-risposta summary { cursor: pointer; color: var(--grigio-700); font-size: .85rem; }
+.domanda-risposta div { white-space: pre-wrap; font-size: .85rem; max-width: 520px; padding-top: 4px; }
+
+/* Cambi di gestione (subentri, 12/10/2026) */
+.tabella-subentri td { vertical-align: top; }
+.tabella-subentri .cella-decisione { min-width: 220px; }
+.tabella-subentri .cella-decisione form { margin: 4px 0; }
+.tabella-subentri details summary { cursor: pointer; color: var(--grigio-700); font-size: .85rem; margin-top: 4px; }
+.tabella-subentri details input[type=text] { width: 100%; margin: 4px 0; }
+.riga-candidato { display: flex; gap: 6px; align-items: center; justify-content: space-between; margin: 4px 0; font-size: .85rem; }
+.risultati-insediamento { display: flex; flex-direction: column; gap: 3px; max-height: 220px; overflow-y: auto; }
+.voce-insediamento { text-align: left; font-size: .8rem; white-space: normal; }
+.avviso-subentri { background: #EEF7F0; border-left: 4px solid var(--verde); padding: 8px 12px; margin: 0 0 10px; font-size: .9rem; }
+
+/* Elenco di suggerimenti sotto le caselle di ricerca (suggerimenti.js, 15/10/2026) */
+.elenco-suggerimenti { position: absolute; left: 0; right: 0; top: 100%; z-index: 50; margin: 2px 0 0; padding: 0; list-style: none;
+    background: #fff; border: 1px solid var(--bordo, #ccc); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    max-height: 320px; overflow-y: auto; font-size: .9rem; text-transform: none; letter-spacing: normal; font-weight: normal; }
+.elenco-suggerimenti li { padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+.elenco-suggerimenti li span { color: #777; font-size: .8rem; white-space: nowrap; }
+.elenco-suggerimenti li:hover, .elenco-suggerimenti li.attiva { background: #eef3fb; }
+.elenco-suggerimenti li.vuota { color: #888; cursor: default; }
+
+/* ── Limiti normativi in «Da Validare» (fase 1b, 18/10/2026) ── */
+.filtri-limiti { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 4px; font-size: .85rem; }
+.filtri-limiti select { margin-left: 4px; }
+.limiti { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.limiti-viola     { background: #EDE4FB; color: #6D28D9; }
+.limiti-rosso     { background: #FEE2E2; color: #B91C1C; }
+.limiti-arancione { background: #FEF3C7; color: #B45309; }
+.limiti-grigio    { background: #EEF0F3; color: #4B5563; }
+.limiti-verde     { background: #EBF7EF; color: #15803D; }
+.limiti-azzurro   { background: #E0F2FE; color: #0369A1; }   /* 26/10/2026: nessun limite di legge */
+.voce-elenco.bordo-viola     { border-left: 4px solid #7C3AED; }
+.voce-elenco.bordo-rosso     { border-left: 4px solid #DC2626; }
+.voce-elenco.bordo-arancione { border-left: 4px solid #F59E0B; }
+.voce-elenco.bordo-grigio    { border-left: 4px solid #9CA3AF; }
+.voce-elenco.bordo-verde     { border-left: 4px solid #22C55E; }
+.voce-elenco.bordo-azzurro   { border-left: 4px solid #38BDF8; }
+.riquadro-limiti { margin: 10px 0; padding: 10px 12px; border-radius: var(--raggio); background: #FAFAFB; border-left: 4px solid #9CA3AF; }
+.riquadro-limiti ul { margin: 6px 0 0; padding-left: 0; list-style: none; }
+.riquadro-limiti li { margin: 4px 0; }
+.limiti-bordo-viola { border-left-color: #7C3AED; } .limiti-bordo-rosso { border-left-color: #DC2626; }
+.limiti-bordo-arancione { border-left-color: #F59E0B; } .limiti-bordo-grigio { border-left-color: #9CA3AF; }
+.limiti-bordo-verde { border-left-color: #22C55E; }
+.limiti-bordo-azzurro { border-left-color: #38BDF8; }
+#tabella-prove tr.riga-limiti-viola td:first-child     { box-shadow: inset 4px 0 #7C3AED; }
+#tabella-prove tr.riga-limiti-rosso td:first-child     { box-shadow: inset 4px 0 #DC2626; }
+#tabella-prove tr.riga-limiti-arancione td:first-child { box-shadow: inset 4px 0 #F59E0B; }
+#tabella-prove tr.riga-limiti-grigio td:first-child    { box-shadow: inset 4px 0 #9CA3AF; }
+
+/* ── Validazione da LaboratorioAI (18/10/2026) ── */
+.riquadro-validazione { margin: 10px 0; padding: 10px 12px; border-radius: var(--raggio); background: #F5F8FF; border-left: 4px solid #2563EB; }
+.riquadro-validazione p { margin: 6px 0; }
+.val-testata { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.val-scelta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.val-scelta select { min-width: 18rem; max-width: 100%; }
+.limiti.val-attesa    { background: #DBEAFE; color: #1D4ED8; }
+.limiti.val-ok        { background: #EBF7EF; color: #15803D; }
+.limiti.val-conflitto { background: #EDE4FB; color: #6D28D9; }
+
+/* 21/10/2026: pulsante «⟳ AZW» nella barra in alto e avviso dell'esito. */
+.pulsante-azw {
+    background: transparent; color: var(--bianco); font: inherit; font-weight: 600; cursor: pointer;
+    border: 1px solid #555; padding: 5px 14px; border-radius: var(--raggio);
+}
+.pulsante-azw:hover { border-color: var(--bianco); }
+.pulsante-azw:disabled { opacity: .6; cursor: progress; }
+.avviso-azw {
+    position: fixed; top: 64px; right: 16px; z-index: 1000; max-width: 420px;
+    background: #fff; color: #222; border: 1px solid #ccc; border-left: 4px solid #1a3e8c;
+    border-radius: var(--raggio); padding: 10px 34px 10px 12px; font-size: .85rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,.15);
+}
+.avviso-azw.ok { border-left-color: #2e7d32; }
+.avviso-azw.errore { border-left-color: var(--rosso); }
+.avviso-azw a { font-weight: 600; }
+.avviso-azw-chiudi {
+    position: absolute; top: 4px; right: 6px; background: none; border: 0; font-size: 1.1rem; cursor: pointer; color: #666;
+}
+.pulsante-azw-avviso {
+    display: block; margin-top: 8px; background: #1a3e8c; color: #fff; border: 0; font: inherit; font-weight: 600;
+    padding: 5px 12px; border-radius: var(--raggio); cursor: pointer;
+}
+.pulsante-azw-avviso:hover { background: #142f6b; }
+
+/* 22/10/2026: avviso campioni in ritardo, sotto quello di AZW. */
+.avviso-ritardi { top: auto; bottom: 16px; }
+
+
+/* ── Manualistica: modelli (02/11/2026) ──────────────────────── */
+.pulsante-piccolo { padding: 5px 10px; font-size: .78rem; }
+
+/* «Scarica» è un collegamento: va reso uguale agli altri pulsanti. */
+a.pulsante { display: inline-block; text-decoration: none; line-height: 1.3; }
+a.pulsante:hover { text-decoration: none; }
+
+.azioni-riga { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.nota-riga { font-size: .78rem; color: var(--grigio-700, #4b5563); }
+
+.esito-errore { color: var(--rosso); font-weight: 600; }
+
+.col-spunta { width: 2rem; text-align: center; }
+.col-spunta input { width: 1.05rem; height: 1.05rem; cursor: pointer; }
+
+.barra-selezione {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    margin: 10px 0; padding: 9px 14px;
+    background: var(--grigio-100, #f3f4f6); border-radius: var(--raggio);
+    font-size: .85rem; font-weight: 600;
+}
+
+#dlg-conferma ul, #dlg-controllo ul { margin: .4rem 0 .4rem 1.1rem; font-size: .85rem; }
+#dlg-conferma, #dlg-controllo { max-width: 46rem; }
+
+.blocco-tipo { padding: 12px 0; border-top: 1px solid var(--bordo, #e0e0e0); }
+.blocco-tipo:first-child { border-top: 0; }
+.blocco-tipo h2 { font-size: 1rem; margin: 0 0 6px; }
+.elenco-approvatori { list-style: none; margin: 0 0 8px; padding: 0; }
+.elenco-approvatori li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: space-between; padding: 5px 0; font-size: .88rem; }
+
+
+/* 05/11/2026: tabelle ordinabili con un clic sull'intestazione (js/tabelle-ordinabili.js) */
+table:not([data-non-ordinabile]) thead th:not([data-non-ordinabile]):not(:empty) { cursor: pointer; user-select: none; }
+table thead th[aria-sort="ascending"]::after { content: " ▲"; font-size: 0.75em; }
+table thead th[aria-sort="descending"]::after { content: " ▼"; font-size: 0.75em; }

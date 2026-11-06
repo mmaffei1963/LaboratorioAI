@@ -1,0 +1,40 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaProduzione
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Produzione " + Model.Prodotto; }
+<div class="testa-pagina"><h1>@Model.Prodotto del @Model.Giorno.ToString("dd/MM/yyyy")</h1>
+    @if (Model.Annullata) { <span class="tag spento">annullata</span> }</div>
+<p><a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-dal="@Model.Dal?.ToString("yyyy-MM-dd")" asp-route-al="@Model.Al?.ToString("yyyy-MM-dd")" asp-route-pagina="@Model.Pagina">« Tutte le produzioni</a></p>
+<dl>
+    <dt>Lotto prodotto</dt>
+    <dd><a asp-controller="Lotti" asp-action="Rintracciabilita" asp-route-id="@Model.IdLottoProdotto" asp-route-tipo="pf">@Model.LottoProdotto</a>
+        (<a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@Model.IdLottoProdotto" asp-route-tipo="pf">scheda</a>)</dd>
+    <dt>Quantità prodotta</dt>
+    <dd>@(Model.Quantita is null ? "non indicata" : Model.Quantita.Value.ToString("0.##") + " " + Model.UnitaMisura)</dd>
+    <dt>Registrata il</dt>
+    <dd>@Model.DataOra.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+    @if (!string.IsNullOrWhiteSpace(Model.Note))
+    {
+        <dt>Note</dt><dd>@Model.Note</dd>
+    }
+</dl>
+<h2>Lotti di ingresso usati</h2>
+<table class="elenco">
+    <thead><tr><th>Ingrediente</th><th>Lotto</th><th>Articolo</th><th>Fornitore</th><th>Kg usati</th><th>Origine</th></tr></thead>
+    <tbody>
+    @foreach (var c in Model.Consumi)
+    {
+        <tr>
+            <td>@c.Ingrediente</td>
+            <td><a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@c.IdLotto">@c.Lotto</a></td>
+            <td>@c.Articolo</td>
+            <td>@c.Fornitore</td>
+            <td>@(c.Quantita is null ? "-" : c.Quantita.Value.ToString("0.##") + " " + c.UnitaMisura)</td>
+            <td>@(c.Origine == OrigineConsumo.Confermato ? "proposto e confermato" : c.Origine == OrigineConsumo.Modificato ? "modificato a mano" : "proposto")</td>
+        </tr>
+    }
+    @if (Model.Consumi.Count == 0)
+    {
+        <tr><td colspan="6">Nessun lotto di ingresso registrato.</td></tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,100 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Certificati esterni · rinomina» (11/10/2026; solo esterni / misti e annullamento 12/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> I laboratori esterni ci mandano i loro rapporti di prova in PDF. Qui il programma li <strong>legge</strong>,
+        trova il nostro campione in ArcLab, segnala eventuali <strong>criticità</strong> (valori fuori limite, dati che non tornano) e propone il
+        <strong>nome del file</strong> nel formato concordato con Palomar. Salvando, il file rinominato va nella cartella che Palomar preleva per caricarlo sul portale clienti.</p>
+</div>
+
+<h2>Solo esterni o misti</h2>
+<table class="tabella tabella-guida">
+    <thead><tr><th>Tipo</th><th>Quando</th><th>Dove va il file</th><th>ArcLab</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Solo esterni</strong></td><td>Tutte le prove del campione sono di laboratori esterni.</td>
+            <td>Cartella Palomar <em>ESTERNI</em>: Palomar lo porta sul portale.</td><td>Palomar compila ArcLab (certificato e fatturato interscambio).</td></tr>
+        <tr><td><strong>Misto</strong></td><td>Il campione ha <strong>anche prove fatte da noi</strong>.</td>
+            <td>Cartella Palomar <em>INTERNI_ESTERNI</em>: il cliente riceve comunque l'originale sul portale.</td>
+            <td>Palomar <strong>non compila nulla</strong>: i valori si inseriscono <strong>a mano</strong> in ArcLab, nel nostro certificato insieme ai nostri parametri.</td></tr>
+    </tbody>
+</table>
+<p class="nota">Il tipo lo propone il programma guardando le prove del campione in ArcLab (prova con laboratorio esterno = esterna, senza = nostra).
+    Se il campione non ha prove in ArcLab compare «da scegliere»: decidi tu.</p>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Rinominare i certificati arrivati</summary>
+    <ol class="passi">
+        <li>Scegli i PDF con <em>Scegli file</em> (anche più di uno) e premi <span class="tasto">Analizza</span>.
+            In alternativa, nella parte <strong>Da cartella di rete</strong>, premi <span class="tasto">Elenca file</span> e poi <span class="tasto">Analizza tutti</span>.</li>
+        <li>Nella tabella <strong>Esito</strong> controlla per ogni file: laboratorio, il <strong>nostro codice</strong> campione, il cliente e il prodotto trovati in ArcLab.</li>
+        <li>Guarda la colonna <strong>Criticità</strong>: <span style="color:#1a7f37">ok</span> oppure <span style="color:#b3261e;font-weight:600">▲ numero</span>.
+            Clicca <em>dettagli</em> per leggere cosa ha trovato.</li>
+        <li>Controlla in quale tabella è finito: <strong>Solo esterni</strong> o <strong>Misti</strong>. Se è sbagliato cambia la colonna <strong>Tipo</strong>:
+            la riga passa nell'altra tabella. Passando il mouse sul tipo vedi quali prove sono nostre e quali esterne.</li>
+        <li>Controlla il <strong>nome file proposto</strong> (lo puoi correggere a mano).</li>
+        <li>Premi <span class="tasto">Salva</span> sulla riga, oppure <span class="tasto">Salva tutti</span> in alto.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/certificati-esterni-esito.png" alt="Certificati esterni: tabella esito con codice, cliente, criticità, AVV/STD e nome proposto" loading="lazy" />
+    <p class="dopo"><strong>Cosa succede dopo:</strong> accanto alla riga compare <span style="color:#1a7f37">salvato · in Palomar</span>: il file rinominato è nella cartella
+        di Palomar (e, se indicata, una copia nell'archivio smistato). Palomar lo carica sul portale.
+        Se il file veniva dalla <strong>cartella di rete</strong>, l'originale esce dalla cartella di arrivo e va nella cartella dei processati
+        (separata per solo esterni e misti, in <em>Impostazioni documenti</em>), così non viene rilavorato. Caricando con <em>Scegli file</em> dal browser l'originale invece resta dov'è.</p>
+</details>
+
+<details class="situazione">
+    <summary>AVV o STD: quale scelgo?</summary>
+    <ul class="passi">
+        <li><strong>STD</strong> (standard): certificato senza problemi.</li>
+        <li><strong>AVV</strong> (con avviso): il programma lo propone quando ci sono criticità o una non conformità dichiarata; il nome del file cambia
+            così il cliente riceve l'avviso.</li>
+    </ul>
+    <p class="nota">Il programma sceglie da solo, ma la decisione è tua: leggi i dettagli prima di salvare. Cambiando la scelta, il nome proposto si aggiorna.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il nome contiene IDMATRICE o IDLAB, oppure manca</summary>
+    <p>Il programma non è riuscito a trovare matrice o laboratorio: <strong>sostituisci a mano</strong> IDMATRICE / IDLAB con i numeri giusti
+        (servono a Palomar), oppure scrivi il nome se è vuoto. Se capita spesso per un laboratorio, chiedi di aggiornarne la sigla in
+        <em>Impostazioni → Sigle laboratori esterni</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Controllare che sia tutto arrivato a Palomar (Registro di controllo)</summary>
+    <p>In fondo alla pagina il <strong>Registro di controllo</strong> elenca ogni salvataggio con esito, tipo e nome del file consegnato.
+        Spunta <em>solo problemi</em> per vedere errori e file non consegnati, scegli il periodo e premi <span class="tasto">Aggiorna</span>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Sapere quali misti hanno ancora i valori da inserire in ArcLab</summary>
+    <ol class="passi">
+        <li>Nel Registro di controllo spunta <em>solo misti da inserire in ArcLab</em>.</li>
+        <li>Per ogni misto la colonna <strong>Tipo / ArcLab</strong> dice <em>da inserire in ArcLab</em> e quali parametri mancano,
+            oppure <em>inserito in ArcLab</em> quando tutti i risultati di quel laboratorio sono presenti sul campione.</li>
+    </ol>
+    <p class="nota">Il controllo legge ArcLab (senza scriverci) ogni volta che premi <span class="tasto">Aggiorna</span>: un parametro conta come inserito
+        se ha il valore oppure se la prova è verificata. Il messaggio sopra la tabella dice quanti misti restano da fare.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho salvato un certificato per errore: annullarlo</summary>
+    <ol class="passi">
+        <li>Nel Registro di controllo premi <span class="tasto">Annulla</span> sulla riga e scrivi il motivo (obbligatorio).</li>
+        <li>Lascia spuntato <em>rimetti l'originale in arrivo</em> se vuoi rilavorarlo (es. salvarlo di nuovo come misto), poi <span class="tasto">Conferma annullamento</span>.</li>
+    </ol>
+    <p class="dopo"><strong>Cosa succede:</strong> se Palomar non l'ha ancora preso, il file rinominato esce dalla cartella Palomar (finisce in <em>Arrivo\annullati</em>);
+        l'originale torna dai processati alla cartella di arrivo; il certificato esce dalla coda di import in ArcLab. La riga resta nel registro come <em>Annullato</em>
+        con il tuo motivo (si rivede spuntando <em>mostra annullati</em>): nulla viene cancellato.</p>
+    <p class="nota"><strong>Attenzione:</strong> se Palomar l'ha già preso o è già stato importato in ArcLab, il programma lo dice ma non può toglierlo da lì
+        (in ArcLab non scriviamo mai): va tolto a mano in ArcLab o sul portale.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho corretto un PDF e voglio rileggerlo da capo</summary>
+    <p>Spunta <em>rianalizza (ignora cache)</em> prima di premere <span class="tasto">Analizza</span>: altrimenti per un file già letto il programma riusa la lettura precedente
+        (lo vedi dall'etichetta <em>cache</em>). <span class="tasto">Svuota esiti</span> pulisce la tabella.</p>
+</details>
+
+<p class="nota">Le cartelle (originali, Palomar solo esterni, Palomar misti, archivio) si impostano in <em>Impostazioni documenti</em>. Dubbi o problemi: Mirko Maffei.</p>

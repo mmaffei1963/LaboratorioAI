@@ -1,0 +1,55 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A <strong>registrare la merce che arriva</strong>: documento di trasporto, lotto del fornitore, scadenza, controlli e giudizio. L'accettazione <strong>crea il lotto</strong> e lo <strong>carica in magazzino</strong>, e stampa l'etichetta con il QR.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Accettare una consegna ordinata</summary>
+    <ol class="passi">
+        <li>Apri l'ordine (<em>Ordini e arrivi → Ordini</em>) e premi <span class="tasto">Accetta</span> sulla riga arrivata.</li>
+        <li>Compila <strong>Documento e lotto</strong>: data di arrivo, tipo e numero del documento, <strong>lotto del fornitore</strong>, scadenza (o TMC), <strong>quantità arrivata</strong>, ente biologico se serve.</li>
+        <li>Nei <strong>Controlli</strong> segna per ogni voce se è conforme e, dove serve, scrivi il valore (per esempio la temperatura). I controlli proposti dipendono dalla matrice.</li>
+        <li>Scegli il <strong>Giudizio</strong>: <em>Accettato</em>, <em>Con riserva</em> o <em>Respinto</em>. Se ci sono problemi scrivili in <strong>Note e reclami</strong>.</li>
+        <li>Premi <span class="tasto">Registra l'accettazione</span>.</li>
+    </ol>
+    <p class="dopo">Si apre l'etichetta: stampala e attaccala alla merce. Il lotto è già in magazzino.</p>
+    <p class="attenzione">Se scegli <em>Respinto</em> la merce <strong>non</strong> viene caricata in magazzino e non nasce nessun lotto: resta solo la registrazione del rifiuto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Accettare merce arrivata senza ordine</summary>
+    <ol class="passi">
+        <li>Nell'elenco premi <span class="tasto">Accetta merce senza ordine</span>.</li>
+        <li>Scegli <strong>fornitore</strong>, <strong>articolo</strong> e, se serve, la <strong>matrice</strong> (altrimenti vale quella abituale dell'articolo), poi <span class="tasto">Continua</span>.</li>
+        <li>Prosegui come sopra.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Stampare l'etichetta e usare il QR</summary>
+    <ul class="passi">
+        <li>Dall'elenco, il link <span class="tasto">Etichetta</span> apre la scheda ACC-01 pronta da stampare.</li>
+        <li>In alto a destra c'è un <strong>QR</strong>: inquadrato con il telefono apre la <strong>scheda del lotto</strong> (con arrivi, movimenti e rintracciabilità). Serve aver fatto l'accesso a Tracciato.</li>
+        <li>Il QR compare solo se l'accettazione ha un lotto (non sulle merci respinte né sulla scheda vuota).</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Ho sbagliato un dato: correggere l'accettazione</summary>
+    <ol class="passi">
+        <li>Dall'elenco o dall'etichetta premi <span class="tasto">Correggi</span>.</li>
+        <li>Cambia quello che serve: data, documento, vettore, note, giudizio, <strong>quantità</strong>, lotto del fornitore, scadenza, matrice, valori dei controlli.</li>
+        <li>Premi <span class="tasto">Salva la correzione</span>.</li>
+    </ol>
+    <p class="nota">Se cambi la <strong>quantità</strong> il magazzino si aggiusta con una <em>rettifica</em> (non si riscrive la storia). Non puoi scendere sotto la quantità già usata o spedita. Il codice del lotto si cambia solo se non è condiviso con altre accettazioni e non esiste già.</p>
+    <p class="attenzione">Fornitore e articolo non si cambiano, e non si passa da «respinta» ad accettata (o al contrario): in quei casi registra una nuova accettazione.</p>
+    <p class="nota">Ogni correzione resta nel registro attività con i valori di prima.</p>
+</details>
+
+<details class="situazione">
+    <summary>Stampare una scheda vuota</summary>
+    <p>Nella scheda di un ordine, accanto alla riga, c'è il link <span class="tasto">Scheda vuota</span> (e lo stesso dentro l'accettazione: «Stampa la scheda con le caselle vuote»): serve per compilare a penna alla consegna e registrare dopo.</p>
+</details>

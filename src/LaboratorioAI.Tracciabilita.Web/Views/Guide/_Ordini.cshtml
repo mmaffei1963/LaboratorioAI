@@ -1,0 +1,43 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A <strong>ordinare la merce ai fornitori</strong> con numerazione continua, mandare l'ordine per e-mail o stamparlo, e vedere nel <strong>quadro consegne</strong> cosa devi ancora ricevere.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Fare un nuovo ordine</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuovo ordine</span> e scegli il <strong>fornitore</strong>.</li>
+        <li>Solo la prima volta: ti chiede il <strong>numero del primo ordine</strong> (per continuare la tua numerazione di prima). Poi i numeri vanno avanti da soli.</li>
+        <li>Nella scheda dell'ordine usa <span class="tasto">Aggiungi articolo</span>: scegli l'articolo (prima ti compaiono quelli di quel fornitore), la quantità, i colli, eventuali note.</li>
+        <li>Ripeti per ogni riga dell'ordine.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Mandare l'ordine al fornitore</summary>
+    <ul class="passi">
+        <li><span class="tasto">Invia l'ordine</span>: lo spedisce per e-mail all'indirizzo del fornitore (serve che sia scritto nell'anagrafica).</li>
+        <li><span class="tasto">Pagina da stampare</span>: apre l'ordine pronto per la stampa o per il PDF.</li>
+        <li><span class="tasto">Segna come inviato</span>: se hai ordinato per telefono o a mano, così l'ordine risulta inviato senza spedire e-mail.</li>
+    </ul>
+    <p class="attenzione">Un ordine resta «bozza» finché non lo invii o lo segni come inviato: solo allora compare tra le consegne attese.</p>
+</details>
+
+<details class="situazione">
+    <summary>Arriva la merce: accettare dalla riga d'ordine</summary>
+    <p>Nella scheda dell'ordine, accanto a ogni riga, premi <span class="tasto">Accetta</span>: si apre l'accettazione già compilata con fornitore e articolo.
+        Quando tutte le righe sono ricevute l'ordine passa a «Ricevuto».</p>
+</details>
+
+<details class="situazione">
+    <summary>Annullare un ordine</summary>
+    <p>Apri l'ordine e usa <span class="tasto">Annulla ordine</span>. L'ordine resta nell'elenco come annullato, non sparisce.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cercare un ordine</summary>
+    <p>Nel quadro consegne usa <strong>Cerca</strong>: scrivi il numero dell'ordine o il nome del fornitore.</p>
+</details>

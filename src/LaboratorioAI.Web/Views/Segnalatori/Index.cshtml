@@ -1,0 +1,258 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloSegnalatori
+@{
+    ViewData["Titolo"] = "Segnalatori";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Iso(DateTime d) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    string Nome(string cod) => Model.NomiClienti.TryGetValue(cod, out var n) && n.Length > 0 ? n : "—";
+    var tipi = Enum.GetValues<TipoSegnalatore>();
+    var condizioni = Model.Segnalatori.SelectMany(s => s.Condizioni.Select(c => (S: s, C: c))).ToDictionary(x => x.C.IdCondizioneSegnalatore);
+    var nomiBasi = Model.Basi.ToDictionary(b => b.IdBaseCalcolo, b => b.Nome);
+    string Pct(decimal p) => p.ToString("0.##", it) + "%";
+    string DescrCondizione(CondizioneSegnalatore c) =>
+        $"{Pct(c.Percentuale)} · {EtichetteProvvigioni.Ambito(c.Ambito)}"
+        + (c.Ambito == AmbitoCompenso.Area && c.IdBaseCalcolo is int ib && nomiBasi.TryGetValue(ib, out var nb) ? $" ({nb})" : "")
+        + $" · si ferma dopo {c.MesiInterruzione} mesi senza fatture"
+        + (c.AnniDurataMassima is int a ? $" · al massimo {a} anni" : "");
+    var tutti = ViewData["Tutti"] is true;
+    var eliminati = ViewData["Eliminati"] is int ne ? ne : 0;
+    var clientiPerSegnalatore = Model.Segnalazioni.Where(x => condizioni.ContainsKey(x.IdCondizioneSegnalatore))
+        .GroupBy(x => condizioni[x.IdCondizioneSegnalatore].S.IdSegnalatore).ToDictionary(g => g.Key, g => g.Count());
+    var attive = Model.Segnalatori.Where(s => s.Attivo).SelectMany(s => s.Condizioni.Where(c => c.Attivo).Select(c => (S: s, C: c)))
+        .OrderBy(x => x.S.Nome == "MARE.A" ? 0 : 1).ThenBy(x => x.S.Nome).ThenBy(x => x.C.Nome).ToList();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Segnalatori</h1>
+        <p class="sottotitolo">Chi ci porta clienti: enti (Confesercenti, CNA…), studi, persone, i nostri consulenti e MARE.A stessa. Ogni segnalatore ha una o più <strong>condizioni</strong> con la sua percentuale (es. «Confesercenti PS – Contratto A 5%» e «Contratto B 3%»); MARE.A e i consulenti hanno di norma lo 0%. La segnalazione è del <strong>cliente</strong>, indipendente dal commerciale. Il compenso matura sugli <strong>incassi</strong> (le fatture non pagate non contano), finché il cliente continua a comprare il servizio.</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante" href="@Url.Action("Compensi", "Segnalatori")">Compensi</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Provvigioni")">← Provvigioni</a>
+    </div>
+</div>
+@{ var puoModificare = ViewData["PuoModificare"] is true; }
+@if (!puoModificare)
+{
+    <section class="riquadro"><strong>Sola lettura:</strong> puoi vedere segnalatori, condizioni e clienti segnalati, ma non modificarli.</section>
+}
+<fieldset disabled="@(puoModificare ? null : "disabled")" style="border:0;padding:0;margin:0;min-width:0">
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Clienti segnalati (@Model.Segnalazioni.Count)</h2></div>
+    @if (Model.Segnalazioni.Count > 0)
+    {
+        <label class="sottotesto" style="display:block;margin:0.4rem 0">Filtra
+            <input type="search" id="filtro-segnalazioni" placeholder="cliente o segnalatore" autocomplete="off" style="max-width:24rem" />
+            <span id="conteggio-segnalazioni"></span>
+        </label>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-segnalazioni">
+                <thead><tr><th>Cliente</th><th>Segnalato da</th><th>Commessa</th><th>Dal / al, note</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var x in Model.Segnalazioni)
+                {
+                    var ok = condizioni.TryGetValue(x.IdCondizioneSegnalatore, out var sc);
+                    <tr>
+                        <td>@Nome(x.CodiceCliente) <span class="sottotesto">(@x.CodiceCliente)</span></td>
+                        <td>@(ok ? sc.S.Nome : "?")<div class="sottotesto">@(ok ? $"{sc.C.Nome} – {Pct(sc.C.Percentuale)} {EtichetteProvvigioni.Ambito(sc.C.Ambito).ToLowerInvariant()}" : "")</div></td>
+                        <td>
+                            @if (ok && sc.C.Ambito == AmbitoCompenso.Commessa)
+                            {
+                                @(x.IdCommessa is int idc && Model.Commesse.TryGetValue(idc, out var dc) ? dc : (x.IdCommessa is int idc2 ? $"n. {idc2} (non trovata)" : "da indicare"))
+                            }
+                            else
+                            {
+                                <span class="sottotesto">area</span>
+                            }
+                        </td>
+                        <td>
+                            <form method="post" asp-action="ModificaSegnalazione" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+                                <input type="hidden" name="idSegnalazione" value="@x.IdSegnalazione" />
+                                <input type="date" name="dataInizio" value="@Iso(x.DataInizio)" required title="Dal" />
+                                <input type="date" name="dataFine" value="@(x.DataFine is DateTime df ? Iso(df) : "")" title="Al (vuoto = in corso)" />
+                                @if (ok && sc.C.Ambito == AmbitoCompenso.Commessa)
+                                {
+                                    <input type="number" name="idCommessa" value="@x.IdCommessa" placeholder="n. commessa" style="width:8rem" title="Numero commessa ArcLab" />
+                                }
+                                <input type="text" name="note" value="@x.Note" maxlength="500" placeholder="note" />
+                                <button type="submit" class="pulsante pulsante-tenue">Salva</button>
+                            </form>
+                        </td>
+                        <td><form method="post" asp-action="Annulla"><input type="hidden" name="idSegnalazione" value="@x.IdSegnalazione" /><button type="submit" class="pulsante pulsante-tenue" title="Inserita per errore">Annulla</button></form></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="sottotesto">Per cambiare condizione a un cliente: metti la data di fine sulla segnalazione attuale e registrane una nuova dal giorno dopo. «Annulla» solo per quelle inserite per errore.</p>
+    }
+
+    <h3 style="margin-top:1rem">Registra un cliente segnalato</h3>
+    @if (attive.Count == 0)
+    {
+        <p class="sottotesto">Prima aggiungi un segnalatore e la sua condizione, qui sotto.</p>
+    }
+    else
+    {
+        <form method="post" asp-action="Assegna" class="griglia-filtri" id="form-segnalazione">
+            <label>Cliente (nome o codice, scegli dall'elenco)<input type="text" name="codiceCliente" id="campo-cliente" list="elenco-clienti" required maxlength="20" autocomplete="off" /></label>
+            <datalist id="elenco-clienti">@foreach (var cl in Model.Clienti) { <option value="@cl.Codice" label="@cl.Nome">@cl.Nome</option> }</datalist>
+            <label>Segnalatore e condizione
+                <select name="idCondizione" id="campo-condizione" required>
+                    @foreach (var x in attive)
+                    {
+                        <option value="@x.C.IdCondizioneSegnalatore" data-ambito="@((int)x.C.Ambito)">@x.S.Nome – @x.C.Nome (@Pct(x.C.Percentuale), @EtichetteProvvigioni.Ambito(x.C.Ambito).ToLowerInvariant())</option>
+                    }
+                </select>
+            </label>
+            <label>Dal<input type="date" name="dataInizio" value="@Iso(DateTime.Today)" required /></label>
+            <label id="riga-commessa">Commessa ArcLab (per le condizioni «sulla commessa»)
+                <select name="idCommessa" id="campo-commessa"><option value="">— scegli prima il cliente —</option></select>
+            </label>
+            <label>Note<input type="text" name="note" maxlength="500" /></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Registra</button></div>
+        </form>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati">
+        <h2>Segnalatori e condizioni</h2>
+        @if (eliminati > 0)
+        {
+            <a class="sottotesto" href="@Url.Action("Index", "Segnalatori", new { tutti = !tutti })">@(tutti ? "nascondi gli eliminati" : $"mostra anche gli eliminati ({eliminati})")</a>
+        }
+    </div>
+    <p class="sottotesto">Per correggere un nome scrivi direttamente nella casella del nome e premi «Salva» sulla stessa riga. Un doppione si toglie con «Elimina» (se non ha clienti) o con «Unisci in…» (sposta condizioni e clienti sull'altro).</p>
+    @foreach (var sg in Model.Segnalatori)
+    {
+        var idForm = "segn-" + sg.IdSegnalatore;
+        <div style="border-top:1px solid var(--bordo, #ddd);padding:0.6rem 0;@(sg.Attivo ? "" : "opacity:0.55")">
+            <form id="@idForm" method="post" asp-action="Salva" style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+                <input type="hidden" name="idSegnalatore" value="@sg.IdSegnalatore" />
+                <input type="text" name="nome" value="@sg.Nome" maxlength="100" required style="font-weight:600" />
+                <select name="tipo">@foreach (var t in tipi) { <option value="@((int)t)" selected="@(t == sg.Tipo)">@EtichetteProvvigioni.TipoSegnalatore(t)</option> }</select>
+                <input type="text" name="note" value="@sg.Note" maxlength="500" placeholder="note" />
+                <label class="sottotesto"><input type="checkbox" name="attivo" value="true" checked="@sg.Attivo" /> attivo</label>
+                <input type="hidden" name="attivo" value="false" />
+                <button type="submit" class="pulsante pulsante-tenue">Salva</button>
+                <span class="sottotesto">@(clientiPerSegnalatore.TryGetValue(sg.IdSegnalatore, out var nCli) ? $"{nCli} clienti segnalati" : "nessun cliente")</span>
+            </form>
+            @if (sg.Attivo && sg.Tipo != TipoSegnalatore.Azienda)
+            {
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;margin-top:0.3rem">
+                    <form method="post" asp-action="Elimina">
+                        <input type="hidden" name="idSegnalatore" value="@sg.IdSegnalatore" />
+                        <button type="submit" class="pulsante pulsante-tenue">Elimina</button>
+                    </form>
+                    <form method="post" asp-action="Unisci" style="display:flex;gap:0.4rem;align-items:center">
+                        <input type="hidden" name="idSegnalatore" value="@sg.IdSegnalatore" />
+                        <select name="idDestinazione" required>
+                            <option value="">Unisci in…</option>
+                            @foreach (var altro in Model.Segnalatori.Where(z => z.Attivo && z.IdSegnalatore != sg.IdSegnalatore))
+                            {
+                                <option value="@altro.IdSegnalatore">@altro.Nome</option>
+                            }
+                        </select>
+                        <button type="submit" class="pulsante pulsante-tenue">Unisci</button>
+                    </form>
+                </div>
+            }
+            <ul style="margin:0.4rem 0 0 1rem">
+                @foreach (var c in sg.Condizioni.Where(k => k.Attivo || tutti).OrderByDescending(k => k.Attivo).ThenBy(k => k.Nome))
+                {
+                    <li style="@(c.Attivo ? "" : "opacity:0.55")">
+                        <details>
+                            <summary style="cursor:pointer"><strong>@c.Nome</strong> — @DescrCondizione(c) @(c.Attivo ? "" : "(non attiva)")</summary>
+                            <form method="post" asp-action="SalvaCondizione" class="griglia-filtri" style="margin-top:0.4rem">
+                                <input type="hidden" name="idCondizione" value="@c.IdCondizioneSegnalatore" />
+                                <input type="hidden" name="idSegnalatore" value="@sg.IdSegnalatore" />
+                                <label>Nome<input type="text" name="nome" value="@c.Nome" maxlength="100" required /></label>
+                                <label>Percentuale<input type="text" name="percentuale" value="@c.Percentuale.ToString("0.##", it)" required style="width:6rem" /></label>
+                                <label>Ambito
+                                    <select name="ambito">
+                                        <option value="@((int)AmbitoCompenso.Commessa)" selected="@(c.Ambito == AmbitoCompenso.Commessa)">Sulla commessa</option>
+                                        <option value="@((int)AmbitoCompenso.Area)" selected="@(c.Ambito == AmbitoCompenso.Area)">Su tutta l'area</option>
+                                    </select>
+                                </label>
+                                <label>Area (se «su tutta l'area»)
+                                    <select name="idBaseCalcolo">
+                                        <option value="">—</option>
+                                        @foreach (var b in Model.Basi) { <option value="@b.IdBaseCalcolo" selected="@(b.IdBaseCalcolo == c.IdBaseCalcolo)">@b.Nome</option> }
+                                    </select>
+                                </label>
+                                <label>Si ferma dopo mesi senza fatture<input type="number" name="mesiInterruzione" value="@c.MesiInterruzione" min="1" style="width:6rem" /></label>
+                                <label>Durata massima (anni, vuoto = nessuna)<input type="number" name="anniDurataMassima" value="@c.AnniDurataMassima" min="1" style="width:6rem" /></label>
+                                <label>Note<input type="text" name="note" value="@c.Note" maxlength="500" /></label>
+                                <label class="sottotesto"><input type="checkbox" name="attivo" value="true" checked="@c.Attivo" /> attiva</label>
+                                <input type="hidden" name="attivo" value="false" />
+                                <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Salva condizione</button></div>
+                            </form>
+                            @if (c.Attivo)
+                            {
+                                <form method="post" asp-action="EliminaCondizione" style="margin-top:0.3rem">
+                                    <input type="hidden" name="idCondizione" value="@c.IdCondizioneSegnalatore" />
+                                    <button type="submit" class="pulsante pulsante-tenue">Elimina condizione</button>
+                                </form>
+                            }
+                        </details>
+                    </li>
+                }
+                <li>
+                    <details>
+                        <summary class="sottotesto" style="cursor:pointer">+ nuova condizione per @sg.Nome</summary>
+                        <form method="post" asp-action="SalvaCondizione" class="griglia-filtri" style="margin-top:0.4rem">
+                            <input type="hidden" name="idSegnalatore" value="@sg.IdSegnalatore" />
+                            <input type="hidden" name="attivo" value="true" />
+                            <label>Nome<input type="text" name="nome" maxlength="100" required placeholder="es. Contratto A" /></label>
+                            <label>Percentuale<input type="text" name="percentuale" required style="width:6rem" placeholder="es. 5" /></label>
+                            <label>Ambito
+                                <select name="ambito">
+                                    <option value="@((int)AmbitoCompenso.Commessa)">Sulla commessa</option>
+                                    <option value="@((int)AmbitoCompenso.Area)">Su tutta l'area</option>
+                                </select>
+                            </label>
+                            <label>Area (se «su tutta l'area»)
+                                <select name="idBaseCalcolo">
+                                    <option value="">—</option>
+                                    @foreach (var b in Model.Basi) { <option value="@b.IdBaseCalcolo">@b.Nome</option> }
+                                </select>
+                            </label>
+                            <label>Si ferma dopo mesi senza fatture<input type="number" name="mesiInterruzione" value="24" min="1" style="width:6rem" /></label>
+                            <label>Durata massima (anni, vuoto = nessuna)<input type="number" name="anniDurataMassima" min="1" style="width:6rem" /></label>
+                            <label>Note<input type="text" name="note" maxlength="500" /></label>
+                            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Aggiungi condizione</button></div>
+                        </form>
+                    </details>
+                </li>
+            </ul>
+        </div>
+    }
+
+    <h3 style="margin-top:1rem">Nuovo segnalatore</h3>
+    <form method="post" asp-action="Salva" class="griglia-filtri">
+        <input type="hidden" name="attivo" value="true" />
+        <label>Nome<input type="text" name="nome" maxlength="100" required placeholder="es. Confesercenti PS, Mario Rossi" /></label>
+        <label>Tipo
+            <select name="tipo">@foreach (var t in tipi) { <option value="@((int)t)">@EtichetteProvvigioni.TipoSegnalatore(t)</option> }</select>
+        </label>
+        <label>Note<input type="text" name="note" maxlength="500" /></label>
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Aggiungi</button></div>
+    </form>
+    <p class="sottotesto">«Sulla commessa» = conta il fatturato del servizio della commessa ArcLab indicata (per le analisi, tutte le analisi del cliente). «Su tutta l'area» = conta tutto il fatturato del cliente nell'area scelta (Area analisi, Area formazione, Area consulenza…), senza dover indicare le commesse. Le aree si modificano in Accordi provvigioni → Basi di calcolo.</p>
+</section>
+
+</fieldset>
+
+@section Script {
+    <script type="module" src="~/js/moduli/segnalatori.js" asp-append-version="true"></script>
+}

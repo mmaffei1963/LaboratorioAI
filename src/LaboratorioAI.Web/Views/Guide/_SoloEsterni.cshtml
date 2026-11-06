@@ -1,0 +1,33 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Certificati esterni non ricertificati» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Trova i certificati dei <strong>laboratori esterni</strong> caricati sul portale per cui <strong>non c'è un nostro certificato</strong>
+        in ArcLab, e dice se sono stati <strong>fatturati</strong>. Serve a non dimenticare di fatturare le analisi mandate fuori. Solo consultazione.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cosa resta da fatturare in un mese?</summary>
+    <ol class="passi">
+        <li>Scrivi l'<strong>Anno</strong> e scegli il <strong>Mese</strong> (o metti <em>Data da / a</em>).</li>
+        <li>In <strong>Stato fattura</strong> scegli <em>Non fatturati</em> e spunta <em>Solo senza certificato interno</em>.</li>
+        <li>Premi <span class="tasto">Cerca</span>: sotto i pulsanti compare il riepilogo, sotto l'elenco.</li>
+        <li>Premi <span class="tasto">Esporta Excel</span> per passarlo all'amministrazione.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Come leggere l'elenco</summary>
+    <ul class="passi">
+        <li><strong>Lotto / Campione / Cliente / Nome file</strong>: il certificato esterno caricato sul portale.</li>
+        <li><strong>Interno</strong> e <strong>N° certificato</strong>: se esiste un nostro certificato per quel campione.</li>
+        <li><strong>Camp. ArcLab</strong>: se il campione è stato trovato in ArcLab (filtro <em>Corrispondenza Campione</em> per vedere solo quelli trovati o non trovati).</li>
+        <li><strong>Data fattura / Fatturato</strong>, <strong>Controllo</strong> e <strong>Prezzo</strong>: per capire cosa fatturare.</li>
+    </ul>
+    <p class="nota">Il collegamento tra certificato esterno e campione si fa con anno, lotto/campione e cliente: se il nome del file non era corretto, il campione può non essere trovato.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

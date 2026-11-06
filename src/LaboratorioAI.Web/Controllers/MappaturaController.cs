@@ -40,14 +40,16 @@ public class MappaturaController : Controller
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
     private readonly IServizioAudit _audit;
+    private readonly IWebHostEnvironment _ambiente;
 
     public MappaturaController(
         ContestoLaboratorioAI ctx, IServizioMappaturaIncubatori calcolo, IServizioValidazioneMappatura validazione,
         IServizioControlliMappatura controlli, IGeneratoreRapportoMappatura generatore,
         IGeneratoreRapportoValidazione generatoreValidazione, IClientAnthropic ia,
         IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
-        IServizioAudit audit)
+        IServizioAudit audit, IWebHostEnvironment ambiente)
     {
+        _ambiente = ambiente;
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
         _generatore = generatore; _generatoreValidazione = generatoreValidazione; _ia = ia;
         _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
@@ -62,6 +64,23 @@ public class MappaturaController : Controller
     [HttpGet("api/mappatura/clienti")]
     public async Task<IActionResult> Clienti(CancellationToken ct) =>
         Json((await _anagrafiche.ClientiAsync(ct)).Select(c => new { c.Id, c.Nome }));
+
+    // 03/11/2026: insediamenti del cliente e strumenti del cliente già tarati (per riproporli)
+    [HttpGet("api/mappatura/insediamenti/{idCliente:int}")]
+    public async Task<IActionResult> Insediamenti(int idCliente, CancellationToken ct) =>
+        Json((await _anagrafiche.InsediamentiAsync(idCliente, ct)).Select(i => new { i.Id, i.Nome }));
+
+    [HttpGet("api/mappatura/strumenti-cliente")]
+    public async Task<IActionResult> StrumentiCliente([FromQuery] int? idCliente, [FromQuery] string? committente, CancellationToken ct)
+    {
+        var nome = committente?.Trim();
+        if (idCliente is null && string.IsNullOrEmpty(nome)) return Json(Array.Empty<object>());
+        var righe = await _ctx.Mappature.AsNoTracking()
+            .Where(t => t.Attivo && (idCliente != null ? t.IdClienteArcLab == idCliente : t.Committente == nome))
+            .Select(t => new { I = t.ApparecchiaturaIdentificazione, C = t.ApparecchiaturaCodice, D = t.DataMappatura })
+            .ToListAsync(ct);
+        return Json(CommittenteTaratura.Distinti(righe.Select(r => ((string?)r.I, r.C, r.D))));
+    }
 
     [HttpGet("api/mappatura/strumenti")]
     public async Task<IActionResult> Strumenti(CancellationToken ct) =>
@@ -83,19 +102,60 @@ public class MappaturaController : Controller
     }
 
     [HttpGet("api/mappatura/elenco")]
-    public async Task<IActionResult> Elenco(CancellationToken ct)
+    public async Task<IActionResult> Elenco([FromQuery] bool eliminate, CancellationToken ct)
     {
-        var righe = await _ctx.Mappature.AsNoTracking().Where(t => t.Attivo)
+        // eliminate=true: anche le righe eliminate dal registro (Attivo = false), per «Mostra eliminate» (09/10/2026).
+        var righe = await _ctx.Mappature.AsNoTracking().Where(t => eliminate || t.Attivo)
             .OrderByDescending(t => t.DataMappatura).Take(500)
             .Select(t => new
             {
-                t.IdMappatura, t.NumeroRapporto, t.ApparecchiaturaIdentificazione, t.ValoreNominale,
+                t.IdMappatura, t.Attivo, t.NumeroRapporto, t.ApparecchiaturaIdentificazione, t.ValoreNominale,
                 DataMappatura = t.DataMappatura.ToString("dd/MM/yyyy"),
                 DataScadenza = t.DataScadenza.HasValue ? t.DataScadenza.Value.ToString("dd/MM/yyyy") : null,
                 Scaduta = t.DataScadenza.HasValue && t.DataScadenza.Value < DateTime.Today
             })
             .ToListAsync(ct);
         return Json(righe);
+    }
+
+    // ── Eliminazione dal registro (09/10/2026) ──────────────────────
+    // Nessuna cancellazione fisica: Attivo = false, con motivo obbligatorio nel registro delle operazioni.
+    // Il numero di rapporto non viene riusato (la numerazione conta anche le righe eliminate).
+    // Solo i responsabili (permesso di validazione del calcolo).
+    [HttpPost("api/mappatura/{id:int}/elimina")]
+    [RichiedePermesso(Permessi.MappaturaValidazione)]
+    public async Task<IActionResult> Elimina(int id, [FromBody] RichiestaEliminazioneRegistro req, CancellationToken ct)
+    {
+        var motivo = req?.Motivo?.Trim();
+        if (string.IsNullOrEmpty(motivo)) return BadRequest(new { messaggio = "Indica il motivo dell'eliminazione." });
+        var t = await _ctx.Mappature.FirstOrDefaultAsync(x => x.IdMappatura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Mappatura non trovata." });
+        if (!t.Attivo) return Json(new { messaggio = "La mappatura era già eliminata dal registro." });
+        t.Attivo = false;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Mappatura, "mappatura.eliminata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaMappatura", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto, Motivo = motivo }, ct: ct);
+        return Json(new { messaggio = "La mappatura " + (t.NumeroRapporto ?? "") + " è stata eliminata dal registro." });
+    }
+
+    [HttpPost("api/mappatura/{id:int}/ripristina")]
+    [RichiedePermesso(Permessi.MappaturaValidazione)]
+    public async Task<IActionResult> Ripristina(int id, CancellationToken ct)
+    {
+        var t = await _ctx.Mappature.FirstOrDefaultAsync(x => x.IdMappatura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Mappatura non trovata." });
+        if (t.Attivo) return Json(new { messaggio = "La mappatura è già nel registro." });
+        t.Attivo = true;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Mappatura, "mappatura.ripristinata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaMappatura", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto }, ct: ct);
+        return Json(new { messaggio = "La mappatura " + (t.NumeroRapporto ?? "") + " è stata ripristinata nel registro." });
     }
 
     [HttpGet("api/mappatura/{id:int}")]
@@ -109,6 +169,9 @@ public class MappaturaController : Controller
             t.IdMappatura, t.IdCampioneRiferimento,
             t.ApparecchiaturaIdentificazione, t.ApparecchiaturaCodice, t.ApparecchiaturaInterna,
             t.ApparecchiaturaIdStrumentoArcLab, t.ApparecchiaturaIdClienteArcLab,
+            t.IdClienteArcLab, t.IdInsediamentoArcLab, t.Insediamento,
+            Committente = CommittenteTaratura.DaStrumentoVecchio(t.Committente, false,
+                (t.ApparecchiaturaInterna, t.ApparecchiaturaIdClienteArcLab, t.ApparecchiaturaIdentificazione)),
             t.ValoreNominale, t.Tolleranza, t.RisoluzioneCdr,
             t.NumeroRapporto, DataMappatura = t.DataMappatura, DataScadenza = t.DataScadenza,
             t.RiferimentoIstruzione, t.Responsabile, t.Note, Misure = misure
@@ -147,7 +210,11 @@ public class MappaturaController : Controller
         t.ApparecchiaturaCodice = Vuoto(req.ApparecchiaturaCodice);
         t.ApparecchiaturaInterna = req.ApparecchiaturaInterna;
         t.ApparecchiaturaIdStrumentoArcLab = req.ApparecchiaturaIdStrumentoArcLab;
-        t.ApparecchiaturaIdClienteArcLab = req.ApparecchiaturaIdClienteArcLab;
+        t.ApparecchiaturaIdClienteArcLab = null;   // 03/11/2026: il cliente sta nel committente
+        t.IdClienteArcLab = req.IdClienteArcLab;
+        t.Committente = CommittenteTaratura.Testo(req.Committente);
+        t.IdInsediamentoArcLab = t.Committente is null ? null : req.IdInsediamentoArcLab;
+        t.Insediamento = t.Committente is null ? null : CommittenteTaratura.Testo(req.Insediamento);
         t.ValoreNominale = req.ValoreNominale;
         t.Tolleranza = req.Tolleranza;
         t.RisoluzioneCdr = req.RisoluzioneCdr <= 0 ? 0.01 : req.RisoluzioneCdr;
@@ -201,7 +268,9 @@ public class MappaturaController : Controller
             DataScadenza = t.DataScadenza is DateTime ds ? DateOnly.FromDateTime(ds) : null,
             RiferimentoIstruzione = t.RiferimentoIstruzione,
             RedattoDa = redattoDa,
-            Committente = t.ApparecchiaturaInterna ? "MARE.A (interno)" : "Cliente",
+            Committente = CommittenteTaratura.DaStrumentoVecchio(t.Committente, true,
+                (t.ApparecchiaturaInterna, t.ApparecchiaturaIdClienteArcLab, t.ApparecchiaturaIdentificazione)),
+            Insediamento = t.Insediamento,
             ApparecchiaturaIdentificazione = t.ApparecchiaturaIdentificazione,
             ApparecchiaturaCodice = t.ApparecchiaturaCodice,
             ValoreNominale = t.ValoreNominale,
@@ -214,7 +283,7 @@ public class MappaturaController : Controller
         };
 
         bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
-        var contenuto = word ? _generatore.GeneraWord(dr) : _generatore.GeneraPdf(dr);
+        var contenuto = word ? _generatore.GeneraWord(dr, _ambiente.WebRootPath) : _generatore.GeneraPdf(dr, _ambiente.WebRootPath);
         return File(contenuto, word ? MimeRtf : MimePdf, _generatore.NomeFile(dr, word ? "rtf" : "pdf"));
     }
 
@@ -466,6 +535,11 @@ public record RichiestaSalvaMappatura
     public bool ApparecchiaturaInterna { get; init; }
     public int? ApparecchiaturaIdStrumentoArcLab { get; init; }
     public int? ApparecchiaturaIdClienteArcLab { get; init; }
+    // 03/11/2026: committente (cliente e insediamento ArcLab), separato dallo strumento
+    public int? IdClienteArcLab { get; init; }
+    public string? Committente { get; init; }
+    public int? IdInsediamentoArcLab { get; init; }
+    public string? Insediamento { get; init; }
     public double ValoreNominale { get; init; }
     public double Tolleranza { get; init; }
     public double RisoluzioneCdr { get; init; } = 0.01;

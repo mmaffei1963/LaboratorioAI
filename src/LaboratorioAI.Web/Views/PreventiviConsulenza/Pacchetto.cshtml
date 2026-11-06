@@ -1,0 +1,177 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model LaboratorioAI.Web.Controllers.ModelloPacchettoConsulenza
+@{
+    var p = Model.Pacchetto;
+    ViewData["Titolo"] = "Pacchetto " + p.Nome;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Num(decimal? v) => v?.ToString("0.##", it) ?? "";
+    var att = Model.Attivita.ToDictionary(a => a.IdAttivitaConsulenza);
+    var righe = p.Righe.OrderBy(r => r.Ordine).ToList();
+    var analisi = p.Analisi.OrderBy(a => a.Ordine).ThenBy(a => a.IdAnalisiPacchetto).ToList();
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    decimal? Listino(AnalisiPacchettoConsulenza a)
+    {
+        var ids = a.IdControlli();
+        if (ids.Count == 0 || ids.Any(i => !Model.Metodi.ContainsKey(i))) return null;
+        return ids.Sum(i => Model.Metodi[i].Sum(m => m.Costo ?? 0m));
+    }
+    // Righe di attività importate dai vecchi Word come «analisi» generiche: vanno sostituite con i controlli.
+    bool AnalisiGenerica(AttivitaConsulenza? a) => a is not null && a.Descrizione.StartsWith("Analisi laboratorio", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Pacchetto «@p.Nome»</h1>
+        <p class="sottotitolo">Attività di consulenza e analisi di laboratorio proposte quando si sceglie questo pacchetto in un preventivo. Prezzi a zero = da indicare nel preventivo.
+            @if (p.DataUltimaModifica is DateTime dm) { <br /><span class="sottotesto">Ultima modifica @dm.ToLocalTime().ToString("dd/MM/yyyy HH:mm") @(p.UltimaModificaDa is null ? "" : "– " + p.UltimaModificaDa)</span> }</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:flex-end">
+        <form method="post" asp-action="DuplicaPacchetto" asp-route-id="@p.IdPacchettoConsulenza" style="display:flex;gap:0.4rem;align-items:flex-end">
+            <label class="sottotesto">Nome della copia<input type="text" name="nome" maxlength="100" placeholder="@p.Nome (copia)" /></label>
+            <button type="submit" class="pulsante pulsante-tenue">Duplica pacchetto</button>
+        </form>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Pacchetti", "PreventiviConsulenza")">← Pacchetti</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<form method="post" asp-action="PacchettoSalva" asp-route-id="@p.IdPacchettoConsulenza">
+    <section class="riquadro">
+        <div class="griglia-filtri">
+            <label>Nome<input type="text" name="nome" value="@p.Nome" maxlength="100" required /></label>
+            <label>Note<input type="text" name="descrizione" value="@p.Descrizione" maxlength="500" /></label>
+            <label class="sottotesto"><input type="checkbox" name="attivo" value="true" checked="@p.Attivo" /> attivo</label>
+            <input type="hidden" name="attivo" value="false" />
+        </div>
+    </section>
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Attività (@righe.Count)</h2></div>
+        @for (var i = 0; i < righe.Count; i++)
+        {
+            var r = righe[i];
+            att.TryGetValue(r.IdAttivitaConsulenza, out var a);
+            var scelte = (r.Contenuti ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+            <div style="border-top:1px solid #ddd;padding:0.6rem 0">
+                <input type="hidden" name="righe[@i].IdRigaPacchetto" value="@r.IdRigaPacchetto" />
+                <div style="display:flex;justify-content:space-between;gap:0.5rem">
+                    <strong>@(a?.Descrizione ?? "attività " + r.IdAttivitaConsulenza)
+                        @if (AnalisiGenerica(a)) { <span class="etichetta" style="background:#fff3d6;color:#7a5b00">analisi generica: sostituiscila con un controllo in «Analisi di laboratorio» e poi togli questa riga</span> }</strong>
+                    <button type="submit" name="rimuovi" value="@r.IdRigaPacchetto" class="pulsante pulsante-tenue">Togli</button>
+                </div>
+                <div class="griglia-filtri">
+                    <label>Descrizione aggiuntiva<input type="text" name="righe[@i].DescrizioneLibera" value="@r.DescrizioneLibera" maxlength="500" /></label>
+                    <label>Quantità<input type="text" name="righe[@i].Quantita" value="@Num(r.Quantita)" style="width:6rem" /></label>
+                    <label>Prezzo €<input type="text" name="righe[@i].Prezzo" value="@Num(r.Prezzo)" style="width:8rem" /></label>
+                    <label>Anni successivi €<input type="text" name="righe[@i].PrezzoSuccessivi" value="@Num(r.PrezzoSuccessivi)" style="width:8rem" /></label>
+                    <label class="sottotesto"><input type="checkbox" name="righe[@i].Informativa" value="true" checked="@r.Informativa" /> per conoscenza</label>
+                    <input type="hidden" name="righe[@i].Informativa" value="false" />
+                </div>
+                @if (a is not null && a.Contenuti.Any(c => c.Attivo && c.Chiave is not null))
+                {
+                    <details>
+                        <summary class="sottotesto" style="cursor:pointer">Contenuti spuntati (@(scelte.Count == 0 ? "i predefiniti" : scelte.Count.ToString()))</summary>
+                        <div style="columns:2 22rem">
+                            @foreach (var c in a.Contenuti.Where(c => c.Attivo && c.Chiave is not null).OrderBy(c => c.Ordine))
+                            {
+                                <label style="display:block;break-inside:avoid;font-size:0.9rem"><input type="checkbox" name="righe[@i].Contenuti" value="@c.Chiave" checked="@(scelte.Count == 0 ? c.Predefinito : scelte.Contains(c.Chiave!))" /> @c.Testo</label>
+                            }
+                        </div>
+                    </details>
+                }
+            </div>
+        }
+        <div class="griglia-filtri" style="margin-top:0.6rem">
+            <label>Aggiungi un'attività
+                <select name="idAttivitaNuova"><option value="">—</option>@foreach (var x in Model.Attivita.Where(x => x.Attivo)) { <option value="@x.IdAttivitaConsulenza">@x.Descrizione</option> }</select>
+            </label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Salva</button></div>
+        </div>
+    </section>
+
+    <section class="riquadro" id="analisi">
+        <div class="barra-risultati"><h2>Analisi di laboratorio (@analisi.Count)</h2><span class="sottotesto">controlli ArcLab, come nei preventivi analisi</span></div>
+        <p class="sottotesto">Ogni riga è un controllo di ArcLab, oppure un gruppo di controlli con un nome commerciale e un prezzo unico (gli ID restano sempre stampati).
+            <strong>Compresa nel canone</strong>: nel contratto il prezzo non compare. <strong>A pagamento</strong>: prezzo indicato, si fattura quando si esegue (vale anche come «per conoscenza»).
+            Prezzo vuoto = come nei preventivi analisi: prezzo di commessa del cliente se c'è, altrimenti listino.</p>
+        @if (Model.ErroreArcLab is string err) { <p class="sottotesto" style="color:#b00">@err</p> }
+        @for (var i = 0; i < analisi.Count; i++)
+        {
+            var an = analisi[i];
+            var ids = an.IdControlli();
+            var listino = Listino(an);
+            <div style="border-top:1px solid #ddd;padding:0.6rem 0">
+                <input type="hidden" name="analisi[@i].IdAnalisiPacchetto" value="@an.IdAnalisiPacchetto" />
+                <div style="display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
+                    <label style="font-weight:600"><input type="checkbox" name="analisi[@i].Selezionata" value="true" title="Spunta per raggruppare" />
+                        @an.Descrizione <span class="sottotesto">(@AnalisiConsulenza.Riferimento(an.IdControlloArcLab, an.IdControlliOrigine))</span>
+                        @if (ids.Count > 1) { <span class="etichetta">gruppo di @ids.Count controlli</span> }</label>
+                    <input type="hidden" name="analisi[@i].Selezionata" value="false" />
+                    <span>
+                        @if (ids.Count > 1) { <button type="submit" name="azione" value="separa:@an.IdAnalisiPacchetto" class="pulsante pulsante-tenue">Separa</button> }
+                        <button type="submit" name="azione" value="rimuovi-analisi:@an.IdAnalisiPacchetto" class="pulsante pulsante-tenue">Togli</button>
+                    </span>
+                </div>
+                <div class="griglia-filtri">
+                    <label>Nome nel contratto<input type="text" name="analisi[@i].Descrizione" value="@an.Descrizione" maxlength="300" /></label>
+                    <label>Come si paga
+                        <select name="analisi[@i].Modalita">
+                            <option value="APagamento" selected="@(an.Modalita == ModalitaAnalisiConsulenza.APagamento)">A pagamento (prezzo indicato)</option>
+                            <option value="CompresaNelCanone" selected="@(an.Modalita == ModalitaAnalisiConsulenza.CompresaNelCanone)">Compresa nel canone (prezzo non indicato)</option>
+                        </select>
+                    </label>
+                    <label>Analisi all'anno<input type="text" name="analisi[@i].QuantitaAnnua" value="@Num(an.QuantitaAnnua)" style="width:6rem" placeholder="facoltativo" /></label>
+                    <label>Prezzo per analisi €<input type="text" name="analisi[@i].Prezzo" value="@Num(an.Prezzo)" style="width:8rem" placeholder="@(listino is decimal l ? "listino " + l.ToString("0.##", it) : "da listino")" /></label>
+                    <label>Ordine<input type="number" name="analisi[@i].Ordine" value="@an.Ordine" style="width:5rem" /></label>
+                    <label>Note<input type="text" name="analisi[@i].Note" value="@an.Note" maxlength="500" /></label>
+                </div>
+                <details>
+                    <summary class="sottotesto" style="cursor:pointer">Parametri e metodi@(listino is decimal lt ? " · listino " + Euro(lt) : "")</summary>
+                    @foreach (var idc in ids)
+                    {
+                        if (ids.Count > 1) { <div class="sottotesto" style="margin-top:0.3rem">Controllo ID @idc</div> }
+                        if (Model.Metodi.TryGetValue(idc, out var met) && met.Count > 0)
+                        {
+                            <table class="tabella" style="font-size:0.85rem">
+                                <thead><tr><th>Denominazione</th><th>Metodo</th><th>Accr.</th><th class="numerico">Listino</th></tr></thead>
+                                <tbody>
+                                @foreach (var m in met)
+                                {
+                                    <tr><td>@(m.DettagliMetodo ?? m.Descrizione ?? m.DenominazioneRiga)</td><td>@m.RifBiblio</td>
+                                        <td>@(m.LabEsterno is not null ? "§ " + m.LabEsterno : m.Accreditato ? "Sì" : "—")</td>
+                                        <td class="numerico">@(m.Costo is decimal c ? Euro(c) : "")</td></tr>
+                                }
+                                </tbody>
+                            </table>
+                        }
+                        else { <p class="sottotesto">Parametri non disponibili.</p> }
+                    }
+                </details>
+            </div>
+        }
+        <div class="griglia-filtri" style="margin-top:0.6rem">
+            <label class="campo-con-suggerimenti" style="grid-column:1/-1">Aggiungi un controllo ArcLab — clicca per vedere tutti i controlli attivi, scrivi per restringere (parole del nome o ID)
+                <input type="text" name="controlloCercato" data-cerca-controllo autocomplete="off" placeholder="es. superfici, potabilità, legionella, 2389…" />
+                <input type="hidden" name="idControlloNuovo" data-id-controllo />
+                <div class="elenco-suggerimenti nascosto" data-elenco-controlli style="max-height:28rem"></div>
+            </label>
+            <div class="azioni-filtri"><button type="submit" name="azione" value="aggiungi-controllo" class="pulsante pulsante-tenue">Aggiungi controllo</button></div>
+        </div>
+        @if (analisi.Count > 1)
+        {
+            <div class="griglia-filtri">
+                <label>Nome del gruppo<input type="text" name="nomeGruppo" maxlength="300" placeholder="es. Pacchetto autocontrollo HACCP" /></label>
+                <div class="azioni-filtri"><button type="submit" name="azione" value="raggruppa" class="pulsante pulsante-tenue">Raggruppa le analisi spuntate</button></div>
+            </div>
+        }
+        <div class="azioni-filtri" style="margin-top:0.6rem"><div style="flex:1"></div><button type="submit" class="pulsante">Salva</button></div>
+    </section>
+</form>
+
+@section Script {
+    <script type="module" src="~/js/moduli/preventivi-consulenza.js" asp-append-version="true"></script>
+}

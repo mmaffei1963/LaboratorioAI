@@ -1,0 +1,73 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Alle <strong>ricette</strong> (quali ingredienti, da quali matrici) e a registrare la <strong>produzione del giorno</strong>: il programma ti propone i lotti da usare, tu confermi o correggi. È qui che si collega ogni prodotto finito ai lotti di materia prima.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Creare una ricetta</summary>
+    <ol class="passi">
+        <li>In <strong>Ricette</strong> scegli il <strong>prodotto</strong> e premi <span class="tasto">Crea ricetta</span>.</li>
+        <li>Nella scheda usa <strong>Aggiungi ingrediente</strong>: scrivi il nome (per esempio «Farina»).</li>
+        <li><strong>Categorie (matrici)</strong>: spunta le matrici in cui cercare i lotti di quell'ingrediente (un ingrediente può averne più d'una).</li>
+        <li><strong>Quanti lotti recenti per ogni fornitore</strong>: quanti lotti proporre per fornitore (di solito 1 o 2).</li>
+        <li><strong>Kg nella ricetta</strong> (facoltativo): serve solo se scegli di calcolare i kg dalla ricetta (vedi <em>Impostazioni</em>).</li>
+        <li>Premi <span class="tasto">Aggiungi</span>. Ripeti per ogni ingrediente.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Fare una ricetta uguale a un'altra (altra pezzatura o confezione)</summary>
+    <ol class="passi">
+        <li>Apri la ricetta di partenza e scorri in fondo alla scheda: <strong>Duplica questa ricetta</strong>.</li>
+        <li>Scrivi il <strong>nome del nuovo prodotto</strong> e premi <span class="tasto">Duplica ricetta</span>.</li>
+        <li>Si apre la nuova ricetta, già con gli stessi ingredienti: cambia solo ciò che è diverso.</li>
+    </ol>
+    <p class="dopo">Viene creato anche il nuovo prodotto finito. La ricetta di partenza non cambia.</p>
+</details>
+
+<details class="situazione">
+    <summary>Non uso più una ricetta</summary>
+    <ol class="passi">
+        <li>Apri la ricetta e scorri in fondo alla scheda: <strong>Non uso più questa ricetta</strong>.</li>
+        <li>Premi <span class="tasto">Metti fuori uso</span> e conferma.</li>
+    </ol>
+    <p class="dopo">La ricetta sparisce dall'elenco ma non viene cancellata: le produzioni vecchie restano. Per rivederla usa <strong>Mostra anche le ricette fuori uso</strong> sotto l'elenco e premi <span class="tasto">Rimetti in uso</span>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Modificare o togliere un ingrediente</summary>
+    <p>Nella scheda della ricetta, sulla riga dell'ingrediente, scegli <span class="tasto">Modifica</span> o <span class="tasto">Rimuovi</span>.
+        Un ingrediente rimosso viene solo <em>disattivato</em>: le produzioni vecchie lo conservano.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho prodotto oggi: registrare la produzione</summary>
+    <ol class="passi">
+        <li>Apri la ricetta e premi <span class="tasto">Lotti da usare in un giorno</span>.</li>
+        <li>Controlla il <strong>giorno di produzione</strong> (di solito oggi) e premi <span class="tasto">Cerca</span> se lo cambi: compare anche il <strong>lotto interno del giorno</strong> (giorno dell'anno).</li>
+        <li>Per ogni ingrediente vedi i lotti proposti, già spuntati: <strong>togli la spunta</strong> a quelli che non hai usato, <strong>spunta</strong> quelli che hai usato in più.</li>
+        <li>Se l'azienda ha scelto di registrare i kg, scrivi i <strong>Kg usati</strong> per lotto (o lasciali calcolare dal programma).</li>
+        <li>Scrivi la <strong>quantità prodotta</strong> e, se serve, le note.</li>
+        <li>Premi <span class="tasto">Oggi ho prodotto: registra</span>.</li>
+    </ol>
+    <p class="dopo">Viene creato (o ritrovato) il lotto del prodotto finito e la produzione resta collegata ai lotti usati. Per un secondo invio per errore c'è una protezione di due minuti contro i doppioni.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il programma non mi propone il lotto che ho usato</summary>
+    <ul class="passi">
+        <li>Il lotto deve essere stato <strong>messo in uso</strong> in <em>Magazzino</em> entro quel giorno.</li>
+        <li>La sua <strong>matrice</strong> deve essere tra quelle spuntate nell'ingrediente.</li>
+        <li>Il fornitore è proposto solo se ha consegnato negli ultimi 90 giorni rispetto all'ultimo lotto impegnato per quell'ingrediente.</li>
+        <li>Se la matrice dell'accettazione era sbagliata, correggila in <em>Accettazioni → Correggi</em>: il lotto viene proposto di nuovo.</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Come funzionano i kg consumati</summary>
+    <p>Dipende da cosa ha scelto l'azienda in <strong>Impostazioni</strong>: «Solo i lotti», «A mano» o «Dalla ricetta». Nella modalità «Dalla ricetta» imposta nella scheda la <strong>Quantità di riferimento</strong> (i kg di prodotto finito a cui si riferiscono i kg degli ingredienti): il programma proporziona alla quantità prodotta.</p>
+    <p class="nota">Il magazzino non scende mai sotto zero: se la giacenza non basta, la quantità vera resta nella produzione e il programma te lo segnala con il codice del lotto.</p>
+</details>

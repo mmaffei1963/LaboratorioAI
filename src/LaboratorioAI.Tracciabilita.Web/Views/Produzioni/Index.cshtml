@@ -1,0 +1,44 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoProduzioni
+@{ ViewData["Titolo"] = "Produzioni"; }
+<div class="testa-pagina"><h1>Produzioni registrate</h1><span class="nota">@Model.Totale trovate</span></div>
+<form method="get" class="riga-modulo">
+    <label>Cerca (prodotto o lotto)
+        <input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <label>Dal <input type="date" name="dal" value="@Model.Dal?.ToString("yyyy-MM-dd")" /></label>
+    <label>Al <input type="date" name="al" value="@Model.Al?.ToString("yyyy-MM-dd")" /></label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Giorno</th><th>Prodotto</th><th>Lotto</th><th>Quantità</th><th>Lotti di ingresso</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@r.Giorno.ToString("dd/MM/yyyy")</td>
+            <td>@r.Prodotto @if (r.Annullata) { <span class="tag spento">annullata</span> }</td>
+            <td><a asp-controller="Lotti" asp-action="Rintracciabilita" asp-route-id="@r.IdLottoProdotto" asp-route-tipo="pf">@r.LottoProdotto</a></td>
+            <td>@(r.Quantita is null ? "-" : r.Quantita.Value.ToString("0.##") + " " + r.UnitaMisura)</td>
+            <td>@r.LottiUsati</td>
+            <td><a asp-action="Scheda" asp-route-id="@r.IdProduzione" asp-route-cerca="@Model.Cerca" asp-route-dal="@Model.Dal?.ToString("yyyy-MM-dd")" asp-route-al="@Model.Al?.ToString("yyyy-MM-dd")" asp-route-pagina="@Model.Pagina">Dettaglio</a></td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0)
+    {
+        <tr><td colspan="6">Nessuna produzione trovata.</td></tr>
+    }
+    </tbody>
+</table>
+@if (Model.Pagine > 1)
+{
+    <p>
+        @if (Model.Pagina > 1)
+        {
+            <a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-dal="@Model.Dal?.ToString("yyyy-MM-dd")" asp-route-al="@Model.Al?.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina - 1)">« Precedente</a>
+        }
+        Pagina @Model.Pagina di @Model.Pagine
+        @if (Model.Pagina < Model.Pagine)
+        {
+            <a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-dal="@Model.Dal?.ToString("yyyy-MM-dd")" asp-route-al="@Model.Al?.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina + 1)">Successiva »</a>
+        }
+    </p>
+}

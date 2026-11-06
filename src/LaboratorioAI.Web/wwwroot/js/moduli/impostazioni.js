@@ -17,14 +17,16 @@ async function carica() {
     voci = await api('/api/impostazioni/documenti');
     $('campi-impostazioni').innerHTML = voci.map(v =>
         `<label style="grid-column:1/-1">${esc(v.etichetta)}
-            <input type="text" data-chiave="${esc(v.chiave)}" value="${esc(v.valore)}" />
+            ${(v.chiave.includes('.Testo') || (v.valore || '').length > 120)
+                ? `<textarea data-chiave="${esc(v.chiave)}" rows="4" style="width:100%;font:inherit">${esc(v.valore)}</textarea>`
+                : `<input type="text" data-chiave="${esc(v.chiave)}" value="${esc(v.valore)}" />`}
         </label>`).join('');
 }
 
 async function salva() {
     if (!confirm('Confermi il salvataggio delle impostazioni?\n\nLa revisione delle Condizioni Generali è condivisa: verrà applicata a offerte e Ordini di Accettazione.')) return;
     const corpo = {};
-    $('campi-impostazioni').querySelectorAll('input[data-chiave]').forEach(inp => corpo[inp.dataset.chiave] = inp.value.trim());
+    $('campi-impostazioni').querySelectorAll('[data-chiave]').forEach(inp => corpo[inp.dataset.chiave] = inp.value.trim());
     try {
         await postJson('/api/impostazioni/documenti', corpo);
         msg('Impostazioni salvate.');

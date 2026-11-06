@@ -19,8 +19,9 @@
 </div>
 
 <!-- ══ Registro tarature ══ -->
-<section class="riquadro">
-    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+<section class="riquadro" id="riquadro-registro" data-puo-eliminare="@(Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TaraturaValidazione) ? "true" : "false")">
+    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto" style="margin-left:auto"></span>
+        <label class="casella" style="margin-left:14px" title="Mostra anche le righe eliminate dal registro (restano nel database)"><input type="checkbox" id="mostra-eliminate" /> Mostra eliminate</label></div>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-registro">
             <thead><tr><th>N° rapporto</th><th>Strumento</th><th>Committente</th><th>Data</th><th>Scadenza</th></tr></thead>
@@ -128,12 +129,15 @@
     <div class="griglia-filtri">
         <label>Campione di riferimento (CDR)<select id="t-cdr"></select></label>
         <label>Strumento in taratura<input type="text" id="t-strumento" list="lista-strumenti-tar"
-            placeholder="interno MARE.A o testo libero" />
+            placeholder="interno MARE.A, o del cliente: marca, modello, matricola" />
             <datalist id="lista-strumenti-tar"></datalist></label>
         <label>Codice strumento<input type="text" id="t-codice" /></label>
         <label>Risoluzione strumento (°C)<input type="number" step="0.001" id="t-risoluzione" value="0.1" /></label>
-        <label>Committente<input type="text" id="t-committente" list="lista-clienti-tar" placeholder="anagrafica ArcLab (vuoto = interno)" />
-            <datalist id="lista-clienti-tar"></datalist></label>
+        <label>Cliente (committente)<input type="text" id="c-cliente" list="lista-c-clienti" placeholder="anagrafica ArcLab (vuoto = interno)" />
+            <datalist id="lista-c-clienti"></datalist></label>
+        <label>Insediamento<select id="c-insediamento" disabled><option value="">—</option></select></label>
+        <label>Tipo di termometro<select id="t-tipo"><option value="0">—</option><option value="1">a sonda</option><option value="2">a gabbia</option><option value="3">pirometro</option><option value="4">datalogger</option><option value="5">altro</option></select></label>
+        <label>Servizio<select id="t-servizio"><option value="1">solo taratura</option><option value="2">termometro nuovo fornito da noi + taratura</option></select></label>
         <label>Riferimento istruzione<input type="text" id="t-istruzione" value="IO 4-01" /></label>
         <label>Data taratura<input type="date" id="t-data" /></label>
         <label>Data scadenza<input type="date" id="t-scadenza" placeholder="default +365 gg" /></label>
@@ -150,6 +154,8 @@
     </div>
     <div class="azioni-filtri">
         <button type="button" class="pulsante pulsante-tenue" id="btn-misura-riga">Aggiungi lettura</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-misura-gruppo"
+                title="Completa il gruppo a 10 letture; se è già completo aggiunge 10 letture con la lettera successiva">Aggiungi 10 letture</button>
         <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button>
     </div>
 
@@ -175,6 +181,11 @@
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica"
                 title="Apre una nuova taratura con stesso CDR e valori del primario, per un altro termometro">Duplica per nuovo termometro</button>
         <div style="flex:1"></div>
+        @if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.TaraturaValidazione))
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-elimina-registro" style="color:var(--rosso)"
+                    title="Toglie dal registro (non cancella: si ripristina con «Mostra eliminate»)">Elimina dal registro</button>
+        }
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>
@@ -182,6 +193,7 @@
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-etichetta">Etichetta</button>
         <button type="button" class="pulsante" id="btn-taratura-salva">Salva taratura</button>
     </div>
+    <div id="pannello-rinnovo" class="riquadro-tenue nascosto" style="margin-top:0.6rem"></div>
 </section>
 
 @section Script {

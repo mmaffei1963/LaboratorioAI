@@ -1,0 +1,230 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Rapportini di consulenza";
+    var gestore = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.RapportiniGestione);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Rapportini di consulenza</h1>
+        <p class="sottotitolo">Il consulente compila al sopralluogo cosa è stato fatto e cosa sarà fatturato. Il PDF va al cliente tramite Palomar, all'email dell'insediamento; il cliente ha 3 giorni lavorativi per le osservazioni. Cliente, insediamenti e commesse sono letti da ArcLab in sola lettura.</p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante" id="btn-nuovo">Nuovo rapportino</button>
+    </div>
+</div>
+
+<section class="riquadro" id="pannello-elenco" data-gestore="@(gestore ? "1" : "0")">
+    <div class="griglia-filtri">
+        <label>Dal<input type="date" id="f-dal" /></label>
+        <label>Al<input type="date" id="f-al" /></label>
+        <label>Stato
+            <select id="f-stato">
+                <option value="">tutti</option>
+                <option value="1">Bozza</option>
+                <option value="2">Inviato</option>
+                <option value="3">Contestato</option>
+                <option value="4">Confermato</option>
+                <option value="5">Rendicontato</option>
+                <option value="6">In prefatturato</option>
+                <option value="7">Fatturato</option>
+                <option value="8">Annullato</option>
+            </select>
+        </label>
+        <label>Cerca<input type="search" id="f-testo" placeholder="n°, cliente, consulente, descrizione…" /></label>
+        @if (gestore)
+        {
+            <label class="casella" style="align-self:end"><input type="checkbox" id="f-miei" /> solo i miei</label>
+        }
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap">
+            <button class="pulsante" id="btn-carica">Carica</button>
+            @if (gestore)
+            {
+                <button class="pulsante secondario" id="btn-conferma" disabled title="Conferma i rapportini spuntati (inviati o contestati)">Conferma selezionati (0)</button>
+            }
+        </div>
+    </div>
+    <p class="sottotesto" id="msg"></p>
+    <div class="tabella-scorrevole" style="max-height:30rem">
+        <table class="tabella" id="tabella-rapportini">
+            <thead>
+                <tr>
+                    @if (gestore) { <th><input type="checkbox" id="sel-tutti" title="Seleziona i confermabili" /></th> }
+                    <th>N°</th><th>Data</th><th>Cliente / insediamento</th><th>Consulente</th><th>Descrizione</th>
+                    <th class="numerico">Ore</th><th class="numerico">Importo €</th><th>Stato</th><th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello-form">
+    <div class="barra-risultati">
+        <h2 id="form-titolo">Nuovo rapportino</h2>
+        <span id="form-stato" class="sottotesto"></span>
+    </div>
+    <input type="hidden" id="r-id" />
+    <div id="avviso-stato" class="sottotesto" style="margin:0.3rem 0"></div>
+
+    <div class="barra-risultati" style="margin-top:0.4rem"><h3>Cliente</h3></div>
+    <div class="griglia-filtri">
+        <label class="campo-con-suggerimenti" style="grid-column:1/-1">Cliente (cerca per ragione sociale o id ArcLab)
+            <input type="text" id="r-cliente" placeholder="ragione sociale…" autocomplete="off" />
+            <div id="r-cliente-sugg" class="elenco-suggerimenti nascosto"></div>
+        </label>
+        <label style="grid-column:1/-1">Insediamento
+            <select id="r-insediamento"><option value="">— scegli prima il cliente —</option></select>
+        </label>
+        <p class="sottotesto" id="r-email" style="grid-column:1/-1"></p>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Intervento</h3></div>
+    <div class="griglia-filtri">
+        <label>Data<input type="date" id="r-data" /></label>
+        <label>Consulente<select id="r-consulente"></select></label>
+        <label>Ore<input type="number" id="r-ore" min="0" step="0.25" /></label>
+        <fieldset style="border:0;padding:0;margin:0">
+            <legend style="font-size:0.85rem">Luogo</legend>
+            <label class="casella"><input type="radio" name="r-luogo" value="1" checked /> presso il cliente</label>
+            <label class="casella"><input type="radio" name="r-luogo" value="2" /> presso ns. sede</label>
+            <label class="casella"><input type="radio" name="r-luogo" value="3" /> da remoto</label>
+        </fieldset>
+        <label style="grid-column:1/-1">Commessa di consulenza (ArcLab, attive e non attive)
+            <select id="r-commessa"><option value="">— nessuna commessa —</option></select>
+        </label>
+        <label style="grid-column:1/-1">Rif. Offerta / contratto (dalla commessa se presente, altrimenti scrivilo)
+            <input type="text" id="r-rif-offerta" maxlength="300" placeholder="es. Offerta n. 2026/045 accettata nel Portale il 12/03/2026" />
+        </label>
+        <p class="sottotesto" id="r-delega" style="grid-column:1/-1"></p>
+        <div id="pannello-delega" class="nascosto" style="grid-column:1/-1;background:#f7f7f7;padding:0.5rem">
+            <strong>Genera la delega operativa per questo cliente e questo consulente</strong>
+            <div class="griglia-filtri" style="margin-top:0.3rem">
+                <div style="grid-column:1/-1">
+            <div style="font-size:0.85rem">Sedi operative per cui vale la delega</div>
+            <label class="casella"><input type="checkbox" id="dg-tutte" /> <strong>tutte le sedi operative del cliente</strong> (anche quelle aggiunte in futuro)</label>
+            <div id="dg-sedi" class="sottotesto" style="display:flex;flex-direction:column;gap:0.15rem;margin-top:0.2rem">— scegli prima il cliente —</div>
+        </div>
+                <label>Legale rappresentante: nome<input type="text" id="dg-lr-nome" maxlength="80" /></label>
+                <label>Legale rappresentante: cognome<input type="text" id="dg-lr-cognome" maxlength="80" /></label>
+                <div style="display:flex;align-items:flex-end;gap:0.4rem">
+                    <button type="button" class="pulsante" id="btn-dg-genera">Genera (Word e PDF)</button>
+                    <button type="button" class="pulsante pulsante-tenue" id="btn-dg-chiudi">Chiudi</button>
+                </div>
+            </div>
+            <p class="sottotesto" id="dg-msg"></p>
+        </div>
+        <fieldset style="border:0;padding:0;margin:0;grid-column:1/-1">
+            <legend style="font-size:0.85rem">Fatturazione</legend>
+            <label class="casella"><input type="radio" name="r-modfatt" value="1" checked /> a ore</label>
+            <label class="casella"><input type="radio" name="r-modfatt" value="2" /> a consuntivo</label>
+            <label class="casella"><input type="radio" name="r-modfatt" value="3" /> convenzione a prezzo stabilito (richiede la commessa: il sopralluogo è solo rendicontato)</label>
+        </fieldset>
+        <label>Voce di fattura<select id="r-voce"><option value="">—</option></select></label>
+        <label class="campo-con-suggerimenti" style="grid-column:1/-1">Descrizione breve che andrà in fattura <span class="sottotesto" id="r-descr-conta">0/250</span>
+            <textarea id="r-descrizione" rows="2" maxlength="250" style="width:100%;font:inherit" placeholder="scrivi o scegli una frase già usata" autocomplete="off"></textarea>
+            <div id="r-descr-sugg" class="elenco-suggerimenti nascosto"></div>
+            <span class="sottotesto">Va in fattura così com'è: deve corrispondere all'attività svolta descritta più sotto. Le frasi proposte vengono dai rapportini precedenti, controllale prima di usarle.</span>
+        </label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Attività svolta</h3></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Descrizione puntuale <span class="sottotesto" id="r-attivita-conta">0 caratteri (minimo 80 per l'invio)</span>
+            <textarea id="r-attivita" rows="6" maxlength="4000" style="width:100%;font:inherit" placeholder="Quali procedure/documenti sono stati esaminati (con numero e versione), quali modifiche sono state proposte e quali già recepite dal Cliente, eventuali non conformità rilevate."></textarea>
+        </label>
+        <p class="sottotesto" style="grid-column:1/-1">Descrivi con un dettaglio sufficiente a ricostruire, in caso di contestazione, cosa è stato esaminato o modificato e con quale esito: niente descrizioni generiche di una riga.</p>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Documentazione di riferimento</h3></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-doc">
+            <thead><tr><th>Documento</th><th>Rev.</th><th>Data</th><th>Cosa è stato fatto</th><th>Consegna</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div style="margin:0.4rem 0"><button type="button" class="pulsante pulsante-tenue" id="btn-doc-aggiungi">+ Aggiungi documento</button></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Fonte delle informazioni (lascia vuoto per il testo standard)
+            <textarea id="r-fonte" rows="2" maxlength="1000" style="width:100%;font:inherit"></textarea>
+        </label>
+        <label id="lbl-piano" class="nascosto" style="grid-column:1/-1">Piano di autocontrollo analitico: frequenze, matrici, punti di prelievo e parametri definiti con il Cliente
+            <textarea id="r-piano" rows="2" maxlength="1000" style="width:100%;font:inherit"></textarea>
+        </label>
+        <label id="lbl-verifica" class="casella nascosto" style="grid-column:1/-1;font-weight:normal;background:#fff7e6;padding:0.4rem">
+            <input type="checkbox" id="r-verifica" />
+            Ho verificato che i documenti modificati o emessi che richiamano il Laboratorio MARE.A non gli attribuiscono attività o obblighi esclusi dalle sue Condizioni (campionamento o scelta dei campioni, comunicazione di esiti sfavorevoli alle Autorità, giudizio di conformità automatico, conservazione dei residui oltre il termine delle prove, invio dei Rapporti di Prova via e-mail) e che per le operazioni del Cliente è usato "prelievo" e non "campionamento".
+        </label>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Follow-up (facoltativo)</h3></div>
+    <div class="griglia-filtri">
+        <label style="grid-column:1/-1">Azione<input type="text" id="r-fu-azione" maxlength="1000" /></label>
+        <label>A cura di
+            <select id="r-fu-resp"><option value="">—</option><option>Cliente</option><option>MARE.A</option></select>
+        </label>
+        <label>Termine indicativo<input type="text" id="r-fu-termine" maxlength="100" placeholder="es. entro fine mese" /></label>
+    </div>
+
+    <div id="blocco-importo">
+        <div class="barra-risultati" style="margin-top:0.6rem"><h3>Importo (senza IVA)</h3></div>
+        <div class="griglia-filtri">
+            <fieldset style="border:0;padding:0;margin:0">
+                <legend style="font-size:0.85rem">Calcolo</legend>
+                <label class="casella"><input type="radio" name="r-modimp" value="1" checked /> a corpo</label>
+                <label class="casella"><input type="radio" name="r-modimp" value="2" /> tariffa oraria × ore</label>
+            </fieldset>
+            <label id="lbl-tariffa" class="nascosto">Tariffa oraria €<input type="number" id="r-tariffa" min="0" step="0.01" /></label>
+            <label>Importo €<input type="number" id="r-importo" min="0" step="0.01" /></label>
+        </div>
+    </div>
+
+    <div class="barra-risultati" style="margin-top:0.6rem"><h3>Contratto prepagato</h3></div>
+    <div class="griglia-filtri">
+        <label class="casella" style="grid-column:1/-1"><input type="checkbox" id="r-prepagato" /> prestazione scalata da un contratto prepagato (non va in fattura)</label>
+        <label class="blocco-prepagato nascosto">Data dell'ultimo scalo<input type="date" id="r-ultimo-scalo" /></label>
+        <label class="blocco-prepagato nascosto">Ore residue prima di questa prestazione<input type="number" id="r-ore-residue" min="0" step="0.25" /></label>
+        <p class="blocco-prepagato nascosto sottotesto" id="r-ore-dopo" style="align-self:end"></p>
+    </div>
+
+    <div class="griglia-filtri" style="margin-top:0.6rem">
+        <label style="grid-column:1/-1">Note interne (non stampate)<input type="text" id="r-note" maxlength="1000" /></label>
+    </div>
+
+    <p class="sottotesto" id="form-msg"></p>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
+        <button class="pulsante" id="btn-salva">Salva bozza</button>
+        <button class="pulsante pulsante-tenue" id="btn-anteprima">Anteprima PDF</button>
+        <button class="pulsante" id="btn-invia">Salva e invia al cliente</button>
+        <button class="pulsante pulsante-tenue" id="btn-chiudi">Chiudi</button>
+        <span style="flex:1"></span>
+        @if (gestore)
+        {
+            <button class="pulsante pulsante-tenue" id="btn-contesta">Segna contestato</button>
+            <button class="pulsante pulsante-tenue" id="btn-correggi">Correggi importo</button>
+            <button class="pulsante pulsante-tenue" id="btn-conferma-uno">Conferma</button>
+        }
+        <button class="pulsante pulsante-tenue" id="btn-annulla">Annulla rapportino</button>
+    </div>
+</section>
+
+<section class="riquadro">
+    <details id="dett-registro">
+        <summary style="cursor:pointer;font-weight:600">Registro di controllo degli invii (Palomar)</summary>
+        <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;margin-top:0.5rem">
+            <label class="casella"><input type="checkbox" id="reg-solo-problemi" /> solo problemi</label>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-registro">Aggiorna</button>
+        </div>
+        <p class="sottotesto" id="reg-msg"></p>
+        <div class="tabella-scorrevole" style="max-height:20rem">
+            <table class="tabella" id="tabella-registro">
+                <thead><tr><th>Data/ora</th><th>Esito</th><th>Rapportino</th><th>Messaggio</th><th>File Palomar</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/rapportini.js" asp-append-version="true"></script>
+}

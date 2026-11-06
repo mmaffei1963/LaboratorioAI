@@ -1,0 +1,62 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Preventivi consulenza» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A preparare i <strong>contratti di consulenza e formazione</strong> (serie C) al posto dei vecchi modelli Word:
+        scegli il cliente, parti da un <strong>pacchetto di settore</strong> o aggiungi le attività una per una, sistemi prezzi e testi e scarichi il contratto
+        in Word o PDF. Il contratto richiama le <strong>Condizioni Generali di consulenza</strong>. Quando è accettato, la pagina ti dà i dati da riportare
+        nelle commesse di ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Fare un nuovo preventivo</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuovo preventivo</span>: si apre il preventivo con il suo numero.</li>
+        <li><strong>Cliente:</strong> in <em>Cerca in ArcLab</em> scrivi almeno 2 lettere, scegli il cliente e premi <span class="tasto">Carica dati da ArcLab e AZW</span>
+            (si compilano anagrafica, PEC e SDI). Per un cliente nuovo compila i campi a mano.</li>
+        <li>Scegli la <strong>sede del servizio</strong> e il <strong>referente</strong> (pulsanti <span class="tasto">Usa questa sede</span> e <span class="tasto">Usa questo referente</span>).</li>
+        <li><strong>Offerta e condizioni:</strong> oggetto, settore, data, inizio, durata dei canoni (anni), rate annuali, condizioni di pagamento, consulente e,
+            se c'è, il commerciale. Le condizioni di pagamento si aggiungono dall'elenco, anche più di una (separate da una riga vuota): nel contratto il cliente indica con una X quella scelta.</li>
+        <li><strong>Attività:</strong> scegli un <em>pacchetto di settore</em> e premi <span class="tasto">Aggiungi il pacchetto</span>, oppure aggiungi le attività una alla volta.
+            Per ogni attività sistema quantità, prezzo del primo anno e degli anni successivi, e apri <em>Cosa comprende</em> per spuntare i contenuti.</li>
+        <li>Premi <span class="tasto">Salva</span>, poi <span class="tasto">Scarica contratto (Word)</span> o <span class="tasto">(PDF)</span> in alto.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/preventivi-consulenza-attivita.png" alt="Preventivo di consulenza: attività con prezzi primo anno e anni successivi" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Il cliente fa anche analisi di laboratorio</summary>
+    <ol class="passi">
+        <li>Nella sezione <strong>Analisi di laboratorio</strong> aggiungi un controllo ArcLab (clicca nel campo per vederli tutti, scrivi per restringere) e premi
+            <span class="tasto">Aggiungi controllo</span>.</li>
+        <li>Indica <em>Come si paga</em>, le analisi all'anno e il prezzo (se lo lasci vuoto vale quello calcolato da ArcLab).</li>
+        <li>Per presentare più controlli come un'unica voce, spuntali, scrivi il <em>Nome del gruppo</em> e premi <span class="tasto">Raggruppa le analisi spuntate</span>.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Una voce da mostrare nel contratto ma senza prezzo</summary>
+    <p>Spunta <em>solo per conoscenza (fuori totale)</em> sull'attività: compare nel contratto ma non nei totali e non diventa commessa.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il cliente ha accettato (o rifiutato)</summary>
+    <ol class="passi">
+        <li>In alto, nella riga <strong>Stato</strong>, premi <span class="tasto">Accettato</span> (oppure Inviato, Rifiutato, Annullato).</li>
+        <li>In fondo, <strong>Dati per le commesse in ArcLab</strong> elenca una commessa per ogni attività con tutti i valori da copiare nella maschera di ArcLab
+            (cliente, insediamento, tipo stampa, prezzo, date, rate…). Le commesse di laboratorio sono una per controllo.</li>
+    </ol>
+    <p class="nota">LaboratorioAI <strong>non crea le commesse</strong>: vanno inserite a mano in ArcLab con questi dati.
+        Un preventivo accettato, rifiutato o annullato non si modifica: per cambiarlo riportalo in <em>Bozza</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ritrovare un preventivo</summary>
+    <p>Nell'elenco scegli <em>Anno</em> e <em>Stato</em> e premi <span class="tasto">Filtra</span>, oppure scrivi in <em>Cerca</em> cliente, numero o consulente.
+        Clicca il numero per aprirlo.</p>
+</details>
+
+<p class="nota">Attività, testi e pacchetti si sistemano nella pagina <em>Attività e pacchetti consulenza</em>. Dubbi o problemi: Mirko Maffei.</p>

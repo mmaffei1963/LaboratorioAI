@@ -72,7 +72,7 @@ public record ProvaCampione
     /// <summary>Metodo accreditato presso MARE.A (Metodo.Accreditato).</summary>
     public bool Accreditato { get; init; }
 
-    /// <summary>Metodo accreditato dal laboratorio esterno (Metodo.Accreditato_Esterno).</summary>
+    /// <summary>Metodo accreditato presso il laboratorio esterno che ha eseguito la prova (labEstMetodo.AccrLabEsterno per la coppia metodo + laboratorio).</summary>
     public bool AccreditatoEsterno { get; init; }
 
     public string? Note { get; init; }

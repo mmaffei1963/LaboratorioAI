@@ -1,0 +1,78 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaRicetta
+@{ ViewData["Titolo"] = Model.Nome; }
+<div class="testa-pagina"><h1>@Model.Nome</h1>
+    <a asp-action="Proposta" asp-route-id="@Model.IdRicetta" class="pulsante">Lotti da usare in un giorno</a></div>
+<p><a asp-action="Index">« Tutte le ricette</a></p>
+@if (!Model.Attiva)
+{
+    <p class="errore">Questa ricetta è <strong>fuori uso</strong>: non compare nell'elenco e non si può registrare una produzione.</p>
+}
+<h2>Ingredienti</h2>
+<table class="elenco">
+    <thead><tr><th>Ingrediente</th><th>Categorie (matrici) cercate</th><th>Lotti per fornitore</th><th>Kg nella ricetta</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var i in Model.Ingredienti)
+    {
+        <tr><td>@i.Nome</td><td>@string.Join(", ", i.Categorie)</td><td>@i.LottiPerFornitore</td><td>@(i.QuantitaTeorica?.ToString("0.###") ?? "-")</td>
+            <td style="white-space:nowrap">
+                <a asp-action="Modifica" asp-route-id="@Model.IdRicetta" asp-route-idRiga="@i.IdRicettaRiga">Modifica</a>
+                <form method="post" asp-action="Rimuovi" asp-route-id="@Model.IdRicetta" asp-route-idRiga="@i.IdRicettaRiga" style="display:inline"
+                      onsubmit="return confirm('Togliere «@i.Nome» dalla ricetta?');">
+                    <button type="submit" class="piccolo">Rimuovi</button>
+                </form>
+            </td></tr>
+    }
+    @if (Model.Ingredienti.Count == 0)
+    {
+        <tr><td colspan="5">Nessun ingrediente.</td></tr>
+    }
+    </tbody>
+</table>
+<h2>Quantità di riferimento</h2>
+<p class="nota">Serve solo se l'azienda calcola i kg consumati dalla ricetta (pagina Impostazioni). Indica per quanti kg di prodotto finito valgono i kg scritti sopra (es. 100: «60 kg di farina ogni 100 kg di prodotto»).</p>
+<form method="post" asp-action="Riferimento" asp-route-id="@Model.IdRicetta" class="modulo" style="max-width:26rem">
+    <label>Kg di prodotto finito di riferimento
+        <input type="number" name="quantitaRiferimento" step="0.01" min="0.01" value="@Model.QuantitaRiferimento?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" /></label>
+    <button type="submit">Salva</button>
+</form>
+<h2>Aggiungi ingrediente</h2>
+<form method="post" asp-action="AggiungiIngrediente" asp-route-id="@Model.IdRicetta" class="modulo">
+    <label asp-for="Etichetta">Nome dell'ingrediente (es. Farina)</label>
+    <input asp-for="Etichetta" />
+    <label asp-for="LottiPerFornitore">Quanti lotti recenti per ogni fornitore</label>
+    <input asp-for="LottiPerFornitore" type="number" min="1" max="10" />
+    <label asp-for="QuantitaIngrediente">Kg nella ricetta (facoltativo, per i kg consumati calcolati)</label>
+    <input asp-for="QuantitaIngrediente" type="number" step="0.001" min="0.001" />
+    <label>Categorie (matrici) in cui cercare i lotti</label>
+    <div style="max-height:18rem;overflow:auto;border:1px solid #b6c2cc;border-radius:4px;padding:.4rem;background:#fff">
+    @foreach (var c in Model.CategorieDisponibili)
+    {
+        <label style="font-weight:400;margin:0;display:block"><input type="checkbox" name="CategorieScelte" value="@c.IdCategoria" style="padding:0" /> @c.Nome</label>
+    }
+    </div>
+    <button type="submit">Aggiungi</button>
+</form>
+
+<h2>Duplica questa ricetta</h2>
+<p class="nota">Crea un'altra ricetta con gli stessi ingredienti (per esempio per un'altra pezzatura o confezione). Scrivi il nome del nuovo prodotto e poi cambia solo ciò che è diverso.</p>
+<form method="post" asp-action="Duplica" asp-route-id="@Model.IdRicetta" class="modulo" style="max-width:30rem">
+    <label>Nome del nuovo prodotto
+        <input type="text" name="nuovoNome" maxlength="200" required /></label>
+    <button type="submit">Duplica ricetta</button>
+</form>
+
+<h2>@(Model.Attiva ? "Non uso più questa ricetta" : "Ricetta fuori uso")</h2>
+@if (Model.Attiva)
+{
+    <p class="nota">La ricetta sparisce dall'elenco ma non viene cancellata: le produzioni già registrate restano com'erano. Puoi rimetterla in uso quando vuoi.</p>
+    <form method="post" asp-action="Stato" asp-route-id="@Model.IdRicetta" asp-route-attiva="false"
+          onsubmit="return confirm('Mettere fuori uso «@Model.Nome»?');">
+        <button type="submit">Metti fuori uso</button>
+    </form>
+}
+else
+{
+    <form method="post" asp-action="Stato" asp-route-id="@Model.IdRicetta" asp-route-attiva="true">
+        <button type="submit">Rimetti in uso</button>
+    </form>
+}

@@ -1,0 +1,21 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloAccesso
+@{
+    ViewData["Titolo"] = "Accesso";
+}
+<h1>Accedi a Tracciato</h1>
+
+<form method="post" asp-controller="Account" asp-action="Accesso" class="modulo" autocomplete="on">
+    <input type="hidden" asp-for="ReturnUrl" />
+
+    <div asp-validation-summary="ModelOnly" class="errore"></div>
+
+    <label asp-for="Email"></label>
+    <input asp-for="Email" type="email" autocomplete="username" autofocus />
+    <span asp-validation-for="Email" class="errore"></span>
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password" autocomplete="current-password" />
+    <span asp-validation-for="Password" class="errore"></span>
+
+    <button type="submit">Accedi</button>
+</form>

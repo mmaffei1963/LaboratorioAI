@@ -1,4 +1,5 @@
 using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.ArcLab;
 using LaboratorioAI.Dati.ArcLab.Repository;
 using LaboratorioAI.Dati.LaboratorioAI;
@@ -13,11 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 // LOGGING
 // Il filtro sulle credenziali è applicato a tutti i log, di ogni livello.
 // ═══════════════════════════════════════════════════════════════════
-builder.Host.UseSerilog((contesto, servizi, config) => config
-    .ReadFrom.Configuration(contesto.Configuration)
-    .ReadFrom.Services(servizi)
-    .Enrich.FromLogContext()
-    .Enrich.With(new FiltroLogCredenziali()));
+builder.Host.UseSerilog((contesto, servizi, config) =>
+{
+    config
+        .ReadFrom.Configuration(contesto.Configuration)
+        .ReadFrom.Services(servizi)
+        .Enrich.FromLogContext()
+        .Enrich.With(new FiltroLogCredenziali());
+    // 13/10/2026: in sviluppo i messaggi anche nella finestra (es. "Now listening on http://localhost:5081"),
+    // come la Web; in produzione solo il file di log.
+    if (contesto.HostingEnvironment.IsDevelopment())
+        config.WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // DATI
@@ -29,6 +37,10 @@ builder.Services.AddDbContext<ContestoLaboratorioAI>(opzioni =>
 
 builder.Services.AddSingleton<IFabbricaConnessioniArcLab, FabbricaConnessioniArcLab>();
 builder.Services.AddScoped<IRepositoryPortale, RepositoryPortale>();
+// Approvazione delle Condizioni Generali (pagina /Firma, 10/10/2026): registro delle evidenze a impronte concatenate.
+builder.Services.AddScoped<IRegistroEvidenzeApprovazioni, RegistroEvidenzeApprovazioni>();
+// Invio del codice OTP delle Condizioni (15/10/2026): stessa configurazione Smtp della Web app.
+builder.Services.AddSingleton<IServizioEmail, LaboratorioAI.Dati.Email.ServizioEmailSmtp>();
 
 // ═══════════════════════════════════════════════════════════════════
 // SESSIONI
@@ -72,7 +84,11 @@ app.UseForwardedHeaders(new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
 
 app.UseSerilogRequestLogging(opzioni =>
 {
-    opzioni.MessageTemplate = "{RequestMethod} {RequestPath} → {StatusCode} in {Elapsed:0} ms";
+    // Il codice del link personale di /Firma e /Indica non deve finire nei log: il percorso è registrato mascherato (10-11/10/2026).
+    opzioni.MessageTemplate = "{RequestMethod} {PercorsoRegistrato} → {StatusCode} in {Elapsed:0} ms";
+    opzioni.EnrichDiagnosticContext = (diagnostica, http) =>
+        diagnostica.Set("PercorsoRegistrato", System.Text.RegularExpressions.Regex.Replace(
+            http.Request.Path.Value ?? "", @"^/(Firma|Indica)/[^/]+", "/$1/***", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
 });
 
 app.UseStaticFiles();

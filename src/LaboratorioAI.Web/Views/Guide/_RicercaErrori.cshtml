@@ -1,0 +1,52 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Ricerca errori» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A trovare in ArcLab gli <strong>errori di inserimento</strong> che poi finiscono nei rapporti di prova o nelle fatture:
+        parametri doppi, metodi senza arrotondamento, lotti senza ricevitore o vettore, campioni chiusi ma non pronti alla stampa…
+        Il programma <strong>solo segnala</strong>: le correzioni si fanno a mano in ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Il controllo periodico (colpo d'occhio su tutto)</summary>
+    <ol class="passi">
+        <li>Nel <strong>Cruscotto controlli</strong> lascia gli anni proposti (anno scorso e quest'anno) e la soglia del margine.</li>
+        <li>Lascia spuntati tutti i controlli e premi <span class="tasto">Esegui selezionati</span>.</li>
+        <li>La tabella sotto dice, per ogni controllo, <strong>quante anomalie</strong> ci sono: <span style="color:#1a7f37">● ok</span> oppure <span style="color:#b3261e">● da correggere</span>. <span class="tasto">Apri</span> porta alla sezione con l'elenco dei casi.</li>
+        <li><span class="tasto">Esporta tutto (Excel)</span> scarica un file con un foglio per controllo, da distribuire a chi deve correggere.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/ricerca-errori-cruscotto.png" alt="Cruscotto controlli con anni, soglia, controlli spuntati e numero di anomalie" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Vedere e correggere un tipo di errore</summary>
+    <ol class="passi">
+        <li>Scorri fino alla sezione numerata che ti interessa (1–9) e aprila.</li>
+        <li>Imposta gli eventuali filtri e premi <span class="tasto">Cerca</span>: compare l'elenco dei casi.</li>
+        <li>Correggi ogni caso in ArcLab; <span class="tasto">Esporta Excel</span> se ti serve la lista.</li>
+        <li>Rifai <span class="tasto">Cerca</span> per controllare che il caso sia sparito.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Cosa controlla ogni sezione</summary>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Sezione</th><th>Cosa trova</th></tr></thead>
+        <tbody>
+            <tr><td>1 · Doppioni sui rapporti</td><td>Lo stesso parametro due volte sullo stesso campione (esclusi i microbiologici e kJ/kcal).</td></tr>
+            <tr><td>2 · Metodi senza cifre / decimali</td><td>Metodi attivi senza le regole di arrotondamento: il risultato può uscire con decimali sbagliati.</td></tr>
+            <tr><td>3 · Margine sotto soglia</td><td>Metodi in cui il costo si mangia quasi tutto il prezzo (anche margine negativo).</td></tr>
+            <tr><td>4 · Metodi doppi</td><td>Due metodi attivi uguali (stesso parametro, denominazione e riferimento).</td></tr>
+            <tr><td>5 · Lotti senza ricevitore</td><td>Chi ha ricevuto il campione non è indicato.</td></tr>
+            <tr><td>6 · Lotti senza vettore</td><td>Chi ha portato il campione non è indicato.</td></tr>
+            <tr><td>7 · Coerenza prelevatore / vettore / verbale</td><td>Es. prelevatore interno ma vettore cliente, o verbale di prelievo presente quando ha prelevato il cliente.</td></tr>
+            <tr><td>8 · Campioni chiusi non pronti alla stampa</td><td>Analisi chiusa ma prove non verificate, date di inizio/fine mancanti o arrotondamenti mancanti. Si può cercare anche un singolo lotto.</td></tr>
+            <tr><td>9 · Denominazioni dei metodi</td><td>Denominazioni stampate nel rapporto che non citano il parametro o sono usate per parametri diversi (es. «Manganese» sul metodo del mercurio). Ci possono essere falsi allarmi: si segnano una volta come corretti e non ricompaiono.</td></tr>
+        </tbody>
+    </table>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

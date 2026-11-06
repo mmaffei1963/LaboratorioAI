@@ -25,13 +25,13 @@ public class LettoreDbTempLog : ILettoreDbTempLog
         // Misure: temperatura grezza corretta con l'offset della sonda.
         // Misure1: temperatura grezza corretta con l'offset salvato per misura (OffsetApplicato).
         var (tabella, valore, etichetta) = fonte == FonteTempLogDb.Misure1
-            ? ("dbo.Misure1", "(m.TemperaturaGrezza + m.OffsetApplicato)", "Misuratore 2 (Misure1)")
-            : ("dbo.Misure", "(m.TemperaturaGrezza + s.OffsetTemperatura)", "Misuratore 1 (Misure)");
+            ? ("temperature.Misure1", "(m.TemperaturaGrezza + m.OffsetApplicato)", "Misuratore 2 (Misure1)")
+            : ("temperature.Misure", "(m.TemperaturaGrezza + s.OffsetTemperatura)", "Misuratore 1 (Misure)");
 
         var sql = $"""
             SELECT s.CodiceSonda AS Canale, m.DataOra, CAST({valore} AS decimal(9,3)) AS Valore
             FROM {tabella} m
-                INNER JOIN dbo.Sonde s ON s.IdSonda = m.IdSonda
+                INNER JOIN temperature.Sonde s ON s.IdSonda = m.IdSonda
             WHERE m.DataOra >= @Dal AND m.DataOra < @Al AND s.Attiva = 1
             ORDER BY s.CodiceSonda, m.DataOra
             """;
@@ -78,14 +78,14 @@ public class LettoreDbTempLog : ILettoreDbTempLog
                    CAST(a.LimiteMax AS float)      AS Max,
                    a.Descrizione                  AS Ambiente,
                    a.IdApparecchiatura            AS IdApparecchioAmbiente
-            FROM dbo.Sonde s
+            FROM temperature.Sonde s
                 OUTER APPLY (
                     SELECT TOP 1 asg.IdApparecchiatura
-                    FROM dbo.AssegnazioneSonde asg
+                    FROM temperature.AssegnazioneSonde asg
                     WHERE asg.IdSonda = s.IdSonda
                     ORDER BY CASE WHEN asg.DataFine IS NULL THEN 0 ELSE 1 END, asg.DataInizio DESC
                 ) cur
-                LEFT JOIN dbo.Apparecchiature a ON a.IdApparecchiatura = cur.IdApparecchiatura
+                LEFT JOIN temperature.Apparecchiature a ON a.IdApparecchiatura = cur.IdApparecchiatura
             WHERE s.CodiceSonda IN @Canali AND s.Attiva = 1
             """;
 

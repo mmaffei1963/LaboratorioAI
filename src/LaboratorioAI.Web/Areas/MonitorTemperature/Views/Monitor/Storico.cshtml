@@ -1,0 +1,259 @@
+﻿@model List<LaboratorioAI.Dati.MonitorTemperature.Models.StoricoTemperatura>
+
+@{
+    ViewData["Title"] = "Storico Temperature";
+
+    var datiOrdinati = Model
+        .OrderBy(x => x.DataOra)
+        .ToList();
+
+    string periodo = ViewBag.Periodo ?? "tutto";
+    string codice = ViewBag.CodiceApparecchiatura ?? "";
+}
+
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+    }
+</style>
+
+<div class="mb-4">
+    <h1>Storico temperature</h1>
+
+    <p>
+        Apparecchiatura:
+        <strong>@codice</strong>
+    </p>
+
+    <a asp-action="Index" class="btn btn-secondary mb-3">
+        Torna alla dashboard
+    </a>
+
+    <div class="mb-3 no-print d-inline-block">
+
+        <button type="button"
+                class="btn btn-outline-dark"
+                onclick="window.print()">
+
+            Stampa / PDF
+
+        </button>
+
+        <a asp-action="EsportaExcelStorico"
+           asp-route-codice="@codice"
+           asp-route-periodo="@periodo"
+           class="btn btn-outline-success">
+
+            Esporta Excel
+
+        </a>
+
+    </div>
+
+    <div class="mb-3">
+        <a asp-action="Storico"
+           asp-route-codice="@codice"
+           asp-route-periodo="24h"
+           class="btn @(periodo == "24h" ? "btn-primary" : "btn-outline-primary")">
+            Ultime 24 ore
+        </a>
+
+        <a asp-action="Storico"
+           asp-route-codice="@codice"
+           asp-route-periodo="7g"
+           class="btn @(periodo == "7g" ? "btn-primary" : "btn-outline-primary")">
+            Ultimi 7 giorni
+        </a>
+
+        <a asp-action="Storico"
+           asp-route-codice="@codice"
+           asp-route-periodo="30g"
+           class="btn @(periodo == "30g" ? "btn-primary" : "btn-outline-primary")">
+            Ultimi 30 giorni
+        </a>
+
+        <a asp-action="Storico"
+           asp-route-codice="@codice"
+           asp-route-periodo="tutto"
+           class="btn @(periodo == "tutto" ? "btn-primary" : "btn-outline-primary")">
+            Tutto
+        </a>
+    </div>
+</div>
+
+<div class="mb-5">
+    <h3>Andamento temperatura</h3>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Nessuna misura disponibile nel periodo selezionato.
+        </div>
+    }
+    else
+    {
+        <canvas id="graficoTemperature" height="100"></canvas>
+    }
+</div>
+
+<table class="table table-striped table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Data/Ora</th>
+            <th>Sonda</th>
+            <th>Temperatura grezza</th>
+            <th>Offset</th>
+            <th>Temperatura corretta</th>
+            <th>Limite Min</th>
+            <th>Limite Max</th>
+            <th>Stato</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DataOra.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td>@item.CodiceSonda</td>
+                <td>@item.TemperaturaGrezza?.ToString("0.000")</td>
+                <td>@item.OffsetTemperatura?.ToString("0.000")</td>
+                <td>@item.TemperaturaCorretta?.ToString("0.000")</td>
+                <td>@item.LimiteMin?.ToString("0.00")</td>
+                <td>@item.LimiteMax?.ToString("0.00")</td>
+
+                <td>
+                    @if (item.AllarmeCalcolato == 1)
+                    {
+                        <span class="badge bg-danger">
+                            ALLARME
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">
+                            OK
+                        </span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Count > 0)
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const labels = [
+                    @foreach (var item in datiOrdinati)
+            {
+                <text>"@item.DataOra.ToString("dd/MM HH:mm:ss")",</text>
+                    }
+                ];
+
+        const temperature = [
+                    @foreach (var item in datiOrdinati)
+            {
+                <text>
+                                    @(item.TemperaturaCorretta?.ToString(
+            System.Globalization.CultureInfo.InvariantCulture
+            ) ?? "null"),
+                </text>
+                    }
+                ];
+
+        const limiteMin = [
+                    @foreach (var item in datiOrdinati)
+            {
+                <text>
+                                    @(item.LimiteMin?.ToString(
+            System.Globalization.CultureInfo.InvariantCulture
+            ) ?? "null"),
+                </text>
+                    }
+                ];
+
+        const limiteMax = [
+                    @foreach (var item in datiOrdinati)
+            {
+                <text>
+                                    @(item.LimiteMax?.ToString(
+            System.Globalization.CultureInfo.InvariantCulture
+            ) ?? "null"),
+                </text>
+                    }
+                ];
+
+        const ctx = document.getElementById('graficoTemperature');
+
+        new Chart(ctx, {
+            type: 'line',
+
+            data: {
+                labels: labels,
+
+                datasets: [
+                    {
+                        label: 'Temperatura corretta',
+                        data: temperature,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.2
+                    },
+
+                    {
+                        label: 'Limite minimo',
+                        data: limiteMin,
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0
+                    },
+
+                    {
+                        label: 'Limite massimo',
+                        data: limiteMax,
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperatura °C'
+                        }
+                    },
+
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Data / Ora'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

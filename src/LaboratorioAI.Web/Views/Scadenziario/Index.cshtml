@@ -24,17 +24,24 @@
 
 <!-- ══ Esterni (clienti) ══ -->
 <section class="riquadro">
-    <div class="barra-risultati"><h2>Esterni (clienti)</h2><span id="conteggio-esterni" class="sottotesto"></span>
-        <label class="casella"><input type="checkbox" id="filtro-fatturare" /> solo da fatturare</label>
-        <label class="casella">scadenza
-            <select id="filtro-scadenza">
+    <div class="barra-risultati"><h2>Esterni (clienti)</h2><span id="conteggio-esterni" class="sottotesto"></span></div>
+    @* 03/11/2026: filtri per cliente, riferimento, stato e preavviso; nascoste le scadute da oltre 12 mesi *@
+    <div class="griglia-filtri">
+        <label>Cliente<input type="search" id="filtro-cliente" placeholder="parte del nome" /></label>
+        <label>Riferimento<select id="filtro-rif"><option value="">tutti</option></select></label>
+        <label>Stato
+            <select id="filtro-stato">
+                <option value="inuso" selected>in uso</option>
+                <option value="rinnovata">rinnovate</option>
+                <option value="dismessa">dismesse</option>
                 <option value="">tutte</option>
-                <option value="0">scadute / oggi</option>
-                <option value="15">entro 15 gg</option>
-                <option value="30">entro 30 gg</option>
-                <option value="60">entro 60 gg</option>
             </select>
         </label>
+        <label>Tipo<select id="filtro-tipo"><option value="">tutti</option><option value="0">non indicato</option><option value="1">a sonda</option><option value="2">a gabbia</option><option value="3">pirometro</option><option value="4">datalogger</option><option value="5">altro</option></select></label>
+        <label>Servizio<select id="filtro-servizio"><option value="">tutti</option><option value="1">solo taratura</option><option value="2">fornitura + taratura</option></select></label>
+        <label>Preavviso (giorni)<input type="number" id="filtro-preavviso" min="0" placeholder="vuoto = tutte" style="width:7rem" /></label>
+        <label class="casella"><input type="checkbox" id="filtro-vecchie" /> mostra anche scadute da oltre 12 mesi</label>
+        <label class="casella"><input type="checkbox" id="filtro-fatturare" /> solo da fatturare</label>
     </div>
     @if (puoGestire)
     {
@@ -49,7 +56,7 @@
     <div class="tabella-scorrevole" style="max-height:26rem">
         <table class="tabella" id="tabella-esterni">
             <thead><tr>
-                <th class="numerico">N° Rapporto</th><th>Tipologia</th><th>Taratura</th><th>Scadenza</th><th>Cliente</th><th>Rif.</th><th>Consegna</th><th>Fatt.</th><th></th>
+                <th class="numerico">N° Rapporto</th><th>Tipo</th><th>Tipologia</th><th>Servizio</th><th>Taratura</th><th>Scadenza</th><th>Cliente</th><th>Rif.</th><th>Stato</th><th>Consegna</th><th>Fatt.</th><th></th>
             </tr></thead>
             <tbody></tbody>
         </table>
@@ -63,7 +70,9 @@
         <input type="hidden" id="e-id" />
         <div class="griglia-filtri">
             <label>N° Rapporto<input type="number" id="e-numero" /></label>
-            <label>Tipologia<input type="text" id="e-tipologia" /></label>
+            <label>Tipo<select id="e-tipo"><option value="0">—</option><option value="1">a sonda</option><option value="2">a gabbia</option><option value="3">pirometro</option><option value="4">datalogger</option><option value="5">altro</option></select></label>
+            <label>Servizio<select id="e-servizio"><option value="1">solo taratura</option><option value="2">termometro nuovo fornito da noi + taratura</option></select></label>
+            <label>Tipologia / descrizione<input type="text" id="e-tipologia" /></label>
             <label>Data taratura<input type="date" id="e-taratura" /></label>
             <label>Data scadenza<input type="date" id="e-scadenza" /></label>
             <label>Cliente<input type="text" id="e-cliente" list="lista-clienti" placeholder="scegli da ArcLab o digita" /><datalist id="lista-clienti"></datalist></label>
@@ -73,8 +82,9 @@
             <label>Rif. fattura<input type="text" id="e-fattura" /></label>
             <label>Note<input type="text" id="e-note" /></label>
             <label class="casella"><input type="checkbox" id="e-fatturare" /> fatturato</label>
-            <label class="casella"><input type="checkbox" id="e-escludi-scadenze" /> non valutare nelle scadenze</label>
+            <label class="casella"><input type="checkbox" id="e-escludi-scadenze" /> dismessa (non valutare nelle scadenze)</label>
         </div>
+        <div id="pannello-rinnovo-esterno" class="riquadro-tenue nascosto" style="margin-top:0.6rem"></div>
         <div class="azioni-filtri">
             <div style="flex:1"></div>
             <button type="button" class="pulsante pulsante-tenue" id="btn-esterno-annulla">Annulla</button>

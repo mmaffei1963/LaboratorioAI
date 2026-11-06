@@ -1,0 +1,48 @@
+@using System.Globalization
+@model LaboratorioAI.Web.Controllers.ModelloBasi
+@{
+    ViewData["Titolo"] = "Basi di calcolo";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Basi di calcolo</h1>
+        <p class="sottotitolo">Una base dice <strong>su quali righe di fattura</strong> si applica la percentuale di una voce: un insieme di centri di costo e voci di AZW. Esempio: «Laboratorio» = centro 04 con le voci di analisi. Una base usata da un accordo che copre un trimestre già chiuso non si modifica (cambierebbe provvigioni già pagate): si duplica e la copia si usa in una nuova versione dell'accordo. Finché nessun trimestre è chiuso, le basi si modificano liberamente e la modifica vale subito per gli accordi che le usano.</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Index", "AccordiProvvigioni")">← Accordi</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead><tr><th>Base</th><th>Cosa include</th><th>Stato</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var b in Model.Basi)
+            {
+                <tr style="@(b.Attivo ? "" : "opacity:0.55")">
+                    <td><strong>@b.Nome</strong><div class="sottotesto">@b.Descrizione</div></td>
+                    <td>@(b.TuttoIlFatturato ? "Tutto il fatturato" : (b.Elementi.Length == 0 ? "nessuna riga (da compilare)" : b.Elementi.Replace(";", " · ").Replace(":*", " (tutto il centro)")))</td>
+                    <td>@(Model.InUso.Contains(b.IdBaseCalcolo) ? "bloccata (trimestre chiuso)" : (b.Attivo ? "modificabile" : "non attiva"))</td>
+                    <td style="white-space:nowrap">
+                        <a class="pulsante pulsante-tenue" href="@Url.Action("Base", "AccordiProvvigioni", new { id = b.IdBaseCalcolo })">Apri</a>
+                        <form method="post" asp-action="DuplicaBase" style="display:inline"><input type="hidden" name="id" value="@b.IdBaseCalcolo" /><button type="submit" class="pulsante pulsante-tenue">Duplica</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Nuova base</h2></div>
+    <form method="post" asp-action="NuovaBase" class="griglia-filtri">
+        <label>Nome<input type="text" name="nome" maxlength="100" required placeholder="es. Laboratorio senza Legionella" /></label>
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Crea e scegli centri e voci</button></div>
+    </form>
+</section>

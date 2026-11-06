@@ -1,0 +1,151 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Provvigioni
+@using LaboratorioAI.Dati.Provvigioni
+@model LaboratorioAI.Dati.Provvigioni.RisultatoSpettanze
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    var nomi = MotoreSpettanzeConsulenti.NomiVoci;
+    var r = Model;
+    string Iso(DateTime? d) => d?.ToString("yyyy-MM-dd") ?? "";
+    var filtro = r.Filtro;
+    var idConsulente = r.Consulente.IdConsulentePercentuale;
+    string NomeMese(RigaMeseSpettanze m) => new DateTime(m.AnnoMese > 0 ? m.AnnoMese : r.Anno, m.Mese, 1).ToString(r.Filtrato ? "MMMM yyyy" : "MMMM", it);
+}
+@* Spettanze di un consulente per un anno (19/10/2026): usato dalla pagina di gestione e da «Le mie spettanze». *@
+@* 22/10/2026: filtro per date delle fatture e degli incassi. Il modulo torna alla stessa pagina (gestione o «Le mie spettanze»). *@
+<section class="riquadro">
+    <form method="get" style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end">
+        <input type="hidden" name="id" value="@idConsulente" /><input type="hidden" name="anno" value="@r.Anno" />
+        <label>Fatture dal<input type="date" name="fDal" value="@Iso(filtro?.FatturaDal)" /></label>
+        <label>Fatture al<input type="date" name="fAl" value="@Iso(filtro?.FatturaAl)" /></label>
+        <label>Incassi dal<input type="date" name="iDal" value="@Iso(filtro?.IncassoDal)" /></label>
+        <label>Incassi al<input type="date" name="iAl" value="@Iso(filtro?.IncassoAl)" /></label>
+        <button type="submit" class="pulsante">Filtra</button>
+        <a class="pulsante pulsante-tenue" href="?id=@idConsulente&anno=@r.Anno&fDal=@(r.Anno)-01-01&fAl=@(r.Anno)-12-31">Solo fatture @r.Anno (incassi fino a oggi)</a>
+        <a class="pulsante pulsante-tenue" href="?id=@idConsulente&anno=@r.Anno&fAl=@(r.Anno - 1)-12-31&iDal=@(r.Anno)-01-01&iAl=@(r.Anno)-12-31">Incassi @r.Anno di fatture degli anni prima</a>
+        @if (r.Filtrato) { <a class="pulsante pulsante-tenue" href="?id=@idConsulente&anno=@r.Anno">Togli i filtri (vista dell'anno)</a> }
+    </form>
+    <p class="sottotesto" style="margin-bottom:0">Senza filtri: tutti gli incassi del @r.Anno (anche di fatture degli anni prima), con acconti e conguaglio. Con il filtro sulle sole fatture, gli incassi vanno dalla prima data delle fatture a oggi. Le note di credito contano per la loro data.</p>
+</section>
+@if (r.Avvisi.Count > 0)
+{
+    <section class="riquadro"><ul style="margin:0">@foreach (var a in r.Avvisi) { <li>@a</li> }</ul></section>
+}
+<section class="riquadro">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:0.8rem">
+        <div><div class="sottotesto">@(r.Filtrato ? $"Maturato (incassi dal {r.IncassiDal:dd/MM/yyyy} al {r.IncassiAl:dd/MM/yyyy})" : $"Maturato {r.Anno}")</div><div style="font-size:1.5rem;font-weight:700">@Euro(r.Maturato)</div></div>
+        @if (!r.Filtrato)
+        {
+            <div><div class="sottotesto">Acconti (sue fatture)</div><div style="font-size:1.5rem;font-weight:700">@Euro(r.Acconti)</div></div>
+            <div><div class="sottotesto">@(r.Conguaglio >= 0 ? "Conguaglio a suo favore" : "Conguaglio a favore di MARE.A")</div><div style="font-size:1.5rem;font-weight:700;color:@(r.Conguaglio >= 0 ? "#15803D" : "#B91C1C")">@Euro(Math.Abs(r.Conguaglio))</div></div>
+            <div><div class="sottotesto">Docenze a ore (fatturate a parte)</div><div style="font-size:1.5rem;font-weight:700">@Euro(r.DocenzeOrarie)</div></div>
+        }
+    </div>
+    <p class="sottotesto" style="margin-bottom:0">
+        @if (r.Chiuso is not null)
+        {
+            <text>Anno chiuso il @r.Chiuso.DataChiusura.ToLocalTime().ToString("dd/MM/yyyy") da @r.Chiuso.ChiusoDa: valori congelati.</text>
+        }
+        else
+        {
+            <text>Calcolo sugli incassi registrati in AZW@(r.UltimaImportazione is DateTime u ? $" (importazione del {u.ToLocalTime():dd/MM/yyyy HH:mm})" : "")</text>
+        }
+        · Conguaglio = maturato − acconti. Le fatture sui centri «@(r.Consulente.CentriDocenzeOrarie ?? "—")» sono docenze pagate a ore e non contano come acconti.
+    </p>
+</section>
+
+@if (r.PerAnnoFattura.Count > 0)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Per anno della fattura</h2><span class="sottotesto">quanto del maturato viene da fatture di ogni anno</span></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Fatture del</th><th class="numerico">Base incassata</th>@foreach (var l in nomi.Keys) { <th class="numerico" title="@nomi[l]">@l)</th> }<th class="numerico">Maturato</th></tr></thead>
+                <tbody>
+                @foreach (var x in r.PerAnnoFattura)
+                {
+                    <tr><td>@(x.AnnoFattura?.ToString() ?? "anno non noto")</td><td class="numerico">@Euro(x.Base)</td>
+                        @foreach (var l in nomi.Keys) { <td class="numerico">@(x.PerVoce[l] == 0 ? "—" : x.PerVoce[l].ToString("N2", it))</td> }
+                        <td class="numerico"><strong>@x.Totale.ToString("N2", it)</strong></td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Mese per mese</h2><span class="sottotesto">mese dell'incasso</span></div>
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead><tr><th>Mese</th>@foreach (var l in nomi.Keys) { <th class="numerico" title="@nomi[l]">@l)</th> }<th class="numerico">Maturato</th><th class="numerico">Acconti</th><th class="numerico">Docenze a ore</th></tr></thead>
+            <tbody>
+            @foreach (var m in r.Mesi)
+            {
+                <tr>
+                    <td>@NomeMese(m)</td>
+                    @foreach (var l in nomi.Keys) { <td class="numerico">@(m.PerVoce[l] == 0 ? "—" : m.PerVoce[l].ToString("N2", it))</td> }
+                    <td class="numerico"><strong>@m.Maturato.ToString("N2", it)</strong></td><td class="numerico">@m.Acconti.ToString("N2", it)</td><td class="numerico">@m.DocenzeOrarie.ToString("N2", it)</td>
+                </tr>
+            }
+            </tbody>
+            <tfoot><tr><th>Totale</th>@foreach (var l in nomi.Keys) { <th class="numerico">@r.PerVoce[l].ToString("N2", it)</th> }<th class="numerico">@r.Maturato.ToString("N2", it)</th><th class="numerico">@r.Acconti.ToString("N2", it)</th><th class="numerico">@r.DocenzeOrarie.ToString("N2", it)</th></tr></tfoot>
+        </table>
+    </div>
+    <ul class="sottotesto" style="columns:2 20rem;margin:0.4rem 0 0">@foreach (var l in nomi.Keys) { <li>@nomi[l]</li> }</ul>
+</section>
+
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Per cliente (@r.Clienti.Count)</summary>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Cliente</th><th>Zona</th><th class="numerico">Base incassata</th>@foreach (var l in nomi.Keys) { <th class="numerico">@l)</th> }<th class="numerico">Totale</th></tr></thead>
+                <tbody>
+                @foreach (var c in r.Clienti)
+                {
+                    <tr><td>@(c.RagioneSociale ?? "—") <span class="sottotesto">(@c.Cliente)</span></td><td>@c.Zona</td><td class="numerico">@Euro(c.Base)</td>
+                        @foreach (var l in nomi.Keys) { <td class="numerico">@(c.PerVoce[l] == 0 ? "—" : c.PerVoce[l].ToString("N2", it))</td> }
+                        <td class="numerico"><strong>@c.Totale.ToString("N2", it)</strong></td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Sue fatture a MARE.A (@r.Fatture.Count)</summary>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Data</th><th>Documento</th><th>Centro</th><th>Voce</th><th class="numerico">Imponibile</th><th>Tipo</th></tr></thead>
+                <tbody>
+                @foreach (var f in r.Fatture)
+                {
+                    <tr><td>@f.Data.ToString("dd/MM/yyyy")</td><td>@f.Documento</td><td>@f.Centro</td><td>@f.Voce</td><td class="numerico">@Euro(f.Importo)</td><td>@(f.DocenzaOraria ? "Docenza a ore" : "Acconto")</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Movimenti (@r.Movimenti.Count)</summary>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Data incasso</th><th>Data fattura</th><th>Voce</th><th>Cliente</th><th>Documento</th><th>Voce AZW</th><th>Commessa</th><th>Origine</th><th class="numerico">Base</th><th class="numerico">%</th><th class="numerico">Spettanza</th></tr></thead>
+                <tbody>
+                @foreach (var m in r.Movimenti)
+                {
+                    <tr><td>@m.Data.ToString("dd/MM/yyyy")</td><td>@(m.DataFattura?.ToString("dd/MM/yyyy") ?? (m.AnnoFattura?.ToString() ?? ""))</td><td title="@nomi.GetValueOrDefault(m.Voce)">@m.Voce)</td><td>@m.Cliente</td><td>@m.Documento</td><td>@m.VoceAzw</td><td>@m.Commessa</td><td>@m.Origine</td>
+                        <td class="numerico">@m.Base.ToString("N2", it)</td><td class="numerico">@m.Percentuale.ToString("0.##", it)</td><td class="numerico">@m.Importo.ToString("N2", it)</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </details>
+</section>

@@ -1,0 +1,120 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var importi = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ClientiSeguire);
+}
+@* Guida «Cambi di gestione» (12/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Molti clienti della Legionella sembrano persi ma non lo sono: l'albergo ha cambiato gestore, in ArcLab è nato
+        un cliente nuovo e il vecchio risulta fermo. Questa pagina prende le sedi che avevano un servizio (di base la Legionella) e non lo hanno più (di base negli ultimi 12 mesi, rispetto agli stessi mesi dell'anno prima),
+        cerca <strong>nello stesso posto</strong> (stesso nome della sede o stesso indirizzo) un cliente arrivato dopo e dice com'è andata.
+        Tu confermi o scarti l'abbinamento: così i numeri diventano giusti e si vede chi va davvero richiamato.</p>
+</div>
+
+<h2>Cosa vogliono dire gli esiti</h2>
+<table class="tabella tabella-guida">
+    <thead><tr><th>Esito</th><th>Significato</th><th>Cosa fare</th></tr></thead>
+    <tbody>
+        <tr><td>A – nuovo gestore, ancora nostro</td><td>Allo stesso posto c'è un cliente nuovo che ci manda campioni.</td><td>Controlla e premi <span class="tasto">Conferma</span>.</td></tr>
+        <tr><td>B – anagrafica doppia</td><td>Stessa P.IVA su due clienti in ArcLab, uno attivo.</td><td>Conferma; segnala il doppione a chi gestisce ArcLab.</td></tr>
+        <tr><td>C – nuovo gestore non attivo</td><td>Il nuovo gestore è in ArcLab ma non manda campioni.</td><td><strong>Chiamalo per primo</strong>: chi subentra deve rifare la valutazione del rischio Legionella.</td></tr>
+        <tr><td>D – nessun subentro trovato</td><td>Nessun altro cliente nello stesso posto.</td><td>Da ricontattare: chiuso, ceduto o passato a un concorrente.</td></tr>
+        <tr><td>E – attivo da un'altra sede</td><td>Lo stesso cliente manda campioni da un'altra sede.</td><td>Non è perso: di solito non serve fare nulla.</td></tr>
+    </tbody>
+</table>
+<p class="nota"><strong>Affidabilità</strong>: alta = stesso nome della sede; media = stesso indirizzo e nome simile; bassa = solo stesso indirizzo
+    (può essere un'altra attività nello stesso edificio, es. un bar sotto un hotel). Le proposte con affidabilità bassa sono «da verificare» e non contano finché qualcuno non le conferma.</p>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Controllare gli abbinamenti proposti</summary>
+    <ol class="passi">
+        <li>Apri la pagina (menu <strong>Commerciale → Cambi di gestione</strong>) e clicca un riquadro in alto, es. <strong>Da verificare a mano</strong>.</li>
+        <li>Per ogni riga confronta la <strong>sede persa</strong> (a sinistra) con il <strong>nuovo gestore trovato</strong>: nome della sede, indirizzo, da quando manda campioni.</li>
+        <li>Se è lo stesso posto premi <span class="tasto">Conferma</span>; se non lo è premi <span class="tasto">Scarta</span> (non verrà più proposto).</li>
+        <li>Se tra <em>Altri possibili</em> c'è quello giusto, premi <span class="tasto">È questo</span>.</li>
+    </ol>
+    <p class="dopo">La decisione resta registrata con il tuo nome e la data. Si può sempre annullare con <span class="tasto">Annulla</span>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Guardare un altro servizio: analisi o consulenza per area</summary>
+    <ol class="passi">
+        <li>Nel riquadro dei filtri scegli il <strong>Servizio</strong> e premi <span class="tasto">Cerca</span>. Di base è la Legionella.</li>
+        <li><strong>Laboratorio:</strong> Legionella, tutte le analisi, oppure le analisi esclusa la Legionella.</li>
+        <li><strong>Consulenza e formazione:</strong> tutta la consulenza (esclusa la formazione), sicurezza sul lavoro, igiene alimentare (HACCP),
+            ambiente e rifiuti, privacy, formazione. Qui contano le <em>prestazioni</em> delle commesse di consulenza e formazione di ArcLab.</li>
+    </ol>
+    <p class="nota">L'area di una prestazione viene dalla voce di fattura del tipo di incarico (Consulenze: documenti e deleghe): 626 e RSP sicurezza,
+        HAC e AT igiene alimentare, RIF ambiente, PRY privacy, F62, FHA, FON e le commesse di formazione formazione. La data di una prestazione è quella
+        di fattura (se manca, la fine o l'inizio della prestazione). Le conferme dei cambi di gestione valgono per tutti i servizi: è lo stesso posto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Guardare un periodo diverso (6 o 3 mesi, da inizio anno, due anni prima)</summary>
+    <ol class="passi">
+        <li>Nel riquadro dei filtri scegli il <strong>Periodo</strong> (ultimi 12, 6 o 3 mesi, oppure da inizio anno) e il <strong>confronto</strong>
+            (stessi mesi dell'anno prima o di due anni prima), poi premi <span class="tasto">Cerca</span>.</li>
+        <li>Il testo in alto riporta i mesi esatti, es. «Legionella in apr–set 2025 e nessun campione in apr–set 2026».</li>
+    </ol>
+    <p class="nota">Si confrontano sempre gli stessi mesi dell'anno, per via della stagionalità. Di base 12 mesi contro l'anno prima;
+        il periodo scelto resta anche dopo Conferma, Scarta ed Esporta Excel. Dalla sezione Legionella di Clienti da seguire si arriva qui con lo stesso periodo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il programma non ha trovato il nuovo gestore, ma io lo conosco</summary>
+    <ol class="passi">
+        <li>Sulla riga apri <strong>Altro…</strong>.</li>
+        <li>In <strong>Cerca il nuovo gestore</strong> scrivi parte del nome, del cliente o della città: compare l'elenco delle sedi di ArcLab.</li>
+        <li>Clicca quella giusta: l'abbinamento è salvato come confermato.</li>
+    </ol>
+    <p class="nota">Se il nuovo gestore non è ancora in ArcLab non lo trovi: va prima inserito in ArcLab come cliente con la sua sede.</p>
+</details>
+
+<details class="situazione">
+    <summary>So che l'attività ha chiuso o è passata a un concorrente</summary>
+    <p>In <strong>Altro…</strong> scrivi una nota (es. «hotel chiuso», «va da un altro laboratorio») e premi <span class="tasto">Nessun subentro</span>.
+        La sede resta tra le perse, ma con la tua informazione.</p>
+</details>
+
+<details class="situazione">
+    <summary>Controllare la P.IVA (VIES)</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Verifica P.IVA (VIES)</span> in alto: controlla sul servizio europeo le P.IVA dei casi C e D (fino a 60 per volta, circa mezzo minuto).
+            Per una sola riga: <strong>Altro…</strong> → <span class="tasto">Verifica P.IVA su VIES</span>.</li>
+        <li>Accanto alla P.IVA compare <em>VIES: attiva</em> oppure <em>VIES: non trovata</em>.</li>
+    </ol>
+    <p><strong>Come si legge.</strong> «VIES: attiva» vuol dire che la società esiste e la P.IVA non è cessata (nome e indirizzo ufficiali
+        passando il mouse sull'etichetta). Non vuol dire che gestisca ancora quella struttura: chi cede la gestione spesso tiene aperta la società.</p>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Situazione</th><th>Cosa probabilmente è successo</th><th>Chi chiamare</th></tr></thead>
+        <tbody>
+            <tr><td>VIES attiva, nessun nuovo gestore</td><td>Il cliente c'è ancora e fa le analisi altrove</td><td><strong>Il cliente</strong>: è il caso più interessante da recuperare</td></tr>
+            <tr><td>VIES attiva, c'è un nuovo gestore</td><td>Ha ceduto la gestione (es. Hotel Darsena)</td><td><strong>Il nuovo gestore</strong></td></tr>
+            <tr><td>VIES non trovata</td><td>Cessata, oppure solo non iscritta a VIES</td><td>Da capire con una telefonata o un controllo</td></tr>
+        </tbody>
+    </table>
+    <p class="nota"><strong>Attenzione:</strong> in VIES ci sono solo le imprese abilitate agli scambi con l'estero, e molti piccoli alberghi non lo sono:
+        «non trovata», da sola, non basta per dire che l'attività ha chiuso.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere i cambi di gestione dalla pagina «Clienti da seguire»</summary>
+    <p>Nella scheda <strong>Legionella</strong> di <em>Clienti da seguire</em>, sotto lo stato del cliente compare l'esito del cambio di gestione
+        (es. «nuovo gestore attivo: …»): cliccandolo si apre questa pagina già filtrata su quel cliente. In alto un riquadro verde riassume quante sedi non sono davvero perse.</p>
+</details>
+
+@if (importi)
+{
+    <details class="situazione">
+        <summary>Esportare l'elenco in Excel</summary>
+        <p>Premi <span class="tasto">Esporta Excel</span>: tutte le sedi con esito, P.IVA ed esito VIES, nuovo gestore, affidabilità e valori a listino.</p>
+    </details>
+}
+
+<p class="nota">I dati si aggiornano a ogni importazione AZW (ogni notte, oppure «Importa AZW ora» in Clienti da seguire).
+    @if (!importi) { <text>Gli importi in euro li vede solo chi usa «Clienti da seguire».</text> }
+    Dubbi o problemi: Mirko Maffei.</p>

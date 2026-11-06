@@ -1,0 +1,51 @@
+@{
+    ViewData["Titolo"] = "Voci preventivi";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Voci preventivi</h1>
+        <p class="sottotitolo">Voci di listino accessori e condizioni di pagamento proponibili nelle offerte. Una voce non più da proporre si disattiva (non si elimina): resta leggibile nei preventivi già emessi ma sparisce dagli elenchi di scelta.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Voci accessorie</h2></div>
+    <div class="tabella-scorrevole" style="margin-top:0.4rem">
+        <table class="tabella" id="tabella-accessori">
+            <thead><tr>
+                <th style="width:12rem">Codice</th><th>Descrizione</th>
+                <th class="numerico" style="width:7rem">Prezzo €</th><th style="width:7rem">Unità</th>
+                <th style="width:6rem">Attivo</th><th style="width:5rem"></th>
+            </tr></thead>
+            <tbody id="corpo-accessori"></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.6rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-nuovo-accessorio">+ Nuova voce accessoria</button>
+    </div>
+    <p class="sottotesto" id="msg-accessori"></p>
+</section>
+
+<section class="riquadro" style="margin-top:1rem">
+    <div class="barra-risultati"><h2>Metodi di pagamento</h2></div>
+    <div class="tabella-scorrevole" style="margin-top:0.4rem">
+        <table class="tabella" id="tabella-pagamento">
+            <thead><tr>
+                <th>Descrizione</th><th class="numerico" style="width:6rem">Ordine</th>
+                <th style="width:6rem">Attivo</th><th style="width:5rem"></th>
+            </tr></thead>
+            <tbody id="corpo-pagamento"></tbody>
+        </table>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.6rem">
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-nuovo-pagamento">+ Nuovo metodo di pagamento</button>
+    </div>
+    <p class="sottotesto" id="msg-pagamento"></p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/voci-preventivo.js" asp-append-version="true"></script>
+}

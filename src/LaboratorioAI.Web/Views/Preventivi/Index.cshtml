@@ -17,9 +17,17 @@
 <section class="riquadro">
     <details id="dett-registro" open>
         <summary style="cursor:pointer;font-weight:600">Registro preventivi <span id="conteggio" class="sottotesto"></span></summary>
+        <div class="griglia-filtri" style="margin-top:0.5rem">
+            <label>Numero o cliente<input type="search" id="r-testo" placeholder="es. 2026/012 oppure Rossi" /></label>
+            <label>Dal<input type="date" id="r-dal" /></label>
+            <label>Al<input type="date" id="r-al" /></label>
+            <div style="display:flex;align-items:flex-end;gap:0.4rem">
+                <button type="button" class="pulsante pulsante-tenue" id="r-pulisci">Pulisci filtri</button>
+            </div>
+        </div>
         <div class="tabella-scorrevole" style="max-height:20rem;margin-top:0.5rem">
             <table class="tabella" id="tabella-registro">
-                <thead><tr><th>N°</th><th>Stato</th><th>Cliente</th><th>Oggetto</th><th>Data</th><th class="numerico">Imponibile €</th><th></th></tr></thead>
+                <thead><tr><th>N°</th><th>Stato</th><th>Cliente</th><th>Oggetto</th><th>Data</th><th class="numerico">Imponibile €</th><th>Redattore</th><th>Ultima modifica</th><th></th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -47,29 +55,59 @@
         <label>Città<input type="text" id="c-citta" /></label>
         <label>Prov.<input type="text" id="c-prov" maxlength="3" /></label>
         <label>Email<input type="email" id="c-email" /></label>
+        <label>Telefono<input type="text" id="c-telefono" maxlength="50" /></label>
+        <label id="c-nome-riga" class="nascosto">Nome cliente<input type="text" id="c-nome" maxlength="255" placeholder="nome e cognome" /></label>
+        <label id="c-pagato-riga" class="nascosto" style="display:flex;align-items:center;gap:0.4rem;font-weight:normal">
+            <input type="checkbox" id="c-pagato" style="width:auto" />
+            Già pagato
+        </label>
+        <p class="sottotesto" style="grid-column:1/-1">Se la ragione sociale è «Spett.le cliente», in prima pagina dell'offerta compaiono tutti i dati del cliente, anche quelli vuoti, da compilare a mano; il «Nome cliente» compare nella riga dedicata (l'intestazione resta «Spett.le cliente»).</p>
     </div>
 
     <div class="barra-risultati" style="margin-top:0.6rem"><h3>Offerta</h3></div>
     <div class="griglia-filtri">
         <label style="grid-column:1/-1">Oggetto<input type="text" id="p-oggetto" placeholder="es. Caratterizzazione rifiuto EER 15 02 03" /></label>
         <label>Data offerta<input type="date" id="p-data" /></label>
-        <label>Validità (giorni)<input type="number" id="p-validita" value="60" min="1" /></label>
+        <input type="hidden" id="p-validita" value="365" /><!-- durata fissa: 12 mesi; rinnovo tacito facoltativo (21/10/2026) -->
+        <label style="display:flex;align-items:center;gap:0.4rem;font-weight:normal">
+            <input type="checkbox" id="p-rinnovo" style="width:auto" checked />
+            Rinnovo tacito ogni 12 mesi
+        </label>
         <label>Aliquota IVA %<input type="number" id="p-iva" value="22" min="0" step="0.5" /></label>
-        <label style="grid-column:1/-1">Condizioni di pagamento<input type="text" id="p-pagamento" placeholder="es. Bonifico bancario vista fattura" /></label>
+        <label class="campo-con-suggerimenti" style="grid-column:1/-1">Condizioni di pagamento
+            <input type="text" id="p-pagamento-cerca" placeholder="cerca una condizione di pagamento predefinita…" autocomplete="off" />
+            <div id="p-pagamento-suggerimenti" class="elenco-suggerimenti nascosto"></div>
+        </label>
+        <label style="grid-column:1/-1">
+            <textarea id="p-pagamento" rows="3" placeholder="es. Bonifico bancario vista fattura — IBAN …, Banca …, intestato a MARE.A S.r.l." style="width:100%;font:inherit"></textarea>
+            <span class="sottotesto avviso-pagamento" id="p-pagamento-avviso"></span>
+        </label>
         <label style="grid-column:1/-1">Revisione Condizioni Generali di Fornitura<input type="text" id="p-revisione" placeholder="es. Mod. Com. 05 Rev. 19 del …" /></label>
         <p class="sottotesto" style="grid-column:1/-1">La revisione predefinita si imposta in Amministrazione → Impostazioni documenti (condivisa con gli Ordini di Accettazione). Qui puoi eventualmente sovrascriverla solo per questa offerta.</p>
         <label style="grid-column:1/-1">Note<input type="text" id="p-note" /></label>
+        <label style="grid-column:1/-1;display:flex;align-items:center;gap:0.4rem;font-weight:normal">
+            <input type="checkbox" id="p-promo" style="width:auto" />
+            Includi il riepilogo promozionale "Il nostro lavoro" (presentazione MARE.A e accreditamento) prima delle Condizioni Generali
+        </label>
+        <label style="grid-column:1/-1;display:flex;align-items:center;gap:0.4rem;font-weight:normal">
+            <input type="checkbox" id="p-mostra-insediamenti" style="width:auto" />
+            Riporta nell'offerta l'insediamento scelto sulle righe («Insediamento: …» sotto il controllo)
+        </label>
     </div>
 
     <div class="barra-risultati" style="margin-top:0.6rem"><h3>Righe del preventivo</h3></div>
 
     <div class="griglia-filtri">
-        <label>Aggiungi controllo esistente
-            <input type="text" id="ctrl-input" list="lista-controlli" placeholder="cerca un controllo…" />
-            <datalist id="lista-controlli"></datalist>
+        <label style="grid-column:1/-1" class="campo-con-suggerimenti">Aggiungi controllo esistente
+            <input type="text" id="ctrl-input" placeholder="cerca un controllo per nome o ID…" autocomplete="off" />
+            <div id="ctrl-suggerimenti" class="elenco-suggerimenti nascosto"></div>
         </label>
-        <label>Aggiungi voce accessoria
-            <select id="acc-input"><option value="">—</option></select>
+        <label style="grid-column:1/-1;display:flex;gap:.4rem;align-items:center;margin-top:-.4rem">
+            <input type="checkbox" id="ctrl-per-id" /> cerca solo per ID (mostra gli ID che iniziano con le cifre digitate)
+        </label>
+        <label class="campo-con-suggerimenti">Aggiungi voce accessoria
+            <input type="text" id="acc-input" placeholder="cerca una voce accessoria…" autocomplete="off" />
+            <div id="acc-suggerimenti" class="elenco-suggerimenti nascosto"></div>
         </label>
         <label style="align-self:end">
             <button type="button" class="pulsante pulsante-tenue" id="btn-libero">+ Controllo in subappalto (campo libero)</button>
@@ -77,24 +115,30 @@
     </div>
 
     <div class="griglia-filtri">
-        <label>Voce accessoria libera<input type="text" id="acc-descr" placeholder="descrizione…" /></label>
+        <label>Voce accessoria libera<input type="text" id="acc-descr" maxlength="500" placeholder="titolo, es. Relazione di Shelf-life" /></label>
         <label>Prezzo €<input type="number" id="acc-prezzo" min="0" step="0.01" /></label>
         <label>Q.tà<input type="number" id="acc-qta" min="1" value="1" /></label>
         <label style="align-self:end"><button type="button" class="pulsante pulsante-tenue" id="btn-acc-libero">+ Aggiungi accessorio</button></label>
+        <label style="grid-column:1/-1">Testo descrittivo della voce (facoltativo: stampato in offerta sotto il titolo; riga vuota = nuovo paragrafo)
+            <textarea id="acc-testo" rows="3" maxlength="4000" style="width:100%;font:inherit"></textarea></label>
     </div>
 
-    <div class="tabella-scorrevole" style="margin-top:0.6rem">
+    <div class="azioni-filtri" style="margin-top:0.4rem">
+        <p class="sottotesto" style="flex:1;margin:0">Seleziona due o più controlli (non voci accessorie) e raggruppali in un'unica riga con un prezzo unico: la descrizione resta modificabile, gli ID dei controlli d'origine si conservano sempre tra parentesi.</p>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-raggruppa">Raggruppa selezionate</button>
+    </div>
+    <div class="tabella-scorrevole" style="margin-top:0.4rem">
         <table class="tabella" id="tabella-righe">
             <thead><tr>
-                <th>Descrizione</th><th>Tipo</th><th>Prezzo</th>
+                <th style="width:2rem"></th><th>Descrizione</th><th>Tipo</th><th>Prezzo</th>
                 <th class="numerico">Base €</th><th class="numerico">Sconto %</th><th class="numerico">Q.tà</th>
                 <th class="numerico">Totale €</th><th></th>
             </tr></thead>
             <tbody></tbody>
             <tfoot>
-                <tr><th colspan="6" style="text-align:right">Imponibile</th><th class="numerico" id="tot-imponibile">0,00</th><th></th></tr>
-                <tr><th colspan="6" style="text-align:right">IVA</th><th class="numerico" id="tot-iva">0,00</th><th></th></tr>
-                <tr><th colspan="6" style="text-align:right">Totale</th><th class="numerico" id="tot-totale">0,00</th><th></th></tr>
+                <tr><th colspan="7" style="text-align:right">Imponibile</th><th class="numerico" id="tot-imponibile">0,00</th><th></th></tr>
+                <tr><th colspan="7" style="text-align:right">IVA</th><th class="numerico" id="tot-iva">0,00</th><th></th></tr>
+                <tr><th colspan="7" style="text-align:right">Totale</th><th class="numerico" id="tot-totale">0,00</th><th></th></tr>
             </tfoot>
         </table>
     </div>
@@ -102,6 +146,7 @@
 
     <div class="azioni-filtri" style="margin-top:0.8rem">
         <button type="button" class="pulsante pulsante-tenue" id="btn-elimina" style="margin-right:auto">Elimina</button>
+        <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-duplica" title="Nuovo preventivo con le stesse righe, numero e data di oggi">Duplica</button>
         <button type="button" class="pulsante pulsante-tenue" id="btn-annulla">Annulla</button>
         <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
         <button type="button" class="pulsante pulsante-tenue nascosto" id="btn-offerta-word">Offerta Word</button>
@@ -131,14 +176,15 @@
             <input type="text" id="lib-verifica" placeholder="cerca tra i nostri metodi…" />
         </label>
     </div>
-    <p class="sottotesto" id="lib-verifica-esito"></p>
+    <div id="lib-verifica-esito"></div>
     <div class="griglia-filtri">
         <label>Parametro / metodo<input type="text" id="lib-m-descr" /></label>
         <label>Denominazione riga<input type="text" id="lib-m-denom" /></label>
         <label>Riferimento normativo<input type="text" id="lib-m-rif" /></label>
         <label>Unità<input type="text" id="lib-m-unita" /></label>
-        <label>Laboratorio esterno
-            <select id="lib-m-lab"><option value="">— (interno / nessuno)</option></select>
+        <label class="campo-con-suggerimenti">Laboratorio esterno
+            <input type="text" id="lib-m-lab-input" placeholder="cerca un laboratorio esterno… (vuoto = interno/nessuno)" autocomplete="off" />
+            <div id="lib-m-lab-suggerimenti" class="elenco-suggerimenti nascosto"></div>
         </label>
         <label style="align-self:end"><button type="button" class="pulsante pulsante-tenue" id="lib-m-aggiungi">+ Aggiungi metodo</button></label>
     </div>
@@ -157,14 +203,18 @@
 
 <template id="tpl-riga">
     <tr class="riga">
+        <td class="r-sel-cell" style="text-align:center"><input type="checkbox" class="r-sel" /></td>
         <td class="r-descr"></td>
         <td class="r-tipo"></td>
         <td class="r-origine sottotesto"></td>
-        <td class="numerico r-base"></td>
+        <td class="numerico"><input type="number" class="r-base" min="0" step="0.01" style="width:6rem;text-align:right" /></td>
         <td class="numerico"><input type="number" class="r-sconto" min="0" max="100" step="0.5" style="width:5rem;text-align:right" /></td>
         <td class="numerico"><input type="number" class="r-qta" min="1" step="1" style="width:4rem;text-align:right" /></td>
         <td class="numerico r-tot"></td>
-        <td><button type="button" class="pulsante pulsante-tenue r-rimuovi">✕</button></td>
+        <td style="white-space:nowrap">
+            <button type="button" class="pulsante pulsante-tenue r-modifica-libero nascosto" title="Modifica i metodi del controllo in subappalto">✎</button>
+            <button type="button" class="pulsante pulsante-tenue r-rimuovi">✕</button>
+        </td>
     </tr>
 </template>
 

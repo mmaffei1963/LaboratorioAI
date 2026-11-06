@@ -29,6 +29,7 @@ function suggerisci() {
             ${m.laboratorioEsterno
                 ? `<span class="etichetta etichetta-outsourcing">${testo(m.laboratorioEsterno)}</span>` : ''}
             <div class="sottotesto">${testo(m.nomeParametro) || testo(m.denominazioneRiga)}</div>
+            ${dettagliMetodo(m)}
         </div>`).join('');
 
     box.classList.remove('nascosto');
@@ -38,6 +39,18 @@ function suggerisci() {
             e.preventDefault();
             scegli(Number(nodo.dataset.id));
         }));
+}
+
+// 05/11/2026 (Zatterin): metodi con la stessa norma e lo stesso parametro (es. prove su superfici) sembravano uguali.
+// Sotto si mostrano ID del metodo, denominazione della riga (se diversa dal parametro), sigla, unità di misura e dettagli.
+function dettagliMetodo(m) {
+    const parti = [`ID ${m.idMetodo}`];
+    if (m.denominazioneRiga && m.denominazioneRiga !== m.nomeParametro) parti.push(testo(m.denominazioneRiga));
+    if (m.acronimo) parti.push(testo(m.acronimo));
+    if (m.rifMetodo && m.rifMetodo !== m.riferimentoNormativo) parti.push(testo(m.rifMetodo));
+    if (m.unitaMisura) parti.push(testo(m.unitaMisura));
+    if (m.dettagliMetodo) parti.push(testo(m.dettagliMetodo.length > 90 ? m.dettagliMetodo.slice(0, 90) + '…' : m.dettagliMetodo));
+    return `<div class="sottotesto" style="opacity:.85">${parti.join(' · ')}</div>`;
 }
 
 function scegli(idMetodo) {
@@ -64,11 +77,46 @@ function disegnaScelti() {
     metodiScelti.forEach(m => {
         const nodo = document.createElement('span');
         nodo.className = 'scelta';
-        nodo.innerHTML = `${testo(m.riferimentoNormativo || m.nomeParametro)}
+        nodo.innerHTML = `${testo(m.riferimentoNormativo || m.nomeParametro)}${m.idMetodo ? ` <small>(ID ${m.idMetodo})</small>` : ''}
                           <button type="button" aria-label="Rimuovi">&times;</button>`;
         nodo.querySelector('button').addEventListener('click', () => rimuovi(m.idMetodo));
         contenitore.insertBefore(nodo, campo);
     });
+}
+
+// ── Metodi presi da un controllo (03/11/2026) ──────────────
+// Si sceglie un controllo noto (es. con le prove A B C): i suoi metodi entrano tra quelli scelti, si aggiungono
+// le altre prove (D) e «Cerca controlli» con «tutti i metodi» trova i controlli che li contengono tutti.
+
+function idDaTestoControllo(testoScelto) {
+    const t = (testoScelto || '').trim();
+    const m = t.match(/\(ID\s*(\d+)\)\s*$/i);
+    if (m) return Number(m[1]);
+    return /^\d+$/.test(t) ? Number(t) : null;
+}
+
+async function aggiungiMetodiDelControllo(pulsante) {
+    const id = idDaTestoControllo(document.getElementById('controllo-base').value);
+    if (!id) { avvisa('Scegli il controllo dall\'elenco o scrivi il suo ID.', 'info'); return; }
+    const libera = occupa(pulsante, 'Carico…');
+    try {
+        const c = await chiamaApi(`/api/metodi/controllo/${id}`);
+        let aggiunti = 0;
+        for (const m of c.metodi) {
+            if (metodiScelti.some(x => x.idMetodo === m.idMetodo)) continue;
+            // Il metodo può non essere tra quelli attivi della ricerca: si usa quello del controllo.
+            metodiScelti.push(metodiDisponibili.find(x => x.idMetodo === m.idMetodo) ?? m);
+            aggiunti++;
+        }
+        disegnaScelti();
+        document.querySelector('input[name="logica"][value="Tutti"]').checked = true;
+        document.getElementById('controllo-base').value = '';
+        avvisa(`Aggiunti ${aggiunti} metodi di «${c.controllo}» (ID ${c.idControllo}). Aggiungi le altre prove e premi «Cerca controlli».`, 'successo');
+    } catch (errore) {
+        avvisa(errore.message, 'errore');
+    } finally {
+        libera();
+    }
 }
 
 // ── Ricerca controlli ──────────────────────────────────────
@@ -234,6 +282,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         ]);
         metodiDisponibili = metodi;
         popolaSelect(document.getElementById('scelta-controllo'), controlli, 'Seleziona…');
+        document.getElementById('lista-controlli-base').innerHTML =
+            controlli.map(c => `<option value="${testo(c.nome)} (ID ${c.id})">`).join('');
     } catch (errore) {
         avvisa(`Caricamento non riuscito: ${errore.message}`, 'errore');
     }
@@ -245,6 +295,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-cerca-controlli')
         .addEventListener('click', e => cercaControlli(e.currentTarget));
+
+    document.getElementById('btn-controllo-base')
+        .addEventListener('click', e => aggiungiMetodiDelControllo(e.currentTarget));
+    document.getElementById('controllo-base').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); aggiungiMetodiDelControllo(document.getElementById('btn-controllo-base')); }
+    });
 
     document.getElementById('btn-azzera-metodi').addEventListener('click', () => {
         metodiScelti = [];

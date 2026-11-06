@@ -41,6 +41,8 @@ public class ConfigurazioneTaraturaBilancia : IEntityTypeConfiguration<TaraturaB
         e.ToTable("TaratureBilance", "bilance");
         e.HasKey(x => x.IdTaratura);
         e.Property(x => x.BilanciaIdentificazione).HasMaxLength(255).IsRequired();
+        e.Property(x => x.Committente).HasMaxLength(255);   // 03/11/2026
+        e.Property(x => x.Insediamento).HasMaxLength(255);
         e.Property(x => x.BilanciaModello).HasMaxLength(255);
         e.Property(x => x.Tipo).HasMaxLength(100);
         e.Property(x => x.Sda).HasMaxLength(50);

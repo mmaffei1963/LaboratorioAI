@@ -1,0 +1,151 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model LaboratorioAI.Web.Controllers.ModelloSpettanze
+@{
+    ViewData["Titolo"] = "Spettanze consulenti";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Pct(decimal? v) => v is decimal d ? d.ToString("0.##", it) : "";
+    string Iso(DateTime? d) => d?.ToString("yyyy-MM-dd") ?? "";
+    var r = Model.Risultato;
+    var c = r?.Consulente;
+    var anni = Enumerable.Range(2024, DateTime.Today.Year - 2024 + 1).Reverse().ToList();
+    string NomeGruppo(GruppoVociSpettanze g) => g switch
+    {
+        GruppoVociSpettanze.Analisi => "Analisi",
+        GruppoVociSpettanze.AnalisiEsterne => "Analisi esterne (escluse dalla voce c)",
+        GruppoVociSpettanze.Formazione => "Formazione",
+        GruppoVociSpettanze.Consulenza => "Consulenza",
+        _ => "Tarature"
+    };
+}
+@* Spettanze dei consulenti a percentuale (19/10/2026). Definizione: claude/analisi-spettanze-consulenti.md *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Spettanze consulenti</h1>
+        <p class="sottotitolo">Compensi dei consulenti a percentuale (art. 4 dei contratti) calcolati sugli <strong>incassi</strong> registrati in AZW, meno note di credito. Il cliente è «suo» per la ZONA dell'anagrafica AZW, il lavoro è «suo» per la COMMESSA della riga di fattura. Gli acconti sono le fatture che il consulente emette a MARE.A.</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:flex-start">
+        @if (Model.PuoGestire)
+        {
+            <form method="post" asp-action="Importa" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Importazione in corso…';">
+                <input type="hidden" name="id" value="@c?.IdConsulentePercentuale" /><input type="hidden" name="anno" value="@Model.Anno" />
+                <button type="submit" class="pulsante">Importa AZW ora</button>
+            </form>
+        }
+        @if (c is not null)
+        {
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Esporta", new { id = c.IdConsulentePercentuale, anno = Model.Anno, fDal = Context.Request.Query["fDal"].ToString(), fAl = Context.Request.Query["fAl"].ToString(), iDal = Context.Request.Query["iDal"].ToString(), iAl = Context.Request.Query["iAl"].ToString() })">Esporta Excel</a>
+        }
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+
+<section class="riquadro">
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+        <span class="sottotesto">Consulente:</span>
+        @foreach (var x in Model.Consulenti)
+        {
+            <a class="pulsante @(c?.IdConsulentePercentuale == x.IdConsulentePercentuale ? "" : "pulsante-tenue")" href="@Url.Action("Index", new { id = x.IdConsulentePercentuale, anno = Model.Anno })">@x.Nome@(x.Attivo ? "" : " (non attivo)")</a>
+        }
+        <span class="sottotesto" style="margin-left:1rem">Anno:</span>
+        @foreach (var a in anni)
+        {
+            <a class="pulsante @(a == Model.Anno ? "" : "pulsante-tenue")" href="@Url.Action("Index", new { id = c?.IdConsulentePercentuale, anno = a })">@a</a>
+        }
+    </div>
+</section>
+
+@if (r is not null)
+{
+    <partial name="_Risultato" model="r" />
+
+    @if (Model.PuoChiudere && r.Chiuso is null && !r.Filtrato && Model.Anno < DateTime.Today.Year)
+    {
+        <section class="riquadro">
+            <form method="post" asp-action="Chiudi" onsubmit="return confirm('Chiudere l\'anno @Model.Anno per @c!.Nome? Il calcolo verrà congelato e non cambierà più.')" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-end">
+                <input type="hidden" name="id" value="@c!.IdConsulentePercentuale" /><input type="hidden" name="anno" value="@Model.Anno" />
+                <label style="flex:1;min-width:16rem">Nota per la chiusura (facoltativa)<input type="text" name="note" maxlength="1000" /></label>
+                <button type="submit" class="pulsante">Chiudi l'anno @Model.Anno</button>
+            </form>
+            <p class="sottotesto" style="margin-bottom:0">Da fare dopo l'importazione AZW che comprende gli incassi di dicembre. Il conguaglio si salda entro marzo.</p>
+        </section>
+    }
+}
+
+@if (c is not null)
+{
+    <section class="riquadro">
+        <details>
+            <summary style="cursor:pointer;font-weight:600">Dati del consulente e contratti</summary>
+            @if (Model.PuoGestire)
+            {
+                <form method="post" asp-action="SalvaConsulente" class="griglia-filtri" style="margin-top:0.6rem">
+                    <input type="hidden" name="IdConsulentePercentuale" value="@c.IdConsulentePercentuale" /><input type="hidden" name="anno" value="@Model.Anno" />
+                    <label>Nome<input type="text" name="Nome" value="@c.Nome" required maxlength="150" /></label>
+                    <label>ZONA (suoi clienti)<input type="text" name="CodiceZona" value="@c.CodiceZona" required maxlength="20" style="width:6rem" /></label>
+                    <label>COMMESSA (suo lavoro)<input type="text" name="CodiceCommessa" value="@c.CodiceCommessa" required maxlength="20" style="width:7rem" /></label>
+                    <label>Codice fornitore AZW<input type="text" name="CodiceFornitore" value="@c.CodiceFornitore" maxlength="20" style="width:6rem" /></label>
+                    <label>Voce di costo<input type="text" name="VoceCosto" value="@c.VoceCosto" maxlength="10" style="width:5rem" /></label>
+                    <label>Centri docenze a ore<input type="text" name="CentriDocenzeOrarie" value="@c.CentriDocenzeOrarie" maxlength="100" style="width:6rem" title="Centri di costo delle sue fatture che sono docenze pagate a ore (separati da ;)" /></label>
+                    <label>Utente (vede le sue spettanze)
+                        <select name="IdUtente"><option value="">—</option>@foreach (var u in Model.Utenti) { <option value="@u.IdUtente" selected="@(u.IdUtente == c.IdUtente)">@u.NomeCompleto</option> }</select>
+                    </label>
+                    <label class="casella"><input type="checkbox" name="Attivo" value="true" checked="@c.Attivo" /> attivo</label>
+                    <label style="flex:1;min-width:14rem">Note<input type="text" name="Note" value="@c.Note" maxlength="1000" /></label>
+                    <button type="submit" class="pulsante">Salva</button>
+                </form>
+            }
+
+            <h3 style="margin:1rem 0 0.4rem">Contratti (percentuali dell'art. 4)</h3>
+            <p class="sottotesto">Vale il contratto in vigore alla data dell'incasso o della nota di credito. Prima del primo contratto non si calcola nulla. «Tarature» vuoto = non previste. «b) esterne» = percentuale del campionamento per le analisi esterne (ANE); vuoto = la stessa di b).</p>
+            @foreach (var k in Model.Contratti.Append(new ContrattoConsulente { IdConsulentePercentuale = c.IdConsulentePercentuale, ValidoDal = DateTime.Today }))
+            {
+                var nuovo = k.IdContrattoConsulente == 0;
+                if (nuovo && !Model.PuoGestire) { continue; }
+                <form method="post" asp-action="SalvaContratto" class="griglia-filtri" style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #e5e7eb;@(k.Annullato ? "opacity:.55" : "")">
+                    <input type="hidden" name="idContrattoConsulente" value="@k.IdContrattoConsulente" /><input type="hidden" name="idConsulentePercentuale" value="@c.IdConsulentePercentuale" /><input type="hidden" name="anno" value="@Model.Anno" />
+                    <strong style="width:100%">@(nuovo ? "Nuova versione del contratto" : (k.Riferimento ?? "Contratto"))</strong>
+                    <label>Dal<input type="date" name="validoDal" value="@Iso(k.ValidoDal)" required /></label>
+                    <label>Al<input type="date" name="validoAl" value="@Iso(k.ValidoAl)" /></label>
+                    <label style="min-width:14rem">Riferimento<input type="text" name="riferimento" value="@k.Riferimento" maxlength="300" /></label>
+                    <label>a) %<input type="text" name="percConsulenza" value="@Pct(k.PercConsulenza)" style="width:4rem" /></label>
+                    <label title="Analisi portate da lui (ANA, legionelle, ambientali…)">b) %<input type="text" name="percCampionamento" value="@Pct(k.PercCampionamento)" style="width:4rem" /></label>
+                    <label title="Analisi esterne portate da lui (gruppo «Analisi esterne», ANE). Vuoto = come b).">b) esterne %<input type="text" name="percCampionamentoEsterne" value="@Pct(k.PercCampionamentoEsterne)" style="width:4rem" /></label>
+                    <label>c) %<input type="text" name="percAnalisiClienti" value="@Pct(k.PercAnalisiClienti)" style="width:4rem" /></label>
+                    <label>d) %<input type="text" name="percPrimoAnnoServizi" value="@Pct(k.PercPrimoAnnoServizi)" style="width:4rem" /></label>
+                    <label>e) %<input type="text" name="percFormazioneAltri" value="@Pct(k.PercFormazioneAltri)" style="width:4rem" /></label>
+                    <label>f) %<input type="text" name="percDocenza" value="@Pct(k.PercDocenza)" style="width:4rem" /></label>
+                    <label>Tarature %<input type="text" name="percTarature" value="@Pct(k.PercTarature)" style="width:4rem" /></label>
+                    <label>Mesi «primo anno»<input type="number" name="mesiPrimoAnno" value="@k.MesiPrimoAnno" min="1" max="60" style="width:4rem" /></label>
+                    @if (!nuovo) { <label class="casella"><input type="checkbox" name="annullato" value="true" checked="@k.Annullato" /> annullato</label> }
+                    <label style="flex:1;min-width:14rem">Note<input type="text" name="note" value="@k.Note" maxlength="1000" /></label>
+                    @if (Model.PuoGestire) { <button type="submit" class="pulsante @(nuovo ? "" : "pulsante-tenue")">@(nuovo ? "Aggiungi" : "Salva")</button> }
+                    @if (!nuovo) { <span class="sottotesto" style="width:100%">Modificato da @k.ModificatoDa il @k.DataModifica.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span> }
+                </form>
+            }
+            @if (Model.AnniChiusi.Count > 0)
+            {
+                <p class="sottotesto">Anni chiusi: @string.Join(", ", Model.AnniChiusi.Select(a => $"{a.Anno} (conguaglio {a.Conguaglio.ToString("N2", it)} €)"))</p>
+            }
+        </details>
+    </section>
+}
+
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">Gruppi di voci AZW (VOCICOST)</summary>
+        <p class="sottotesto">Quali voci di fattura sono analisi, formazione, consulenza o tarature. Le voci non elencate non danno spettanza. Una modifica vale per tutti i consulenti e per gli anni non ancora chiusi.</p>
+        @foreach (var g in Model.Gruppi)
+        {
+            <form method="post" asp-action="SalvaGruppo" class="griglia-filtri" style="margin-top:0.4rem">
+                <input type="hidden" name="gruppo" value="@g.Gruppo" /><input type="hidden" name="id" value="@c?.IdConsulentePercentuale" /><input type="hidden" name="anno" value="@Model.Anno" />
+                <label style="flex:1;min-width:20rem">@NomeGruppo(g.Gruppo)<input type="text" name="voci" value="@g.Voci" maxlength="1000" readonly="@(!Model.PuoGestire)" /></label>
+                @if (Model.PuoGestire) { <button type="submit" class="pulsante pulsante-tenue">Salva</button> }
+                <span class="sottotesto">@g.ModificatoDa, @g.DataModifica.ToLocalTime().ToString("dd/MM/yyyy")</span>
+            </form>
+        }
+    </details>
+</section>

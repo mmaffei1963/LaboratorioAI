@@ -1,0 +1,34 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Richieste analisi privati» (05/11/2026, aggiornata 06/11/2026): Ordine di Accettazione per i privati. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Quando un <strong>privato</strong> porta un campione (es. acqua del rubinetto o di pozzo) si compila qui la richiesta
+        e si stampa l'<strong>Ordine di Accettazione per i privati</strong> (<strong>Mod. Com. 05B</strong>), con lo stesso aspetto degli Ordini di Accettazione.
+        Il cliente lo controlla e firma tre volte: sottoscrizione, approvazione specifica (artt. 1341-1342 c.c.) e consenso facoltativo.
+        Insieme gli si consegnano <strong>sempre</strong> la copia stampata delle Condizioni di Fornitura per i clienti privati (<strong>Mod. Com. 05A</strong>)
+        e l'informativa privacy (<strong>Mod. Com. 05C</strong>). Nulla viene scritto in ArcLab: prove e prezzi si leggono dalle commesse di «Spettabile cliente»
+        (cod. contabilità <strong>MAF2</strong>).</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Un privato consegna il campione</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova richiesta</span> e scrivi i <strong>dati del cliente</strong>: nome e cognome (obbligatorio), codice fiscale, indirizzo, telefono, e-mail per il Rapporto di Prova, se vuole ritirarlo in laboratorio e quando paga.</li>
+        <li>Nel <strong>campione</strong> scegli la descrizione dall'elenco delle matrici, il punto di prelievo, data e ora dichiarate dal cliente, il contenitore e chi l'ha fornito, la temperatura di ricevimento. Il prelievo è sempre del cliente.</li>
+        <li>Cerca i <strong>controlli</strong> per nome o ID, guarda le prove con <span class="tasto">Prove</span> e premi <span class="tasto">Aggiungi</span>. Prezzo e tempi si compilano da soli (10 giorni lavorativi, 20 se c'è Legionella o una prova esterna); i tempi si possono correggere.</li>
+        <li><strong>Comunicazione anticipata dei fuori limite</strong> e <strong>giudizio di conformità e pareri</strong> sono «no» se il cliente non li chiede. Con il giudizio scegli la norma (sono proposte quelle con limiti validati per la matrice) o scrivila: il supplemento si aggiunge al totale.</li>
+        <li>Il <strong>consenso alle comunicazioni commerciali</strong> è facoltativo: lascialo «lo sceglie il cliente sul modulo» se preferisci che lo spunti lui.</li>
+        <li>Premi <span class="tasto">Salva</span> e poi <span class="tasto">Ordine di Accettazione (Word)</span>: stampa, fai firmare e consegna al cliente copia dell'Ordine, delle Condizioni 05A e dell'informativa 05C.</li>
+    </ol>
+    <p class="nota">I prezzi sono stampati IVA inclusa, con imponibile e IVA. Le prove già salvate mantengono prezzo e metodi del giorno in cui sono state inserite.</p>
+</details>
+
+<details class="situazione">
+    <summary>Mi serve l'Ordine in bianco</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Ordine in bianco</span>: si scarica l'Ordine con caselle e righe vuote, da compilare a mano.</li>
+    </ol>
+</details>

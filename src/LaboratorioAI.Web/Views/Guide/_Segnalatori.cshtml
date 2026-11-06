@@ -1,0 +1,62 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Segnalatori e compensi» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A registrare <strong>chi ci porta i clienti</strong> (enti come Confesercenti o CNA, studi, persone, i nostri consulenti, MARE.A stessa)
+        e a calcolare il <strong>compenso</strong> che spetta loro. La segnalazione è legata al <strong>cliente</strong>, indipendentemente dal commerciale.
+        Il compenso si calcola sugli <strong>incassi</strong> (le fatture non pagate non contano) e continua finché il cliente compra il servizio.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Un cliente ci è stato segnalato: registrarlo</summary>
+    <ol class="passi">
+        <li>In <strong>Registra un cliente segnalato</strong> scrivi il nome o il codice del cliente e sceglilo dall'elenco.</li>
+        <li>Scegli il <strong>segnalatore e la condizione</strong> (es. «Confesercenti PS – Contratto A 5%»).</li>
+        <li>Metti la data di inizio (<em>Dal</em>). Se la condizione è «sulla commessa», indica la commessa ArcLab.</li>
+        <li>Premi <span class="tasto">Registra</span>: il cliente compare in <strong>Clienti segnalati</strong>.</li>
+    </ol>
+    <p class="nota">Se il segnalatore o la condizione non ci sono ancora, aggiungili prima (vedi sotto).</p>
+</details>
+
+<details class="situazione">
+    <summary>Nuovo segnalatore o nuova condizione</summary>
+    <ol class="passi">
+        <li>In fondo, <strong>Nuovo segnalatore</strong>: nome (es. «Confesercenti PS»), tipo e note, poi <span class="tasto">Aggiungi</span>.</li>
+        <li>Sul segnalatore, <strong>Aggiungi condizione</strong>: nome (es. «Contratto A»), percentuale, ambito e dopo quanti mesi senza fatture il compenso si ferma
+            (di base 24); facoltativa una durata massima in anni.</li>
+    </ol>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Ambito</th><th>Cosa conta</th></tr></thead>
+        <tbody>
+            <tr><td>Sulla commessa</td><td>Il fatturato del servizio della commessa ArcLab indicata (per le analisi, tutte le analisi del cliente).</td></tr>
+            <tr><td>Su tutta l'area</td><td>Tutto il fatturato del cliente nell'area scelta (analisi, formazione, consulenza…), senza indicare le commesse.</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">MARE.A e i consulenti interni si registrano di norma allo <strong>0%</strong>: non ricevono compensi ma si vede quanto fatturato hanno portato.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare condizione a un cliente, correggere errori</summary>
+    <ul class="passi">
+        <li>Per cambiare condizione: metti la <strong>data di fine</strong> sulla segnalazione attuale, salva, e registrane una nuova dal giorno dopo.</li>
+        <li><span class="tasto">Annulla</span> sulla segnalazione solo se era stata inserita per errore.</li>
+        <li>Nome sbagliato: correggilo nella casella e premi <span class="tasto">Salva</span>. Un doppione si toglie con <span class="tasto">Elimina</span>
+            (se non ha clienti) o con <span class="tasto">Unisci</span> (sposta condizioni e clienti sull'altro).</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Quanto spetta ai segnalatori (Compensi)</summary>
+    <ol class="passi">
+        <li>Apri <span class="tasto">Compensi</span>: in alto la data dei dati AZW importati.</li>
+        <li><strong>Per trimestre di incasso</strong>: il totale dovuto; <strong>Per segnalatore</strong>: base e compenso di ognuno dall'inizio della segnalazione.</li>
+        <li><span class="tasto">Esporta Excel</span> per l'elenco da liquidare.</li>
+    </ol>
+    <p class="nota">«Compenso fermo dal» indica quando si è interrotto (troppi mesi senza fatture, durata massima o data di fine). I trimestri si chiudono insieme alle provvigioni,
+        dalla pagina <em>Provvigioni</em>: dopo la chiusura i compensi del trimestre non cambiano più.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

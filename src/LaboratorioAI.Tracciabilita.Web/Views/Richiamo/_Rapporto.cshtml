@@ -1,0 +1,53 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.RapportoRichiamo
+@{
+    var conMail = Model.Clienti.Where(c => !string.IsNullOrWhiteSpace(c.Email)).Select(c => c.Email!.Trim()).Distinct().ToList();
+    var senzaMail = Model.Clienti.Where(c => string.IsNullOrWhiteSpace(c.Email)).ToList();
+    var oggetto = $"Comunicazione urgente: lotto {Model.LottoOrigine}";
+}
+<style>@@media print { .nascondi-stampa, nav, header { display: none !important; } }</style>
+@if (Model.Troncato)
+{
+    <p class="avviso ko">La ricerca si è fermata al limite di livelli: il risultato potrebbe essere incompleto.</p>
+}
+<p><strong>@Model.Lotti.Count</strong> lotti coinvolti in @Model.Produzioni produzioni, <strong>@Model.Clienti.Count</strong> clienti da avvisare, giacenza residua <strong>@Model.GiacenzaResidua.ToString("0.##")</strong> kg.</p>
+<h2>Lotti coinvolti</h2>
+<table class="elenco">
+    <thead><tr><th>Livello</th><th>Lotto</th><th>Articolo</th><th>Tipo</th><th>Giacenza residua</th><th>Stato</th></tr></thead>
+    <tbody>
+    @foreach (var l in Model.Lotti)
+    {
+        <tr><td>@l.Livello</td><td><a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@l.IdLotto">@l.Codice</a></td><td>@l.Articolo</td><td>@l.Tipo</td>
+            <td>@l.Giacenza.ToString("0.##") @l.UnitaMisura</td><td>@l.Stato</td></tr>
+    }
+    </tbody>
+</table>
+<h2>Clienti da avvisare</h2>
+@if (Model.Clienti.Count == 0)
+{
+    <p class="nota">Nessuna spedizione registrata per questi lotti: nessun cliente da avvisare.</p>
+}
+else
+{
+    <table class="elenco">
+        <thead><tr><th>Cliente</th><th>Contatti</th><th>Consegne</th></tr></thead>
+        <tbody>
+        @foreach (var c in Model.Clienti)
+        {
+            <tr>
+                <td>@c.Nome<br /><span class="nota">@c.Indirizzo</span></td>
+                <td>@c.Telefono<br />@(string.IsNullOrWhiteSpace(c.Email) ? "senza e-mail: avvisare per telefono" : c.Email)</td>
+                <td>@foreach (var x in c.Consegne) { <div>@x.Data - doc. @(x.Documento ?? "-") - lotto @x.Lotto@(x.Quantita is null ? "" : $" - {x.Quantita:0.##}")</div> }</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (conMail.Count > 0)
+    {
+        <p class="nascondi-stampa"><a class="pulsante" href="mailto:?bcc=@Uri.EscapeDataString(string.Join(",", conMail))&subject=@Uri.EscapeDataString(oggetto)">Prepara l'e-mail per @conMail.Count clienti</a>
+           <span class="nota">si apre il tuo programma di posta con i clienti in copia nascosta: scrivi tu il testo.</span></p>
+    }
+    @if (senzaMail.Count > 0)
+    {
+        <p class="nota">Senza e-mail (da chiamare): @string.Join(", ", senzaMail.Select(c => c.Nome))</p>
+    }
+}

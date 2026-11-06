@@ -1,0 +1,37 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloIndiceRichiamo
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Richiamo"; }
+<div class="testa-pagina"><h1>Richiamo e simulazione di ritiro</h1></div>
+<p class="nota">Cerca il lotto sospetto (materia prima o prodotto finito): vedrai quali prodotti ne derivano, quanto ne resta e quali clienti avvisare. La simulazione serve per le prove periodiche e resta nel registro con il tempo impiegato.</p>
+<form method="get" class="riga-modulo">
+    <label>Lotto, articolo o fornitore
+        <input type="text" name="cerca" value="@Model.Cerca" autofocus /></label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+@if (!string.IsNullOrWhiteSpace(Model.Cerca))
+{
+    <table class="elenco">
+        <thead><tr><th>Lotto</th><th>Articolo</th><th>Fornitore</th><th>Tipo</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var l in Model.Trovati)
+        {
+            <tr><td>@l.Codice</td><td>@l.Articolo</td><td>@l.Fornitore</td><td>@(l.Tipo == TipoLotto.Ingresso ? "materia prima" : "prodotto")</td>
+                <td><a asp-action="Prepara" asp-route-id="@l.IdLotto">Simula o richiama</a></td></tr>
+        }
+        @if (Model.Trovati.Count == 0) { <tr><td colspan="5">Nessun lotto trovato.</td></tr> }
+        </tbody>
+    </table>
+}
+<h2>Registro dei richiami e delle simulazioni</h2>
+<table class="elenco">
+    <thead><tr><th>Data</th><th>Tipo</th><th>Lotto</th><th>Motivo</th><th>Tempo</th><th>Esito</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Registro)
+    {
+        <tr><td>@r.DataAvvio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@(r.Reale ? "richiamo" : "simulazione")</td><td>@r.Lotto</td><td>@r.Motivo</td>
+            <td>@(r.Secondi is int s ? (s < 120 ? s + " s" : (s / 60) + " min") : "")</td><td>@r.Esito</td>
+            <td><a asp-action="Rapporto" asp-route-id="@r.IdRichiamo">Rapporto</a></td></tr>
+    }
+    @if (Model.Registro.Count == 0) { <tr><td colspan="7">Nessun richiamo o simulazione registrati.</td></tr> }
+    </tbody>
+</table>

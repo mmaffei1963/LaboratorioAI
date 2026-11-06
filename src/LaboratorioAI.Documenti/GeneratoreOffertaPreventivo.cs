@@ -16,7 +16,10 @@ public interface IGeneratoreOffertaPreventivo
 {
     /// <summary>Offerta Word (.docx) scritta sul modello di carta intestata indicato.</summary>
     byte[] GeneraWord(Preventivo p, string percorsoModello);
-    byte[] GeneraPdf(Preventivo p);
+
+    /// <summary>Offerta PDF con logo e dati societari MARE.A in testata e piè di pagina.</summary>
+    /// <param name="cartellaImmagini">Cartella contenente logo_header.png e logo_footer.png (carta intestata).</param>
+    byte[] GeneraPdf(Preventivo p, string cartellaImmagini);
     string NomeFile(Preventivo p, string estensione);
 }
 
@@ -25,13 +28,30 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
+    /// <summary>Larghezza del logo di testata/piè pagina: coincide con la larghezza utile della pagina (21 - 2×2 cm).</summary>
+    private static readonly Unit LarghezzaLoghi = Unit.FromCentimeter(17);
+
+    /// <summary>
+    /// Frase di verifica ACCREDIA per le prove in subappalto, al singolare se il laboratorio esterno
+    /// coinvolto nell'offerta è uno solo (simbolo "§"), al plurale se sono più d'uno (simboli "§1",
+    /// "§2", ecc., necessari per distinguerli).
+    /// </summary>
+    private static string TestoVerificaAccredia(int numeroLaboratori) =>
+        TestiOfferta.NotaSubappalto(numeroLaboratori);
+
+    /// <summary>Simbolo del laboratorio esterno: "§" da solo se in offerta ce n'è uno solo, "§N" se ce ne sono più d'uno.</summary>
+    private static string Simbolo(int numeroLaboratoriTotali, int numero) =>
+        numeroLaboratoriTotali > 1 ? "§" + numero : "§";
+
+    // Testi fissi dell'offerta (presentazione, condizioni, firme): vedi TestiOfferta.cs (30/09/2026).
+
     public byte[] GeneraWord(Preventivo p, string percorsoModello) =>
         OffertaDocx.Genera(p, percorsoModello);
 
-    public byte[] GeneraPdf(Preventivo p)
+    public byte[] GeneraPdf(Preventivo p, string cartellaImmagini)
     {
         FontResolverLabAI.Registra();
-        var doc = Costruisci(p);
+        var doc = Costruisci(p, cartellaImmagini);
         var renderer = new PdfDocumentRenderer { Document = doc };
         renderer.RenderDocument();
         using var ms = new MemoryStream();
@@ -47,7 +67,7 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
     }
 
     // ── Costruzione documento ──────────────────────────────────────
-    private static Document Costruisci(Preventivo p)
+    private static Document Costruisci(Preventivo p, string cartellaImmagini)
     {
         var doc = new Document();
         var normale = doc.Styles["Normal"]!;
@@ -56,16 +76,41 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
 
         var sec = doc.AddSection();
         sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(1.2);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(1.2);
+        // Margini superiore/inferiore più ampi per lasciare spazio a logo (testata) e dati societari (piè pagina).
+        sec.PageSetup.TopMargin = Unit.FromCentimeter(3.4);
+        sec.PageSetup.BottomMargin = Unit.FromCentimeter(2.6);
         sec.PageSetup.LeftMargin = Unit.FromCentimeter(2);
         sec.PageSetup.RightMargin = Unit.FromCentimeter(2);
+        sec.PageSetup.HeaderDistance = Unit.FromCentimeter(0.6);
+        sec.PageSetup.FooterDistance = Unit.FromCentimeter(0.6);
 
-        // Intestazione azienda
-        var intest = sec.AddParagraph("MARE.A s.r.l");
-        intest.Format.Font.Bold = true;
-        intest.Format.Font.Size = 12;
-        Piccolo(sec, "Via E. Toti, 2 • 47841 Cattolica (RN) • Tel 0541 830442 • info@mare-a.com • www.mare-a.com");
+        // Testata: logo MARE.A (stessa immagine usata nella carta intestata Word)
+        var percorsoLogoHeader = Path.Combine(cartellaImmagini, "logo_header.png");
+        if (File.Exists(percorsoLogoHeader))
+        {
+            var imgHeader = sec.Headers.Primary.AddImage(percorsoLogoHeader);
+            imgHeader.Width = LarghezzaLoghi;
+            imgHeader.LockAspectRatio = true;
+        }
+
+        // Piè di pagina: dati societari MARE.A (stessa immagine usata nella carta intestata Word)
+        var percorsoLogoFooter = Path.Combine(cartellaImmagini, "logo_footer.png");
+        if (File.Exists(percorsoLogoFooter))
+        {
+            var imgFooter = sec.Footers.Primary.AddImage(percorsoLogoFooter);
+            imgFooter.Width = LarghezzaLoghi;
+            imgFooter.LockAspectRatio = true;
+        }
+
+        // Numerazione di pagina (29/09/2026), sotto ai dati societari del piè di pagina.
+        var paginazione = sec.Footers.Primary.AddParagraph();
+        paginazione.Format.Alignment = ParagraphAlignment.Center;
+        paginazione.Format.Font.Size = 7;
+        paginazione.AddText($"Offerta N. {TestiOfferta.NumeroOfferta(p.Anno, p.Numero)} – Pagina ");
+        paginazione.AddPageField();
+        paginazione.AddText(" di ");
+        paginazione.AddNumPagesField();
+
         Piccolo(sec, "Iscritto nell'elenco regionale Emilia Romagna al n. 008/RN/003");
 
         var num = p.Numero is int n ? $"{p.Anno}/{n:000}" : "—";
@@ -78,71 +123,125 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
 
         // Testata (cliente + dati offerta)
         var testata = TabellaInfo(sec);
-        RigaInfo(testata, "Data offerta", (p.DataOfferta ?? DateTime.Today).ToString("dd/MM/yyyy", It), "Validità", $"{p.ValiditaGiorni} giorni");
-        RigaInfo(testata, "Cliente", p.ClienteRagioneSociale ?? "—", "Partita IVA", string.IsNullOrWhiteSpace(p.ClientePartitaIva) ? "—" : p.ClientePartitaIva!);
-        var indirizzo = string.Join(" ", new[] { p.ClienteIndirizzo, p.ClienteCap, p.ClienteCitta, p.ClienteProvincia }
-            .Where(s => !string.IsNullOrWhiteSpace(s)));
-        RigaInfo(testata, "Indirizzo", string.IsNullOrWhiteSpace(indirizzo) ? "—" : indirizzo, "Oggetto", string.IsNullOrWhiteSpace(p.Oggetto) ? "—" : p.Oggetto!);
+        RigaInfo(testata, "Data offerta", (p.DataOfferta ?? DateTime.Today).ToString("dd/MM/yyyy", It), "Durata", TestiOfferta.DurataBreve(p.ValiditaGiorni, !p.SenzaRinnovoTacito));
+        if (TestiOfferta.ClienteGenerico(p.ClienteRagioneSociale))
+        {
+            // 21/10/2026: «Spett.le cliente»: tutti i dati, anche quelli vuoti, da compilare a mano.
+            var dc = TestiOfferta.DaCompilare;
+            RigaInfo(testata, "Cliente", string.IsNullOrWhiteSpace(p.ClienteRagioneSociale) ? "Spett.le Cliente" : p.ClienteRagioneSociale!.Trim(), "Nome cliente", dc(p.ClienteNome));
+            RigaInfo(testata, "Partita IVA / C.F.", dc(p.ClientePartitaIva), "Telefono", dc(p.ClienteTelefono));
+            RigaInfo(testata, "Indirizzo", dc(p.ClienteIndirizzo), "CAP", dc(p.ClienteCap));
+            RigaInfo(testata, "Città (Prov.)", dc(string.Join(" ", new[] { p.ClienteCitta, p.ClienteProvincia }.Where(s => !string.IsNullOrWhiteSpace(s)))), "E-mail / PEC", dc(null));
+            RigaInfo(testata, "Oggetto", string.IsNullOrWhiteSpace(p.Oggetto) ? "—" : p.Oggetto!, "", "");
+            // 21/10/2026: due caselle; «Pagato» con la X se segnato in maschera, altrimenti entrambe vuote da spuntare a mano.
+            CasellePagamento(sec, p.GiaPagato);
+        }
+        else
+        {
+            RigaInfo(testata, "Cliente", p.ClienteRagioneSociale ?? "—", "Partita IVA", string.IsNullOrWhiteSpace(p.ClientePartitaIva) ? "—" : p.ClientePartitaIva!);
+            var indirizzo = string.Join(" ", new[] { p.ClienteIndirizzo, p.ClienteCap, p.ClienteCitta, p.ClienteProvincia }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+            RigaInfo(testata, "Indirizzo", string.IsNullOrWhiteSpace(indirizzo) ? "—" : indirizzo, "Oggetto", string.IsNullOrWhiteSpace(p.Oggetto) ? "—" : p.Oggetto!);
+            if (!string.IsNullOrWhiteSpace(p.ClienteTelefono)) RigaInfo(testata, "Telefono", p.ClienteTelefono!.Trim(), "", "");
+        }
+
+        // Copertina: solo i dati identificativi sopra. L'allegato tecnico (analisi, prezzi,
+        // condizioni economiche) parte sempre su una pagina nuova.
+        sec.AddPageBreak();
 
         var righe = p.Righe.OrderBy(r => r.Progressivo).ToList();
-        var controlli = righe.Where(r => r.Tipo is TipoRigaPreventivo.ControlloEsistente or TipoRigaPreventivo.PropostaControllo or TipoRigaPreventivo.ControlloLibero).ToList();
+        var controlli = righe.Where(r => r.Tipo is TipoRigaPreventivo.ControlloEsistente or TipoRigaPreventivo.PropostaControllo
+            or TipoRigaPreventivo.ControlloLibero or TipoRigaPreventivo.GruppoControlli).ToList();
         var accessori = righe.Where(r => r.Tipo == TipoRigaPreventivo.Accessorio).ToList();
 
         // Blocchi analisi
+        var haSubappalto = controlli.Any(r => r.Metodi.Any(m => m.IdLabEsternoArcLab != null) || r.Tipo == TipoRigaPreventivo.ControlloLibero);
+
+        // Numerazione dei laboratori esterni distinti (§1, §2, ...): un controllo raggruppato può
+        // riunire metodi in subappalto presso laboratori diversi, quindi il simbolo § da solo non
+        // basta più a distinguerli. La numerazione è unica per l'intera offerta (non per riga), nel
+        // primo ordine in cui i laboratori compaiono, e le frasi corrispondenti si riportano una sola
+        // volta ciascuna, dopo tutti i blocchi di analisi.
+        var numeroLab = new Dictionary<int, int>();
+        var fraseLab = new List<string>();
+        foreach (var r in controlli)
+            foreach (var m in r.Metodi.OrderBy(x => x.Progressivo))
+            {
+                if (m.IdLabEsternoArcLab is not int idLabNum || numeroLab.ContainsKey(idLabNum)) continue;
+                numeroLab[idLabNum] = numeroLab.Count + 1;
+                fraseLab.Add(TestiOfferta.FraseSubappalto(m.LabEsternoFrase, m.LabEsterno));
+            }
+
         foreach (var r in controlli)
         {
-            var subappalto = r.Metodi.Any(m => m.IdLabEsternoArcLab != null) || r.Tipo == TipoRigaPreventivo.ControlloLibero;
-
-            var idPart = r.IdControlloArcLab is int idc ? $" (ID {idc})" : "";
+            var idPart = !string.IsNullOrWhiteSpace(r.IdControlliOrigine) ? $" (ID {r.IdControlliOrigine})"
+                : r.IdControlloArcLab is int idc ? $" (ID {idc})"
+                : !string.IsNullOrWhiteSpace(r.RifLocale) ? $" (ID {r.RifLocale})" : "";
             var h = sec.AddParagraph("ANALISI DI LABORATORIO — " + (r.Descrizione ?? "").ToUpperInvariant() + idPart);
             h.Format.Font.Bold = true;
             h.Format.SpaceBefore = "0.4cm";
             h.Format.SpaceAfter = "0.1cm";
             h.Format.Shading.Color = new Color(0xFFEEEEEE);
-
-            if (subappalto)
+            if (p.MostraInsediamenti && !string.IsNullOrWhiteSpace(r.Insediamento))   // 05/11/2026; solo se spuntato (06/11/2026)
             {
-                var s = sec.AddParagraph("(Le seguenti analisi possono essere eseguite presso laboratorio esterno accreditato)");
-                s.Format.Font.Size = 8.5;
-                s.Format.Font.Italic = true;
+                var ins = sec.AddParagraph("Insediamento: " + r.Insediamento);
+                ins.Format.Font.Italic = true; ins.Format.Font.Size = 8.5; ins.Format.SpaceAfter = "0.1cm";
             }
 
             if (r.Metodi.Count > 0)
             {
+                // Colonna "Parametro" rimossa su richiesta (29/09/2026): lo spazio liberato va quasi
+                // tutto alla colonna "Metodo" (riferimento normativo, spesso un testo lungo — anche
+                // con un carattere più piccolo delle altre colonne), che in precedenza era la più
+                // compressa delle quattro. "Accr." resta la più stretta possibile.
                 var t = sec.AddTable();
                 t.Borders.Width = 0.5;
                 t.Borders.Color = new Color(0xFFBBBBBB);
-                t.AddColumn(Unit.FromCentimeter(7.5));
-                t.AddColumn(Unit.FromCentimeter(7.5));
+                // 20/10/2026: colonna «U.M.» (unità di misura del metodo).
+                t.AddColumn(Unit.FromCentimeter(4.2));
+                t.AddColumn(Unit.FromCentimeter(9.7));
                 t.AddColumn(Unit.FromCentimeter(2.0));
+                t.AddColumn(Unit.FromCentimeter(1.1));
                 var hr = t.AddRow();
                 hr.Format.Font.Bold = true;
                 hr.Shading.Color = new Color(0xFFF3F3F3);
-                hr.Cells[0].AddParagraph("Parametro");
+                hr.Cells[0].AddParagraph("Denominazione");
                 hr.Cells[1].AddParagraph("Metodo");
-                hr.Cells[2].AddParagraph("Accr.");
+                hr.Cells[2].AddParagraph("U.M.");
+                hr.Cells[3].AddParagraph("Accr.");
                 foreach (var m in r.Metodi.OrderBy(x => x.Progressivo))
                 {
                     var row = t.AddRow();
-                    row.Cells[0].AddParagraph(m.Descrizione ?? m.DenominazioneRiga ?? "—");
-                    row.Cells[1].AddParagraph(m.RiferimentoNormativo ?? "—");
-                    row.Cells[2].AddParagraph(m.IdLabEsternoArcLab != null ? "*" : (m.Accreditato ? "Sì" : "—"));
+                    row.Cells[0].AddParagraph(m.Denominazione ?? m.Descrizione ?? m.DenominazioneRiga ?? "—");
+                    var celMetodo = row.Cells[1].AddParagraph(m.RiferimentoNormativo ?? "—");
+                    celMetodo.Format.Font.Size = 8; // più piccolo del default (9pt): la colonna è spesso lunga.
+                    var celUm = row.Cells[2].AddParagraph(string.IsNullOrWhiteSpace(m.UnitaMisura) ? "—" : m.UnitaMisura.Trim());
+                    celUm.Format.Font.Size = 8;
+                    row.Cells[3].AddParagraph(m.IdLabEsternoArcLab is int idLabRiga ? Simbolo(numeroLab.Count, numeroLab[idLabRiga]) : (m.Accreditato ? "Sì" : "—"));
                 }
             }
 
-            // Prezzo del controllo
-            var pz = sec.AddParagraph($"Prezzo: € {Fmt(r.PrezzoFinale)}" + (r.ScontoPercentuale > 0 ? $"  (sconto {Fmt(r.ScontoPercentuale)}%)" : ""));
-            pz.Format.Alignment = ParagraphAlignment.Right;
-            pz.Format.Font.Bold = true;
-            pz.Format.SpaceAfter = "0.1cm";
-
-            // Frasi dei laboratori esterni (subappalto)
-            foreach (var frase in r.Metodi.Where(m => !string.IsNullOrWhiteSpace(m.LabEsternoFrase))
-                                          .Select(m => m.LabEsternoFrase!.Trim()).Distinct())
-                Piccolo(sec, "* " + frase);
+            // Prezzo (12/10/2026): solo IVA esclusa; con lo sconto prezzo pieno, percentuale e prezzo scontato.
+            RighePrezzo(sec, TestiOfferta.RighePrezzo(r.PrezzoBase, r.ScontoPercentuale, r.Quantita, r.PrezzoFinale, accessorio: false));
         }
 
-        // Servizi accessori
+        // Frasi dei laboratori esterni (subappalto): una sola volta per laboratorio, con il simbolo
+        // corrispondente a quello riportato in tabella (semplice "§" se il laboratorio è uno solo).
+        for (var i = 0; i < fraseLab.Count; i++)
+            Piccolo(sec, $"{Simbolo(numeroLab.Count, i + 1)} {fraseLab[i]}");
+
+        // Avviso ACCREDIA: una sola volta per offerta (non ripetuto per ogni blocco/laboratorio),
+        // evidenziato perché vale per tutte le prove in subappalto marcate con §.
+        if (haSubappalto)
+        {
+            var avviso = sec.AddParagraph(TestoVerificaAccredia(numeroLab.Count));
+            avviso.Format.Font.Bold = true;
+            avviso.Format.Shading.Color = new Color(0xFFFFF3D6);
+            avviso.Format.SpaceBefore = "0.3cm";
+            avviso.Format.SpaceAfter = "0.3cm";
+        }
+
+        // Servizi accessori (12/10/2026): titolo e testo descrittivo su tutta la larghezza, prezzo sotto a destra.
         if (accessori.Count > 0)
         {
             var h = sec.AddParagraph("SERVIZI ACCESSORI");
@@ -151,16 +250,27 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
             h.Format.SpaceAfter = "0.1cm";
             h.Format.Shading.Color = new Color(0xFFEEEEEE);
 
-            var t = sec.AddTable();
-            t.Borders.Width = 0.5;
-            t.Borders.Color = new Color(0xFFBBBBBB);
-            t.AddColumn(Unit.FromCentimeter(13));
-            t.AddColumn(Unit.FromCentimeter(4));
             foreach (var a in accessori)
             {
-                var row = t.AddRow();
-                row.Cells[0].AddParagraph((a.Descrizione ?? "—") + (a.Quantita > 1 ? $" × {a.Quantita}" : ""));
-                row.Cells[1].AddParagraph($"€ {Fmt(a.PrezzoFinale)}").Format.Alignment = ParagraphAlignment.Right;
+                var t = sec.AddTable();
+                t.Borders.Width = 0.5;
+                t.Borders.Color = new Color(0xFFBBBBBB);
+                t.AddColumn(Unit.FromCentimeter(17));
+                var titolo = t.AddRow();
+                titolo.Format.Font.Bold = true;
+                titolo.Shading.Color = new Color(0xFFF3F3F3);
+                titolo.Cells[0].AddParagraph(a.Descrizione ?? "—");
+                var paragrafi = TestiOfferta.Paragrafi(a.Note);
+                if (paragrafi.Count > 0)
+                {
+                    var corpo = t.AddRow();
+                    for (var k = 0; k < paragrafi.Count; k++)
+                    {
+                        var par = corpo.Cells[0].AddParagraph(paragrafi[k]);
+                        if (k < paragrafi.Count - 1) par.Format.SpaceAfter = "0.25cm";
+                    }
+                }
+                RighePrezzo(sec, TestiOfferta.RighePrezzo(a.PrezzoBase, a.ScontoPercentuale, a.Quantita, a.PrezzoFinale, accessorio: true));
             }
         }
 
@@ -175,34 +285,62 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
         RigaImporto(te, $"IVA {Fmt(p.AliquotaIva)}%", iva, false);
         RigaImporto(te, "TOTALE", p.TotaleImponibile + iva, true);
 
-        if (!string.IsNullOrWhiteSpace(p.CondizioniPagamento))
-            Nota(sec, "Condizioni di pagamento: " + p.CondizioniPagamento!.Trim(), spazioPrima: true, grassetto: true);
-        Nota(sec, $"Offerta valida {p.ValiditaGiorni} giorni dalla data indicata. I prezzi si intendono IVA esclusa.");
+        CondizioniPagamento(sec, p.CondizioniPagamento);
+        Nota(sec, TestiOfferta.Validita(p.ValiditaGiorni, !p.SenzaRinnovoTacito));
         if (!string.IsNullOrWhiteSpace(p.Note))
             Nota(sec, p.Note!.Trim());
 
         // Richiamo alle Condizioni Generali di Fornitura
         var rev = string.IsNullOrWhiteSpace(p.RevisioneCondizioni) ? "Mod. Com. 05" : p.RevisioneCondizioni!.Trim();
-        Titolo(sec, "CONDIZIONI GENERALI DI FORNITURA");
-        Nota(sec,
-            $"Il presente contratto è integrato dalle Condizioni Generali di Fornitura di MARE.A s.r.l. ({rev}), che ne " +
-            "costituiscono parte integrante e sostanziale. Le Condizioni Generali di Fornitura sono scaricabili dal sito " +
-            "www.mare-a.com e disponibili su richiesta. Il COMMITTENTE dichiara di conoscerle e di accettarle integralmente, " +
-            "con particolare riferimento alle clausole su prove in subappalto, tempi di consegna, regola decisionale e " +
-            "giudizi di conformità, campionamento, conservazione dei campioni e trattamento dei dati. In caso di contrasto, " +
-            "per le sole condizioni economiche e tecniche specifiche prevale quanto indicato nel presente contratto.");
-        Nota(sec,
-            "La presente offerta e le Condizioni Generali di Fornitura si intendono integralmente accettate dal COMMITTENTE " +
-            "al momento della consegna del campione al laboratorio.", spazioPrima: true, grassetto: true);
+        Titolo(sec, TestiOfferta.TitoloCondizioni);
+        Nota(sec, TestiOfferta.Condizioni(rev));
+        Nota(sec, TestiOfferta.Accettazione, spazioPrima: true, grassetto: true);
+
+        // Riepilogo promozionale "Il nostro lavoro" (opzionale, a scelta del commerciale): in pagine a
+        // parte, oltre la fine delle condizioni, per non mescolarlo al contenuto contrattuale/operativo.
+        if (p.RiepilogoPromozionale)
+        {
+            sec.AddPageBreak();
+            AggiungiRiepilogoPromozionale(sec);
+        }
 
         // Informativa privacy (fissa, uguale per ogni offerta)
         AggiungiInformativaPrivacy(sec);
 
-        // Firma
-        var firma = sec.AddParagraph("Per accettazione (timbro e firma)                                        MARE.A s.r.l.");
-        firma.Format.SpaceBefore = "1cm";
-        var linee = sec.AddParagraph("______________________________                                        ______________________________");
-        linee.Format.SpaceBefore = "0.8cm";
+        // Firma facoltativa (09/10/2026): l'accettazione dal Portale non richiede firme.
+        Nota(sec, TestiOfferta.NotaFirme, spazioPrima: true);
+        // Firma (tabella a due colonne: allineamento indipendente dal carattere usato)
+        var tf = sec.AddTable();
+        tf.Borders.Width = 0;
+        tf.Format.SpaceBefore = "1cm";
+        tf.AddColumn(Unit.FromCentimeter(8.5));
+        tf.AddColumn(Unit.FromCentimeter(8.5));
+
+        var rigaEtichette = tf.AddRow();
+        rigaEtichette.Cells[0].AddParagraph(TestiOfferta.FirmaAccettazione);
+        rigaEtichette.Cells[1].AddParagraph("MARE.A s.r.l.");
+
+        var rigaLinee = tf.AddRow();
+        rigaLinee.TopPadding = "0.8cm";
+        rigaLinee.Cells[0].AddParagraph("______________________________");
+        rigaLinee.Cells[1].AddParagraph("______________________________");
+
+        // Approvazione specifica delle clausole vessatorie (artt. 1341-1342 c.c.): firma SEPARATA,
+        // una firma sola "per accettazione" non basta. Solo con Condizioni ad articoli numerati (Rev. 19+).
+        if (TestiOfferta.HaArticoliNumerati(rev))
+        {
+            Nota(sec, TestiOfferta.TitoloApprovazioneSpecifica, spazioPrima: true, grassetto: true);
+            Nota(sec, TestiOfferta.ApprovazioneSpecifica);
+            var ta = sec.AddTable();
+            ta.Borders.Width = 0;
+            ta.Format.SpaceBefore = "0.4cm";
+            ta.AddColumn(Unit.FromCentimeter(8.5));
+            ta.AddColumn(Unit.FromCentimeter(8.5));
+            ta.AddRow().Cells[0].AddParagraph(TestiOfferta.FirmaApprovazioneSpecifica);
+            var rl = ta.AddRow();
+            rl.TopPadding = "0.8cm";
+            rl.Cells[0].AddParagraph("______________________________");
+        }
 
         return doc;
     }
@@ -212,6 +350,32 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
     {
         var p = sec.AddParagraph(testo);
         p.Format.Font.Size = 8.5;
+    }
+
+    /// <summary>«Pagamento: [ ] Pagato  [ ] Non pagato» con caselle disegnate come celle bordate (il font non ha ☐).</summary>
+    private static void CasellePagamento(Section sec, bool pagato)
+    {
+        var t = sec.AddTable();
+        t.Borders.Width = 0;
+        t.Format.SpaceAfter = "0.2cm";
+        foreach (var w in new[] { 3.0, 0.42, 2.6, 0.42, 3.0 }) t.AddColumn(Unit.FromCentimeter(w));
+        var row = t.AddRow();
+        row.Height = "0.42cm";
+        row.HeightRule = RowHeightRule.Exactly;
+        row.VerticalAlignment = VerticalAlignment.Center;
+        var l = row.Cells[0].AddParagraph("Pagamento");
+        l.Format.Font.Bold = true;
+        foreach (var (i, testo, x) in new[] { (1, "Pagato", pagato), (3, "Non pagato", false) })
+        {
+            var c = row.Cells[i];
+            c.Borders.Width = 0.75;
+            c.Borders.Color = Colors.Black;
+            var px = c.AddParagraph(x ? "X" : "");
+            px.Format.Alignment = ParagraphAlignment.Center;
+            px.Format.Font.Bold = true;
+            var pt = row.Cells[i + 1].AddParagraph(" " + testo);
+            pt.Format.LeftIndent = "0.1cm";
+        }
     }
 
     private static Table TabellaInfo(Section sec)
@@ -313,6 +477,60 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
         Nota(sec, "[  ] SI        [  ] NO");
     }
 
+    /// <summary>Righe del prezzo in grassetto a destra (sotto un controllo o una voce accessoria).</summary>
+    private static void RighePrezzo(Section sec, IReadOnlyList<string> righe)
+    {
+        for (var k = 0; k < righe.Count; k++)
+        {
+            var pz = sec.AddParagraph(righe[k]);
+            pz.Format.Alignment = ParagraphAlignment.Right;
+            pz.Format.Font.Bold = true;
+            if (k == righe.Count - 1) pz.Format.SpaceAfter = "0.1cm";
+        }
+    }
+
+    /// <summary>
+    /// Condizioni di pagamento (12/10/2026): con una modalità titolo e righe; con due o più la frase di scelta e, per
+    /// ognuna, una casella quadrata con la prima riga in grassetto e le altre rientrate (come nel modello di Mirko).
+    /// </summary>
+    private static void CondizioniPagamento(Section sec, string? testo)
+    {
+        var modalita = TestiOfferta.ModalitaPagamento(testo);
+        if (modalita.Count == 0) return;
+        Nota(sec, modalita.Count == 1 ? "Condizioni di pagamento:" : TestiOfferta.SceltaPagamento, spazioPrima: true, grassetto: true);
+        var t = sec.AddTable();
+        t.Borders.Width = 0;
+        t.AddColumn(Unit.FromCentimeter(0.38));
+        t.AddColumn(Unit.FromCentimeter(0.3));
+        t.AddColumn(Unit.FromCentimeter(15.5));
+        foreach (var m in modalita)
+        {
+            var spazio = t.AddRow();
+            spazio.Height = "0.15cm";
+            spazio.HeightRule = RowHeightRule.Exactly;
+            for (var k = 0; k < m.Count; k++)
+            {
+                var row = t.AddRow();
+                if (k == 0 && modalita.Count > 1)
+                {
+                    // Casella quadrata: cella con il solo bordo, alta una riga (il carattere del documento non ha il simbolo ☐).
+                    row.Height = "0.38cm";
+                    row.HeightRule = RowHeightRule.Exactly;
+                    var c = row.Cells[0];
+                    c.Borders.Width = 0.75;
+                    c.Borders.Color = Colors.Black;
+                }
+                var par = row.Cells[2].AddParagraph(m[k]);
+                par.Format.Font.Size = 8.5;
+                par.Format.Font.Bold = k == 0;
+            }
+        }
+        var fine = t.AddRow();
+        fine.Height = "0.3cm";
+        fine.HeightRule = RowHeightRule.Exactly;
+        t.Rows.LeftIndent = Unit.FromCentimeter(0.4);
+    }
+
     private static void Nota(Section sec, string testo, bool spazioPrima = false, bool grassetto = false)
     {
         var p = sec.AddParagraph(testo);
@@ -322,4 +540,21 @@ public class GeneratoreOffertaPreventivo : IGeneratoreOffertaPreventivo
     }
 
     private static string Fmt(decimal v) => v.ToString("N2", It);
+
+    private static void AggiungiRiepilogoPromozionale(Section sec)
+    {
+        Titolo(sec, TestiOfferta.TitoloIlNostroLavoro);
+        var testo = sec.AddParagraph(TestiOfferta.IlNostroLavoro);
+        testo.Format.SpaceAfter = "0.2cm";
+
+        var tagline = sec.AddParagraph(TestiOfferta.TaglineIlNostroLavoro);
+        tagline.Format.Font.Bold = true;
+        tagline.Format.Font.Italic = true;
+        tagline.Format.SpaceAfter = "0.3cm";
+
+        var sotto = sec.AddParagraph(TestiOfferta.TitoloLaboratorioAnalisi);
+        sotto.Format.Font.Bold = true;
+        sotto.Format.SpaceAfter = "0.1cm";
+        sec.AddParagraph(TestiOfferta.LaboratorioAnalisi).Format.SpaceAfter = "0.3cm";
+    }
 }

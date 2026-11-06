@@ -1,0 +1,23 @@
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloImpostazioni
+@inject LaboratorioAI.Tracciabilita.Web.Servizi.PermessiUtente Permessi
+@{ ViewData["Titolo"] = "Impostazioni"; var puoCambiare = await Permessi.PuoConfigurareAsync(); }
+<div class="testa-pagina"><h1>Impostazioni dell'azienda</h1></div>
+<h2>Kg degli ingredienti usati in produzione</h2>
+@if (!puoCambiare)
+{
+    <p class="avviso ko">Puoi vedere le impostazioni, ma solo chi ha il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong> può cambiarle.</p>
+}
+<form method="post" asp-action="Salva" class="modulo" style="max-width:40rem">
+    <label style="font-weight:400"><input type="radio" name="ModoConsumi" value="@((int)ModoQuantitaConsumi.SoloLotti)" checked="@(Model.ModoConsumi == ModoQuantitaConsumi.SoloLotti)" style="padding:0" />
+        <strong>Solo i lotti</strong>: si registra quali lotti sono stati usati, senza kg. Il magazzino degli ingressi non cala.</label>
+    <label style="font-weight:400"><input type="radio" name="ModoConsumi" value="@((int)ModoQuantitaConsumi.Manuale)" checked="@(Model.ModoConsumi == ModoQuantitaConsumi.Manuale)" style="padding:0" />
+        <strong>A mano</strong>: a fine produzione si scrivono i kg usati per ogni lotto.</label>
+    <label style="font-weight:400"><input type="radio" name="ModoConsumi" value="@((int)ModoQuantitaConsumi.Teorica)" checked="@(Model.ModoConsumi == ModoQuantitaConsumi.Teorica)" style="padding:0" />
+        <strong>Dalla ricetta</strong>: i kg si calcolano dalle quantità della ricetta e dai kg prodotti; si possono correggere a mano.</label>
+    <label style="font-weight:400"><input type="checkbox" name="ConsumiObbligatori" value="true" checked="@Model.ConsumiObbligatori" style="padding:0" />
+        I kg sono <strong>obbligatori</strong>: senza kg (scritti o calcolabili) la produzione non si registra. Vale solo per «A mano» e «Dalla ricetta».</label>
+    <input type="hidden" name="ConsumiObbligatori" value="false" />
+    @if (puoCambiare) { <button type="submit">Salva</button> }
+</form>
+<p class="nota">Il cambio vale dalle produzioni future: quelle già registrate non cambiano.</p>

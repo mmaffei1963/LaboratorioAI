@@ -1,0 +1,267 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Condizioni e firme";
+    var gestione = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.CondizioniGestione);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Condizioni e firme</h1>
+        <p class="sottotitolo">
+            Approvazione delle Condizioni Generali di Fornitura da parte dei clienti (Specifica v0.4): revisioni,
+            clausole da approvare specificamente, Firmatari e richieste. Il Firmatario riceve per e-mail un link personale
+            alla pagina di approvazione sul Portale clienti; la Ricevuta gli arriva in automatico. Dati dei clienti letti da ArcLab in sola lettura.
+        </p>
+    </div>
+</div>
+
+<div id="condizioni-pagina" data-gestione="@(gestione ? "true" : "false")"></div>
+
+@if (gestione)
+{
+    <!-- ══ Revisioni delle Condizioni ══ -->
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Revisioni delle Condizioni</h2>
+            <button type="button" class="pulsante" id="btn-nuova-revisione" style="margin-left:auto">Nuova revisione</button></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-revisioni">
+                <thead><tr><th>Revisione</th><th>Entrata in vigore</th><th>Stato</th><th class="numerico">Clausole</th><th>PDF</th><th>Pubblicata</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="riquadro nascosto" id="pannello-revisione">
+        <div class="barra-risultati"><h2 id="revisione-titolo">Nuova revisione</h2><span id="revisione-stato" class="sottotesto"></span></div>
+        <input type="hidden" id="r-id" />
+        <p id="r-impostazioni" class="sottotesto"></p>
+        <div class="griglia-filtri">
+            <label title="Si compone da solo da numero e data, nello stesso formato di Impostazioni documenti">Riferimento stampato (automatico)<input type="text" id="r-codice" readonly tabindex="-1" style="background:#f4f4f4" /></label>
+            <label>N° revisione<input type="number" id="r-numero" min="1" step="1" /></label>
+            <label>Data della revisione<input type="date" id="r-data" /></label>
+            <label>Entrata in vigore<input type="date" id="r-vigore" /></label>
+            <label class="casella" title="Se spuntato, chi aveva approvato la revisione precedente deve approvare di nuovo">
+                <input type="checkbox" id="r-nuova-approvazione" checked /> richiede nuova approvazione specifica</label>
+        </div>
+        <label style="display:block;margin-top:.4rem">Cosa cambia rispetto alla revisione precedente (lo vede il cliente)
+            <textarea id="r-cosa-cambia" rows="3" style="width:100%"></textarea></label>
+        <label style="display:block;margin-top:.4rem">Note interne<input type="text" id="r-note" style="width:100%" /></label>
+
+        <h3>PDF delle Condizioni</h3>
+        <p id="r-pdf-info" class="sottotesto">Nessun PDF caricato.</p>
+        <div class="azioni-filtri" id="r-pdf-azioni">
+            <input type="file" id="r-pdf-file" accept="application/pdf,.pdf" />
+            <button type="button" class="pulsante pulsante-tenue" id="btn-pdf-carica">Carica PDF</button>
+            <a class="pulsante pulsante-tenue nascosto" id="btn-pdf-scarica" target="_blank">Apri il PDF</a>
+        </div>
+
+        <h3>Clausole da approvare specificamente <span class="sottotesto">(Casella 2: numero e contenuto breve, nell'ordine in cui compaiono)</span></h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-clausole">
+                <thead><tr><th>N.</th><th>Art.</th><th>Contenuto breve</th><th>Testo integrale (facoltativo)</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="azioni-filtri" id="r-clausole-azioni">
+            <button type="button" class="pulsante pulsante-tenue" id="btn-clausola-riga">Aggiungi clausola</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-clausole-rev19" title="Sostituisce l'elenco con le 14 clausole della Rev. 19">Carica le clausole della Rev. 19</button>
+        </div>
+
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante pulsante-tenue" id="btn-revisione-elimina" style="color:var(--rosso)">Elimina bozza</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-revisione-ritira" style="color:var(--rosso)"
+                    title="Solo se pubblicata per errore e senza richieste di approvazione">Ritira</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-revisione-copia" title="Nuova revisione in bozza con le stesse clausole">Copia in una nuova revisione</button>
+            <div style="flex:1"></div>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-revisione-chiudi">Chiudi</button>
+            <button type="button" class="pulsante pulsante-secondario" id="btn-revisione-salva">Salva bozza</button>
+            <button type="button" class="pulsante" id="btn-revisione-pubblica"
+                    title="Congela PDF e clausole: da qui non si modificano più e si possono chiedere le approvazioni">Pubblica</button>
+        </div>
+    </section>
+}
+
+<!-- ══ Cliente: Firmatario e richieste ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Cliente</h2></div>
+    <div class="griglia-filtri">
+        <label>Cerca cliente (ArcLab)<input type="text" id="c-cerca" placeholder="almeno 2 lettere della ragione sociale (es. «marea»)" autocomplete="off" /></label>
+    </div>
+
+    <div id="scheda-cliente" class="nascosto" style="margin-top:.6rem">
+        <h3 id="c-nome"></h3>
+        <p id="c-dati" class="sottotesto"></p>
+
+        <h3>Firmatario</h3>
+        <p id="c-firmatario" class="sottotesto"></p>
+        <div class="griglia-filtri">
+            <label>Nome<input type="text" id="f-nome" /></label>
+            <label>Cognome<input type="text" id="f-cognome" /></label>
+            <label>Qualifica
+                <select id="f-qualifica">
+                    <option>Legale rappresentante</option><option>Amministratore</option><option>Procuratore</option>
+                    <option>Responsabile qualità delegato</option><option value="">Altro (scrivi nelle note)</option>
+                </select></label>
+            <label>E-mail nominativa<input type="email" id="f-email" placeholder="nome.cognome@azienda.it" /></label>
+            <label>Codice fiscale (facoltativo)<input type="text" id="f-cf" maxlength="16" /></label>
+            <label>Note<input type="text" id="f-note" /></label>
+        </div>
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante pulsante-secondario" id="btn-firmatario-salva">Designa come Firmatario</button>
+        </div>
+        <details style="margin-top:.4rem"><summary class="sottotesto">Firmatari precedenti</summary>
+            <div class="tabella-scorrevole">
+                <table class="tabella" id="tabella-firmatari-storico">
+                    <thead><tr><th>Nome</th><th>Qualifica</th><th>E-mail</th><th>Designato il</th><th>Da</th><th>Stato</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+
+        <div id="c-invito" style="margin:.8rem 0;padding:.6rem .8rem;border:1px dashed var(--grigio-300, #ccc);border-radius:6px">
+            <h3 style="margin-top:0">Non sai chi è il Firmatario? Chiedilo al cliente</h3>
+            <p class="sottotesto">Scriviamo all'e-mail aziendale con un link: il cliente indica chi approverà le Condizioni e quella persona
+                riceve subito il link di approvazione. Vale la prima risposta; promemoria automatici a 7 e 14 giorni.</p>
+            <div class="griglia-filtri">
+                <label>E-mail a cui scrivere (anche più d'una, separate da ;)<input type="text" id="i-email" /></label>
+            </div>
+            <div class="azioni-filtri">
+                <button type="button" class="pulsante pulsante-secondario" id="btn-invito-cliente">Invia la richiesta al cliente</button>
+            </div>
+            <ul id="c-inviti" class="sottotesto"></ul>
+        </div>
+
+        <h3>Nuova richiesta di approvazione</h3>
+        <div class="griglia-filtri">
+            <label>Offerta da accettare insieme (facoltativa)<select id="q-offerta"><option value="">— nessuna —</option></select></label>
+            <label>Note<input type="text" id="q-note" /></label>
+        </div>
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante" id="btn-richiesta-crea" title="Usa la revisione pubblicata più recente e il Firmatario attivo">Crea richiesta</button>
+        </div>
+
+        <h3>Richieste del cliente</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-richieste-cliente">
+                <thead><tr><th>Revisione</th><th>Firmatario</th><th>Stato</th><th>Creata</th><th>Inviata</th><th>Approvata</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ══ Invio massivo ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Invio massivo</h2><span id="m-stato" class="sottotesto"></span></div>
+    <p class="sottotitolo">Per tutti i clienti con campioni negli ultimi 12 mesi: scarica l'elenco, fai compilare i Firmatari, ricaricalo.
+        Prima vedi un'anteprima; nulla parte senza conferma. L'invio va in coda e procede da solo, al massimo un certo numero di e-mail al giorno.</p>
+    <div class="azioni-filtri">
+        <a class="pulsante pulsante-tenue" href="/api/condizioni/massivo/elenco">1. Scarica l'elenco da compilare (Excel)</a>
+        <input type="file" id="m-file" accept=".xlsx" />
+        <button type="button" class="pulsante pulsante-tenue" id="btn-m-anteprima">2. Carica e controlla</button>
+    </div>
+    <div id="m-anteprima" class="nascosto" style="margin-top:.6rem">
+        <p id="m-riepilogo"></p>
+        <label class="casella"><input type="checkbox" id="m-generiche" /> includi anche le righe con e-mail generica (<span id="m-n-generiche">0</span>)</label>
+        <div class="tabella-scorrevole" style="max-height:28rem">
+            <table class="tabella" id="tabella-massivo">
+                <thead><tr><th class="numerico">Riga</th><th>Cliente</th><th>Firmatario</th><th>E-mail</th><th>Esito</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="azioni-filtri">
+            <button type="button" class="pulsante pulsante-secondario" id="btn-m-prepara"
+                    title="Designa i Firmatari e crea le richieste; non invia nulla">3. Prepara Firmatari e richieste</button>
+        </div>
+    </div>
+    <div class="azioni-filtri" style="margin-top:.4rem">
+        @if (gestione)
+        {
+        <button type="button" class="pulsante" id="btn-m-accoda" title="Tutte le richieste «da inviare» della revisione in vigore">4. Metti in coda l'invio dei link</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-m-ferma" style="color:var(--rosso)">Ferma l'invio</button>
+        }
+        else
+        {
+        <span class="nota-campo">4. L'invio dei link lo avvia il Responsabile, dopo aver controllato le richieste preparate.</span>
+        }
+    </div>
+    <ul id="m-errori" class="sottotesto"></ul>
+</section>
+
+<!-- ══ Tutte le richieste ══ -->
+<!-- ══ Richiesta del Firmatario ai clienti (11/10/2026) ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Richiesta del Firmatario ai clienti</h2><span id="i-revisione" class="sottotesto"></span></div>
+    <p class="sottotitolo">Per i clienti con campioni negli ultimi 12 mesi che non hanno un Firmatario: scriviamo all'e-mail aziendale
+        dell'anagrafica ArcLab chiedendo di indicare chi approverà le Condizioni. Alla risposta il Firmatario viene designato e riceve
+        subito il link di approvazione. Gli inviti partono nei giorni feriali dalle 8 alle 18, nel tetto giornaliero di e-mail;
+        promemoria automatici a 7 e 14 giorni. «Ferma l'invio» qui sopra ferma anche gli inviti.</p>
+    <div class="azioni-filtri">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-i-situazione">1. Guarda la situazione</button>
+        <a class="pulsante pulsante-tenue" href="/api/condizioni/inviti/excel">Scarica la situazione cliente per cliente (Excel)</a>
+        <button type="button" class="pulsante pulsante-secondario" id="btn-i-prepara" title="Crea gli inviti per i clienti «da invitare»; non invia nulla">2. Prepara gli inviti</button>
+        @if (gestione)
+        {
+        <button type="button" class="pulsante" id="btn-i-accoda">3. Metti in coda gli inviti</button>
+        }
+        else
+        {
+        <span class="nota-campo">3. L'invio lo avvia il Responsabile.</span>
+        }
+    </div>
+    <div id="i-situazione" class="nascosto" style="margin-top:.6rem">
+        <table class="tabella" id="tabella-i-situazione" style="max-width:32rem">
+            <thead><tr><th>Situazione</th><th class="numerico">Clienti</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <h3>Risposte ed errori recenti</h3>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-i-ultimi">
+                <thead><tr><th>Cliente</th><th>Scritto a</th><th>Stato</th><th>Firmatario indicato</th><th>Errore</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Richieste di approvazione</h2><span id="conteggio-richieste" class="sottotesto"></span></div>
+    <div class="griglia-filtri">
+        <label>Stato
+            <select id="q-stato">
+                <option value="">Tutte tranne annullate</option>
+                <option value="DaInviare">Da inviare</option><option value="Inviata">Inviate</option><option value="Aperta">Aperte</option>
+                <option value="InVerifica">In verifica</option><option value="Approvata">Approvate</option>
+                <option value="Rifiutata">Rifiutate</option><option value="Annullata">Annullate</option><option value="tutte">Tutte</option>
+            </select></label>
+        <label>Cliente<input type="text" id="q-filtro" placeholder="parte della ragione sociale" /></label>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-richieste">
+            <thead><tr><th>Cliente</th><th>Revisione</th><th>Firmatario</th><th>Stato</th><th>Creata</th><th>Inviata</th><th class="numerico">Giorni</th><th>Approvata</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ══ Registro delle evidenze ══ -->
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Registro delle evidenze</h2><span id="registro-esito" class="sottotesto"></span>
+        @if (gestione)
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-registro-verifica" style="margin-left:auto"
+                    title="Ricalcola tutta la catena delle impronte">Verifica integrità</button>
+        }
+    </div>
+    <p class="sottotesto">Registro a sola aggiunta: ogni riga contiene l'impronta della precedente, una modifica o una cancellazione rompe la catena. Ultime 500 righe.</p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th class="numerico">N.</th><th>Data</th><th>Evento</th><th>Cliente</th><th>Utente</th><th>Dettaglio</th><th>Impronta</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/condizioni.js" asp-append-version="true"></script>
+}

@@ -7,7 +7,7 @@
 <div class="barra-strumenti">
     <div>
         <h1>Proposta controlli</h1>
-        <p class="sottotitolo">Proponi un nuovo controllo scegliendo i metodi dal catalogo. Alla tua approvazione il controllo viene importato in ArcLab dal processo dedicato: LaboratorioAI non scrive mai direttamente sul gestionale.</p>
+        <p class="sottotitolo">Proponi un nuovo controllo scegliendo i metodi dal catalogo. Alla tua approvazione viene inviata un'email con tutti i dati del controllo: l'inserimento in ArcLab resta manuale, LaboratorioAI non scrive mai direttamente sul gestionale.</p>
     </div>
     <div class="azioni">
         <button class="pulsante" id="btn-nuova">Nuova proposta</button>
@@ -73,7 +73,7 @@
         <button type="button" class="pulsante" id="btn-salva">Salva bozza</button>
         @if (puoApprovare)
         {
-            <button type="button" class="pulsante pulsante-secondario" id="btn-approva">Approva</button>
+            <button type="button" class="pulsante pulsante-secondario" id="btn-approva">Approva e invia email</button>
         }
     </div>
 </section>

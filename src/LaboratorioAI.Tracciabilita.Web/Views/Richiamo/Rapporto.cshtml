@@ -1,0 +1,9 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.RapportoRichiamo
+@{ ViewData["Titolo"] = (Model.Reale ? "Richiamo " : "Simulazione ") + Model.LottoOrigine; }
+<p class="nascondi-stampa"><a asp-action="Index">« Richiamo</a></p>
+<h1>@(Model.Reale ? "Richiamo" : "Simulazione di ritiro"): lotto @Model.LottoOrigine</h1>
+<p>@Model.ArticoloOrigine - @Model.DataOra.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+   @if (ViewBag.Secondi is int s) { <span>- elenco ottenuto in @(s < 120 ? s + " secondi" : (s / 60) + " minuti")</span> }</p>
+@if (!string.IsNullOrWhiteSpace(Model.Motivo)) { <p>Motivo: @Model.Motivo</p> }
+<partial name="_Rapporto" model="Model" />
+<p class="nascondi-stampa"><button type="button" class="piccolo" onclick="window.print()">Stampa</button></p>

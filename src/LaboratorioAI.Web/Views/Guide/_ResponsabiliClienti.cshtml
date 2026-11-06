@@ -1,0 +1,27 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Responsabili clienti» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Nell'anagrafica AZW ogni cliente ha una <strong>sigla di zona</strong> (campo ZONA). Qui si associa a ogni sigla il
+        <strong>nome del responsabile cliente</strong> MARE.A, che viene riportato nei contratti di consulenza quando si carica il cliente
+        (nel preventivo resta modificabile).</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Prima volta, o sono comparse sigle nuove in AZW</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Aggiungi le sigle presenti in AZW</span> (serve un'importazione AZW recente: <em>Amministrazione → Provvigioni → Importa AZW ora</em>).</li>
+        <li>Per ogni sigla scrivi il nome del responsabile e premi <span class="tasto">Salva</span>.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Cambia il responsabile di una zona, o una sigla non si usa più</summary>
+    <p>Correggi il nome e salva: vale per i preventivi preparati da quel momento. Le sigle non più usate si <strong>disattivano</strong>, non si cancellano.
+        Una sigla mancante si può aggiungere anche a mano in fondo alla pagina.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

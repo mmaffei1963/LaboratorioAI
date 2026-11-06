@@ -1,0 +1,46 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Statistiche» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A fare ricerche <strong>a livello di singola prova</strong> (il parametro analizzato, con il suo valore) su tutto l'archivio:
+        per esempio «tutte le Legionelle della provincia di Rimini nel 2025 sopra 1000 UFC/L». Il risultato si scarica in Excel per elaborarlo.
+        Solo consultazione.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Fare una ricerca</summary>
+    <ol class="passi">
+        <li>Metti <strong>sempre il periodo</strong> in <em>Data ricezione da</em> e <em>a</em>: è obbligatorio.</li>
+        <li>Aggiungi i filtri che ti servono. Nelle caselle di testo basta <strong>una parte</strong> della parola (es. «leg» trova Legionella).</li>
+        <li>Premi <span class="tasto">Cerca</span>.</li>
+        <li>In alto compaiono i totali (<strong>prove</strong>, <strong>campioni</strong>, <strong>clienti</strong>), sotto il dettaglio prova per prova.</li>
+        <li>Premi <span class="tasto">Esporta in Excel</span> (in alto a destra) per avere il file.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/statistiche-ricerca.png" alt="Statistiche: filtri, totali di prove, campioni e clienti, dettaglio prove" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Esempi di filtri</summary>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Voglio…</th><th>Compilo</th></tr></thead>
+        <tbody>
+            <tr><td>Le Legionelle di un anno</td><td>Periodo + <em>Metodo / parametro</em> = «legionella»</td></tr>
+            <tr><td>Solo i campioni delle commesse Legionella</td><td><em>Descrizione incarico</em> = «leg»</td></tr>
+            <tr><td>Una zona</td><td><em>Città</em>, <em>Provincia</em> (es. RN) o <em>CAP</em> dell'insediamento</td></tr>
+            <tr><td>Solo i valori alti</td><td><em>Valore calcolato da</em> (e/o <em>a</em>)</td></tr>
+            <tr><td>Solo le prove accreditate</td><td><em>Accreditato</em> = Sì</td></tr>
+            <tr><td>Un tipo di prodotto</td><td><em>Matrice</em> o <em>Denominazione campione</em></td></tr>
+        </tbody>
+    </table>
+</details>
+
+<details class="situazione">
+    <summary>La ricerca è lenta o compare «Elenco troncato»</summary>
+    <p>Su periodi lunghi le prove sono tantissime. A video se ne vedono al massimo 3.000 e la ricerca si ferma a 20.000:
+        <strong>restringi il periodo</strong> o aggiungi un filtro (metodo, cliente, zona). Più filtri metti, più è veloce.</p>
+</details>
+
+<p class="nota">Per cercare campioni (non singole prove) usa <em>Consultazione</em>. Dubbi o problemi: Mirko Maffei.</p>

@@ -1,0 +1,40 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloStampaOrdine
+@{ Layout = null; }
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<title>Ordine n. @Model.Numero</title>
+<style>
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2933; margin: 2cm; font-size: 14px; }
+    h1 { font-size: 1.5rem; margin: 0 0 .2rem; color: #0b5d6b; }
+    .coppia { display: flex; justify-content: space-between; gap: 2rem; margin: 1rem 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th { text-align: left; border-bottom: 2px solid #0b5d6b; padding: 6px 8px; }
+    td { border-bottom: 1px solid #d5dde3; padding: 6px 8px; }
+    .conferma { margin-top: 2rem; border: 2px solid #0b5d6b; padding: 1rem; display: flex; justify-content: space-between; }
+    .nota { color: #52606d; }
+    @@media print { .nascondi { display: none; } body { margin: 1cm; } }
+</style>
+</head>
+<body>
+<p class="nascondi"><button onclick="window.print()">Stampa</button> <button onclick="if (window.opener) { window.close(); } else { location.href='@Url.Action("Index", "Ordini")'; }">Chiudi</button></p>
+<h1>Ordine a fornitore n. @Model.Numero</h1>
+<div class="nota">Data @Model.DataOrdine.ToString("dd/MM/yyyy")@(Model.DataConsegnaPrevista is { } d ? " · consegna prevista " + d.ToString("dd/MM/yyyy") : "")</div>
+<div class="coppia">
+    <div><strong>Da</strong><br />@Model.Azienda<br />@Model.Sede@(string.IsNullOrWhiteSpace(Model.IndirizzoSede) ? "" : ", " + Model.IndirizzoSede)<br />@(string.IsNullOrWhiteSpace(Model.PartitaIvaAzienda) ? "" : "P.IVA " + Model.PartitaIvaAzienda)</div>
+    <div><strong>A</strong><br />@Model.Fornitore<br />@Model.IndirizzoFornitore<br />@(string.IsNullOrWhiteSpace(Model.TelefonoFornitore) ? "" : "Tel. " + Model.TelefonoFornitore)</div>
+</div>
+<table>
+    <thead><tr><th>Articolo</th><th>Quantità</th><th>Colli</th><th>Note</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr><td>@r.Articolo@(r.Matrice is null ? "" : " (" + r.Matrice + ")")</td><td>@r.Quantita.ToString("0.##") @r.UnitaMisura</td><td>@r.Colli</td><td>@r.Note</td></tr>
+    }
+    </tbody>
+</table>
+@if (!string.IsNullOrWhiteSpace(Model.Note)) { <p><strong>Note:</strong> @Model.Note</p> }
+<div class="conferma"><span>Conferma d'ordine del fornitore</span><span>Data consegna: ____ / ____ / ________</span><span>Firma: ____________________</span></div>
+</body>
+</html>

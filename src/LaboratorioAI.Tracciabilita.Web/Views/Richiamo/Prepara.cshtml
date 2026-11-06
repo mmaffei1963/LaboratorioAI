@@ -1,0 +1,17 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloPreparaRichiamo
+@{ ViewData["Titolo"] = "Richiamo lotto " + Model.Rapporto.LottoOrigine; }
+<p><a asp-action="Index">« Richiamo</a></p>
+<h1>Lotto @Model.Rapporto.LottoOrigine</h1>
+<p>@Model.Rapporto.ArticoloOrigine</p>
+<p class="avviso">Questa è l'anteprima: finché non scegli una delle due azioni sotto non cambia nulla.</p>
+<partial name="_Rapporto" model="Model.Rapporto" />
+<form method="post" asp-action="Esegui" asp-route-id="@Model.Rapporto.IdLottoOrigine" class="modulo" style="max-width:40rem">
+    <input type="hidden" name="avvioTicks" value="@Model.AvvioTicks" />
+    <label>Motivo (obbligatorio per un richiamo)
+        <input type="text" name="motivo" maxlength="500" /></label>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button type="submit" name="tipo" value="simulazione" class="piccolo">Registra come simulazione (non cambia nulla)</button>
+        <button type="submit" name="tipo" value="richiamo"
+                onclick="return confirm('Avviare il richiamo? I lotti coinvolti verranno bloccati o segnati come richiamati.');">Avvia il richiamo (blocca i lotti)</button>
+    </div>
+</form>

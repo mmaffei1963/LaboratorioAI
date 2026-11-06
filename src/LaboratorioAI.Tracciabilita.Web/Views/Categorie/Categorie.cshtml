@@ -1,0 +1,30 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoCategorie
+@{ ViewData["Titolo"] = "Categorie"; }
+<div class="testa-pagina">
+    <h1>Categorie (matrici)</h1>
+    <div class="riga-pulsanti">
+        <a class="pulsante pulsante-tenue" asp-action="Profili">Profili di controllo</a>
+        <a class="pulsante" asp-action="NuovaCategoria">Nuova categoria</a>
+    </div>
+</div>
+<p class="nota">La categoria (o matrice) dice di che tipo è una materia prima e <strong>quali controlli fare quando arriva</strong>, tramite il suo profilo di controllo.</p>
+<form method="get" class="riga-modulo">
+    <label>Cerca (nome)<input name="cerca" value="@Model.Cerca" /></label>
+    <label style="flex-direction:row; align-items:center; gap:6px; font-weight:400"><input type="checkbox" name="tutte" value="true" checked="@Model.Tutte" /> mostra anche quelle fuori uso</label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Categoria</th><th>Profilo di controllo</th><th>Articoli in uso</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td><a asp-action="ModificaCategoria" asp-route-id="@r.IdCategoria">@r.Nome</a> @if (!r.Attivo) { <span class="tag spento">Fuori uso</span> }</td>
+            <td>@(r.Profilo ?? "— nessuno (controlli minimi)")</td>
+            <td>@r.Articoli</td>
+            <td><a class="piccolo" asp-action="ModificaCategoria" asp-route-id="@r.IdCategoria">Modifica</a></td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="4">Nessuna categoria.</td></tr> }
+    </tbody>
+</table>

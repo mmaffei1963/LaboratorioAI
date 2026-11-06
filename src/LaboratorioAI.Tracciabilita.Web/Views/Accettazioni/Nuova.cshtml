@@ -1,0 +1,86 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloNuovaAccettazione
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = "Accettazione in entrata"; }
+<h1>Accettazione in entrata</h1>
+@if (!Model.Pronto)
+{
+    <p class="nota">Merce arrivata senza un ordine: scegli fornitore, articolo e matrice, poi continua.</p>
+    <form method="get" asp-action="Nuova" class="modulo">
+        <label>Fornitore</label>
+        <select name="idFornitore" required>
+            <option value="">(scegli)</option>
+            @foreach (var f in Model.Fornitori) { <option value="@f.Id">@f.Nome</option> }
+        </select>
+        <label>Articolo</label>
+        <select name="idArticolo" required>
+            <option value="">(scegli)</option>
+            @foreach (var a in Model.Articoli) { <option value="@a.Id">@a.Nome</option> }
+        </select>
+        <label>Matrice (se vuota, quella abituale dell'articolo)</label>
+        <select name="idCategoria">
+            <option value="">(abituale)</option>
+            @foreach (var c in Model.Categorie) { <option value="@c.Id">@c.Nome</option> }
+        </select>
+        <button type="submit">Continua</button>
+    </form>
+}
+else
+{
+    <p><strong>@Model.Fornitore</strong> · @Model.Articolo@(Model.Matrice is null ? "" : " (" + Model.Matrice + ")")
+        @if (Model.NumeroOrdine is not null) { <span>· ordine n. @Model.NumeroOrdine</span> }</p>
+    @if (Model.IdOrdineRiga is { } ir)
+    {
+        <p><a asp-action="SchedaVuota" asp-route-idOrdineRiga="@ir" target="_blank">Stampa la scheda con le caselle vuote</a></p>
+    }
+    <form method="post" asp-action="Nuova" class="modulo" style="max-width:34rem">
+        <div asp-validation-summary="All" class="errore"></div>
+        <input type="hidden" asp-for="IdOrdineRiga" /><input type="hidden" asp-for="IdFornitore" />
+        <input type="hidden" asp-for="IdArticolo" /><input type="hidden" asp-for="IdCategoria" />
+        <input type="hidden" asp-for="NumeroOrdine" />
+
+        <h2>Documento e lotto</h2>
+        <label asp-for="DataArrivo">Data di arrivo</label><input asp-for="DataArrivo" type="date" />
+        <label asp-for="TipoDocumento">Tipo documento</label>
+        <select asp-for="TipoDocumento">
+            <option>Bolla</option><option>Fattura</option><option>DDT</option><option>Altro</option>
+        </select>
+        <label asp-for="NumeroDocumento">N. documento</label><input asp-for="NumeroDocumento" />
+        <label asp-for="DataDocumento">Data documento</label><input asp-for="DataDocumento" type="date" />
+        <label asp-for="Vettore">Vettore</label><input asp-for="Vettore" />
+        <label asp-for="CodiceLotto">Lotto del fornitore</label><input asp-for="CodiceLotto" autofocus />
+        <label asp-for="DataProduzione">Data di produzione</label><input asp-for="DataProduzione" type="date" />
+        <label asp-for="DataScadenza">Data di scadenza o TMC</label><input asp-for="DataScadenza" type="date" />
+        <label style="font-weight:400"><input type="checkbox" asp-for="ETmc" style="padding:0" /> La data è un TMC (da consumarsi preferibilmente entro)</label>
+        @if (Model.Bio)
+        {
+            <label asp-for="EnteBio">Ente di certificazione biologico</label><input asp-for="EnteBio" />
+        }
+        <label asp-for="Quantita">Quantità arrivata</label><input asp-for="Quantita" type="number" step="0.01" min="0.01" />
+        <label asp-for="UnitaMisura">Unità</label><input asp-for="UnitaMisura" />
+
+        <h2>Controlli</h2>
+        @for (var i = 0; i < Model.Controlli.Count; i++)
+        {
+            var c = Model.Controlli[i];
+            <input type="hidden" name="Controlli[@i].Controllo" value="@((int)c.Controllo)" />
+            <input type="hidden" name="Controlli[@i].Nome" value="@c.Nome" />
+            <input type="hidden" name="Controlli[@i].Obbligatorio" value="@c.Obbligatorio.ToString().ToLower()" />
+            <fieldset style="border:1px solid #d5dde3;border-radius:4px;padding:.5rem .8rem;margin:.4rem 0">
+                <legend>@c.Nome@(c.Obbligatorio ? " *" : "")</legend>
+                @if (!string.IsNullOrWhiteSpace(c.Istruzione)) { <div class="nota">@c.Istruzione</div> }
+                <select name="Controlli[@i].Conforme">
+                    <option value="" selected="@(c.Conforme is null)">(non registrato)</option>
+                    <option value="true" selected="@(c.Conforme == true)">Conforme</option>
+                    <option value="false" selected="@(c.Conforme == false)">Non conforme</option>
+                </select>
+                <input type="text" name="Controlli[@i].Valore" value="@c.Valore" placeholder="valore o note (es. temperatura rilevata)" style="width:100%;margin-top:.3rem" />
+            </fieldset>
+        }
+        <p class="nota">* controllo obbligatorio per questa matrice.</p>
+
+        <h2>Giudizio</h2>
+        <select asp-for="Giudizio" asp-items="Html.GetEnumSelectList<GiudizioAccettazione>()"></select>
+        <label asp-for="NoteReclami">Note e reclami</label><input asp-for="NoteReclami" />
+        <button type="submit">Registra l'accettazione</button>
+    </form>
+}

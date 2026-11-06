@@ -1,0 +1,111 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Limiti normativi» (17/10/2026, fase 1a). Procedura «Gestione dei limiti normativi» Rev. 0. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Raccoglie le <strong>schede limite</strong>: per ogni parametro, il valore di legge (o di linea guida) con cui confrontare
+        il risultato, la frase della norma da cui è tratto e la fonte ufficiale salvata. I limiti non si scrivono a memoria: l'<strong>AI li legge dal testo
+        ufficiale</strong> e li propone, una persona li <strong>controlla e li valida</strong>. Solo le schede validate produrranno le segnalazioni colorate
+        in <em>Da Validare</em> (in arrivo con la fase 1b). Le tabelle dei limiti di ArcLab non sono più una fonte: non vengono aggiornate.</p>
+    <p class="nota">Fase 1: Legionella, acque destinate al consumo umano, molluschi bivalvi vivi (circa il 42% delle prove). Validatori: Mirko Maffei, Bertozzi, Qualità, Giulia Simoncelli.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Preparare le fonti (la prima volta)</summary>
+    <ol class="passi">
+        <li>Apri la scheda <span class="tasto">Fonti</span> e premi <span class="tasto">Aggiungi le fonti della fase 1</span>: compaiono le Linee guida Legionella 2015, il D.Lgs. 18/2023 e i regolamenti europei per i molluschi.</li>
+        <li>Controlla che ogni indirizzo porti al <strong>testo vigente</strong> (per EUR-Lex il testo consolidato più recente): se serve, <span class="tasto">Modifica</span> e correggi.</li>
+        <li>Le fonti <strong>EUR-Lex</strong> e <strong>Normattiva</strong> (scritto in verde «aggiornata dall'agente fonti») le scarica l'<strong>agente fonti</strong> che gira sul PC dell'ufficio, una volta alla settimana: per i regolamenti UE prende da solo l'ultimo testo consolidato; per i decreti legge tutti gli articoli e gli allegati vigenti. Il server da solo non ci riesce (EUR-Lex lo blocca).</li>
+        <li>Le altre fonti (es. Linee guida del Ministero) si aggiornano a mano: apri l'indirizzo dal browser, salva il PDF o la pagina e usa <span class="tasto">Carica file</span>, indicando la data del documento.</li>
+    </ol>
+    <p class="dopo">Ogni lettura resta salvata con la data di consultazione e l'impronta del testo: se il testo non è cambiato non si crea una nuova versione. Con «copia» e «testo» rivedi esattamente cosa è stato letto.</p>
+    <p class="nota">Acque: l'Allegato I del D.Lgs. 18/2023 in Gazzetta è un'immagine, quindi i valori si estraggono dalla Direttiva (UE) 2020/2184 (stessi valori) e chi valida li controlla sul PDF della Gazzetta. Quando una fonte cambia, le schede validate tratte da quella fonte passano a «Da riverificare».</p>
+    <p class="nota">Testi oltre 500.000 caratteri (es. il Reg. 853/2004 completo) non vanno all'AI: carica solo l'allegato o la sezione con i limiti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Far proporre le schede all'AI</summary>
+    <ol class="passi">
+        <li>Nella riga della fonte, sotto la versione salvata, premi <span class="tasto">Estrai con AI</span> e scegli le <strong>famiglie</strong> da estrarre (tutte, oppure solo alcune per i testi molto lunghi). L'AI assegna a ogni scheda la sua famiglia: dal Reg. 2073 escono insieme le schede dei molluschi e quelle degli altri alimenti.</li>
+        <li>L'estrazione gira in background e dura qualche minuto: la pagina si aggiorna da sola e alla fine indica quante schede sono state proposte, scartate o già presenti.</li>
+        <li>Le schede arrivano nello stato <strong>Proposta</strong>, con i parametri ArcLab abbinati suggeriti dall'AI.</li>
+    </ol>
+    <p class="nota">Ogni proposta deve riportare la frase della norma copiata parola per parola: se la frase non si trova nel testo salvato, la proposta è scartata in automatico. Le schede uguali a quelle già presenti non vengono duplicate.</p>
+</details>
+
+<details class="situazione">
+    <summary>Validare una scheda</summary>
+    <ol class="passi">
+        <li>Nella scheda <span class="tasto">Schede limite</span> filtra per stato «Proposta» e clicca sulla riga.</li>
+        <li>Confronta valore, unità, tipo di limite e categoria con la <strong>citazione</strong> e, se serve, con la copia salvata della fonte.</li>
+        <li>Controlla i <strong>parametri ArcLab abbinati</strong>: senza abbinamenti la scheda non potrà segnalare nulla.</li>
+        <li>Se è tutto giusto premi <span class="tasto">Valida</span>; se c'è da sistemare premi <span class="tasto">Correggi</span>; se la scheda non serve scrivi il motivo e premi <span class="tasto">Respingi</span>.</li>
+    </ol>
+    <p class="dopo"><strong>Validazione rapida</strong> (per i parametri noti): spunta <em>validazione rapida</em> sopra la tabella; sotto ogni scheda compaiono citazione, condizioni e parametri ArcLab. Controlli riga per riga, spunti le schede giuste e premi <span class="tasto">Valida le selezionate</span> (la nota è facoltativa). Ogni scheda resta registrata singolarmente con chi l'ha validata e quando; quelle che hai proposto o corretto tu vengono saltate.</p>
+    <p class="nota">Chi ha proposto o corretto una scheda non può validarla: serve un secondo validatore. Le proposte dell'AI le può validare qualunque validatore.</p>
+</details>
+
+<details class="situazione">
+    <summary>Correggere una scheda già validata</summary>
+    <ol class="passi">
+        <li>Apri la scheda e premi <span class="tasto">Correggi (nuova versione)</span>.</li>
+        <li>Modifica i dati e salva: nasce la versione successiva nello stato «Proposta».</li>
+        <li>La versione validata resta in vigore finché un altro validatore non valida la nuova; da quel momento la vecchia diventa «Superata».</li>
+    </ol>
+    <p class="dopo">Tutte le versioni restano consultabili (spunta «mostra anche respinte e superate»). Ogni operazione è nel registro attività.</p>
+</details>
+
+<details class="situazione">
+    <summary>Inserire una scheda a mano</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova scheda</span> e scegli la famiglia.</li>
+        <li>Compila parametro, confronto (≤, &lt;, ≥, intervallo, assente in), valore e unità come nella norma; per i piani di campionamento scegli «Piano di campionamento» e indica n, c, m, M.</li>
+        <li>Copia nella <strong>citazione</strong> la frase della norma e indica il riferimento (articolo, allegato, punto).</li>
+        <li>Aggiungi i parametri ArcLab: l'elenco mostra quelli misurati negli ultimi 3 anni nelle matrici della famiglia.</li>
+    </ol>
+    <p class="nota">Per presenza/assenza (es. Salmonella) usa «assente in» e scrivi nell'unità la quantità di campione, es. <em>25 g</em>: in ArcLab il risultato è 0 = assente, 1 = presente.</p>
+</details>
+
+<details class="situazione">
+    <summary>Fare il secondo controllo delle schede validate</summary>
+    <ol class="passi">
+        <li>Apri la scheda <span class="tasto">Verifica schede validate</span>.</li>
+        <li>Premi <span class="tasto">Esegui i controlli automatici</span>: in pochi secondi controlla valore nella citazione, unità rispetto ad ArcLab, nome del parametro ArcLab abbinato, tipo di limite, schede senza parametri ArcLab e limiti in contraddizione.</li>
+        <li>Per un controllo più approfondito, nella tabella delle fonti premi <span class="tasto">Revisione con AI</span>: l'AI rilegge il testo ufficiale e giudica ogni scheda <em>conforme</em>, <em>dubbia</em> o <em>errata</em> citando la norma (qualche minuto, in background).</li>
+        <li>Nei <strong>Rilievi</strong> clicca sulla riga per aprire la scheda: se serve, <span class="tasto">Correggi</span> (nuova versione da far validare a un collega).</li>
+        <li>Spunta i rilievi trattati, scrivi una nota (es. «verificato sul testo: corretto», «scheda corretta») e premi <span class="tasto">Chiudi i rilievi selezionati</span>.</li>
+    </ol>
+    <p class="dopo">Ogni giro resta registrato con data, esito e chi l'ha lanciato; <strong>Excel</strong> scarica il giro completo (anche le schede conformi) da conservare.</p>
+</details>
+
+<h2>Domande frequenti</h2>
+<details class="situazione">
+    <summary>Abbinare le matrici ArcLab degli alimenti alle categorie della norma</summary>
+    <ol class="passi">
+        <li>Apri la scheda <span class="tasto">Categorie e matrici</span> e premi <span class="tasto">Proponi abbinamenti con l'AI</span>: in pochi minuti ogni matrice riceve una proposta (in giallo).</li>
+        <li>Controlla le proposte: ✓ conferma, ✕ toglie; con <span class="tasto">Seleziona le visibili</span> e <span class="tasto">Conferma le proposte delle selezionate</span> confermi in blocco.</li>
+        <li>Per una matrice senza limiti degli alimenti scegli «nessuna categoria». Le matrici non abbinate risultano grigie in «Da Validare».</li>
+    </ol>
+</details>
+<details class="situazione">
+    <summary>Impostare i tempi massimi tra ricezione e inizio prova</summary>
+    <ol class="passi">
+        <li>Apri la scheda <span class="tasto">Tempi massimi</span>: ogni riga dice entro quante ore dalla ricezione deve iniziare la prova.</li>
+        <li>Una riga senza parametro vale per tutta la famiglia (es. Acque 24 ore); una riga con un parametro ArcLab vale solo per quello e prevale (es. Alimenti + Listeria 36 ore).</li>
+        <li><span class="tasto">Modifica</span> cambia ore, nota o stato; per non usare più una riga toglila da «attiva» (le righe non si cancellano).</li>
+        <li>In «Da Validare» le prove iniziate oltre il tempo diventano viola entro 2 minuti (subito con <span class="tasto">Aggiorna</span>).</li>
+    </ol>
+</details>
+<details class="situazione">
+    <summary>Che differenza c'è tra i tipi di limite?</summary>
+    <p><strong>Limite di sicurezza</strong> e <strong>parametro indicatore</strong> (acque, piscine): il superamento rende il prodotto o l'acqua non conforme
+        (segnalazione rossa; per gli indicatori l'ASL valuta poi il rischio). <strong>Igiene di processo</strong>,
+        <strong>linea guida</strong> e <strong>riferimento</strong>: il superamento va segnalato al Cliente (arancione).
+        Per la Legionella la segnalazione riporterà il livello raggiunto e l'azione prevista dalle linee guida.</p>
+</details>
+<details class="situazione">
+    <summary>Il giudizio sul valore tiene conto dell'incertezza?</summary>
+    <p>No: come deciso il 16/10/2026 il confronto è sul <strong>valore puntuale</strong>, salvo che la norma preveda una regola diversa (es. piano di campionamento n/c).</p>
+</details>

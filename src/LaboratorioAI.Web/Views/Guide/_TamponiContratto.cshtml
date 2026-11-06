@@ -1,0 +1,44 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Tamponi in contratto» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Prima della fatturazione mostra i <strong>tamponi</strong> (controlli 180, 203, 2513 o altri) del periodo e dice per ogni cliente
+        se ha un <strong>contratto di consulenza HACCP</strong> che li comprende: quelli compresi <strong>non vanno fatturati a parte</strong>,
+        quelli in più rispetto al contratto sì. Solo consultazione: nulla si modifica in ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Preparare la fatturazione dei tamponi del mese</summary>
+    <ol class="passi">
+        <li>Metti il periodo in <strong>Data certificato da / a</strong>.</li>
+        <li>Lascia <em>Fatturazione: Solo non fatturati</em> e i controlli spuntati (180, 203, 2513; puoi aggiungerne un altro in <em>Altro IdControllo</em>).</li>
+        <li>Premi <span class="tasto">Cerca</span>.</li>
+        <li>Guarda il <strong>Riepilogo per insediamento</strong>: clicca una riga per vedere sotto solo i tamponi di quel cliente.</li>
+        <li>Premi <span class="tasto">Esporta in Excel</span> per passare l'elenco a chi fattura.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Come leggo Inclusi, Fatti e Differenza</summary>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Colonna</th><th>Cosa vuol dire</th></tr></thead>
+        <tbody>
+            <tr><td>Contratto HACCP</td><td><strong>Sì</strong> se il cliente ha un contratto di consulenza HACCP che comprende tamponi.</td></tr>
+            <tr><td>Inclusi</td><td>Quanti tamponi prevede il contratto.</td></tr>
+            <tr><td>Fatti</td><td>Quanti tamponi sono stati certificati nel periodo.</td></tr>
+            <tr><td>Differenza</td><td>Fatti meno inclusi: se è <strong>positiva</strong> sono tamponi oltre il contratto, da valutare per la fattura.</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">Nel dettaglio la colonna <em>Non fatt.</em> indica i campioni che in ArcLab hanno già il flag «non fatturare».</p>
+</details>
+
+<details class="situazione">
+    <summary>Altri filtri utili</summary>
+    <p><em>Contratto HACCP</em> Sì/No per vedere solo i clienti con o senza contratto; <em>Prelevatore</em> e <em>Ricevitore</em> per i tamponi di una persona;
+        <em>Fatturazione: Tutti</em> per un controllo a posteriori.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

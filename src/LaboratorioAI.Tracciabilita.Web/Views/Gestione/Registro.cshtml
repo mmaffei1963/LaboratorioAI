@@ -1,0 +1,35 @@
+@model List<LaboratorioAI.Tracciabilita.Web.Models.RigaRegistro>
+@{
+    ViewData["Titolo"] = "Registro attività";
+    var aziende = (List<KeyValuePair<int, string>>)ViewBag.Aziende;
+    int? scelta = ViewBag.IdAzienda;
+}
+<h1>Registro attività</h1>
+<form method="get" class="riga-modulo" style="margin-bottom:1rem">
+    <label>Azienda
+        <select name="idAzienda" onchange="this.form.submit()">
+            <option value="">Tutte</option>
+            @foreach (var a in aziende)
+            {
+                <option value="@a.Key" selected="@(scelta == a.Key)">@a.Value</option>
+            }
+        </select>
+    </label>
+</form>
+<p class="nota">Ultime @Model.Count voci. Il registro si scrive e basta: nessuno può modificarlo o cancellarlo.</p>
+<table class="elenco">
+    <thead><tr><th>Quando</th><th>Azienda</th><th>Chi</th><th>Azione</th><th>Dettaglio</th><th>Indirizzo IP</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.DataOra.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+            <td>@r.Azienda</td>
+            <td>@r.Utente</td>
+            <td>@r.Azione</td>
+            <td>@r.Dettaglio</td>
+            <td>@r.IndirizzoIp</td>
+        </tr>
+    }
+    </tbody>
+</table>

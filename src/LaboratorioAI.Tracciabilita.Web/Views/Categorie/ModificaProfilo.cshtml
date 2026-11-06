@@ -1,0 +1,44 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloProfilo
+@{ ViewData["Titolo"] = Model.IdProfiloControllo == 0 ? "Nuovo profilo" : "Profilo " + Model.Nome; }
+<p><a asp-action="Profili">« Profili di controllo</a></p>
+<div class="testa-pagina"><h1>@(Model.IdProfiloControllo == 0 ? "Nuovo profilo di controllo" : Model.Nome)</h1></div>
+<form method="post" asp-action="SalvaProfilo" class="modulo" style="max-width:46rem">
+    <div asp-validation-summary="All" class="errore"></div>
+    <input type="hidden" asp-for="IdProfiloControllo" />
+    <label asp-for="Nome"></label>
+    <input asp-for="Nome" autofocus />
+    <h2 style="margin-top:16px">Controlli da fare all'arrivo</h2>
+    <table class="elenco">
+        <thead><tr><th>Controllo</th><th>Si fa</th><th>Obbligatorio</th><th>Istruzione (facoltativa)</th></tr></thead>
+        <tbody>
+        @for (var i = 0; i < Model.Controlli.Count; i++)
+        {
+            <tr>
+                <td>@Model.Controlli[i].Nome<input type="hidden" asp-for="Controlli[i].Controllo" /></td>
+                <td><input type="checkbox" asp-for="Controlli[i].Presente" class="si-fa" /></td>
+                <td><input type="checkbox" asp-for="Controlli[i].Obbligatorio" class="obbl" /></td>
+                <td><input asp-for="Controlli[i].Istruzione" style="width:100%" /></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <label style="font-weight:400"><input type="checkbox" asp-for="Attivo" style="padding:0" /> In uso (togli la spunta se non serve più)</label>
+    @if (Model.IdProfiloControllo != 0 && Model.CategorieAttive > 0)
+    {
+        <p class="nota">Usato da @Model.CategorieAttive @(Model.CategorieAttive == 1 ? "categoria in uso" : "categorie in uso"): le modifiche valgono per tutte, dalle prossime accettazioni. Quelle già registrate non cambiano.</p>
+    }
+    <button type="submit">Salva</button>
+</form>
+
+@section Script {
+<script>
+    // Spuntando «Si fa» si spunta anche «Obbligatorio» (poi puoi togliere quest'ultimo riga per riga);
+    // togliendo «Si fa» il controllo non è più richiesto e «Obbligatorio» si svuota.
+    document.querySelectorAll('tr').forEach(function (tr) {
+        var sf = tr.querySelector('.si-fa'), ob = tr.querySelector('.obbl');
+        if (!sf || !ob) return;
+        sf.addEventListener('change', function () { ob.checked = sf.checked; });
+        ob.addEventListener('change', function () { if (ob.checked) sf.checked = true; });
+    });
+</script>
+}

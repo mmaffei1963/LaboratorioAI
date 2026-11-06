@@ -2,27 +2,34 @@
 // (misure + calcolo + anteprima) e generazione del rapporto.
 
 import { chiamaApi, inviaJson, testo, avvisa, occupa } from '../comune.js';
+import { creaCommittente } from './committente-taratura.js';
+import { mostraRinnovo } from './rinnovo-termometri.js';
+import { numeriPerGruppo, aggiungiGruppo, urlElenco, conteggioRegistro, classeRiga, marcaEliminata, collegaRipristino, eliminaDalRegistro } from '../registro-strumenti.js';
 
 const $ = (id) => document.getElementById(id);
 const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return isNaN(x) ? 0 : x; };
 const numN = (id) => { const t = $(id).value.trim(); if (t === '') return null; const x = parseFloat(t.replace(',', '.')); return isNaN(x) ? null : x; };
 const gg = (x, d = 2) => (x == null ? '—' : Number(x).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
 
-let clienti = [], cdrs = [], certRighe = [], certSecRighe = [], misure = [];
+// 03/11/2026: cliente e insediamento nel committente; con un cliente si propongono i suoi strumenti già tarati.
+const committente = creaCommittente('/api/taratura', 'c', () => aggiornaStrumenti());
+let strumentiInterni = [];
+let cdrs = [], certRighe = [], certSecRighe = [], misure = [];
 
 // ══ Registro ══
 async function caricaRegistro() {
     try {
-        const r = await chiamaApi('/api/taratura/elenco');
-        $('conteggio-registro').textContent = `${r.length} tarature`;
+        const r = await chiamaApi(urlElenco('/api/taratura/elenco'));
+        $('conteggio-registro').textContent = conteggioRegistro(r, 'tarature');
         $('tabella-registro').querySelector('tbody').innerHTML = r.length === 0
             ? '<tr><td colspan="5" class="vuoto">Nessuna taratura.</td></tr>'
-            : r.map(t => `<tr class="riga-cliccabile" data-id="${t.idTaratura}">
-                <td>${testo(t.numeroRapporto)}</td><td>${testo(t.strumentoIdentificazione)}</td>
+            : r.map(t => `<tr class="riga-cliccabile${classeRiga(t)}" data-id="${t.idTaratura}">
+                <td>${testo(t.numeroRapporto)}${marcaEliminata(t, t.idTaratura)}</td><td>${testo(t.strumentoIdentificazione)}</td>
                 <td>${testo(t.committente) || '—'}</td><td>${testo(t.dataTaratura)}</td>
                 <td>${t.dataScadenza ? testo(t.dataScadenza) : '—'} ${t.scaduta ? '<strong style="color:#b3261e">scaduta</strong>' : t.inScadenza ? '<strong style="color:#9a6700">in scadenza</strong>' : ''}</td></tr>`).join('');
         $('tabella-registro').querySelectorAll('.riga-cliccabile').forEach(x =>
             x.addEventListener('click', () => apriTaratura(Number(x.dataset.id))));
+        collegaRipristino($('tabella-registro'), '/api/taratura', caricaRegistro);
     } catch (e) { avvisa(e.message, 'errore'); }
 }
 
@@ -45,15 +52,19 @@ async function caricaCdr() {
 }
 
 async function caricaClienti() {
-    try {
-        clienti = await chiamaApi('/api/taratura/clienti');
-        $('lista-clienti-tar').innerHTML = clienti.map(c => `<option value="${testo(c.nome)}">`).join('');
-    } catch { /* non bloccante */ }
-    try {
-        const strumenti = await chiamaApi('/api/taratura/strumenti');
-        const dl = $('lista-strumenti-tar');
-        if (dl) dl.innerHTML = strumenti.map(s => `<option value="${testo(s.nome)}">`).join('');
-    } catch { /* non bloccante */ }
+    await committente.carica();
+    try { strumentiInterni = await chiamaApi('/api/taratura/strumenti'); } catch { strumentiInterni = []; }
+    aggiornaStrumenti();
+}
+
+// Strumenti proposti: con un cliente quelli già tarati per lui, altrimenti gli interni ArcLab.
+function aggiornaStrumenti() {
+    const dl = $('lista-strumenti-tar');
+    if (!dl) return;
+    const voci = committente.haCliente()
+        ? committente.strumenti().map(s => s.identificazione)
+        : strumentiInterni.map(s => s.nome);
+    dl.innerHTML = voci.map(v => `<option value="${testo(v)}">`).join('');
 }
 
 // ══ Form CDR ══
@@ -147,7 +158,9 @@ async function salvaCdr(pulsante) {
 
 // ══ Form taratura ══
 function nuovaTaratura() {
-    ['t-id', 't-strumento', 't-codice', 't-committente', 't-scadenza', 't-numero', 't-responsabile'].forEach(id => $(id).value = '');
+    ['t-id', 't-strumento', 't-codice', 't-scadenza', 't-numero', 't-responsabile'].forEach(id => $(id).value = '');
+    committente.svuota();
+    $('t-tipo').value = '0'; $('t-servizio').value = '1';
     $('t-cdr').value = ''; $('t-risoluzione').value = '0.1'; $('t-istruzione').value = 'IO 4-01';
     $('t-data').value = new Date().toISOString().substring(0, 10);
     misure = [nuovaMisura('A')];
@@ -163,6 +176,14 @@ function nuovaTaratura() {
 
 function nuovaMisura(p) { return { punto: p || 'A', tRiferimento: 0, letturaStrumento: 0 }; }
 
+// Strumento del cliente scelto tra quelli già tarati: riprende il codice.
+$('t-strumento')?.addEventListener('change', () => {
+    if (!committente.haCliente() || $('t-codice').value.trim()) return;
+    const nome = $('t-strumento').value.trim().toLowerCase();
+    const s = committente.strumenti().find(v => (v.identificazione || '').toLowerCase() === nome);
+    if (s?.codice) $('t-codice').value = s.codice;
+});
+
 // Duplica la taratura corrente per un altro termometro sullo stesso CDR:
 // mantiene intestazione e valori del primario (T riferimento); azzera identità
 // e n° rapporto. Le letture dello strumento sono copiate o azzerate a scelta.
@@ -173,7 +194,6 @@ function duplica() {
     const intestazione = {
         cdr: $('t-cdr').value,
         risoluzione: $('t-risoluzione').value,
-        committente: $('t-committente').value,
         istruzione: $('t-istruzione').value,
         data: $('t-data').value,
         scadenza: $('t-scadenza').value,
@@ -189,7 +209,6 @@ function duplica() {
     ['t-id', 't-strumento', 't-codice', 't-numero'].forEach(id => $(id).value = '');
     $('t-cdr').value = intestazione.cdr;
     $('t-risoluzione').value = intestazione.risoluzione;
-    $('t-committente').value = intestazione.committente;
     $('t-istruzione').value = intestazione.istruzione;
     $('t-data').value = intestazione.data;
     $('t-scadenza').value = intestazione.scadenza;
@@ -218,7 +237,9 @@ async function apriTaratura(id) {
         $('t-strumento').value = t.strumentoIdentificazione ?? '';
         $('t-codice').value = t.strumentoCodice ?? '';
         $('t-risoluzione').value = t.risoluzioneStrumento ?? 0.1;
-        $('t-committente').value = t.committente ?? '';
+        await committente.imposta(t);
+        $('t-tipo').value = String(t.tipoTermometro ?? 0);
+        $('t-servizio').value = String(t.servizio ?? 1);
         $('t-istruzione').value = t.riferimentoIstruzione ?? '';
         $('t-responsabile').value = t.responsabile ?? '';
         $('t-data').value = (t.dataTaratura ?? '').substring(0, 10);
@@ -240,12 +261,7 @@ async function apriTaratura(id) {
 function renderMisure() {
     // Numerazione della lettura all'interno del punto: riparte a ogni cambio di lettera.
     // Solo di supporto all'inserimento: non finisce nei rapporti.
-    let prevPunto = null, contatore = 0;
-    const numeri = misure.map(m => {
-        const p = (m.punto || '').trim().toUpperCase();
-        if (p !== prevPunto) { contatore = 1; prevPunto = p; } else { contatore++; }
-        return contatore;
-    });
+    const numeri = numeriPerGruppo(misure.map(m => m.punto));
     $('tabella-misure').querySelector('tbody').innerHTML = misure.map((m, i) =>
         `<tr>
             <td class="numerico" style="color:#888">${numeri[i]}</td>
@@ -295,14 +311,14 @@ async function calcola(pulsante) {
 async function salvaTaratura(pulsante) {
     if (!$('t-strumento').value.trim()) { avvisa('Identificazione strumento obbligatoria.', 'errore'); return; }
     if (!$('t-cdr').value) { avvisa('Seleziona il CDR.', 'errore'); return; }
-    const nomeComm = $('t-committente').value.trim();
-    const cliente = clienti.find(c => c.nome.toLowerCase() === nomeComm.toLowerCase());
     const corpo = {
         id: $('t-id').value ? Number($('t-id').value) : null,
         idCampioneRiferimento: Number($('t-cdr').value),
         strumentoIdentificazione: $('t-strumento').value, strumentoCodice: $('t-codice').value,
         risoluzioneStrumento: num($('t-risoluzione').value), fattoreCopertura: 2,
-        idClienteArcLab: cliente ? cliente.id : null, committente: nomeComm || null,
+        ...committente.leggi(),
+        tipoTermometro: Number($('t-tipo').value) || 0,
+        servizio: Number($('t-servizio').value) || 1,
         numeroRapporto: $('t-numero').value || null,
         dataTaratura: $('t-data').value, dataScadenza: $('t-scadenza').value || null,
         riferimentoIstruzione: $('t-istruzione').value,
@@ -317,6 +333,9 @@ async function salvaTaratura(pulsante) {
         $('taratura-numero').textContent = 'N° ' + e.numeroRapporto;
         avvisa('Taratura salvata.', 'successo');
         await caricaRegistro();
+        // 03/11/2026: termometro di un cliente, prima taratura salvata: quali tarature dello scadenziario rinnova?
+        mostraRinnovo($('pannello-rinnovo'), e.candidatiRinnovo, `/api/taratura/${e.idTaratura}/rinnova`,
+            n => { if (n > 0) avvisa(`${n} tarature segnate come rinnovate nello scadenziario.`, 'successo'); });
     } catch (err) { avvisa(err.message, 'errore'); }
     finally { libera(); }
 }
@@ -439,9 +458,19 @@ $('btn-cdr-salva')?.addEventListener('click', (e) => salvaCdr(e.currentTarget));
 $('btn-cert-riga')?.addEventListener('click', () => { certRighe.push(emptyCert()); renderCert(); });
 $('btn-cert-sec-riga')?.addEventListener('click', () => { certSecRighe.push(emptyCertSec()); renderCertSec(); });
 
+$('mostra-eliminate')?.addEventListener('change', caricaRegistro);
+$('btn-elimina-registro')?.addEventListener('click', async () => {
+    const numero = $('t-numero')?.value?.trim();
+    if (await eliminaDalRegistro('/api/taratura', $('t-id').value, numero ? 'la taratura ' + numero : 'la taratura aperta')) {
+        $('pannello-taratura').classList.add('nascosto');
+        await caricaRegistro();
+    }
+});
 $('btn-nuova-taratura')?.addEventListener('click', nuovaTaratura);
 $('btn-taratura-annulla')?.addEventListener('click', () => $('pannello-taratura').classList.add('nascosto'));
 $('btn-misura-riga')?.addEventListener('click', () => { misure.push(nuovaMisura(misure.length ? misure[misure.length - 1].punto : 'A')); renderMisure(); });
+// «Aggiungi 10 letture»: completa il gruppo a 10 o ne apre uno nuovo con la lettera successiva (10 A, 10 B, …).
+$('btn-misura-gruppo')?.addEventListener('click', () => { aggiungiGruppo(misure, m => m.punto, p => nuovaMisura(p), 10); renderMisure(); });
 $('btn-calcola')?.addEventListener('click', (e) => calcola(e.currentTarget));
 $('btn-taratura-salva')?.addEventListener('click', (e) => salvaTaratura(e.currentTarget));
 $('btn-taratura-duplica')?.addEventListener('click', duplica);

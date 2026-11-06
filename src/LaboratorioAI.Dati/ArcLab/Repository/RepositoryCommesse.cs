@@ -111,7 +111,7 @@ public class RepositoryCommesse : IRepositoryCommesse
     /// Se il cliente ha più commesse attive sullo stesso controllo si prende la più recente.
     /// </remarks>
     public async Task<decimal?> PrezzoControlloClienteAsync(
-        int idCliente, int idControllo, CancellationToken ct = default)
+        int idCliente, int idControllo, CancellationToken ct = default, int? idInsediamento = null)
     {
         const string sql = """
             SELECT TOP 1 cm.PrezzoControllo
@@ -123,14 +123,59 @@ public class RepositoryCommesse : IRepositoryCommesse
               AND cm.PrezzoControllo > 0
               AND i.IDCliente = @IdCliente
               AND cm.IDControllo = @IdControllo
+              AND (@IdInsediamento IS NULL OR cm.IDInsediamento = @IdInsediamento)
             ORDER BY cm.DataCommessa DESC
             """;
 
         using var cn = await _fabbrica.ApriAsync(ct);
         return await cn.QueryFirstOrDefaultAsync<decimal?>(
             new CommandDefinition(sql,
-                new { IdTipo = CostantiArcLab.TipoCommessaLaboratorio, IdCliente = idCliente, IdControllo = idControllo },
+                new { IdTipo = CostantiArcLab.TipoCommessaLaboratorio, IdCliente = idCliente, IdControllo = idControllo, IdInsediamento = idInsediamento },
                 cancellationToken: ct));
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ControlloCommessaCliente>> ControlliCommesseClienteAsync(string codContabilita, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT CAST(cm.IdCommessa AS int) AS IdCommessa, CAST(cm.IDControllo AS int) AS IdControllo,
+                   LTRIM(RTRIM(co.Controllo)) AS Controllo,
+                   CAST(cm.PrezzoControllo AS decimal(18, 2)) AS Prezzo, CAST(cm.CodCommessa AS nvarchar(50)) AS CodCommessa
+            FROM commessa cm
+            INNER JOIN Insediamento i ON i.IDInsediamento = cm.IDInsediamento
+            INNER JOIN Clienti cl     ON cl.IDCliente = i.IDCliente
+            INNER JOIN Controllo co   ON co.IdControllo = cm.IDControllo
+            WHERE cm.IdTipoCommessa = @IdTipo
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.IDControllo IS NOT NULL
+              AND cm.PrezzoControllo IS NOT NULL
+              AND LTRIM(RTRIM(cl.CodContabilita)) = @Cod
+            ORDER BY co.Controllo
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<ControlloCommessaCliente>(new CommandDefinition(sql,
+            new { IdTipo = CostantiArcLab.TipoCommessaLaboratorio, Cod = codContabilita.Trim() }, cancellationToken: ct))).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<PrezziControlloCommesse>> PrezziControlliCommesseAttiveAsync(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT CAST(cm.IDControllo AS int) AS IdControllo,
+                   CAST(MIN(cm.PrezzoControllo) AS decimal(18, 2)) AS Minimo,
+                   CAST(MAX(cm.PrezzoControllo) AS decimal(18, 2)) AS Massimo,
+                   CAST(COUNT(*) AS int) AS Commesse
+            FROM commessa cm
+            WHERE cm.IdTipoCommessa = @IdTipo
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.PrezzoControllo IS NOT NULL
+              AND cm.PrezzoControllo > 0
+              AND cm.IDControllo IS NOT NULL
+            GROUP BY cm.IDControllo
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<PrezziControlloCommesse>(new CommandDefinition(sql,
+            new { IdTipo = CostantiArcLab.TipoCommessaLaboratorio }, commandTimeout: 60, cancellationToken: ct))).ToList();
     }
 
     // ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,149 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestisci = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ClientiGestisci);
+}
+@* Guida «Clienti da seguire» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Ti dice <strong>quali clienti chiamare</strong>: quelli che spendono meno di prima in analisi, quelli della
+        Legionella che non hanno ancora campionato e quelli che vanno ricontattati in questi giorni. Per ogni cliente scrivi cosa hai fatto
+        (telefonata, visita, offerta…) e quando richiamarlo: il programma te lo ricorda.</p>
+    <p>I numeri vengono dalle fatture (AZW) e dai campioni (ArcLab). Si aggiornano ogni notte.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Voglio sapere chi chiamare oggi</summary>
+    <ol class="passi">
+        <li>Apri <strong>Commerciale → Clienti da seguire</strong>.</li>
+        <li>In alto ci sono i riquadri colorati: clicca su <strong>Da chiamare</strong>.</li>
+        <li>Trovi due elenchi: <em>Clienti da richiamare</em> (quelli per cui hai segnato «Richiamare il…») e <em>Legionella da ricordare</em>
+            (clienti che di solito campionano in questo periodo e non l'hanno ancora fatto).</li>
+        <li>Clicca sul nome del cliente per aprire la sua scheda, con telefono ed e-mail.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/clienti-riquadri.png" alt="Riquadri colorati in alto: Rossi, Gialli, Legionella persi, Da chiamare, Solo consulenza" loading="lazy" />
+    <p class="nota">Le righe in rosso con «in ritardo» sono richiami già scaduti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio vedere i clienti che stanno calando</summary>
+    <ol class="passi">
+        <li>Clicca su <span class="tasto">Clienti in calo</span> (o sul riquadro rosso <strong>Rossi</strong>).</li>
+        <li>Per vedere solo i tuoi: in <em>Commerciale</em> scegli <strong>I miei</strong> e premi <span class="tasto">Filtra</span>.</li>
+        <li>L'elenco è ordinato per <strong>soldi persi</strong>: in cima quelli che contano di più.</li>
+    </ol>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Colore</th><th>Cosa vuol dire</th></tr></thead>
+        <tbody>
+            <tr><td><span class="etichetta etichetta-non-conforme">rosso</span></td><td>Le analisi sono calate del 20% o più rispetto allo stesso periodo dell'anno prima (o il cliente non fa più analisi).</td></tr>
+            <tr><td><span class="etichetta etichetta-borderline">giallo</span></td><td>Calo tra il 10% e il 20%, oppure il cliente non manda campioni da troppo tempo rispetto al solito.</td></tr>
+            <tr><td><span class="etichetta etichetta-conforme">verde</span></td><td>Tutto regolare.</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">Il semaforo riguarda solo i clienti che spendono almeno una certa cifra l'anno in analisi: i piccolissimi non compaiono.
+        La colonna <em>Motivi</em> spiega in due parole perché il cliente è lì (es. «Calo forte», «Meno campioni»).</p>
+    <img class="schermata" src="/img/guide/clienti-elenco.png" alt="Elenco clienti in calo con semaforo, fatturato, perdita e motivi" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Ho chiamato (o visto) un cliente: come lo segno?</summary>
+    <ol class="passi">
+        <li>Apri la scheda del cliente (clic sul nome).</li>
+        <li>Nel riquadro <strong>Registro azioni</strong> scegli il <em>Tipo</em> (Telefonata, Visita, Email, Offerta, Altro) e l'<em>Esito</em>
+            (Positivo, In trattativa, Negativo, Non raggiunto, Da definire).</li>
+        <li>Se devi risentirlo, metti la data in <strong>Richiamare il</strong>.</li>
+        <li>Scrivi due righe nelle <em>Note</em> (cosa è emerso, cosa hai proposto) e premi <span class="tasto">Registra</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/clienti-azione.png" alt="Riquadro Registro azioni con Tipo, Esito, Richiamare il, Note e Registra" loading="lazy" />
+    <p class="dopo"><strong>Cosa succede dopo:</strong> l'azione compare nella scheda e nell'elenco (colonna <em>Ultima azione</em>).
+        Il giorno indicato in «Richiamare il» il cliente ricompare in <strong>Da chiamare</strong>.</p>
+    <p class="nota">Se hai sbagliato, premi <span class="tasto">Annulla</span> accanto all'azione: non si cancella, resta segnata come annullata.</p>
+</details>
+
+<details class="situazione">
+    <summary>Clienti della Legionella: chi è in ritardo o perso</summary>
+    <ol class="passi">
+        <li>Clicca su <span class="tasto">Legionella</span>.</li>
+        <li>Il programma conosce i <strong>mesi in cui ogni cliente campiona di solito</strong> e calcola quando è atteso il prossimo prelievo.</li>
+        <li>Guarda la colonna <strong>Stato</strong> e la data <strong>Prossimo atteso</strong>; il telefono è già nella riga.</li>
+    </ol>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Stato</th><th>Cosa vuol dire</th></tr></thead>
+        <tbody>
+            <tr><td>da ricordare</td><td>Il prossimo prelievo è vicino: chiama prima che vada da un altro laboratorio.</td></tr>
+            <tr><td>in ritardo</td><td>La data attesa è passata e non ha campionato.</td></tr>
+            <tr><td>in calo</td><td>Fa meno campioni dell'anno prima.</td></tr>
+            <tr><td>perso</td><td>Campionava e nell'ultimo anno non lo ha più fatto.</td></tr>
+            <tr><td>nuovo / regolare</td><td>Tutto a posto.</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">Un «perso» spesso ha solo cambiato gestore. Sotto lo stato compare l'esito del <strong>cambio di gestione</strong>
+        (es. «nuovo gestore attivo: …» oppure «nessun subentro trovato»): cliccalo per aprire la pagina <em>Cambi di gestione</em>,
+        dove si confermano gli abbinamenti (vedi la sua guida).</p>
+    <p class="nota">Gli <em>intermediari</em> (chi campiona per conto dei suoi clienti) si possono escludere o vedere da soli con il filtro <em>Intermediari</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio capire perché un cliente è calato</summary>
+    <ol class="passi">
+        <li>Apri la scheda del cliente.</li>
+        <li>Guarda i grafici <strong>Fatturato mese per mese</strong> e <strong>Campioni mese per mese</strong>: si vede subito quando è iniziato il calo.</li>
+        <li>In fondo, <strong>Analisi per controllo</strong> mostra quali controlli faceva prima e <strong>non fa più</strong> (sono evidenziati).
+            È il punto da cui partire nella telefonata.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Voglio prendermi un cliente (assegnazione)</summary>
+    <ol class="passi">
+        <li>Apri la scheda del cliente.</li>
+        <li>Nel riquadro <strong>Assegnazione</strong> scrivi il motivo (es. «cliente in calo, visita fatta») e premi <span class="tasto">Proponi a me</span>.</li>
+    </ol>
+    <p class="dopo"><strong>Cosa succede dopo:</strong> la proposta resta «in attesa di approvazione» finché il Responsabile non la approva.
+        Nell'elenco il cliente mostra l'etichetta <em>proposta</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il cliente non manderà più analisi (acquisito da un altro cliente, chiuso, perso)</summary>
+    <ol class="passi">
+        <li>Apri la <strong>scheda del cliente</strong> e scendi al riquadro <strong>Togli dalla lista</strong>.</li>
+        <li>Scegli il <strong>motivo</strong>. Se è stato <em>acquisito da un altro nostro cliente</em>, cerca e scegli quel cliente (per nome, codice o città).</li>
+        <li>Premi <span class="tasto">Togli dalla lista</span>: il cliente non compare più fra rossi, gialli, Legionella, solo consulenza, da chiamare e cambi di gestione.</li>
+    </ol>
+    <p class="nota">Con «acquisito da» lo storico del cliente si somma a quello di chi l'ha acquisito: così il confronto mostra se il cliente unito cresce o cala davvero
+        (nella sua scheda compare «Comprende anche lo storico di…»). I clienti tolti si vedono nella sezione <strong>Tolti dalla lista</strong>; dalla scheda si possono
+        <strong>rimettere in lista</strong>. Se un cliente tolto torna a fatturare o a mandare campioni, ricompare da solo con l'etichetta «tornato attivo».
+        Nella Direzione i clienti acquisiti non contano fra i persi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio i dati in Excel</summary>
+    <p>In alto a destra premi <span class="tasto">Esporta Excel</span>: scarica l'elenco con lo stesso periodo che stai guardando.</p>
+</details>
+
+@if (gestisci)
+{
+    <h2>Solo per il Responsabile</h2>
+    <details class="situazione">
+        <summary>Approvare le assegnazioni e cambiare le soglie</summary>
+        <ol class="passi">
+            <li>In alto premi <span class="tasto">Assegnazioni e soglie</span>.</li>
+            <li>Approva o rifiuta le proposte dei commerciali.</li>
+            <li>Nella stessa pagina si cambiano le soglie del semaforo (percentuali di calo, fatturato minimo, preavviso Legionella).</li>
+        </ol>
+        <p class="nota">Se i numeri sembrano vecchi, <span class="tasto">Importa AZW ora</span> riprende subito fatture e campioni (qualche minuto).</p>
+    </details>
+}
+
+<h2>Parole da conoscere</h2>
+<dl class="glossario">
+    <dt>Periodo / Confrontato con</dt><dd>Di solito gli ultimi 12 mesi contro gli stessi 12 mesi dell'anno prima. Si cambia dai filtri.</dd>
+    <dt>Perdita</dt><dd>Quanto il cliente ha speso in meno in analisi rispetto al periodo di confronto.</dd>
+    <dt>Solo consulenza</dt><dd>Clienti che comprano consulenza o formazione ma quasi nessuna analisi: possibili clienti per il laboratorio.</dd>
+    <dt>Responsabile cliente</dt><dd>La sigla di zona dell'anagrafica AZW e la persona MARE.A che segue il cliente.</dd>
+</dl>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

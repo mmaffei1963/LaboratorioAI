@@ -50,6 +50,8 @@ public record CriteriPortale
     public string? VerbalePrelievo { get; init; }
     public string? TestoLibero { get; init; }
 
+    /// <summary>13/10/2026: arriva dal portale come testo ("Certificato", "InCorso", "SpeditoOriginale").</summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
     public StatoCampione? Stato { get; init; }
 
     public int Limite { get; init; } = 200;

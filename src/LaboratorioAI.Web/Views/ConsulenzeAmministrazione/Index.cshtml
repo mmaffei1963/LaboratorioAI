@@ -1,0 +1,113 @@
+@{
+    ViewData["Titolo"] = "Consulenze: documenti e deleghe";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Consulenze: documenti e deleghe</h1>
+        <p class="sottotitolo">Documenti tipo dei rapportini, dati dei consulenti e registro delle deleghe operative per cliente e consulente. Una delega compare nei rapportini solo se è firmata e in essere alla data dell'intervento, per quel cliente e quel consulente. Nulla si cancella: ciò che non serve più si disattiva.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Deleghe operative</h2><span class="sottotesto" id="dl-conta"></span></div>
+    <div class="griglia-filtri">
+        <label>Cerca<input type="search" id="dl-cerca" placeholder="cliente, id ArcLab o estremi…" /></label>
+        <label class="casella" style="align-self:end"><input type="checkbox" id="dl-tutte" /> anche non attive</label>
+        <div style="display:flex;align-items:flex-end"><button class="pulsante" id="btn-dl-carica">Carica</button></div>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:26rem">
+        <table class="tabella" id="tabella-dl">
+            <thead><tr><th>Cliente</th><th>Consulente</th><th>Sedi</th><th>Estremi</th><th>Sottoscritta il</th><th>Fine</th><th>Stato</th><th>Documenti</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <p class="sottotesto" id="dl-msg"></p>
+
+    <details id="dett-firma" class="nascosto" open style="margin-top:0.6rem;background:#f7f7f7;padding:0.5rem">
+        <summary style="font-weight:600" id="firma-titolo">Registra firma</summary>
+        <input type="hidden" id="firma-id" />
+        <div class="griglia-filtri">
+            <label>Data di sottoscrizione<input type="date" id="firma-data" /></label>
+            <label style="grid-column:span 2">Copia firmata (PDF o immagine, facoltativa)<input type="file" id="firma-file" accept=".pdf,.jpg,.jpeg,.png" /></label>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.4rem">
+            <button class="pulsante" id="btn-firma-salva">Registra firma</button>
+            <button class="pulsante pulsante-tenue" id="btn-firma-chiudi">Chiudi</button>
+        </div>
+    </details>
+
+    <div class="barra-risultati" style="margin-top:0.9rem"><h3>Genera una nuova delega</h3></div>
+    <div class="griglia-filtri">
+        <label class="campo-con-suggerimenti" style="grid-column:1/-1">Cliente (solo clienti con commessa di consulenza attiva)
+            <input type="text" id="gd-cliente" placeholder="ragione sociale o id ArcLab…" autocomplete="off" />
+            <div id="gd-cliente-sugg" class="elenco-suggerimenti nascosto"></div>
+        </label>
+        <div style="grid-column:1/-1">
+            <div style="font-size:0.85rem">Sedi operative per cui vale la delega</div>
+            <label class="casella"><input type="checkbox" id="gd-tutte" /> <strong>tutte le sedi operative del cliente</strong> (anche quelle aggiunte in futuro)</label>
+            <div id="gd-sedi" class="sottotesto" style="display:flex;flex-direction:column;gap:0.15rem;margin-top:0.2rem">— scegli prima il cliente —</div>
+        </div>
+        <label>Consulente delegato<select id="gd-consulente"></select></label>
+        <label>Legale rappresentante: nome<input type="text" id="gd-lr-nome" maxlength="80" /></label>
+        <label>Legale rappresentante: cognome<input type="text" id="gd-lr-cognome" maxlength="80" /></label>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.4rem"><button class="pulsante" id="btn-gd-genera">Genera delega (Word e PDF)</button></div>
+    <p class="sottotesto" id="gd-msg"></p>
+
+    <details style="margin-top:0.9rem">
+        <summary style="cursor:pointer;font-weight:600">Registra a mano una delega già firmata (senza generarla)</summary>
+        <input type="hidden" id="dl-id" />
+        <div class="griglia-filtri" style="margin-top:0.4rem">
+            <label class="campo-con-suggerimenti" style="grid-column:1/-1">Cliente
+                <input type="text" id="dl-cliente" placeholder="ragione sociale o id ArcLab…" autocomplete="off" />
+                <div id="dl-cliente-sugg" class="elenco-suggerimenti nascosto"></div>
+            </label>
+            <label>Consulente delegato<select id="dl-consulente"></select></label>
+        <div style="grid-column:1/-1">
+            <div style="font-size:0.85rem">Sedi operative per cui vale la delega</div>
+            <label class="casella"><input type="checkbox" id="dm-tutte" checked /> <strong>tutte le sedi operative del cliente</strong> (anche quelle aggiunte in futuro)</label>
+            <div id="dm-sedi" class="sottotesto" style="display:flex;flex-direction:column;gap:0.15rem;margin-top:0.2rem">— scegli prima il cliente —</div>
+        </div>
+            <label style="grid-column:1/-1">Estremi (come vanno riportati nel rapporto)<input type="text" id="dl-estremi" maxlength="300" placeholder="es. Delega operativa prot. 12/2026" /></label>
+            <label>Data di sottoscrizione<input type="date" id="dl-data" /></label>
+            <label>Fine validità (revoca o scadenza)<input type="date" id="dl-fine" /></label>
+            <label style="grid-column:1/-1">Note<input type="text" id="dl-note" maxlength="500" /></label>
+            <label class="casella"><input type="checkbox" id="dl-attivo" checked /> attiva</label>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.4rem">
+            <button class="pulsante" id="btn-dl-salva">Salva</button>
+            <button class="pulsante pulsante-tenue" id="btn-dl-nuova">Svuota</button>
+        </div>
+        <p class="sottotesto" id="dlm-msg"></p>
+    </details>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Consulenti: qualifica e iscrizione all'Albo</h2></div>
+    <p class="sottotesto">Dati che non stanno in ArcLab e che servono nelle deleghe. Senza qualifica la delega di quel consulente non si può generare.</p>
+    <div class="tabella-scorrevole" style="max-height:22rem">
+        <table class="tabella" id="tabella-cons">
+            <thead><tr><th>Consulente</th><th>Qualifica</th><th>Iscrizione all'Albo</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <p class="sottotesto" id="cons-msg"></p>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Documenti tipo</h2><span class="sottotesto" id="dt-conta"></span></div>
+    <p class="sottotesto">"Può richiamare il Laboratorio": se il documento è modificato o emesso, il consulente deve confermare di aver verificato che non attribuisca al Laboratorio attività o obblighi esclusi dalle sue Condizioni. "Piano analitico": stampa nel rapporto la riga dedicata al piano di autocontrollo analitico.</p>
+    <div class="tabella-scorrevole" style="max-height:24rem">
+        <table class="tabella" id="tabella-dt">
+            <thead><tr><th>Nome</th><th>Area</th><th>Può richiamare il Laboratorio</th><th>Piano analitico</th><th class="numerico">Ordine</th><th>Attivo</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div style="margin-top:0.5rem"><button type="button" class="pulsante pulsante-tenue" id="btn-dt-nuovo">+ Nuovo documento tipo</button></div>
+    <p class="sottotesto" id="dt-msg"></p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/consulenze-amministrazione.js" asp-append-version="true"></script>
+}

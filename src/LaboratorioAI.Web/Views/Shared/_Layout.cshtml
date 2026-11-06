@@ -5,17 +5,22 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Titolo"] â€” Laboratorio AI</title>
+    <title>@ViewData["Titolo"] — Laboratorio AI</title>
     <link rel="manifest" href="~/manifest.webmanifest" />
     <meta name="theme-color" content="#1a3e8c" />
     <link rel="apple-touch-icon" href="~/img/icon-192.png" />
     <link rel="stylesheet" href="~/css/sito.css" asp-append-version="true" />
+    @if (ViewData["UsaBootstrap"] as bool? == true)
+    {
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    }
 </head>
 <body>
 
 <header class="intestazione">
     <a class="marchio" asp-controller="Home" asp-action="Index">
-        <span class="marchio-sigla">MÂ·A</span>
+        <span class="marchio-sigla">M·A</span>
         <span class="marchio-testo">
             <strong>Laboratorio AI</strong>
             <small>MARE.A srl</small>
@@ -25,93 +30,36 @@
     @if (Utente.Autenticato)
     {
         <div class="intestazione-utente">
+            <a class="pulsante-home" href="/" title="Torna alla pagina principale">⌂ Home</a>
+            @{ var guidaPagina = LaboratorioAI.Web.Navigazione.Guide.PerPercorso(Context.Request.Path.Value, Utente.HaPermesso); }
+            @if (guidaPagina is not null)
+            {
+                <a class="pulsante-guida" href="/Guide/@guidaPagina.Codice" data-guida="@guidaPagina.Codice" title="Come si usa questa pagina">? Guida</a>
+            }
+            else
+            {
+                <a class="pulsante-guida" href="/Guide" title="Guide d'uso delle funzioni">? Guide</a>
+            }
+            <button type="button" class="pulsante-azw" id="pulsante-azw" title="Aggiorna i dati contabili da AZW (al massimo ogni 15 minuti)">⟳ AZW</button>
             <span class="utente-nome">@Utente.NomeCompleto</span>
             <a class="pulsante-esci" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Esci</a>
         </div>
     }
 </header>
 
-@{
-    bool gLab = Utente.HaPermesso(Permessi.ValidazioneVisualizza) || Utente.HaPermesso(Permessi.ConsultazioneCampioni)
-        || Utente.HaPermesso(Permessi.MetodiConsulta) || Utente.HaPermesso(Permessi.CommesseConsulta)
-        || Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta) || Utente.HaPermesso(Permessi.PrefatturatoTamponi)
-        || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare) || Utente.HaPermesso(Permessi.AccettazioneEsegui)
-        || Utente.HaPermesso(Permessi.SoloEsterniVisualizza) || Utente.HaPermesso(Permessi.ControlliProponi)
-        || Utente.HaPermesso(Permessi.RicercaErroriVisualizza) || Utente.HaPermesso(Permessi.CertificatiEsterniGestione)
-        || Utente.HaPermesso(Permessi.PreventiviGestione) || Utente.HaPermesso(Permessi.OrdiniAccettazioneGestione);
-    bool gMan = Utente.HaPermesso(Permessi.DvrGenera) || Utente.HaPermesso(Permessi.PiscineGenera);
-    bool gNut = Utente.HaPermesso(Permessi.NutrizionaleMateriePrime) || Utente.HaPermesso(Permessi.NutrizionaleRicette);
-    bool gStr = Utente.HaPermesso(Permessi.TaraturaEsegui) || Utente.HaPermesso(Permessi.IncubatoriEsegui)
-        || Utente.HaPermesso(Permessi.MappaturaEsegui) || Utente.HaPermesso(Permessi.BilanceEsegui)
-        || Utente.HaPermesso(Permessi.TempLogEsegui) || Utente.HaPermesso(Permessi.ScadenziarioVisualizza);
-}
 @if (Utente.Autenticato)
 {
+    @* Menu generato da Navigazione/MenuApplicazione.cs (stessa fonte della pagina principale). *@
     <nav class="navigazione">
-        @if (gLab)
+        @foreach (var gruppo in LaboratorioAI.Web.Navigazione.MenuApplicazione.Visibili(Utente.HaPermesso))
         {
             <div class="gruppo">
-                <span class="gruppo-testo">Laboratorio ▾</span>
+                <button type="button" class="gruppo-testo" aria-expanded="false">@gruppo.Titolo ▾</button>
                 <div class="menu">
-                    @if (Utente.HaPermesso(Permessi.ValidazioneVisualizza)) { <a href="/Validazione">Da Validare</a> }
-                    @if (Utente.HaPermesso(Permessi.ConsultazioneCampioni)) { <a href="/Consultazione">Consultazione</a> <a href="/Consultazione/Certificati">Certificati</a> }
-                    @if (Utente.HaPermesso(Permessi.MetodiConsulta)) { <a href="/Metodi">Metodi e Controlli</a> }
-                    @if (Utente.HaPermesso(Permessi.CommesseConsulta)) { <a href="/Commesse">Commesse</a> }
-                    @if (Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta)) { <a href="/LaboratoriEsterni">Laboratori Esterni</a> }
-                    @if (Utente.HaPermesso(Permessi.PrefatturatoTamponi)) { <a href="/TamponiContratto">Tamponi in contratto</a> }
-                    @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare)) { <a href="/NonFatturare">Non fatturare</a> }
-                    @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Accettazione">Accettazione campioni</a> }
-                    @if (Utente.HaPermesso(Permessi.AccettazioneEsegui)) { <a href="/Prelievo">Prelievo vocale</a> }
-                    @if (Utente.HaPermesso(Permessi.OrdiniAccettazioneGestione)) { <a href="/OrdiniAccettazione">Ordini di Accettazione</a> }
-                    @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza)) { <a href="/SoloEsterni">Certificati esterni Non Ricertificati</a> }
-                    @if (Utente.HaPermesso(Permessi.CertificatiEsterniGestione)) { <a href="/CertificatiEsterni">Certificati esterni · rinomina</a> }
-                    @if (Utente.HaPermesso(Permessi.ControlliProponi)) { <a href="/Controlli">Proposta controlli</a> }
-                    @if (Utente.HaPermesso(Permessi.PreventiviGestione)) { <a href="/Preventivi">Preventivi</a> }
-                    @if (Utente.HaPermesso(Permessi.RicercaErroriVisualizza)) { <a href="/RicercaErrori">Ricerca errori</a> }
-                </div>
-            </div>
-        }
-        @if (gMan)
-        {
-            <div class="gruppo">
-                <span class="gruppo-testo">Manualistica ▾</span>
-                <div class="menu">
-                    @if (Utente.HaPermesso(Permessi.DvrGenera)) { <a href="/Dvr">DVR Legionella</a> }
-                    @if (Utente.HaPermesso(Permessi.PiscineGenera)) { <a href="/Piscine">DVR Piscine</a> }
-                </div>
-            </div>
-        }
-        @if (gNut)
-        {
-            <div class="gruppo">
-                <span class="gruppo-testo">Nutrizionali ▾</span>
-                <div class="menu">
-                    @if (Utente.HaPermesso(Permessi.NutrizionaleMateriePrime)) { <a href="/MateriePrime">Materie prime</a> }
-                    @if (Utente.HaPermesso(Permessi.NutrizionaleRicette)) { <a href="/Ricette">Ricette nutrizionali</a> }
-                </div>
-            </div>
-        }
-        @if (gStr)
-        {
-            <div class="gruppo">
-                <span class="gruppo-testo">Strumenti ▾</span>
-                <div class="menu">
-                    @if (Utente.HaPermesso(Permessi.TaraturaEsegui)) { <a href="/Taratura">Taratura termometri</a> }
-                    @if (Utente.HaPermesso(Permessi.IncubatoriEsegui)) { <a href="/Incubatori">Taratura incubatori</a> }
-                    @if (Utente.HaPermesso(Permessi.MappaturaEsegui)) { <a href="/Mappatura">Mappatura incubatori</a> }
-                    @if (Utente.HaPermesso(Permessi.BilanceEsegui)) { <a href="/Bilance">Taratura bilance</a> }
-                    @if (Utente.HaPermesso(Permessi.TempLogEsegui)) { <a href="/TempLog">Monitoraggio Econorma</a> }
-                    @if (Utente.HaPermesso(Permessi.ScadenziarioVisualizza)) { <a href="/Scadenziario">Scadenziario tarature</a> }
-                </div>
-            </div>
-        }
-        @if (Utente.HaPermesso(Permessi.AmministrazioneAudit) || Utente.HaPermesso(Permessi.AmministrazioneConfigurazioni))
-        {
-            <div class="gruppo">
-                <span class="gruppo-testo">Amministrazione ▾</span>
-                <div class="menu">
-                    @if (Utente.HaPermesso(Permessi.AmministrazioneConfigurazioni)) { <a href="/Impostazioni">Impostazioni documenti</a> }
-                    @if (Utente.HaPermesso(Permessi.AmministrazioneAudit)) { <a href="/Audit">Registro attività (audit)</a> }
+                    @foreach (var voce in gruppo.Voci)
+                    {
+                        <a href="@voce.Url">@voce.Titolo</a>
+                    }
                 </div>
             </div>
         }
@@ -119,13 +67,29 @@
 }
 
 <main class="contenuto">
+    @if (ViewData["SolaLettura"] is true)
+    {
+        <p class="avviso-sola-lettura">Consultazione in sola lettura: puoi vedere i dati ma non modificarli.</p>
+    }
     @RenderBody()
 </main>
 
+<aside id="pannello-guida" class="pannello-guida" aria-hidden="true">
+    <div class="pannello-guida-testa">
+        <strong id="pannello-guida-titolo">Guida</strong>
+        <a id="pannello-guida-intera" href="/Guide" title="Apri a pagina intera (stampabile)">Pagina intera</a>
+        <button type="button" id="pannello-guida-chiudi" title="Chiudi">✕</button>
+    </div>
+    <div id="pannello-guida-corpo">
+        <partial name="_ChiediGuida" />
+        <div id="pannello-guida-testo" class="guida"></div>
+    </div>
+</aside>
+
 <footer class="pie">
-    <span>MARE.A srl â€” Laboratorio Accreditato ACCREDIA nÂ° 00729</span>
+    <span>MARE.A srl — Laboratorio Accreditato ACCREDIA n° 00729</span>
     <span class="versione">
-        v@Versione.Versione
+        @("v" + Versione.Versione)
         @if (Versione.Ambiente != "Produzione")
         {
             <em class="ambiente">@Versione.Ambiente</em>
@@ -133,8 +97,81 @@
     </span>
 </footer>
 
-<script src="~/js/comune.js" asp-append-version="true"></script>
+<script src="~/js/campi-azzerabili.js" asp-append-version="true" defer></script>
+<script src="~/js/tabelle-ordinabili.js" asp-append-version="true" defer></script>
+@if (Utente.Autenticato)
+{
+    <div id="avviso-azw" class="avviso-azw" role="status" aria-live="polite" hidden></div>
+    <script src="~/js/aggiorna-azw.js" asp-append-version="true" defer></script>
+    @if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ValidazioneVisualizza))
+    {
+        <div id="avviso-ritardi" class="avviso-azw avviso-ritardi" role="status" aria-live="polite" hidden></div>
+        <script src="~/js/avviso-ritardi.js" asp-append-version="true" defer></script>
+    }
+    <script type="module" src="~/js/moduli/chiedi-guida.js" asp-append-version="true"></script>
+}
+<script>
+    // Menu in alto (13/10/2026): su iPhone/iPad il passaggio del mouse non esiste, quindi il menu si apre al tocco
+    // (e si chiude toccando altrove o di nuovo sul titolo). Con il mouse resta l'apertura al passaggio.
+    (() => {
+        const gruppi = [...document.querySelectorAll('.navigazione .gruppo')];
+        const chiudiTutti = (tranne) => gruppi.forEach(g => {
+            if (g === tranne) return;
+            g.classList.remove('aperto');
+            g.querySelector('.gruppo-testo')?.setAttribute('aria-expanded', 'false');
+        });
+        gruppi.forEach(g => g.querySelector('.gruppo-testo')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const apri = !g.classList.contains('aperto');
+            chiudiTutti(g);
+            g.classList.toggle('aperto', apri);
+            e.currentTarget.setAttribute('aria-expanded', apri ? 'true' : 'false');
+            if (!apri) e.currentTarget.blur();
+        }));
+        document.addEventListener('click', (e) => { if (!e.target.closest('.navigazione')) chiudiTutti(null); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudiTutti(null); });
+    })();
+
+    // Guide (11/10/2026): «? Guida» apre la guida della pagina in un pannello laterale, senza lasciare la pagina.
+    (() => {
+        const b = document.querySelector('.pulsante-guida[data-guida]');
+        const p = document.getElementById('pannello-guida');
+        if (!b || !p) return;
+        const chiudi = () => { p.classList.remove('aperto'); p.setAttribute('aria-hidden', 'true'); };
+        b.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (p.classList.contains('aperto')) { chiudi(); return; }
+            const corpo = document.getElementById('pannello-guida-testo');
+            if (!corpo.dataset.caricata) {
+                corpo.innerHTML = '<p class="sottotesto">Caricamento…</p>';
+                try {
+                    const r = await fetch(`/Guide/${encodeURIComponent(b.dataset.guida)}/pannello`);
+                    corpo.innerHTML = r.ok ? await r.text() : '<p>Guida non disponibile.</p>';
+                    corpo.dataset.caricata = '1';
+                } catch { corpo.innerHTML = '<p>Guida non disponibile.</p>'; }
+            }
+            document.getElementById('pannello-guida-intera').href = b.href;
+            document.getElementById('pannello-guida-titolo').textContent = 'Guida · ' + (document.title.split(' — ')[0] || '');
+            p.classList.add('aperto'); p.setAttribute('aria-hidden', 'false');
+        });
+        document.getElementById('pannello-guida-chiudi').addEventListener('click', chiudi);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
+    })();
+</script>
 @await RenderSectionAsync("Script", required: false)
+@if (ViewData["SolaLettura"] is true)
+{
+    <script>
+        // Sola lettura (11/10/2026): i moduli di modifica restano visibili con i loro valori ma disattivati, senza pulsanti.
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('form').forEach(f => {
+                if ((f.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+                f.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
+                f.querySelectorAll('button, input[type=submit]').forEach(el => el.style.display = 'none');
+            });
+        });
+    </script>
+}
 </body>
 </html>
 

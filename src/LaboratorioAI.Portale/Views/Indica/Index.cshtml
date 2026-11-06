@@ -1,0 +1,76 @@
+@model LaboratorioAI.Portale.Controllers.ModelloIndica
+@{
+    Layout = null;
+    var qualifiche = new[] { "Legale rappresentante", "Amministratore", "Procuratore", "Responsabile qualità delegato" };
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>MARE.A srl — Indica il Firmatario</title>
+    <link rel="stylesheet" href="~/css/portale.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/firma.css" asp-append-version="true" />
+</head>
+<body class="pagina-firma">
+<header class="testata-firma">
+    <span class="marchio-sigla">M·A</span>
+    <div>
+        <div class="marchio-nome">MARE.A srl</div>
+        <div class="marchio-sotto">Laboratorio accreditato ACCREDIA n° 00729 · Cattolica (RN)</div>
+    </div>
+</header>
+
+<main class="contenuto-firma" id="pagina" data-codice="@Model.Codice">
+    <h1>Chi approverà le Condizioni Generali di Fornitura?</h1>
+    <p class="cliente-firma"><strong>@Model.RagioneSociale</strong>@(string.IsNullOrWhiteSpace(Model.PartitaIva) ? "" : " · P. IVA " + Model.PartitaIva)</p>
+
+    @if (Model.GiaIndicato)
+    {
+        <section class="blocco-firma esito-ok">
+            <h2>Firmatario già indicato</h2>
+            <p>Il @(Model.DataIndicazione?.ToString("dd/MM/yyyy 'alle' HH:mm")) è stato indicato <strong>@Model.Indicato</strong>, che ha ricevuto il link per approvare le Condizioni.</p>
+            <p class="nota-firma">Per cambiarlo rispondete all'e-mail ricevuta o chiamate lo 0541 830442.</p>
+        </section>
+    }
+    else
+    {
+        <section class="blocco-firma" id="modulo">
+            <p class="nota-firma">Per alcune clausole delle nostre Condizioni Generali di Fornitura la legge (artt. 1341 e 1342 del Codice Civile)
+                richiede l'approvazione specifica di chi può impegnare la vostra azienda: il legale rappresentante o una persona con i poteri per farlo.
+                Indicateci chi è: le invieremo per e-mail un link personale per leggere e approvare le Condizioni online, senza registrazioni né password.</p>
+            <div class="campi-firma">
+                <div class="campo"><label for="f-nome">Nome</label><input type="text" id="f-nome" maxlength="100" autocomplete="given-name" /></div>
+                <div class="campo"><label for="f-cognome">Cognome</label><input type="text" id="f-cognome" maxlength="100" autocomplete="family-name" /></div>
+                <div class="campo"><label for="f-qualifica">Ruolo in azienda</label>
+                    <select id="f-qualifica">
+                        @foreach (var q in qualifiche)
+                        {
+                            <option value="@q">@q</option>
+                        }
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+                <div class="campo nascosto" id="campo-qualifica-altro"><label for="f-qualifica-altro">Specificate il ruolo</label>
+                    <input type="text" id="f-qualifica-altro" maxlength="150" /></div>
+                <div class="campo"><label for="f-email">E-mail personale della persona indicata</label>
+                    <input type="email" id="f-email" maxlength="256" autocomplete="email" placeholder="nome.cognome@azienda.it" /></div>
+                <div class="campo"><label for="f-email2">Ripetete l'e-mail</label>
+                    <input type="email" id="f-email2" maxlength="256" autocomplete="off" /></div>
+            </div>
+            <p class="nota-firma">I dati servono solo per inviare il link e documentare l'approvazione delle Condizioni (titolare del trattamento: MARE.A s.r.l.).</p>
+            <button type="button" class="pulsante-firma" id="btn-invia">Invia l'indicazione</button>
+            <p class="errore-firma nascosto" id="errore"></p>
+        </section>
+        <section class="blocco-firma esito-ok nascosto" id="esito">
+            <h2>Grazie</h2>
+            <p id="esito-testo"></p>
+        </section>
+    }
+    <p class="nota-firma">Per qualsiasi dubbio: <a href="mailto:refertazione@mare-a.com">refertazione@mare-a.com</a> · 0541 830442</p>
+</main>
+<script type="module" src="~/js/indica.js" asp-append-version="true"></script>
+</body>
+</html>

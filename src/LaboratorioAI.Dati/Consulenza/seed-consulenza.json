@@ -1,0 +1,1498 @@
+{
+ "attivita": [
+  {
+   "idTipoIncarico": 93,
+   "modalita": "Annuale",
+   "testo": "Documento di valutazione dei rischi (DVR) comprensivo dell’analisi qualitativa dei rischi dell’intera attività lavorativa aziendale (es. rischio incendio, chimico, biologico, videoterminalista, elettrocuzione, esplosione, microclima).",
+   "testoSuccessivi": "Aggiornamenti periodici dei punti sopra elencati e approntamento di relativa documentazione necessaria ai sensi del D.Lgs.n.81/08. Verbali di dichiarazione di avvenuta informazione, formazione dei lavoratori sui rischi connessi alla propria attività lavorativa; Verbale di consegna dei dispositivi di protezione individuali (DPI); Assistenza in caso di visite ispettive; Assistenza sulla situazione formativa aziendale; 1 Visita annuale per il controllo della documentazione obbligatoria per la corretta gestione dell’esercizio;",
+   "contenuti": [
+    {
+     "chiave": "chimico",
+     "testo": "Redazione della valutazione del rischio chimico ai sensi dell’art. 223 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "biologico",
+     "testo": "Redazione della valutazione del rischio biologico ai sensi dell’art. 271 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "taglio",
+     "testo": "Redazione della valutazione del rischio ferite da taglio e da punta ai sensi dell’art. 271 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "mmc",
+     "testo": "Redazione della valutazione rapida della movimentazione manuale dei carichi (Technical report) ai sensi degli artt. 28 e 168 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "niosh",
+     "testo": "Redazione della valutazione del rischio movimentazione manuale dei carichi con metodo NIOSH (sollevamento) ai sensi degli artt. 28 e 168 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "snook",
+     "testo": "Redazione della valutazione del rischio traino e spinta con metodo Snook e Ciriello ai sensi degli artt. 28 e 168 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "rula",
+     "testo": "Redazione della valutazione del rischio posturale (RULA) ai sensi degli artt. 28 e 168 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "ocra",
+     "testo": "Redazione della valutazione del rischio da movimenti e sforzi ripetuti degli arti superiori (OCRA) ai sensi degli artt. 28 e 168 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "vdt",
+     "testo": "Redazione della valutazione del rischio videoterminalisti ai sensi degli artt. 28 e 172 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "rumore",
+     "testo": "Redazione della valutazione del rischio rumore ai sensi dell’art. 190 del D.Lgs. 81/2008 (escluse misurazioni strumentali)",
+     "predefinito": true
+    },
+    {
+     "chiave": "rumorefono",
+     "testo": "Redazione della valutazione del rischio rumore ai sensi dell’art. 190 del D.Lgs. 81/2008 con misurazioni fonometriche",
+     "predefinito": false
+    },
+    {
+     "chiave": "vibrazioni",
+     "testo": "Redazione della valutazione del rischio vibrazioni ai sensi dell’art. 202 del D.Lgs. 81/2008 (dati del Portale Agenti Fisici)",
+     "predefinito": true
+    },
+    {
+     "chiave": "elettrico",
+     "testo": "Redazione della valutazione del rischio elettrico ai sensi dell’art. 80 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "cem",
+     "testo": "Redazione della valutazione preliminare dei campi elettromagnetici ai sensi dell’art. 209 del D.Lgs. 81/2008 (escluse misurazioni strumentali)",
+     "predefinito": true
+    },
+    {
+     "chiave": "roa",
+     "testo": "Redazione della valutazione del rischio radiazioni ottiche artificiali ai sensi dell’art. 216 del D.Lgs. 81/2008 (escluse misurazioni strumentali)",
+     "predefinito": true
+    },
+    {
+     "chiave": "ron",
+     "testo": "Redazione della valutazione del rischio radiazioni ottiche naturali ai sensi del D.Lgs. 81/2008 (lavorazioni all’aperto)",
+     "predefinito": true
+    },
+    {
+     "chiave": "stress",
+     "testo": "Redazione della valutazione del rischio stress lavoro correlato ai sensi dell’art. 28 c. 1 del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "gravidanza",
+     "testo": "Redazione della valutazione dei rischi per le lavoratrici in gravidanza e fino a sette mesi di età del figlio ai sensi del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "microclima",
+     "testo": "Redazione della valutazione del rischio microclima ai sensi del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "rapina",
+     "testo": "Redazione della valutazione del rischio rapina ai sensi del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "minori",
+     "testo": "Redazione della valutazione del rischio per i lavoratori minorenni ai sensi del D.Lgs. 81/2008",
+     "predefinito": true
+    },
+    {
+     "chiave": "nomine",
+     "testo": "Verbali di nomina delle figure dell’organigramma della sicurezza",
+     "predefinito": true
+    },
+    {
+     "chiave": "infoform",
+     "testo": "Verbali di avvenuta informazione e formazione dei lavoratori sui rischi della propria attività",
+     "predefinito": true
+    },
+    {
+     "chiave": "dpi",
+     "testo": "Verbale di consegna dei dispositivi di protezione individuale (DPI)",
+     "predefinito": true
+    },
+    {
+     "chiave": "emergenza",
+     "testo": "Misure organizzative e gestionali da attuare in caso di emergenza",
+     "predefinito": true
+    },
+    {
+     "chiave": "ispezioni",
+     "testo": "Assistenza in caso di visite ispettive",
+     "predefinito": true
+    },
+    {
+     "chiave": "formativa",
+     "testo": "Assistenza sulla situazione formativa aziendale",
+     "predefinito": true
+    },
+    {
+     "chiave": "visita1",
+     "testo": "1 visita annuale per il controllo della documentazione obbligatoria",
+     "predefinito": true
+    },
+    {
+     "chiave": "visite2",
+     "testo": "2 visite annuali per il controllo della documentazione obbligatoria",
+     "predefinito": false
+    },
+    {
+     "chiave": "visite4",
+     "testo": "4 visite annuali per il controllo della documentazione obbligatoria",
+     "predefinito": false
+    },
+    {
+     "chiave": "riunione",
+     "testo": "Riunione periodica annuale (art. 35 D.Lgs. 81/2008)",
+     "predefinito": false
+    }
+   ]
+  },
+  {
+   "idTipoIncarico": 95,
+   "modalita": "Annuale",
+   "testo": "Incarico di Responsabile del Servizio di Prevenzione e Protezione esterno (RSPP), regolato dall’Allegato C delle Condizioni Generali di consulenza.",
+   "testoSuccessivi": "",
+   "contenuti": []
+  },
+  {
+   "idTipoIncarico": 113,
+   "modalita": "Annuale",
+   "testo": "Igiene degli alimenti – autocontrollo HACCP.",
+   "testoSuccessivi": "Aggiornamento del manuale e delle procedure, assistenza e visita annuale.",
+   "contenuti": [
+    {
+     "chiave": "manuale",
+     "testo": "Redazione del manuale di autocontrollo aziendale (HACCP) ai sensi del Reg. (CE) 852/2004 con le relative procedure di gestione",
+     "predefinito": true
+    },
+    {
+     "chiave": "applicazione",
+     "testo": "Consulenza sull’applicazione della normativa e degli adempimenti",
+     "predefinito": true
+    },
+    {
+     "chiave": "organo",
+     "testo": "Assistenza nei rapporti con l’Organo di Controllo",
+     "predefinito": true
+    },
+    {
+     "chiave": "formativa",
+     "testo": "Assistenza sulla situazione formativa aziendale",
+     "predefinito": true
+    },
+    {
+     "chiave": "visita1",
+     "testo": "1 visita annuale per il controllo della documentazione obbligatoria",
+     "predefinito": true
+    },
+    {
+     "chiave": "visite2",
+     "testo": "2 visite annuali per il controllo della documentazione obbligatoria",
+     "predefinito": false
+    },
+    {
+     "chiave": "tampone",
+     "testo": "N. 1 tampone superficiale compreso",
+     "predefinito": true
+    }
+   ]
+  },
+  {
+   "idTipoIncarico": 123,
+   "modalita": "Annuale",
+   "testo": "Modello unico di dichiarazione ambientale (MUD) – denuncia annuale dei rifiuti (2 rifiuti compresi).",
+   "testoSuccessivi": "",
+   "contenuti": []
+  },
+  {
+   "idTipoIncarico": 119,
+   "modalita": "PerUnita",
+   "testo": "Analisi di laboratorio, regolate dalle Condizioni Generali di Fornitura del Laboratorio.",
+   "testoSuccessivi": "",
+   "contenuti": []
+  }
+ ],
+ "pacchetti": [
+  {
+   "nome": "Base",
+   "modello": "00 modello preventivo base.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "chimico",
+      "biologico",
+      "taglio",
+      "mmc",
+      "niosh",
+      "snook",
+      "rula",
+      "ocra",
+      "rumore",
+      "rumorefono",
+      "vibrazioni",
+      "elettrico",
+      "cem",
+      "roa",
+      "ron",
+      "stress",
+      "gravidanza",
+      "rapina",
+      "minori",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 0.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1",
+      "tampone"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 0.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 0.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 0.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 123,
+     "prezzo": 110.0
+    },
+    {
+     "idTipoIncarico": 123,
+     "descrizione": "Ogni rifiuto successivo al secondo",
+     "modalita": "PerUnita",
+     "prezzo": 25.0
+    }
+   ]
+  },
+  {
+   "nome": "Albergo con legionella",
+   "modello": "01 A modello preventivo albergo con legionella.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 350.0,
+     "prezzoSuccessivi": 280.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "visita1"
+     ],
+     "prezzo": 280.0,
+     "prezzoSuccessivi": 220.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 115,
+     "prezzo": 150.0,
+     "prezzoSuccessivi": 100.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Prelievo e analisi Legionella spp (1 punto)",
+     "prezzo": 33.5,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Albergo",
+   "modello": "01 modello preventivo albergo.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 350.0,
+     "prezzoSuccessivi": 280.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1",
+      "tampone"
+     ],
+     "prezzo": 250.0,
+     "prezzoSuccessivi": 220.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Ristorante",
+   "modello": "02 modello preventivo ristorante.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 0.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1",
+      "tampone"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Bar",
+   "modello": "03 modello preventivo bar.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 220.0,
+     "prezzoSuccessivi": 200.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Pasticceria",
+   "modello": "04 modello preventivo pasticceria.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 370.0,
+     "prezzoSuccessivi": 280.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 300.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Gelateria",
+   "modello": "05 modello preventivo gelateria.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 240.0,
+     "prezzoSuccessivi": 200.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Forno",
+   "modello": "06 modello preventivo forno.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 300.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Piadineria, pizzerie d'asporto-kebab",
+   "modello": "07 modello preventivo piadineria, pizzerie d'asporto-kebab.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 240.0,
+     "prezzoSuccessivi": 200.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Gastronomia",
+   "modello": "08 modello preventivo gastronomia.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 150.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 240.0,
+     "prezzoSuccessivi": 200.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "PICCOLO alimentari",
+   "modello": "09 modello preventivo PICCOLO alimentari.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "visita1",
+      "tampone"
+     ],
+     "prezzo": 250.0,
+     "prezzoSuccessivi": 220.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 140.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Pescheria",
+   "modello": "10 modello preventivo pescheria.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 250.0,
+     "prezzoSuccessivi": 220.0
+    }
+   ]
+  },
+  {
+   "nome": "Estetista",
+   "modello": "11 modello preventivo estetista.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "cem",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "Ufficio",
+   "modello": "12 modello preventivo ufficio.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "chimico",
+      "mmc",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 320.0,
+     "prezzoSuccessivi": 250.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    }
+   ]
+  },
+  {
+   "nome": "A.s.d o s.s.d",
+   "modello": "13 modello preventivo a.s.d o s.s.d.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "chimico",
+      "mmc",
+      "rumore",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "Falegnameria",
+   "modello": "14 modello preventivo falegnameria.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "biologico",
+      "mmc",
+      "rumorefono",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visite2"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0
+    },
+    {
+     "idTipoIncarico": 123,
+     "prezzo": 110.0
+    },
+    {
+     "idTipoIncarico": 123,
+     "descrizione": "Ogni rifiuto successivo al secondo",
+     "modalita": "PerUnita",
+     "prezzo": 25.0
+    }
+   ]
+  },
+  {
+   "nome": "Azienda agricola",
+   "modello": "15 modello preventivo azienda agricola.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "chimico",
+      "biologico",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumorefono",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Tampone superficiale",
+     "prezzo": 15.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi alimento",
+     "prezzo": 60.0,
+     "informativa": true
+    },
+    {
+     "idTipoIncarico": 119,
+     "descrizione": "Analisi potabilità acque",
+     "prezzo": 160.0,
+     "informativa": true
+    }
+   ]
+  },
+  {
+   "nome": "Dentista",
+   "modello": "16 modello preventivo dentista.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "biologico",
+      "taglio",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "vdt",
+      "rumore",
+      "vibrazioni",
+      "elettrico",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visite2"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "Parrucchiera",
+   "modello": "17 modello preventivo parrucchiera.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 370.0,
+     "prezzoSuccessivi": 280.0
+    },
+    {
+     "idTipoIncarico": 95,
+     "prezzo": 100.0
+    }
+   ]
+  },
+  {
+   "nome": "Stabilimento balneare SOLO spiaggia",
+   "modello": "18 modello preventivo stabilimento balneare SOLO spiaggia.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 250.0,
+     "prezzoSuccessivi": 150.0
+    }
+   ]
+  },
+  {
+   "nome": "Stabilimento balneare CON spiaggia + bar",
+   "modello": "19 stabilimento balneare CON spiaggia + bar.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 250.0,
+     "prezzoSuccessivi": 150.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 220.0,
+     "prezzoSuccessivi": 200.0
+    }
+   ]
+  },
+  {
+   "nome": "Supermercato",
+   "modello": "20 modello preventivo supermercato.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "chimico",
+      "biologico",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "vdt",
+      "rumore",
+      "vibrazioni",
+      "elettrico",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "microclima",
+      "rapina",
+      "nomine",
+      "infoform",
+      "dpi",
+      "ispezioni",
+      "riunione",
+      "visite4"
+     ],
+     "prezzo": 2350.0,
+     "prezzoSuccessivi": 1200.0
+    },
+    {
+     "idTipoIncarico": 113,
+     "contenuti": [
+      "manuale",
+      "applicazione",
+      "organo",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "Laboratorio odontotecnico",
+   "modello": "31 modello preventivo laboratorio odontotecnico.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "microclima",
+      "biologico",
+      "mmc",
+      "vdt",
+      "rumore",
+      "vibrazioni",
+      "elettrico",
+      "cem",
+      "roa",
+      "stress",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 720.0,
+     "prezzoSuccessivi": 380.0
+    }
+   ]
+  },
+  {
+   "nome": "Toelettatore cani e gatti",
+   "modello": "32 modello preventivo toelettatore cani e gatti.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "vdt",
+      "microclima",
+      "chimico",
+      "biologico",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "elettrico",
+      "cem",
+      "roa",
+      "stress",
+      "gravidanza",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    }
+   ]
+  },
+  {
+   "nome": "Piccola tappezzeria",
+   "modello": "35 modello preventivo piccola tappezzeria.docx",
+   "righe": [
+    {
+     "idTipoIncarico": 93,
+     "contenuti": [
+      "microclima",
+      "mmc",
+      "niosh",
+      "rula",
+      "ocra",
+      "rumore",
+      "vibrazioni",
+      "cem",
+      "roa",
+      "stress",
+      "nomine",
+      "infoform",
+      "dpi",
+      "emergenza",
+      "ispezioni",
+      "formativa",
+      "visita1"
+     ],
+     "prezzo": 0.0,
+     "prezzoSuccessivi": 0.0
+    }
+   ]
+  }
+ ]
+}

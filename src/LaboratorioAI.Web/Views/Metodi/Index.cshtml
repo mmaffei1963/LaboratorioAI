@@ -27,6 +27,15 @@
             </div>
             <div id="suggerimenti" class="suggerimenti nascosto"></div>
 
+            @* 03/11/2026 (richiesta di Zatterin): si parte dai metodi di un controllo noto e si cercano i suoi «sovrainsiemi» *@
+            <div class="riga-lookup">
+                <label style="flex:1">Prendi i metodi da un controllo
+                    <input type="text" id="controllo-base" list="lista-controlli-base" placeholder="nome o ID del controllo" autocomplete="off" />
+                    <datalist id="lista-controlli-base"></datalist>
+                </label>
+                <button type="button" class="pulsante pulsante-secondario" id="btn-controllo-base">Aggiungi i suoi metodi</button>
+            </div>
+
             <fieldset class="scelta-logica">
                 <legend>Il controllo deve contenere</legend>
                 <label><input type="radio" name="logica" value="Tutti" checked /> tutti i metodi</label>

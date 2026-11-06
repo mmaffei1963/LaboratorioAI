@@ -2,25 +2,30 @@
 // ripiano + calcolo + anteprima), rapporto, duplicazione, analisi AI, validazione.
 
 import { chiamaApi, inviaJson, testo, avvisa, occupa } from '../comune.js';
+import { creaCommittente } from './committente-taratura.js';
+import { urlElenco, conteggioRegistro, classeRiga, marcaEliminata, collegaRipristino, eliminaDalRegistro } from '../registro-strumenti.js';
 
 const $ = (id) => document.getElementById(id);
 const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return isNaN(x) ? 0 : x; };
 const gg = (x, d = 2) => (x == null ? '—' : Number(x).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const RIPIANI = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-let cdrs = [], clienti = [], strumenti = [], misure = [];
+let cdrs = [], strumenti = [], misure = [];
+// 03/11/2026: il cliente sta nel committente; l'apparecchiatura del cliente si scrive (o si sceglie tra quelle già mappate).
+const committente = creaCommittente('/api/mappatura', 'c', () => aggiornaDatalist());
 
 async function caricaRegistro() {
     try {
-        const r = await chiamaApi('/api/mappatura/elenco');
-        $('conteggio-registro').textContent = `${r.length} mappature`;
+        const r = await chiamaApi(urlElenco('/api/mappatura/elenco'));
+        $('conteggio-registro').textContent = conteggioRegistro(r, 'mappature');
         $('tabella-registro').querySelector('tbody').innerHTML = r.length === 0
             ? '<tr><td colspan="5" class="vuoto">Nessuna mappatura.</td></tr>'
-            : r.map(t => `<tr class="riga-cliccabile" data-id="${t.idMappatura}">
-                <td>${testo(t.numeroRapporto)}</td><td>${testo(t.apparecchiaturaIdentificazione)}</td>
+            : r.map(t => `<tr class="riga-cliccabile${classeRiga(t)}" data-id="${t.idMappatura}">
+                <td>${testo(t.numeroRapporto)}${marcaEliminata(t, t.idMappatura)}</td><td>${testo(t.apparecchiaturaIdentificazione)}</td>
                 <td class="numerico">${gg(t.valoreNominale)}</td><td>${testo(t.dataMappatura)}</td>
                 <td>${t.dataScadenza ? testo(t.dataScadenza) : '—'} ${t.scaduta ? '<strong style="color:#b3261e">scaduta</strong>' : ''}</td></tr>`).join('');
         $('tabella-registro').querySelectorAll('.riga-cliccabile').forEach(x => x.addEventListener('click', () => apri(Number(x.dataset.id))));
+        collegaRipristino($('tabella-registro'), '/api/mappatura', caricaRegistro);
     } catch (e) { avvisa(e.message, 'errore'); }
 }
 
@@ -33,32 +38,42 @@ async function caricaCdr() {
 }
 
 async function caricaAnagrafiche() {
-    try { clienti = await chiamaApi('/api/mappatura/clienti'); } catch { clienti = []; }
+    await committente.carica();
     try { strumenti = await chiamaApi('/api/mappatura/strumenti'); } catch { strumenti = []; }
     aggiornaDatalist();
 }
 
 function aggiornaDatalist() {
-    const voci = $('a-origine').value === 'interno' ? strumenti : clienti;
-    $('lista-a').innerHTML = voci.map(v => `<option value="${testo(v.nome)}">`).join('');
+    const voci = $('a-origine').value === 'interno'
+        ? strumenti.map(v => v.nome)
+        : committente.strumenti().map(v => v.identificazione);
+    $('lista-a').innerHTML = voci.map(v => `<option value="${testo(v)}">`).join('');
 }
 
 function risolviApparecchiatura() {
     const interno = $('a-origine').value === 'interno';
     const nome = $('a-identificazione').value.trim();
-    const lista = interno ? strumenti : clienti;
-    const trovato = lista.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase());
+    const trovato = interno ? strumenti.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase()) : null;
     return {
         identificazione: nome, codice: $('a-codice').value.trim() || null, interna: interno,
-        idStrumentoArcLab: interno && trovato ? trovato.id : null,
-        idClienteArcLab: !interno && trovato ? trovato.id : null
+        idStrumentoArcLab: trovato ? trovato.id : null,
+        idClienteArcLab: null
     };
+}
+
+// Apparecchiatura del cliente scelta tra quelle già mappate: riprende il codice.
+function riprendiCodice() {
+    if ($('a-origine').value === 'interno' || $('a-codice').value.trim()) return;
+    const nome = $('a-identificazione').value.trim().toLowerCase();
+    const s = committente.strumenti().find(v => (v.identificazione || '').toLowerCase() === nome);
+    if (s?.codice) $('a-codice').value = s.codice;
 }
 
 function nuova() {
     ['t-id', 't-numero', 't-scadenza', 'a-identificazione', 'a-codice', 't-nominale'].forEach(id => $(id).value = '');
     $('t-cdr').value = ''; $('t-istruzione').value = 'IO 04-02';
     $('t-tolleranza').value = '3'; $('t-risoluzione').value = '0.01'; $('a-origine').value = 'interno';
+    committente.svuota();
     $('t-data').value = new Date().toISOString().substring(0, 10);
     aggiornaDatalist();
     misure = ripianoNuovo('A');
@@ -79,6 +94,7 @@ async function apri(id) {
         $('t-id').value = t.idMappatura;
         $('t-cdr').value = t.idCampioneRiferimento;
         $('a-origine').value = t.apparecchiaturaInterna ? 'interno' : 'cliente';
+        await committente.imposta(t);
         aggiornaDatalist();
         $('a-identificazione').value = t.apparecchiaturaIdentificazione ?? '';
         $('a-codice').value = t.apparecchiaturaCodice ?? '';
@@ -166,6 +182,7 @@ function corpoSalva() {
         idCampioneRiferimento: Number($('t-cdr').value),
         apparecchiaturaIdentificazione: a.identificazione, apparecchiaturaCodice: a.codice,
         apparecchiaturaInterna: a.interna, apparecchiaturaIdStrumentoArcLab: a.idStrumentoArcLab, apparecchiaturaIdClienteArcLab: a.idClienteArcLab,
+        ...committente.leggi(),
         valoreNominale: num($('t-nominale').value), tolleranza: num($('t-tolleranza').value),
         risoluzioneCdr: num($('t-risoluzione').value),
         numeroRapporto: $('t-numero').value || null,
@@ -202,7 +219,7 @@ function duplica() {
     $('t-cdr').value = s.cdr; $('t-nominale').value = s.nominale; $('t-tolleranza').value = s.tolleranza;
     $('t-risoluzione').value = s.risoluzione; $('t-istruzione').value = s.istruzione;
     $('t-data').value = s.data; $('t-scadenza').value = s.scadenza; $('t-responsabile').value = s.responsabile;
-    $('a-origine').value = 'interno'; aggiornaDatalist();
+    aggiornaDatalist();   // 03/11/2026: committente e origine restano quelli della mappatura duplicata
     misure = nuoveMisure.length ? nuoveMisure : ripianoNuovo('A');
     renderMisure();
     $('taratura-numero').textContent = '';
@@ -306,6 +323,15 @@ async function valida(pulsante) {
 
 // ── Avvio ──
 $('a-origine')?.addEventListener('change', aggiornaDatalist);
+$('a-identificazione')?.addEventListener('change', riprendiCodice);
+$('mostra-eliminate')?.addEventListener('change', caricaRegistro);
+$('btn-elimina-registro')?.addEventListener('click', async () => {
+    const numero = $('t-numero')?.value?.trim();
+    if (await eliminaDalRegistro('/api/mappatura', $('t-id').value, numero ? 'la mappatura ' + numero : 'la mappatura aperta')) {
+        $('pannello-taratura').classList.add('nascosto');
+        await caricaRegistro();
+    }
+});
 $('btn-nuova-taratura')?.addEventListener('click', nuova);
 $('btn-taratura-annulla')?.addEventListener('click', () => $('pannello-taratura').classList.add('nascosto'));
 $('btn-misura-riga')?.addEventListener('click', () => { misure.push({ posizione: misure.length ? misure[misure.length - 1].posizione : 'A', temperaturaRilevata: 0 }); renderMisure(); });

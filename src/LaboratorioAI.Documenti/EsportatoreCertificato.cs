@@ -65,8 +65,10 @@ public class EsportatoreCertificato : IEsportatoreCertificato
             foglio.Cell(corrente, 8).Value = string.IsNullOrWhiteSpace(p.LaboratorioEsterno)
                 ? "MARE.A"
                 : p.LaboratorioEsterno + (string.IsNullOrWhiteSpace(p.NumeroLaboratorioEsterno) ? "" : $" (n° {p.NumeroLaboratorioEsterno})");
-            foglio.Cell(corrente, 9).Value = p.Accreditato ? "MARE.A accreditato"
-                : p.AccreditatoEsterno ? "Lab esterno accreditato" : "";
+            // Prova in subappalto: conta solo l'accreditamento del laboratorio esterno, mai quello di MARE.A (Art. 8.2).
+            foglio.Cell(corrente, 9).Value = !string.IsNullOrWhiteSpace(p.LaboratorioEsterno)
+                ? (p.AccreditatoEsterno ? "Lab esterno accreditato" : "")
+                : (p.Accreditato ? "MARE.A accreditato" : "");
             corrente++;
         }
 

@@ -71,13 +71,19 @@ public class ScadenziarioController : Controller
         var righe = await _ctx.TermometriEsterni.AsNoTracking()
             .Where(t => t.Attivo && t.DataCancellazione == null)
             .OrderByDescending(t => t.DataScadenza)
-            .Select(t => new
-            {
-                t.IdTermometroEsterno, t.NumeroRapporto, t.Tipologia, t.DataTaratura, t.DataScadenza,
-                t.Cliente, t.Riferimento, t.Note, t.DataConsegna, t.OperatoreConsegna, t.RifFattura, t.Fatturato,
-                t.EscludiScadenze
-            }).ToListAsync(ct);
-        return Json(righe);
+            .ToListAsync(ct);
+        // 03/11/2026: stato (in uso, rinnovata, dismessa) e n° rapporto della taratura che la rinnova
+        var numeri = righe.ToDictionary(t => t.IdTermometroEsterno, t => t.NumeroRapporto);
+        return Json(righe.Select(t => new
+        {
+            t.IdTermometroEsterno, t.NumeroRapporto, t.Tipologia, t.DataTaratura, t.DataScadenza,
+            t.Cliente, t.Riferimento, t.Note, t.DataConsegna, t.OperatoreConsegna, t.RifFattura, t.Fatturato,
+            t.EscludiScadenze, t.DataRinnovo, t.IdTermometroRinnovo,
+            TipoTermometro = (int)LaboratorioAI.Core.Tarature.RinnoviTermometri.Tipo(t),
+            Servizio = (int)t.Servizio,
+            NumeroRapportoRinnovo = t.IdTermometroRinnovo is int ir && numeri.TryGetValue(ir, out var nr) ? nr : null,
+            Stato = LaboratorioAI.Core.Tarature.RinnoviTermometri.Stato(t)
+        }));
     }
 
     [HttpPost("api/scadenziario/esterni")]
@@ -94,13 +100,59 @@ public class ScadenziarioController : Controller
         t.DataConsegna = req.DataConsegna; t.OperatoreConsegna = req.OperatoreConsegna; t.RifFattura = req.RifFattura;
         t.Fatturato = req.Fatturato;
         t.EscludiScadenze = req.EscludiScadenze;
+        t.TipoTermometro = Enum.IsDefined(typeof(LaboratorioAI.Core.Tarature.TipoTermometro), req.TipoTermometro)
+            ? (LaboratorioAI.Core.Tarature.TipoTermometro)req.TipoTermometro : LaboratorioAI.Core.Tarature.TipoTermometro.NonIndicato;
+        t.Servizio = req.Servizio == (int)LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.FornituraETaratura
+            ? LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.FornituraETaratura : LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.SoloTaratura;
         t.DataUltimaModifica = DateTime.UtcNow; t.IdUtente = _utente.IdUtente;
         await _ctx.SaveChangesAsync(ct);
         await _audit.RegistraAsync(
             AreaFunzionale.Scadenziario, "scadenziario.esterno.salvato", EsitoOperazione.Successo,
             tipoEntita: "TermometroEsterno", idEntita: t.IdTermometroEsterno.ToString(),
             dettaglio: new { t.NumeroRapporto, t.Cliente, t.Fatturato }, ct: ct);
-        return Json(new { t.IdTermometroEsterno });
+        // 03/11/2026: tarature dello stesso cliente e tipologia che questa potrebbe rinnovare (solo per una nuova)
+        var candidati = req.IdTermometroEsterno is int and > 0
+            ? Array.Empty<object>()
+            : await RinnovoTermometriEsterni.CandidatiAsync(_ctx, t, ct);
+        return Json(new { t.IdTermometroEsterno, candidatiRinnovo = candidati });
+    }
+
+    /// <summary>Segna come rinnovate dalla taratura <paramref name="id"/> le tarature spuntate (03/11/2026).</summary>
+    [HttpPost("api/scadenziario/esterni/{id:int}/rinnova")]
+    [RichiedePermesso(Permessi.ScadenziarioGestione)]
+    public async Task<IActionResult> Rinnova(int id, [FromBody] RichiestaRinnovo req, CancellationToken ct)
+    {
+        var nuova = await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTermometroEsterno == id, ct);
+        if (nuova is null) return NotFound();
+        var n = await RinnovoTermometriEsterni.RinnovaAsync(_ctx, nuova, req.Ids ?? new(), ct);
+        await _audit.RegistraAsync(AreaFunzionale.Scadenziario, "scadenziario.esterni.rinnovati", EsitoOperazione.Successo,
+            tipoEntita: "TermometroEsterno", idEntita: id.ToString(), dettaglio: new { Rinnovate = req.Ids, Numero = n }, ct: ct);
+        return Json(new { rinnovate = n });
+    }
+
+    /// <summary>Cambia lo stato di una taratura: in uso, rinnovata (senza collegamento) o dismessa (03/11/2026).</summary>
+    [HttpPost("api/scadenziario/esterni/{id:int}/stato")]
+    [RichiedePermesso(Permessi.ScadenziarioGestione)]
+    public async Task<IActionResult> Stato(int id, [FromBody] RichiestaStatoEsterno req, CancellationToken ct)
+    {
+        var t = await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTermometroEsterno == id, ct);
+        if (t is null) return NotFound();
+        switch (req.Stato)
+        {
+            case LaboratorioAI.Core.Tarature.RinnoviTermometri.InUso:
+                t.DataRinnovo = null; t.IdTermometroRinnovo = null; t.EscludiScadenze = false; break;
+            case LaboratorioAI.Core.Tarature.RinnoviTermometri.Rinnovata:
+                t.DataRinnovo ??= DateTime.Today; t.EscludiScadenze = false; break;
+            case LaboratorioAI.Core.Tarature.RinnoviTermometri.Dismessa:
+                t.DataRinnovo = null; t.IdTermometroRinnovo = null; t.EscludiScadenze = true; break;
+            default:
+                return BadRequest(new { messaggio = "Stato non valido." });
+        }
+        t.DataUltimaModifica = DateTime.UtcNow; t.IdUtente = _utente.IdUtente;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(AreaFunzionale.Scadenziario, "scadenziario.esterno.stato", EsitoOperazione.Successo,
+            tipoEntita: "TermometroEsterno", idEntita: id.ToString(), dettaglio: new { req.Stato, t.NumeroRapporto, t.Cliente }, ct: ct);
+        return Json(new { stato = LaboratorioAI.Core.Tarature.RinnoviTermometri.Stato(t) });
     }
 
     [HttpPost("api/scadenziario/esterni/{id:int}/elimina")]
@@ -215,5 +267,8 @@ public record TermometroEsternoDto
     public string? RifFattura { get; init; }
     public bool Fatturato { get; init; }
     public bool EscludiScadenze { get; init; }
+    /// <summary>03/11/2026: tipo di termometro (0 non indicato, 1 sonda, 2 gabbia, 3 pirometro, 4 datalogger, 5 altro) e servizio (1 solo taratura, 2 fornitura + taratura).</summary>
+    public int TipoTermometro { get; init; }
+    public int Servizio { get; init; } = 1;
 }
 

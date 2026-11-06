@@ -1,0 +1,55 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model IReadOnlyList<AttivitaConsulenza>
+@{
+    ViewData["Titolo"] = "Attività di consulenza";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Gruppo(int? tipo) => tipo switch { 5 => "Consulenza (tipo commessa 5)", 4 => "Formazione (tipo commessa 4)", _ => "Altro" };
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Attività di consulenza e formazione</h1>
+        <p class="sottotitolo">Una riga per ogni descrizione incarico di ArcLab (Tipi_Incarico, letta in sola lettura). Qui si impostano modalità di prezzo, prezzi proposti, testo del contratto e contenuti da spuntare. Le descrizioni nuove si creano in ArcLab; poi «Allinea con ArcLab».</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <form method="post" asp-action="Sincronizza"><button type="submit" class="pulsante">Allinea con ArcLab</button></form>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Pacchetti", "PreventiviConsulenza")">Pacchetti di settore</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "PreventiviConsulenza")">← Preventivi</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (Model.Count == 0)
+{
+    <section class="riquadro"><p>Nessuna attività: premi «Allinea con ArcLab». Al primo allineamento vengono caricati anche i testi e i pacchetti di settore ricavati dai modelli Word 2026.</p></section>
+}
+@foreach (var g in Model.GroupBy(a => Gruppo(a.IdTipoCommessa)))
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@g.Key</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Incarico</th><th>Descrizione</th><th>Prezzo</th><th class="numerico">Proposto</th><th>Contenuti</th><th>Testo</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var a in g)
+                {
+                    <tr style="@(a.Attivo ? "" : "opacity:0.55")">
+                        <td>@a.IdTipoIncarico</td>
+                        <td>@a.Descrizione @(a.Attivo ? "" : "(non attiva)")</td>
+                        <td>@a.ModalitaPrezzo @(a.UnitaMisura is null ? "" : "/ " + a.UnitaMisura)</td>
+                        <td class="numerico">@(a.PrezzoProposto?.ToString("N2", it) ?? "")</td>
+                        <td>@(a.Contenuti.Count(c => c.Attivo) is var n && n > 0 ? n.ToString() : "")</td>
+                        <td>@(string.IsNullOrWhiteSpace(a.TestoOfferta) ? "—" : "sì")</td>
+                        <td><a class="pulsante pulsante-tenue" href="@Url.Action("AttivitaModifica", "PreventiviConsulenza", new { id = a.IdAttivitaConsulenza })">Modifica</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}

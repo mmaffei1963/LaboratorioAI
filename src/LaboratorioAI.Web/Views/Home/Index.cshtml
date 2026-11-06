@@ -1,226 +1,113 @@
 @inject IContestoUtente Utente
 @{
     ViewData["Titolo"] = "Home";
-
-    bool gLab = Utente.HaPermesso(Permessi.ValidazioneVisualizza) || Utente.HaPermesso(Permessi.ConsultazioneCampioni)
-        || Utente.HaPermesso(Permessi.MetodiConsulta) || Utente.HaPermesso(Permessi.CommesseConsulta)
-        || Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta) || Utente.HaPermesso(Permessi.PrefatturatoTamponi)
-        || Utente.HaPermesso(Permessi.PrefatturatoNonFatturare) || Utente.HaPermesso(Permessi.AccettazioneEsegui)
-        || Utente.HaPermesso(Permessi.OrdiniAccettazioneGestione)
-        || Utente.HaPermesso(Permessi.SoloEsterniVisualizza) || Utente.HaPermesso(Permessi.ControlliProponi)
-        || Utente.HaPermesso(Permessi.RicercaErroriVisualizza) || Utente.HaPermesso(Permessi.CertificatiEsterniGestione)
-        || Utente.HaPermesso(Permessi.PreventiviGestione);
-    bool gMan = Utente.HaPermesso(Permessi.DvrGenera) || Utente.HaPermesso(Permessi.PiscineGenera);
-    bool gNut = Utente.HaPermesso(Permessi.NutrizionaleMateriePrime) || Utente.HaPermesso(Permessi.NutrizionaleRicette);
-    bool gStr = Utente.HaPermesso(Permessi.TaraturaEsegui) || Utente.HaPermesso(Permessi.IncubatoriEsegui)
-        || Utente.HaPermesso(Permessi.MappaturaEsegui) || Utente.HaPermesso(Permessi.BilanceEsegui)
-        || Utente.HaPermesso(Permessi.TempLogEsegui) || Utente.HaPermesso(Permessi.ScadenziarioVisualizza);
+    var cartelle = LaboratorioAI.Web.Navigazione.MenuApplicazione.Visibili(Utente.HaPermesso).ToList();
+    // Preferiti nell'ordine scelto, solo tra le funzioni che l'utente vede ancora.
+    var voci = cartelle.SelectMany(c => c.Voci.Select(v => (Cartella: c, Voce: v))).ToList();
+    var urlPreferiti = ViewData["Preferiti"] as List<string> ?? new List<string>();
+    var preferiti = urlPreferiti
+        .Select(u => voci.FirstOrDefault(x => string.Equals(x.Voce.Url, u, StringComparison.OrdinalIgnoreCase)))
+        .Where(x => x.Voce is not null).ToList();
+    var insiemePreferiti = preferiti.Select(x => x.Voce.Url).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    const string Stella = "M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z";
 }
 
-<div class="riquadro">
-    <h1>Laboratorio AI</h1>
-    <p class="sottotitolo">Benvenuto, @ViewData["NomeUtente"].</p>
+@* Cartelle generate da Navigazione/MenuApplicazione.cs: stessa fonte del menu in testata, quindi ogni pagina
+   aggiunta al menu compare anche qui. Una cartella si vede se l'utente ha almeno una funzione dentro.
+   Clic sulla cartella: si apre la finestra con le sue funzioni; ogni funzione è un collegamento normale
+   (si apre come pagina, anche in una nuova scheda).
+   Contatori («cose da fare»): la pagina si apre subito, poi home.js chiede i numeri a api/home/contatori
+   (Navigazione/ContatoriHome.cs) e li scrive nei segnaposto data-conta-voce / data-conta-cartella.
+   Preferiti: stellina accanto a ogni funzione nella finestra (POST api/home/preferiti, tabella app.PreferitiUtenti);
+   la riga «Preferiti» è scritta qui e ricostruita da home.js quando si mette o toglie una stella.
+   Ricerca: casella in testata, filtra nel browser le funzioni visibili (nome, descrizione, cartella), senza chiamate
+   al server; mentre si scrive i risultati prendono il posto delle cartelle. Tasto «/» per andare alla casella. *@
+
+<div class="home-testata">
+    <h1>Dove vuoi andare?</h1>
+    <p class="sottotitolo">Benvenuto, @ViewData["NomeUtente"]. Dentro ogni cartella trovi solo le funzioni a cui hai accesso.</p>
+    @if (cartelle.Count > 0)
+    {
+        <div class="home-cerca">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            <input type="search" id="home-cerca" placeholder="Cerca una funzione (es. tarature, preventivi, sonde)…" autocomplete="off"
+                   aria-label="Cerca una funzione" aria-controls="home-risultati" />
+        </div>
+    }
 </div>
 
-@if (gLab)
+<section class="home-risultati" id="home-risultati" aria-live="polite" hidden>
+    <div class="home-voci" id="home-risultati-elenco"></div>
+    <p class="home-preferiti-vuoto" id="home-risultati-vuoto" hidden>Nessuna funzione trovata. Prova con un'altra parola.</p>
+</section>
+
+@if (cartelle.Count > 0)
 {
-    <h2 class="titolo-sezione">Laboratorio</h2>
-    <div class="griglia-schede">
-        @if (Utente.HaPermesso(Permessi.ValidazioneVisualizza))
-        {
-            <a class="scheda scheda-collegamento" href="/Validazione">
-                <h2>Da Validare</h2>
-                <p>Campioni pronti per la validazione e analisi AI, singola o massiva.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.ConsultazioneCampioni))
-        {
-            <a class="scheda scheda-collegamento" href="/Consultazione">
-                <h2>Consultazione</h2>
-                <p>Ricerca campioni nell'archivio storico con filtri combinabili.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.ConsultazioneCertificati))
-        {
-            <a class="scheda scheda-collegamento" href="/Consultazione/Certificati">
-                <h2>Certificati emessi</h2>
-                <p>Ricerca dei rapporti di prova e analisi a posteriori.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.MetodiConsulta))
-        {
-            <a class="scheda scheda-collegamento" href="/Metodi">
-                <h2>Metodi e Controlli</h2>
-                <p>Ricerca bidirezionale, accreditamenti, subappalti e prezzi.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.CommesseConsulta))
-        {
-            <a class="scheda scheda-collegamento" href="/Commesse">
-                <h2>Commesse</h2>
-                <p>Commesse in vigore, campioni collegati e prestazioni erogate.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.LaboratoriEsterniConsulta))
-        {
-            <a class="scheda scheda-collegamento" href="/LaboratoriEsterni">
-                <h2>Laboratori Esterni</h2>
-                <p>Analisi affidate all'esterno, riepiloghi ed esportazione.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.PrefatturatoTamponi))
-        {
-            <a class="scheda scheda-collegamento" href="/TamponiContratto">
-                <h2>Tamponi in contratto</h2>
-                <p>Prefatturato dei tamponi previsti dai contratti.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.PrefatturatoNonFatturare))
-        {
-            <a class="scheda scheda-collegamento" href="/NonFatturare">
-                <h2>Non fatturare</h2>
-                <p>Prestazioni escluse dalla fatturazione.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.AccettazioneEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/Accettazione">
-                <h2>Accettazione campioni</h2>
-                <p>Accettazione fuori sede e generazione del tracciato per Palomar.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.OrdiniAccettazioneGestione))
-        {
-            <a class="scheda scheda-collegamento" href="/OrdiniAccettazione">
-                <h2>Ordini di Accettazione</h2>
-                <p>Genera l'Ordine di Accettazione dai lotti ricevuti, con riepilogo e allegato tecnico.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.SoloEsterniVisualizza))
-        {
-            <a class="scheda scheda-collegamento" href="/SoloEsterni">
-                <h2>Certificati esterni non ricertificati</h2>
-                <p>Confronto tra certificati esterni e interni per la fatturazione.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.CertificatiEsterniGestione))
-        {
-            <a class="scheda scheda-collegamento" href="/CertificatiEsterni">
-                <h2>Certificati esterni · rinomina</h2>
-                <p>Triage e rinomina dei certificati dei laboratori esterni per il portale.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.ControlliProponi))
-        {
-            <a class="scheda scheda-collegamento" href="/Controlli">
-                <h2>Proposta controlli</h2>
-                <p>Proposta e approvazione di nuovi controlli con import supervisionato.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.PreventiviGestione))
-        {
-            <a class="scheda scheda-collegamento" href="/Preventivi">
-                <h2>Preventivi</h2>
-                <p>Componi le offerte dai controlli e metodi in archivio, su carta intestata.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.RicercaErroriVisualizza))
-        {
-            <a class="scheda scheda-collegamento" href="/RicercaErrori">
-                <h2>Ricerca errori</h2>
-                <p>Verifiche diagnostiche sull'archivio (sola lettura).</p>
-            </a>
-        }
-    </div>
+    <section class="home-preferiti" aria-labelledby="titolo-preferiti">
+        <h2 id="titolo-preferiti">Preferiti</h2>
+        <div class="home-preferiti-elenco" id="preferiti-elenco">
+            @foreach (var (c, v) in preferiti)
+            {
+                <a class="home-preferito" href="@v.Url" data-url="@v.Url">
+                    <span class="home-preferito-icona" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"><path d="@c.Icona" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                    <span class="home-preferito-testo"><strong>@v.Titolo</strong><small>@c.TitoloHome</small></span>
+                    <em class="home-conta-voce" data-conta-voce="@v.Url" hidden></em>
+                </a>
+            }
+        </div>
+        <p class="home-preferiti-vuoto" id="preferiti-vuoto" hidden="@(preferiti.Count > 0)">Apri una cartella e clicca la stellina ☆ accanto a una funzione: la ritrovi qui, a un clic.</p>
+    </section>
 }
 
-@if (gMan)
+@if (cartelle.Count == 0)
 {
-    <h2 class="titolo-sezione">Documenti e DVR</h2>
-    <div class="griglia-schede">
-        @if (Utente.HaPermesso(Permessi.DvrGenera))
-        {
-            <a class="scheda scheda-collegamento" href="/Dvr">
-                <h2>DVR Legionella</h2>
-                <p>Generazione dei documenti di valutazione del rischio, singola o massiva.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.PiscineGenera))
-        {
-            <a class="scheda scheda-collegamento" href="/Piscine">
-                <h2>DVR Piscine</h2>
-                <p>Valutazione del rischio per le piscine e registro dei documenti.</p>
-            </a>
-        }
-    </div>
+    <section class="riquadro"><p>Nessuna funzione disponibile per il tuo utente. Chiedi l'accesso all'amministratore.</p></section>
 }
 
-@if (gNut)
+<div class="home-cartelle" id="home-cartelle">
+    @foreach (var c in cartelle)
+    {
+        <button type="button" class="home-cartella" data-apri="cartella-@c.Codice" data-cartella="@c.Codice" aria-haspopup="dialog">
+            <span class="home-cartella-riga">
+                <span class="home-icona" aria-hidden="true">
+                    <svg width="26" height="26" viewBox="0 0 24 24"><path d="@c.Icona" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </span>
+                <span class="home-conta" data-conta-cartella="@c.Codice" hidden></span>
+            </span>
+            <span class="home-cartella-nome">@c.TitoloHome</span>
+            <span class="home-cartella-sotto">@c.Descrizione · @c.Voci.Count @(c.Voci.Count == 1 ? "funzione" : "funzioni")</span>
+        </button>
+    }
+</div>
+
+@foreach (var c in cartelle)
 {
-    <h2 class="titolo-sezione">Nutrizionale</h2>
-    <div class="griglia-schede">
-        @if (Utente.HaPermesso(Permessi.NutrizionaleMateriePrime))
-        {
-            <a class="scheda scheda-collegamento" href="/MateriePrime">
-                <h2>Materie prime</h2>
-                <p>Catalogo delle materie prime e dei valori nutrizionali.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.NutrizionaleRicette))
-        {
-            <a class="scheda scheda-collegamento" href="/Ricette">
-                <h2>Ricette nutrizionali</h2>
-                <p>Composizione delle ricette e rapporti nutrizionali (USA/Canada).</p>
-            </a>
-        }
-    </div>
+    <dialog class="home-finestra" id="cartella-@c.Codice" data-cartella="@c.Codice" aria-labelledby="titolo-@c.Codice">
+        <header>
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="@c.Icona" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <h2 id="titolo-@c.Codice">@c.TitoloHome</h2>
+            <form method="dialog"><button class="home-chiudi" aria-label="Chiudi">✕</button></form>
+        </header>
+        <div class="home-voci">
+            @foreach (var v in c.Voci)
+            {
+                var stella = insiemePreferiti.Contains(v.Url);
+                <div class="home-voce-blocco">
+                    <a class="home-voce" href="@v.Url" data-titolo="@v.Titolo" data-cartella-nome="@c.TitoloHome" data-icona="@c.Icona">
+                        <strong>@v.Titolo</strong>
+                        <span>@v.Descrizione</span>
+                        <em class="home-conta-voce" data-conta-voce="@v.Url" hidden></em>
+                    </a>
+                    <button type="button" class="home-stella" data-stella="@v.Url" aria-pressed="@(stella ? "true" : "false")"
+                            title="@(stella ? "Togli dai preferiti" : "Aggiungi ai preferiti")" aria-label="Preferito: @v.Titolo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="@Stella" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /></svg>
+                    </button>
+                </div>
+            }
+        </div>
+    </dialog>
 }
 
-@if (gStr)
-{
-    <h2 class="titolo-sezione">Strumenti e tarature</h2>
-    <div class="griglia-schede">
-        @if (Utente.HaPermesso(Permessi.TaraturaEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/Taratura">
-                <h2>Taratura termometri</h2>
-                <p>Taratura, validazione e registro dei termometri.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.IncubatoriEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/Incubatori">
-                <h2>Taratura incubatori</h2>
-                <p>Taratura e validazione degli incubatori.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.MappaturaEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/Mappatura">
-                <h2>Mappatura incubatori</h2>
-                <p>Mappatura termica e validazione.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.BilanceEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/Bilance">
-                <h2>Taratura bilance</h2>
-                <p>Taratura e validazione delle bilance.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.TempLogEsegui))
-        {
-            <a class="scheda scheda-collegamento" href="/TempLog">
-                <h2>Monitoraggio Econorma</h2>
-                <p>Andamento temperature da file o database, con limiti.</p>
-            </a>
-        }
-        @if (Utente.HaPermesso(Permessi.ScadenziarioVisualizza))
-        {
-            <a class="scheda scheda-collegamento" href="/Scadenziario">
-                <h2>Scadenziario tarature</h2>
-                <p>Scadenze delle tarature e pianificazione.</p>
-            </a>
-        }
-    </div>
+@section Script {
+    <script type="module" src="~/js/moduli/home.js" asp-append-version="true"></script>
 }

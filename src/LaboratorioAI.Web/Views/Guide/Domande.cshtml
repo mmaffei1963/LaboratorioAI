@@ -1,0 +1,128 @@
+@model LaboratorioAI.Web.Controllers.GuideController.DatiDomandeGuida
+@{
+    var f = Model.Filtro;
+    var titoli = LaboratorioAI.Web.Navigazione.Guide.Elenco.ToDictionary(g => g.Codice, g => g.Titolo);
+    var qs = $"dal={f.Dal:yyyy-MM-dd}&al={f.Al:yyyy-MM-dd}&persona={Uri.EscapeDataString(f.Persona ?? "")}&testo={Uri.EscapeDataString(f.Testo ?? "")}&soloNegative={(f.SoloNegative ? "true" : "false")}";
+    var it = System.Globalization.CultureInfo.GetCultureInfo("it-IT");
+}
+@* Domande a «Chiedi alla guida» (11/10/2026): per capire dove le guide non sono chiare e quanto costa il servizio. *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Domande alla guida</h1>
+        <p class="sottotitolo">Cosa chiedono i colleghi a «Chiedi alla guida», con le risposte date dall'AI e i voti.
+            Le risposte con 👎 indicano dove la guida va migliorata. Dopo 12 mesi il testo delle domande viene svuotato.</p>
+    </div>
+    <div class="riga-pulsanti">
+        <a class="pulsante pulsante-tenue" href="/Guide/Domande/Excel?@qs">Esporta Excel</a>
+    </div>
+</div>
+
+<section class="riquadro">
+    <form method="get" action="/Guide/Domande" class="azioni-filtri" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <label>dal <input type="date" name="dal" value="@f.Dal?.ToString("yyyy-MM-dd")" /></label>
+        <label>al <input type="date" name="al" value="@f.Al?.ToString("yyyy-MM-dd")" /></label>
+        <input type="text" name="persona" value="@f.Persona" placeholder="persona (nome o email)" />
+        <input type="text" name="testo" value="@f.Testo" placeholder="parola nella domanda o risposta" />
+        <label><input type="checkbox" name="soloNegative" value="true" @(f.SoloNegative ? "checked" : "") /> solo 👎</label>
+        <button type="submit" class="pulsante">Cerca</button>
+    </form>
+</section>
+
+<div class="domande-cifre">
+    <div><strong>@Model.Totale</strong><span>domande nel periodo</span></div>
+    <div><strong>@Model.Persone</strong><span>persone</span></div>
+    <div><strong>@Model.Positive / @Model.Negative</strong><span>👍 / 👎</span></div>
+    <div><strong>@Model.Errori</strong><span>senza risposta (errore)</span></div>
+    <div><strong>@Model.CostoPeriodo.ToString("0.00", it)</strong><span>costo stimato periodo</span></div>
+    <div><strong>@Model.CostoMese.ToString("0.00", it)</strong><span>costo mese in corso</span></div>
+    <div><strong>@Model.CostoMesePrecedente.ToString("0.00", it)</strong><span>costo mese scorso</span></div>
+</div>
+<p class="nota" style="margin-top:-6px">Costi stimati in base ai prezzi configurati per il modello (stessa valuta del listino Anthropic).</p>
+
+<div class="domande-colonne">
+    <section class="riquadro">
+        <h2>Domande più frequenti</h2>
+        @if (Model.Frequenti.Count == 0)
+        {
+            <p class="vuoto">Nessuna domanda nel periodo.</p>
+        }
+        else
+        {
+            <table class="tabella">
+                <thead><tr><th>Domanda</th><th>Volte</th><th>👎</th></tr></thead>
+                <tbody>
+                @foreach (var x in Model.Frequenti)
+                {
+                    <tr class="@(x.Negative > 0 ? "domanda-negativa" : "")"><td>@x.Testo</td><td>@x.Volte</td><td>@(x.Negative > 0 ? x.Negative : "")</td></tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+    <section class="riquadro">
+        <h2>Da quali guide si chiede</h2>
+        @if (Model.PerGuida.Count == 0)
+        {
+            <p class="vuoto">Nessuna domanda nel periodo.</p>
+        }
+        else
+        {
+            <table class="tabella">
+                <thead><tr><th>Guida della pagina</th><th>Domande</th><th>👎</th></tr></thead>
+                <tbody>
+                @foreach (var x in Model.PerGuida)
+                {
+                    <tr class="@(x.Negative > 0 ? "domanda-negativa" : "")"><td>@x.Testo</td><td>@x.Volte</td><td>@(x.Negative > 0 ? x.Negative : "")</td></tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+</div>
+
+<section class="riquadro">
+    <h2>Elenco @(Model.Righe.Count < Model.Totale ? $"(ultime {Model.Righe.Count} di {Model.Totale}: per tutte usa Esporta Excel)" : "")</h2>
+    @if (Model.Righe.Count == 0)
+    {
+        <p class="vuoto">Nessuna domanda con questi filtri.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Data e ora</th><th>Persona</th><th>Pagina</th><th>Domanda e risposta</th><th>Voto</th><th>Costo</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.Righe)
+                {
+                    <tr class="@(r.Valutazione == -1 ? "domanda-negativa" : "")">
+                        <td style="white-space:nowrap">@DateTime.SpecifyKind(r.DataOra, DateTimeKind.Utc).ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(r.NomeUtente ?? r.EmailUtente ?? "—")</td>
+                        <td>@(r.CodiceGuida is null ? r.Percorso : titoli.GetValueOrDefault(r.CodiceGuida, r.CodiceGuida))</td>
+                        <td class="domanda-testo">
+                            @if (r.DataAnonimizzazione is not null)
+                            {
+                                <em class="sottotesto">(testo rimosso dopo 12 mesi)</em>
+                            }
+                            else
+                            {
+                                <div>@r.Domanda</div>
+                                @if (r.Errore is not null)
+                                {
+                                    <small class="sottotesto">Errore: @r.Errore</small>
+                                }
+                                else if (!string.IsNullOrEmpty(r.Risposta))
+                                {
+                                    <details class="domanda-risposta"><summary>risposta</summary><div>@r.Risposta</div></details>
+                                }
+                            }
+                        </td>
+                        <td>@(r.Valutazione switch { 1 => "👍", -1 => "👎", _ => "" })</td>
+                        <td>@r.CostoStimato.ToString("0.000", it)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

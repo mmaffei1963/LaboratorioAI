@@ -1,0 +1,32 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Voci preventivi» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A gestire le <strong>voci accessorie</strong> (prelievo, trasferta, spedizione…) e i <strong>metodi di pagamento</strong>
+        che si possono scegliere nei preventivi di analisi.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Aggiungere o cambiare una voce accessoria</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">+ Nuova voce accessoria</span>, oppure correggi direttamente una riga esistente.</li>
+        <li>Scrivi codice, descrizione, prezzo e unità di misura e premi <span class="tasto">Salva</span> sulla riga.</li>
+    </ol>
+    <p class="nota">Il prezzo nuovo vale per i preventivi fatti da quel momento; quelli già emessi non cambiano.</p>
+</details>
+
+<details class="situazione">
+    <summary>Aggiungere una condizione di pagamento</summary>
+    <p>Premi <span class="tasto">+ Nuovo metodo di pagamento</span>, scrivi il testo (es. «Bonifico bancario 60 gg d.f.f.m.») e premi <span class="tasto">Salva</span> sulla riga: comparirà nell'elenco
+        delle <em>Condizioni di pagamento</em> dei preventivi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Una voce non va più proposta</summary>
+    <p>Togli la spunta <strong>Attivo</strong> e premi <span class="tasto">Salva</span> (non si elimina): resta leggibile nei preventivi già emessi ma sparisce dagli elenchi di scelta.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

@@ -2,12 +2,16 @@
 // ripetibilità, linearità), calcolo, rapporto, duplica, analisi AI, validazione.
 
 import { chiamaApi, inviaJson, testo, avvisa, occupa } from '../comune.js';
+import { creaCommittente } from './committente-taratura.js';
+import { righeMancanti, urlElenco, conteggioRegistro, classeRiga, marcaEliminata, collegaRipristino, eliminaDalRegistro } from '../registro-strumenti.js';
 
 const $ = (id) => document.getElementById(id);
 const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return isNaN(x) ? 0 : x; };
 const gg = (x, d = 5) => (x == null ? '—' : Number(x).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
 
-let pesiere = [], clienti = [], strumenti = [], masse = [], eccLetture = [], ripLetture = [], linPunti = [], masseSel = [];
+// 03/11/2026: il cliente sta nel committente; la bilancia del cliente si scrive (o si sceglie tra quelle già tarate).
+const committente = creaCommittente('/api/bilance', 'c', () => aggiornaDatalist());
+let pesiere = [], strumenti = [], masse = [], eccLetture = [], ripLetture = [], linPunti = [], masseSel = [];
 
 // Pesiera predefinita MARE.A (pre-compilazione, da verificare e salvare).
 // [nominale, v.convenzionale, U(mg), u(mg), mpe(mg), classe, cert, dataCert, scadenza, centro]
@@ -25,14 +29,15 @@ const PESIERA_MAREA = [
 // ══ Caricamenti ══
 async function caricaRegistro() {
     try {
-        const r = await chiamaApi('/api/bilance/elenco');
-        $('conteggio-registro').textContent = `${r.length} tarature`;
+        const r = await chiamaApi(urlElenco('/api/bilance/elenco'));
+        $('conteggio-registro').textContent = conteggioRegistro(r, 'tarature');
         $('tabella-registro').querySelector('tbody').innerHTML = r.length === 0
             ? '<tr><td colspan="5" class="vuoto">Nessuna taratura.</td></tr>'
-            : r.map(t => `<tr class="riga-cliccabile" data-id="${t.idTaratura}"><td>${testo(t.numeroRapporto)}</td>
+            : r.map(t => `<tr class="riga-cliccabile${classeRiga(t)}" data-id="${t.idTaratura}"><td>${testo(t.numeroRapporto)}${marcaEliminata(t, t.idTaratura)}</td>
                 <td>${testo(t.bilanciaIdentificazione)}</td><td class="numerico">${gg(t.portata, 2)}</td>
                 <td>${testo(t.dataTaratura)}</td><td>${t.dataScadenza ? testo(t.dataScadenza) : '—'} ${t.scaduta ? '<strong style="color:#b3261e">scaduta</strong>' : ''}</td></tr>`).join('');
         $('tabella-registro').querySelectorAll('.riga-cliccabile').forEach(x => x.addEventListener('click', () => apri(Number(x.dataset.id))));
+        collegaRipristino($('tabella-registro'), '/api/bilance', caricaRegistro);
     } catch (e) { avvisa(e.message, 'errore'); }
 }
 
@@ -48,13 +53,15 @@ async function caricaPesiere() {
 }
 
 async function caricaAnagrafiche() {
-    try { clienti = await chiamaApi('/api/bilance/clienti'); } catch { clienti = []; }
+    await committente.carica();
     try { strumenti = await chiamaApi('/api/bilance/strumenti'); } catch { strumenti = []; }
     aggiornaDatalist();
 }
 function aggiornaDatalist() {
-    const voci = $('b-origine').value === 'interno' ? strumenti : clienti;
-    $('lista-b').innerHTML = voci.map(v => `<option value="${testo(v.nome)}">`).join('');
+    const voci = $('b-origine').value === 'interno'
+        ? strumenti.map(v => v.nome)
+        : committente.strumenti().map(v => v.identificazione);
+    $('lista-b').innerHTML = voci.map(v => `<option value="${testo(v)}">`).join('');
     // Il termometro si sceglie sempre tra le apparecchiature interne ArcLab (valore libero comunque consentito)
     const lt = $('lista-termo');
     if (lt) lt.innerHTML = strumenti.map(v => `<option value="${testo(v.nome)}">`).join('');
@@ -143,6 +150,12 @@ function aggiornaHints() {
         $('hint-ecc').textContent = `Massa consigliata per l'eccentricità: circa ${gg(portata / 3, 0)} g (portata/3).`;
         $('hint-lin').textContent = `Carichi consigliati per la linearità: circa ${gg(portata * 0.25, 0)}, ${gg(portata * 0.5, 0)}, ${gg(portata * 0.75, 0)}, ${gg(portata, 0)} g (25/50/75/100% della portata), più lo zero.`;
     } else { $('hint-ecc').textContent = ''; $('hint-lin').textContent = ''; }
+    // Ripetibilità (12/10/2026): carico massimo del campo di applicazione (campo di taratura) se compilato, altrimenti la portata.
+    const campo = num($('t-campo').value);
+    const caricoRip = campo > 0 ? campo : portata;
+    $('hint-rip').textContent = caricoRip > 0
+        ? `Carico consigliato per la ripetibilità: ${gg(caricoRip, 0)} g (${campo > 0 ? 'massimo del campo di applicazione' : 'portata: campo di applicazione non indicato'}).`
+        : '';
 }
 function autoCoeff() {
     const portata = num($('t-portata').value), uf = num($('t-uf').value);
@@ -176,6 +189,7 @@ async function salvaPesiera(pulsante) {
 function nuova() {
     ['t-id', 't-numero', 't-scadenza', 'b-identificazione', 'b-modello', 'b-tipo', 'b-sda', 't-termometro', 't-portata', 't-campo', 'e-carico', 'e-conv'].forEach(id => $(id).value = '');
     $('t-pesiera').value = ''; $('t-istruzione').value = 'IO 4-05'; $('b-origine').value = 'interno';
+    committente.svuota();
     $('t-uf').value = '0.0001'; $('t-coeff').value = '0.0000015'; $('t-maxu').value = '0.02'; $('t-ttar').value = '21'; $('t-tuso').value = '22';
     $('t-stab').value = '2'; $('t-intervallo').value = '30'; $('t-maxvar').value = '0';
     $('t-data').value = new Date().toISOString().substring(0, 10);
@@ -188,6 +202,24 @@ function nuova() {
     $('taratura-titolo').textContent = 'Nuova taratura';
     $('pannello-taratura').classList.remove('nascosto'); $('pannello-pesiera').classList.add('nascosto');
     $('b-identificazione').focus();
+}
+// «Aggiungi 5 punti» (09/10/2026): porta i punti al multiplo di 5 successivo (1 presente → ne aggiunge 4).
+// Con la portata compilata propone i carichi 0, 25, 50, 75, 100% secondo la posizione nel gruppo da 5,
+// arrotondati e risolti sulla pesiera; restano modificabili. Senza portata il carico resta 0.
+const QUOTE_LINEARITA = [0, 0.25, 0.5, 0.75, 1];
+function aggiungiPuntiLinearita() {
+    const portata = num($('t-portata').value);
+    const quanti = righeMancanti(linPunti.length, 5);
+    for (let k = 0; k < quanti; k++) {
+        const posizione = linPunti.length % 5;
+        // al grammo; per portate piccole (sotto 20 g) al milligrammo, per non azzerare i carichi
+        const quota = portata * QUOTE_LINEARITA[posizione];
+        const carico = portata <= 0 ? 0 : portata >= 20 ? Math.round(quota) : Math.round(quota * 1000) / 1000;
+        const p = puntoLin(carico);
+        risolviPunto(p);
+        linPunti.push(p);
+    }
+    renderLin();
 }
 function puntoLin(c) { return { caricoNominale: c, valoreConvenzionale: 0, lettura: 0, incertezzaMassa: 0, mpeMassa: 0 }; }
 
@@ -207,6 +239,7 @@ function renderRip() {
 }
 function renderLin() {
     $('tabella-lin').querySelector('tbody').innerHTML = linPunti.map((p, i) => `<tr>
+        <td class="numerico" style="color:#888">${i + 1}</td>
         <td><input type="text" inputmode="decimal" data-i="${i}" data-c="caricoNominale" value="${p.caricoNominale}" style="width:7rem" /></td>
         <td class="numerico"><input type="text" inputmode="decimal" data-i="${i}" data-c="lettura" value="${p.lettura}" style="width:8rem" /></td>
         <td class="numerico">${gg(p.valoreConvenzionale, 4)}</td>
@@ -226,7 +259,8 @@ async function apri(id) {
     try {
         const t = await chiamaApi('/api/bilance/' + id);
         $('t-id').value = t.idTaratura; $('t-pesiera').value = t.idPesiera ?? '';
-        $('b-origine').value = t.bilanciaInterna ? 'interno' : 'cliente'; aggiornaDatalist();
+        $('b-origine').value = t.bilanciaInterna ? 'interno' : 'cliente';
+        await committente.imposta(t); aggiornaDatalist();
         $('b-identificazione').value = t.bilanciaIdentificazione ?? ''; $('b-modello').value = t.bilanciaModello ?? '';
         $('b-tipo').value = t.tipo ?? ''; $('b-sda').value = t.sda ?? ''; $('t-termometro').value = t.termometroUtilizzato ?? '';
         $('t-portata').value = t.portata; $('t-campo').value = t.campoTaratura || ''; $('t-uf').value = t.unitaFormato; $('t-coeff').value = t.coefficienteSensibilitaTermica;
@@ -282,8 +316,8 @@ async function calcola(pulsante) {
 
 function risolviBilancia() {
     const interno = $('b-origine').value === 'interno'; const nome = $('b-identificazione').value.trim();
-    const lista = interno ? strumenti : clienti; const trovato = lista.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase());
-    return { interna: interno, idStrumentoArcLab: interno && trovato ? trovato.id : null, idClienteArcLab: !interno && trovato ? trovato.id : null };
+    const trovato = interno ? strumenti.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase()) : null;
+    return { interna: interno, idStrumentoArcLab: trovato ? trovato.id : null, idClienteArcLab: null };
 }
 async function salva(pulsante) {
     if (!$('b-identificazione').value.trim()) { avvisa('Identificazione bilancia obbligatoria.', 'errore'); return; }
@@ -296,6 +330,7 @@ async function salva(pulsante) {
         campoTaratura: num($('t-campo').value), tempoStabilizzazione: num($('t-stab').value),
         tempoIntervalloLettura: num($('t-intervallo').value), maxVariazioneTemperatura: num($('t-maxvar').value),
         bilanciaInterna: b.interna, bilanciaIdStrumentoArcLab: b.idStrumentoArcLab, bilanciaIdClienteArcLab: b.idClienteArcLab,
+        ...committente.leggi(),
         numeroRapporto: $('t-numero').value || null, dataTaratura: $('t-data').value, dataScadenza: $('t-scadenza').value || null,
         riferimentoIstruzione: $('t-istruzione').value, responsabile: $('t-responsabile').value || null
     });
@@ -312,7 +347,7 @@ function duplica() {
     const lin = linPunti.map(p => copia ? { ...p } : { ...p, lettura: 0 });
     ['t-id', 't-numero', 'b-identificazione', 'b-modello', 'b-tipo', 'b-sda'].forEach(id => $(id).value = '');
     $('t-pesiera').value = stato.pesiera; $('t-portata').value = stato.portata; $('t-uf').value = stato.uf; $('t-coeff').value = stato.coeff; $('t-maxu').value = stato.maxu; $('t-ttar').value = stato.ttar; $('t-tuso').value = stato.tuso; $('t-istruzione').value = stato.ist; $('t-data').value = stato.data; $('t-scadenza').value = stato.scad; $('t-responsabile').value = stato.resp; $('e-carico').value = stato.ecarico; $('e-conv').value = stato.econv;
-    $('b-origine').value = 'interno'; aggiornaDatalist();
+    aggiornaDatalist();   // 03/11/2026: committente e origine restano quelli della taratura duplicata
     eccLetture = ecc; ripLetture = rip; linPunti = lin; renderEcc(); renderRip(); renderLin();
     $('taratura-numero').textContent = ''; $('pannello-risultati-taratura').classList.add('nascosto'); $('pannello-analisi-ai').classList.add('nascosto');
     $('taratura-titolo').textContent = 'Nuova taratura (duplicata)'; $('b-identificazione').focus();
@@ -381,20 +416,37 @@ async function valida(pulsante) {
 
 // ══ Avvio ══
 $('b-origine')?.addEventListener('change', aggiornaDatalist);
+// Bilancia del cliente scelta tra quelle già tarate: riprende il modello.
+$('b-identificazione')?.addEventListener('change', () => {
+    if ($('b-origine').value === 'interno' || $('b-modello').value.trim()) return;
+    const nome = $('b-identificazione').value.trim().toLowerCase();
+    const s = committente.strumenti().find(v => (v.identificazione || '').toLowerCase() === nome);
+    if (s?.codice) $('b-modello').value = s.codice;
+});
 $('t-pesiera')?.addEventListener('change', caricaMasseSelezionate);
 $('t-portata')?.addEventListener('input', autoCoeff);
 $('t-uf')?.addEventListener('input', autoCoeff);
+$('t-campo')?.addEventListener('input', aggiornaHints);
 $('e-carico')?.addEventListener('input', risolviEccentricita);
 $('btn-nuova-pesiera')?.addEventListener('click', nuovaPesiera);
 $('btn-massa-riga')?.addEventListener('click', () => { masse.push(massaVuota()); renderMasse(); });
 $('btn-pesiera-predefinita')?.addEventListener('click', caricaPesieraPredefinita);
 $('btn-pesiera-annulla')?.addEventListener('click', () => $('pannello-pesiera').classList.add('nascosto'));
 $('btn-pesiera-salva')?.addEventListener('click', (e) => salvaPesiera(e.currentTarget));
+$('mostra-eliminate')?.addEventListener('change', caricaRegistro);
+$('btn-elimina-registro')?.addEventListener('click', async () => {
+    const numero = $('t-numero')?.value?.trim();
+    if (await eliminaDalRegistro('/api/bilance', $('t-id').value, numero ? 'la taratura ' + numero : 'la taratura aperta')) {
+        $('pannello-taratura').classList.add('nascosto');
+        await caricaRegistro();
+    }
+});
 $('btn-nuova-taratura')?.addEventListener('click', nuova);
 $('btn-taratura-annulla')?.addEventListener('click', () => $('pannello-taratura').classList.add('nascosto'));
 $('btn-ecc-riga')?.addEventListener('click', () => { eccLetture.push(0); renderEcc(); });
 $('btn-rip-riga')?.addEventListener('click', () => { ripLetture.push(0); renderRip(); });
 $('btn-lin-riga')?.addEventListener('click', () => { linPunti.push(puntoLin(0)); renderLin(); });
+$('btn-lin-gruppo')?.addEventListener('click', aggiungiPuntiLinearita);
 $('btn-calcola')?.addEventListener('click', (e) => calcola(e.currentTarget));
 $('btn-taratura-salva')?.addEventListener('click', (e) => salva(e.currentTarget));
 $('btn-taratura-duplica')?.addEventListener('click', duplica);

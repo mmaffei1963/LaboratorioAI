@@ -1,0 +1,32 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A scegliere <strong>se e come registrare i kg degli ingredienti usati</strong> in ogni produzione. La scelta vale per tutta l'azienda e cambia quello che ti chiede la pagina «Oggi ho prodotto».</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Quale modalità scegliere</summary>
+    <dl class="glossario">
+        <dt>Solo i lotti</dt><dd>La più semplice: si registra quali lotti sono stati usati, senza kg. Il magazzino delle materie prime non cala da solo.</dd>
+        <dt>A mano</dt><dd>A fine produzione scrivi i kg usati per ogni lotto. Il magazzino cala di quei kg.</dd>
+        <dt>Dalla ricetta</dt><dd>I kg si calcolano dalla ricetta (kg degli ingredienti rispetto alla quantità di riferimento) e dai kg prodotti, divisi tra i lotti dello stesso ingrediente. Si possono sempre correggere a mano.</dd>
+    </dl>
+    <p class="nota">In «Dalla ricetta» servono i <strong>kg nella ricetta</strong> per ogni ingrediente e la <strong>quantità di riferimento</strong> nella scheda della ricetta.</p>
+</details>
+
+<details class="situazione">
+    <summary>Chi può cambiare le impostazioni</summary>
+    <p>Solo chi ha il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>. Gli altri le vedono ma non possono salvare. Il ruolo di ogni persona lo imposta il servizio MARE.A.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare la scelta</summary>
+    <ol class="passi">
+        <li>Apri <strong>Impostazioni</strong> e scegli la modalità.</li>
+        <li>Spunta <strong>I kg sono obbligatori</strong> se vuoi che senza kg la produzione non si registri (vale per «A mano» e «Dalla ricetta»).</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="dopo">Vale dalla prima produzione dopo il salvataggio: quelle già registrate non cambiano. La modifica resta nel registro attività.</p>
+</details>

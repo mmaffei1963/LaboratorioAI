@@ -9,6 +9,8 @@ public record DatiRapportoBilancia
     public string? RiferimentoIstruzione { get; init; }
     public string RedattoDa { get; init; } = "";
     public string? Committente { get; init; }
+    /// <summary>Insediamento del cliente (03/11/2026): stampato in testata solo se indicato.</summary>
+    public string? Insediamento { get; init; }
 
     public string BilanciaIdentificazione { get; init; } = "";
     public string? BilanciaModello { get; init; }

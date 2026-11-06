@@ -11,6 +11,44 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
 
     public RepositoryAnagrafiche(IFabbricaConnessioniArcLab fabbrica) => _fabbrica = fabbrica;
 
+    public async Task<IReadOnlyList<ClienteConCampioni>> ClientiConCampioniAsync(DateTime dal, CancellationToken ct = default)
+    {
+        // Prima i lotti del periodo, poi l'aggancio commessa → cliente sul codice contabile (come nelle altre letture).
+        const string sql = """
+            WITH Lotti AS (
+                SELECT l.IdLotto, l.IdCommessa, l.DataRic FROM Lotto l WHERE l.DataRic >= @Dal
+            )
+            SELECT cl.IDCliente                                         AS IdCliente,
+                   MAX(CONVERT(nvarchar(300), cl.RagioneSociale))       AS RagioneSociale,
+                   MAX(CONVERT(nvarchar(30),  cl.PIVA))                 AS PartitaIva,
+                   MAX(CONVERT(nvarchar(400), cl.Email))                AS Email,
+                   COUNT(c.IdCampione)                                  AS NumeroCampioni,
+                   MAX(lt.DataRic)                                      AS UltimoCampione
+            FROM Lotti lt
+                INNER JOIN Campione c  ON c.IdLotto = lt.IdLotto
+                INNER JOIN commessa cm ON cm.IdCommessa = lt.IdCommessa
+                INNER JOIN Clienti cl  ON CAST(cl.CODContabilita AS varchar(50)) = CAST(cm.Cod_Cliente AS varchar(50))
+            GROUP BY cl.IDCliente
+            ORDER BY MAX(CONVERT(nvarchar(300), cl.RagioneSociale))
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        // Classe con proprietà settabili (non record): Dapper converte i tipi del reader senza cercare un costruttore.
+        var righe = await cn.QueryAsync<RigaClienteCampioni>(
+            new CommandDefinition(sql, new { Dal = dal.Date }, commandTimeout: 120, cancellationToken: ct));
+        return righe.Select(r => new ClienteConCampioni(r.IdCliente, r.RagioneSociale?.Trim(), r.PartitaIva?.Trim(), r.Email?.Trim(),
+            r.NumeroCampioni, r.UltimoCampione)).ToList();
+    }
+
+    private sealed class RigaClienteCampioni
+    {
+        public int IdCliente { get; set; }
+        public string? RagioneSociale { get; set; }
+        public string? PartitaIva { get; set; }
+        public string? Email { get; set; }
+        public int NumeroCampioni { get; set; }
+        public DateTime? UltimoCampione { get; set; }
+    }
+
     public async Task<IReadOnlyList<VoceAnagrafica>> ClientiAsync(CancellationToken ct = default)
     {
         const string sql = """
@@ -46,6 +84,50 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
             string nome = (string?)r.Nome ?? "";
             string citta = ((string?)r.Citta ?? "").Trim();
             return new VoceInsediamento((int)r.Id, citta.Length > 0 ? $"{nome} - {citta}" : nome, (int)r.IDCliente);
+        }).ToList();
+    }
+
+    public async Task<DettaglioCliente?> DettaglioClienteAsync(int idCliente, CancellationToken ct = default)
+    {
+        // PIVA e indirizzo di fatturazione (sede legale) sono entrambi sul Cliente: l'offerta è
+        // intestata al cliente, non a un insediamento/sede specifico, quindi si leggono da qui
+        // direttamente, senza passare dagli insediamenti (che restano indirizzi operativi diversi).
+        const string sql = """
+            SELECT cl.IDCliente AS IdCliente, cl.PIVA AS PartitaIva,
+                   cl.IndirizzoFatt AS Indirizzo, cl.CapFatt AS Cap,
+                   cl.[CittàFatt] AS Citta, cl.ProvinciaFatt AS Provincia, cl.Email AS Email
+            FROM Clienti cl
+            WHERE cl.IDCliente = @IdCliente
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return await cn.QueryFirstOrDefaultAsync<DettaglioCliente>(
+            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
+    }
+
+    public async Task<IReadOnlyList<InsediamentoContatto>> InsediamentiConEmailAsync(int idCliente, CancellationToken ct = default)
+    {
+        // NB: la colonna città è [CittàInsed] (con accento), come in InsediamentiAsync.
+        const string sql = """
+            SELECT i.NomeInsed AS Nome, i.IndirizzoInsed AS Indirizzo, i.CapInsed AS Cap,
+                   i.[CittàInsed] AS Citta, i.ProvinciaInsed AS Provincia, i.Email AS Email
+            FROM Insediamento i
+            WHERE i.IDCliente = @IdCliente AND i.NomeInsed IS NOT NULL
+            ORDER BY i.NomeInsed
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        var righe = await cn.QueryAsync(
+            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
+        return righe.Select(r =>
+        {
+            var parti = new[] { (string?)r.Indirizzo, string.Join(" ", new[] { (string?)r.Cap, (string?)r.Citta }.Where(s => !string.IsNullOrWhiteSpace(s))), string.IsNullOrWhiteSpace((string?)r.Provincia) ? null : $"({((string?)r.Provincia)!.Trim()})" }
+                .Where(s => !string.IsNullOrWhiteSpace(s));
+            var indirizzo = string.Join(" ", parti).Trim();
+            return new InsediamentoContatto(
+                ((string?)r.Nome ?? "").Trim(),
+                indirizzo.Length > 0 ? indirizzo : null,
+                string.IsNullOrWhiteSpace((string?)r.Email) ? null : ((string)r.Email).Trim());
         }).ToList();
     }
 
@@ -146,6 +228,66 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
         using var cn = await _fabbrica.ApriAsync(ct);
         return (await cn.QueryAsync<string>(
             new CommandDefinition(sql, cancellationToken: ct))).ToList();
+    }
+
+    public async Task<IReadOnlyList<VoceAnagrafica>> ImballaggiAsync(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT IdImballaggio AS Id, LTRIM(RTRIM(CONVERT(nvarchar(300), Imballaggio))) AS Nome
+            FROM Imballaggio
+            WHERE Imballaggio IS NOT NULL AND LTRIM(RTRIM(CONVERT(nvarchar(300), Imballaggio))) <> ''
+            ORDER BY 2
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<VoceAnagrafica>(
+            new CommandDefinition(sql, cancellationToken: ct))).ToList();
+    }
+
+    public Task<IReadOnlyList<PuntoPrelievoUsato>> PuntiPrelievoUsatiAsync(DateTime dal, int perInsediamento, CancellationToken ct = default) =>
+        ValoriUsatiPerInsediamentoAsync("ca.PuntoPrelievo", dal, perInsediamento, ct);
+
+    public Task<IReadOnlyList<PuntoPrelievoUsato>> LuoghiPrelievoUsatiAsync(DateTime dal, int perInsediamento, CancellationToken ct = default) =>
+        ValoriUsatiPerInsediamentoAsync("ca.LuogoPrelievo", dal, perInsediamento, ct);
+
+    /// <summary>Valori più frequenti di una colonna del campione per insediamento (colonna fissa nel codice, mai da input).</summary>
+    private async Task<IReadOnlyList<PuntoPrelievoUsato>> ValoriUsatiPerInsediamentoAsync(string colonna, DateTime dal, int perInsediamento, CancellationToken ct)
+    {
+        if (colonna is not ("ca.PuntoPrelievo" or "ca.LuogoPrelievo")) throw new ArgumentException("Colonna non ammessa.", nameof(colonna));
+        // Campione → Lotto → commessa → ContattoCliente → insediamento (come nelle altre letture).
+        var sql = $"""
+            WITH Punti AS (
+                SELECT cc.IDInsediamento AS IdInsediamento,
+                       LTRIM(RTRIM(CONVERT(nvarchar(200), {colonna}))) AS Punto,
+                       COUNT(*) AS Volte
+                FROM Campione ca
+                    INNER JOIN Lotto lo           ON lo.IdLotto = ca.IdLotto
+                    INNER JOIN commessa cm        ON cm.IdCommessa = lo.IdCommessa
+                    INNER JOIN ContattoCliente cc ON cc.IDContatto = cm.IDContatto
+                WHERE lo.DataRic >= @Dal
+                  AND {colonna} IS NOT NULL
+                GROUP BY cc.IDInsediamento, LTRIM(RTRIM(CONVERT(nvarchar(200), {colonna})))
+            ), Ordinati AS (
+                SELECT IdInsediamento, Punto, Volte,
+                       ROW_NUMBER() OVER (PARTITION BY IdInsediamento ORDER BY Volte DESC, Punto) AS N
+                FROM Punti
+                WHERE Punto <> '' AND Punto NOT IN ('sconosciuto', 'n.a.', 'na', '-', '--')
+            )
+            SELECT IdInsediamento, Punto, Volte FROM Ordinati WHERE N <= @Max
+            ORDER BY IdInsediamento, Volte DESC, Punto
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        var righe = await cn.QueryAsync<RigaPunto>(
+            new CommandDefinition(sql, new { Dal = dal.Date, Max = perInsediamento }, commandTimeout: 120, cancellationToken: ct));
+        return righe.Select(r => new PuntoPrelievoUsato(r.IdInsediamento, r.Punto ?? "", r.Volte)).ToList();
+    }
+
+    private sealed class RigaPunto
+    {
+        public int IdInsediamento { get; set; }
+        public string? Punto { get; set; }
+        public int Volte { get; set; }
     }
 
     public async Task<IReadOnlyList<string>> LuoghiPrelievoAsync(CancellationToken ct = default)

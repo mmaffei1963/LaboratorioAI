@@ -1,0 +1,99 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloAccordi
+@{
+    ViewData["Titolo"] = "Accordi provvigioni";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var s = Model.Scelto;
+    string D(DateTime d) => d.Year >= 9999 ? "in corso" : d.ToString("dd/MM/yyyy", it);
+    string Pct(decimal v) => v.ToString("0.##", it) + "%";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Accordi provvigioni</h1>
+        <p class="sottotitolo">Percentuali, basi di calcolo e soglie del premio di ogni commerciale, per versioni con data di validità. Una bozza si modifica e si prova con l'anteprima; un accordo attivo non si modifica più: si duplica come nuova versione.</p>
+    </div>
+    <div>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Basi", "AccordiProvvigioni")">Basi di calcolo</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = s?.IdCommerciale })">← Provvigioni</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (s is null)
+{
+    <section class="riquadro"><p>Nessun commerciale configurato.</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+            <span class="sottotesto">Commerciale:</span>
+            @foreach (var c in Model.Commerciali)
+            {
+                <a class="pulsante @(c.IdCommerciale == s.IdCommerciale ? "" : "pulsante-tenue")" href="@Url.Action("Index", "AccordiProvvigioni", new { idCommerciale = c.IdCommerciale })">@c.Nome</a>
+            }
+        </div>
+        @if (Model.FineUltimoTrimestreChiuso is DateTime fc)
+        {
+            <p class="sottotesto" style="margin-top:0.6rem">Ultimo trimestre chiuso: fino al @fc.ToString("dd/MM/yyyy", it). Un nuovo accordo può iniziare solo dopo questa data.</p>
+        }
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@s.Nome — versioni dell'accordo</h2><span class="sottotesto">@Model.Accordi.Count</span></div>
+        @if (Model.Accordi.Count == 0)
+        {
+            <p class="sottotesto">Nessun accordo: crealo qui sotto. Senza un accordo attivo il commerciale non ha calcolo.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Accordo</th><th>Tipo</th><th>Stato</th><th>Periodo di validità</th><th>Voci</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var a in Model.Accordi)
+                    {
+                        var periodo = Model.Periodi.TryGetValue(a.IdAccordo, out var p) ? $"{D(p.Dal)} – {D(p.Al)}" : "dal " + D(a.ValidoDal);
+                        <tr style="@(a.Stato == StatoAccordo.Annullato ? "opacity:0.55" : "")">
+                            <td><strong>@a.Nome</strong></td>
+                            <td>@EtichetteProvvigioni.Tipo(a.Tipo)</td>
+                            <td>@EtichetteProvvigioni.Stato(a.Stato)</td>
+                            <td>@periodo</td>
+                            <td>
+                                @foreach (var v in a.Voci.Where(v => v.Percentuale > 0m))
+                                {
+                                    <div>@EtichetteProvvigioni.Voce(v.Voce): <strong>@Pct(v.Percentuale)</strong> <span class="sottotesto">su @(Model.NomiBasi.GetValueOrDefault(v.IdBaseCalcolo, "?"))</span></div>
+                                }
+                            </td>
+                            <td><a class="pulsante pulsante-tenue" href="@Url.Action("Dettaglio", "AccordiProvvigioni", new { id = a.IdAccordo })">Apri</a></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Nuovo accordo</h2></div>
+        <p class="sottotesto">Per cambiare un accordo esistente non serve crearne uno da zero: apri l'accordo attivo e usa «Duplica come nuova versione». Da qui crei un accordo vuoto, con tutte le voci del tipo a 0%.</p>
+        <form method="post" asp-action="Nuovo" class="griglia-filtri">
+            <input type="hidden" name="idCommerciale" value="@s.IdCommerciale" />
+            <label>Nome<input type="text" name="nome" maxlength="150" required placeholder="es. Integrazione accordo 2027" /></label>
+            <label>Tipo
+                <select name="tipo">
+                    <option value="@((int)TipoAccordo.Laboratorio)">@EtichetteProvvigioni.Tipo(TipoAccordo.Laboratorio)</option>
+                    <option value="@((int)TipoAccordo.Convenzioni)">@EtichetteProvvigioni.Tipo(TipoAccordo.Convenzioni)</option>
+                </select>
+            </label>
+            <label>Valido dal<input type="date" name="validoDal" required /></label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Crea in bozza</button></div>
+        </form>
+    </section>
+}

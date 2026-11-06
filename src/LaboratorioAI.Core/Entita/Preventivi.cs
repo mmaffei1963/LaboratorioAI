@@ -28,7 +28,15 @@ public enum TipoRigaPreventivo
     /// composti a campo libero dal commerciale con prezzo concordato. In offerta risultano
     /// identici ai nostri; i metodi riportano sempre il riferimento al laboratorio esterno.
     /// </summary>
-    ControlloLibero = 3
+    ControlloLibero = 3,
+
+    /// <summary>
+    /// Due o più controlli raggruppati dal commerciale in un'unica riga con un unico prezzo
+    /// (es. un pacchetto commerciale). La descrizione è libera; gli Id dei controlli d'origine
+    /// restano tracciati in <see cref="RigaPreventivo.IdControlliOrigine"/>. I metodi sono
+    /// l'unione di quelli dei controlli raggruppati.
+    /// </summary>
+    GruppoControlli = 4
 }
 
 /// <summary>Come è stato determinato il prezzo base di una riga.</summary>
@@ -73,13 +81,25 @@ public class Preventivo
     public string? ClienteCitta { get; set; }
     public string? ClienteProvincia { get; set; }
     public string? ClienteEmail { get; set; }
+    /// <summary>21/10/2026: telefono del cliente (stampato nell'offerta; per «Spett.le cliente» spazio da compilare a mano).</summary>
+    public string? ClienteTelefono { get; set; }
+    /// <summary>21/10/2026: solo per «Spett.le cliente» (privati senza partita IVA): nome e cognome del cliente,
+    /// stampato nella riga «Nome cliente» della prima pagina. L'intestazione resta «Spett.le cliente».</summary>
+    public string? ClienteNome { get; set; }
 
     // ── Offerta ────────────────────────────────────────────────────
     public string? Oggetto { get; set; }
     /// <summary>Data dell'offerta (giorno, non UTC-time). Default = data creazione.</summary>
     public DateTime? DataOfferta { get; set; }
     /// <summary>Giorni di validità dell'offerta dalla data offerta.</summary>
-    public int ValiditaGiorni { get; set; } = 60;
+    public int ValiditaGiorni { get; set; } = 365; // 365 = 12 mesi con rinnovo tacito (Condizioni Rev. 19, Art. 3.3)
+    /// <summary>
+    /// 21/10/2026: se vero l'offerta dura 12 mesi SENZA rinnovo tacito (in deroga all'Art. 3.3 delle Condizioni).
+    /// Falso (predefinito, anche per le offerte già esistenti) = 12 mesi con rinnovo tacito annuale.
+    /// </summary>
+    public bool SenzaRinnovoTacito { get; set; }
+    /// <summary>21/10/2026: solo per «Spett.le cliente» (privati, clienti occasionali): l'importo è già stato pagato.</summary>
+    public bool GiaPagato { get; set; }
     /// <summary>Condizioni di pagamento scelte (testo libero o codice).</summary>
     public string? CondizioniPagamento { get; set; }
     /// <summary>Revisione delle Condizioni Generali richiamata (es. "Mod. Com. 05 Rev. 18 del 16/04/25").</summary>
@@ -89,6 +109,18 @@ public class Preventivo
     public decimal TotaleImponibile { get; set; }
     public decimal AliquotaIva { get; set; } = 22m;
 
+    /// <summary>
+    /// Se vero, l'offerta include il riepilogo promozionale "Il nostro lavoro" (testo fisso
+    /// MARE.A: esperienza, accreditamento, reperibilità) prima delle Condizioni Generali.
+    /// </summary>
+    public bool RiepilogoPromozionale { get; set; }
+
+    /// <summary>
+    /// 06/11/2026 (Zatterin): se vero, nell'offerta compare «Insediamento: …» sotto i controlli che ne hanno uno.
+    /// Predefinito no: l'insediamento serve a prendere il prezzo giusto, non sempre è utile al cliente.
+    /// </summary>
+    public bool MostraInsediamenti { get; set; }
+
     // ── Approvazione (richiesta solo se presente uno sconto) ───────
     /// <summary>Vero se una qualunque riga ha uno sconto &gt; 0: l'invio richiede approvazione.</summary>
     public bool RichiedeApprovazione { get; set; }
@@ -96,6 +128,9 @@ public class Preventivo
     public DateTime? DataApprovazione { get; set; }
 
     public string? Note { get; set; }
+
+    /// <summary>26/10/2026: preventivo da cui questo è stato duplicato (null = creato da zero).</summary>
+    public int? IdPreventivoOrigine { get; set; }
 
     // ── Tracciabilità ──────────────────────────────────────────────
     public int? IdUtenteCreatore { get; set; }
@@ -126,6 +161,28 @@ public class RigaPreventivo
 
     /// <summary>Descrizione mostrata in offerta (snapshot del nome controllo/accessorio).</summary>
     public string? Descrizione { get; set; }
+
+    /// <summary>
+    /// Solo per Tipo = GruppoControlli: gli Id ArcLab (o i riferimenti locali <see cref="RifLocale"/>
+    /// dei controlli d'origine privi di Id ArcLab) raggruppati in questa riga, separati da "-"
+    /// (es. "123-456-789" oppure "123-L00002"), stampati in offerta accanto alla descrizione.
+    /// </summary>
+    public string? IdControlliOrigine { get; set; }
+
+    /// <summary>
+    /// Solo per Tipo = ControlloLibero: riferimento locale (es. "L00001") assegnato alla creazione,
+    /// perché un controllo in subappalto a campo libero non ha un Id di catalogo ArcLab ma deve
+    /// comunque restare sempre identificabile in offerta, anche quando viene raggruppato con altri
+    /// controlli (in tal caso il riferimento confluisce in <see cref="IdControlliOrigine"/> del gruppo).
+    /// </summary>
+    public string? RifLocale { get; set; }
+
+    /// <summary>
+    /// 05/11/2026 (richiesta di Zatterin): insediamento del cliente a cui si riferisce la riga, facoltativo. Le commesse
+    /// ArcLab sono per insediamento, con prezzi propri: se indicato, il prezzo di commessa si prende da quella sede.
+    /// </summary>
+    public int? IdInsediamentoArcLab { get; set; }
+    public string? Insediamento { get; set; }
 
     public OriginePrezzoPreventivo OriginePrezzo { get; set; }
     /// <summary>Prezzo base: prezzo di commessa oppure somma CostoMetodoEuro (snapshot).</summary>
@@ -171,6 +228,12 @@ public class RigaMetodoPreventivo
     public string? Descrizione { get; set; }
     /// <summary>Denominazione della riga (rigametodo.DenominazioneRiga).</summary>
     public string? DenominazioneRiga { get; set; }
+    /// <summary>
+    /// Denominazione ufficiale del metodo (metodo.DettagliMetodo), la stessa usata nei Rapporti di
+    /// Prova e nell'Ordine di Accettazione (AnalisiAccettazione.Denominazione). A differenza di OA
+    /// non riporta l'aliquota: in offerta non esiste ancora una prova/aliquota reale.
+    /// </summary>
+    public string? Denominazione { get; set; }
     /// <summary>Riferimento normativo / metodo (metodo.RifBiblio).</summary>
     public string? RiferimentoNormativo { get; set; }
     public string? UnitaMisura { get; set; }
@@ -202,5 +265,18 @@ public class VoceListinoAccessorio
     public decimal Prezzo { get; set; }
     /// <summary>Unità di riferimento del prezzo (es. "cad", "giorno").</summary>
     public string? UnitaMisura { get; set; }
+    public bool Attivo { get; set; } = true;
+}
+
+/// <summary>
+/// Condizione di pagamento proponibile in offerta (es. "Bonifico bancario vista fattura").
+/// Gestita in Amministrazione: nessuna cancellazione fisica, solo <see cref="Attivo"/>.
+/// </summary>
+public class MetodoPagamento
+{
+    public int IdMetodoPagamento { get; set; }
+    public string Descrizione { get; set; } = "";
+    /// <summary>Ordine di visualizzazione nell'elenco (crescente).</summary>
+    public int Ordine { get; set; }
     public bool Attivo { get; set; } = true;
 }

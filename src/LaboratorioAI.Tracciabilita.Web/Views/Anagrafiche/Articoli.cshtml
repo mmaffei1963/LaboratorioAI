@@ -1,0 +1,25 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoArticoli
+@{ ViewData["Titolo"] = "Prodotti"; }
+<div class="testa-pagina"><h1>Agenda prodotti</h1><span class="nota">@Model.Totale trovati</span></div>
+<p><a asp-action="Fornitori">Fornitori</a> <a asp-action="Articoli" class="pulsante">Prodotti</a>
+   <a asp-action="NuovoArticolo" class="pulsante">Nuovo articolo</a></p>
+<form method="get" class="riga-modulo">
+    <label>Cerca (descrizione, codice, categoria)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <label style="flex-direction:row;align-items:center;gap:.4rem">
+        <input type="checkbox" name="conNonAttivi" value="true" checked="@Model.ConNonAttivi" /> Anche quelli non più in uso</label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Articolo</th><th>Tipo</th><th>Categoria</th><th>Unità</th><th>Fornitori</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.Righe)
+    {
+        <tr>
+            <td><a asp-action="ModificaArticolo" asp-route-id="@a.IdArticolo">@a.Descrizione</a></td>
+            <td>@a.Tipo</td><td>@a.Categoria</td><td>@a.UnitaMisura</td><td>@a.Fornitori</td>
+            <td>@if (!a.Attivo) { <span class="tag spento">non in uso</span> }</td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="6">Nessun articolo trovato.</td></tr> }
+    </tbody>
+</table>

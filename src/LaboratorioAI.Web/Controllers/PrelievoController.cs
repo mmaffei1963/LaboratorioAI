@@ -1,4 +1,5 @@
 using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Repository;
 using LaboratorioAI.IA;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
@@ -15,8 +16,51 @@ namespace LaboratorioAI.Web.Controllers;
 public class PrelievoController : Controller
 {
     private readonly IClientAnthropic _ia;
+    private readonly IRepositoryAnagrafiche _anagrafiche;
 
-    public PrelievoController(IClientAnthropic ia) => _ia = ia;
+    public PrelievoController(IClientAnthropic ia, IRepositoryAnagrafiche anagrafiche)
+    {
+        _ia = ia;
+        _anagrafiche = anagrafiche;
+    }
+
+    /// <summary>
+    /// Elenchi per le tendine (13/10/2026), letti da ArcLab in sola lettura: clienti con campioni negli
+    /// ultimi 3 anni e i loro insediamenti, controlli attivi, matrici, imballaggi e,
+    /// per ogni insediamento, i punti e i luoghi di prelievo già usati.
+    /// La pagina li tiene sul dispositivo, così le tendine funzionano anche offline; resta sempre
+    /// possibile scrivere a mano un valore che non è in elenco.
+    /// </summary>
+    [HttpGet("api/prelievo/anagrafiche")]
+    public async Task<IActionResult> Anagrafiche(CancellationToken ct)
+    {
+        var clienti = await _anagrafiche.ClientiConCampioniAsync(DateTime.Today.AddYears(-3), ct);
+        var idClienti = clienti.Select(c => c.IdCliente).ToHashSet();
+        var insediamenti = (await _anagrafiche.InsediamentiAsync(null, ct)).Where(i => idClienti.Contains(i.IdCliente));
+        var controlli = await _anagrafiche.ControlliAsync(ct);
+        var matrici = await _anagrafiche.MatriciAsync(ct);
+        var imballaggi = await _anagrafiche.ImballaggiAsync(ct);
+        // Punti di prelievo già usati negli ultimi 2 anni, i 25 più frequenti per insediamento.
+        var punti = (await _anagrafiche.PuntiPrelievoUsatiAsync(DateTime.Today.AddYears(-2), 25, ct))
+            .GroupBy(p => p.IdInsediamento)
+            .ToDictionary(g => g.Key.ToString(), g => g.Select(p => p.Punto).ToList());
+        // Luoghi di prelievo: stessa logica, quelli già usati per l'insediamento.
+        var luoghi = (await _anagrafiche.LuoghiPrelievoUsatiAsync(DateTime.Today.AddYears(-2), 25, ct))
+            .GroupBy(p => p.IdInsediamento)
+            .ToDictionary(g => g.Key.ToString(), g => g.Select(p => p.Punto).ToList());
+        static string T(string? s) => (s ?? "").Trim();
+        return Json(new
+        {
+            aggiornato = DateTime.UtcNow,
+            clienti = clienti.Where(c => T(c.RagioneSociale).Length > 0).Select(c => new { id = c.IdCliente, nome = T(c.RagioneSociale) }),
+            insediamenti = insediamenti.Select(i => new { id = i.Id, nome = T(i.Nome), idCliente = i.IdCliente }),
+            controlli = controlli.Select(c => new { id = c.Id, nome = T(c.Nome) }),
+            matrici = matrici.Select(m => T(m.Nome)).Where(n => n.Length > 0).Distinct(),
+            imballaggi = imballaggi.Select(m => T(m.Nome)).Where(n => n.Length > 0).Distinct(),
+            luoghi,
+            punti
+        });
+    }
 
     public IActionResult Index()
     {

@@ -18,8 +18,9 @@
 </div>
 
 <!-- ══ Registro ══ -->
-<section class="riquadro">
-    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+<section class="riquadro" id="riquadro-registro" data-puo-eliminare="@(Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.IncubatoriValidazione) ? "true" : "false")">
+    <div class="barra-risultati"><h2>Registro tarature</h2><span id="conteggio-registro" class="sottotesto" style="margin-left:auto"></span>
+        <label class="casella" style="margin-left:14px" title="Mostra anche le righe eliminate dal registro (restano nel database)"><input type="checkbox" id="mostra-eliminate" /> Mostra eliminate</label></div>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-registro">
             <thead><tr><th>N° rapporto</th><th>Misuratore</th><th>Apparecchiatura</th><th class="numerico">Esercizio °C</th><th>Data</th><th>Scadenza</th></tr></thead>
@@ -77,11 +78,15 @@
         <label>Responsabile del rapporto<input type="text" id="t-responsabile" value="@responsabile" /></label>
     </div>
 
-    <h3>Misuratore in taratura <span class="sottotesto">(l'oggetto tarato: termometro o logger)</span></h3>
+    <h3>Committente <span class="sottotesto">(cliente e insediamento ArcLab; vuoto = taratura interna MARE.A)</span></h3>
     <div class="griglia-filtri">
-        <label>Origine
-            <select id="m-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select>
-        </label>
+        <label>Cliente<input type="text" id="c-cliente" list="lista-c-clienti" placeholder="anagrafica ArcLab (vuoto = interno)" />
+            <datalist id="lista-c-clienti"></datalist></label>
+        <label>Insediamento<select id="c-insediamento" disabled><option value="">—</option></select></label>
+    </div>
+
+    <h3>Misuratore in taratura <span class="sottotesto">(misuratore associato alla cella o all'apparecchiatura sulla quale si legge la temperatura da confrontare con il CDR)</span></h3>
+    <div class="griglia-filtri">
         <label>Identificazione<input type="text" id="m-identificazione" list="lista-m" />
             <datalist id="lista-m"></datalist></label>
         <label>Codice<input type="text" id="m-codice" /></label>
@@ -90,9 +95,9 @@
     <h3>Apparecchiatura <span class="sottotesto">(la cella/incubatore, contesto)</span></h3>
     <div class="griglia-filtri">
         <label>Origine
-            <select id="a-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select>
+            <select id="a-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Del cliente</option></select>
         </label>
-        <label>Identificazione<input type="text" id="a-identificazione" list="lista-a" />
+        <label>Identificazione<input type="text" id="a-identificazione" list="lista-a" placeholder="interno: da ArcLab · cliente: marca, modello, matricola" />
             <datalist id="lista-a"></datalist></label>
         <label>Codice<input type="text" id="a-codice" /></label>
     </div>
@@ -108,12 +113,14 @@
     <h3>Misure <span class="sottotesto">(per ogni lettura: posizione, T riferimento CDR, T misuratore)</span></h3>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-misure">
-            <thead><tr><th>Posizione</th><th class="numerico">T riferimento °C</th><th class="numerico">T misuratore °C</th><th></th></tr></thead>
+            <thead><tr><th title="Numero della lettura nella posizione (riparte a ogni cambio di posizione)">N.</th><th>Posizione</th><th class="numerico">T riferimento °C</th><th class="numerico">T misuratore °C</th><th></th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
     <div class="azioni-filtri">
         <button type="button" class="pulsante pulsante-tenue" id="btn-misura-riga">Aggiungi lettura</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-misura-gruppo"
+                title="Completa il gruppo a 10 letture; se è già completo aggiunge 10 letture con la lettera successiva">Aggiungi 10 letture</button>
         <button type="button" class="pulsante pulsante-tenue" id="btn-calcola">Calcola</button>
     </div>
 
@@ -140,6 +147,11 @@
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica"
                 title="Nuova taratura con stesso CDR e riferimenti, per un altro strumento">Duplica per nuovo strumento</button>
         <div style="flex:1"></div>
+        @if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.IncubatoriValidazione))
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-elimina-registro" style="color:var(--rosso)"
+                    title="Toglie dal registro (non cancella: si ripristina con «Mostra eliminate»)">Elimina dal registro</button>
+        }
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>

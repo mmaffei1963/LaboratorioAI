@@ -19,6 +19,7 @@ public class ServizioAnalisi : IServizioAnalisi
     private readonly IServizioVersione _versione;
     private readonly IServizioAudit _audit;
     private readonly ILogger<ServizioAnalisi> _log;
+    private readonly LaboratorioAI.Dati.Limiti.ServizioSegnalazioniLimiti _limiti;
 
     public ServizioAnalisi(
         IRepositoryCampioni campioni,
@@ -27,8 +28,10 @@ public class ServizioAnalisi : IServizioAnalisi
         IContestoUtente utente,
         IServizioVersione versione,
         IServizioAudit audit,
-        ILogger<ServizioAnalisi> log)
+        ILogger<ServizioAnalisi> log,
+        LaboratorioAI.Dati.Limiti.ServizioSegnalazioniLimiti limiti)
     {
+        _limiti = limiti;
         _campioni = campioni;
         _client = client;
         _ctx = ctx;
@@ -60,8 +63,17 @@ public class ServizioAnalisi : IServizioAnalisi
             throw new InvalidOperationException(
                 "Il campione non ha prove registrate: analisi non eseguibile.");
 
+        // 05/11/2026: limiti di legge validati (Limiti normativi) applicabili alle prove del campione.
+        IReadOnlyDictionary<int, IReadOnlyList<string>> limitiDiLegge;
+        try { limitiDiLegge = await _limiti.LimitiCampioneAsync(richiesta.IdCampione, ct); }
+        catch (Exception ex)
+        {
+            _log.LogWarning(ex, "Limiti di legge non letti per il campione {IdCampione}: analisi senza limiti.", richiesta.IdCampione);
+            limitiDiLegge = new Dictionary<int, IReadOnlyList<string>>();
+        }
+
         var prospetto = CostruttoreProspetto.Componi(
-            campione.Campione, campione.Prove, richiesta.Modalita);
+            campione.Campione, campione.Prove, richiesta.Modalita, limitiDiLegge);
 
         var risposta = await _client.InterrogaAsync(prospetto, ct);
         var giudizio = CostruttoreProspetto.DeduciGiudizio(risposta.Testo);

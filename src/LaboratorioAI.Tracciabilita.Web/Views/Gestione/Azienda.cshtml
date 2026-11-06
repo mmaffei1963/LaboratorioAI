@@ -1,0 +1,135 @@
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@using LaboratorioAI.Tracciabilita.Web.Controllers
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloAziendaDettaglio
+@{
+    ViewData["Titolo"] = Model.Azienda.RagioneSociale;
+    var sedi = Model.Insediamenti.Where(s => s.Attivo).ToList();
+}
+<p><a asp-action="Index">← Tutte le aziende</a></p>
+<div class="testa-pagina">
+    <h1>@Model.Azienda.RagioneSociale</h1>
+    <a asp-action="Registro" asp-route-idAzienda="@Model.Azienda.IdAzienda">Registro attività dell'azienda</a>
+</div>
+<p class="nota">
+    @Model.Azienda.Settore · P.IVA @(Model.Azienda.PartitaIva ?? "non indicata") · @(Model.Azienda.Email ?? "e-mail non indicata") ·
+    limiti: @Model.Azienda.MaxInsediamenti sedi, @Model.Azienda.MaxUtenti utenti
+</p>
+
+@if (Model.LinkInvito is not null)
+{
+    <div class="link-invito">
+        <strong>Link di invito per @Model.LinkInvitoPer</strong><br />
+        <code>@Model.LinkInvito</code>
+        <p class="nota">Mandalo alla persona (valido 7 giorni, utilizzabile una volta). Per sicurezza non viene più mostrato: se lo perdi, crea un nuovo invito.</p>
+    </div>
+}
+
+<div class="scheda">
+    <h2>Servizio</h2>
+    <form method="post" asp-action="CambiaStato" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo">
+        <label>Stato
+            <select name="stato">
+                @foreach (var stato in new[] { StatoServizio.Attivo, StatoServizio.Sospeso, StatoServizio.InChiusura })
+                {
+                    <option value="@((int)stato)" selected="@(stato == Model.Azienda.Stato)">@stato</option>
+                }
+            </select>
+        </label>
+        <button type="submit" class="piccolo">Cambia</button>
+        <span class="nota">Sospeso: nessuno entra. In chiusura: solo lettura e scarico dati.</span>
+    </form>
+</div>
+
+<div class="scheda">
+    <h2>Sedi</h2>
+    <table class="elenco">
+        <thead><tr><th>Nome</th><th>Sigla</th><th>Indirizzo</th></tr></thead>
+        <tbody>
+        @foreach (var s in Model.Insediamenti)
+        {
+            <tr><td>@s.Nome</td><td>@s.Sigla</td><td>@s.Indirizzo</td></tr>
+        }
+        </tbody>
+    </table>
+    <form method="post" asp-action="NuovaSede" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo" style="margin-top:1rem">
+        <label>Nome <input name="NuovaSede.Nome" required maxlength="100" /></label>
+        <label>Sigla <input name="NuovaSede.Sigla" required maxlength="12" size="8" /></label>
+        <label>Indirizzo <input name="NuovaSede.Indirizzo" maxlength="300" /></label>
+        <button type="submit" class="piccolo">Aggiungi sede</button>
+    </form>
+</div>
+
+<div class="scheda">
+    <h2>Utenti</h2>
+    @if (Model.Utenti.Count == 0)
+    {
+        <p class="nota">Nessun utente. Aggiungi il primo: di solito un amministratore dell'azienda.</p>
+    }
+    else
+    {
+        <table class="elenco">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Ruolo</th><th>Situazione</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var u in Model.Utenti)
+            {
+                <tr>
+                    <td>@u.Nome</td>
+                    <td>@u.Email</td>
+                    <td>@u.Ruoli</td>
+                    <td>
+                        @if (!u.Attivo) { <span class="tag spento">Disattivato</span> }
+                        else if (u.PasswordImpostata) { <span class="tag">Attivo@(u.UltimoAccesso is { } d ? $" · ultimo accesso {d.ToLocalTime():dd/MM/yyyy HH:mm}" : "")</span> }
+                        else if (u.InvitoPendente) { <span class="tag">Invito inviato</span> }
+                        else { <span class="tag spento">Invito scaduto</span> }
+                    </td>
+                    <td>
+                        @if (u.Attivo)
+                        {
+                            <form method="post" asp-action="NuovoInvito" asp-route-idUtente="@u.IdUtente" class="in-riga">
+                                <button type="submit" class="piccolo">@(u.PasswordImpostata ? "Reimposta password" : "Nuovo invito")</button>
+                            </form>
+                        }
+                        <form method="post" asp-action="CambiaRuolo" asp-route-idUtente="@u.IdUtente" class="in-riga">
+                            <select name="ruolo">
+                                @foreach (var r in Enum.GetValues<RuoloAzienda>())
+                                {
+                                    <option value="@((int)r)">@GestioneController.NomeRuolo(r)</option>
+                                }
+                            </select>
+                            <button type="submit" class="piccolo">Cambia ruolo</button>
+                        </form>
+                        <form method="post" asp-action="ImpostaAttivo" asp-route-idUtente="@u.IdUtente" class="in-riga">
+                            <input type="hidden" name="attivo" value="@(u.Attivo ? "false" : "true")" />
+                            <button type="submit" class="piccolo">@(u.Attivo ? "Disattiva" : "Riattiva")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h2 style="margin-top:1.2rem">Aggiungi utente</h2>
+    <form method="post" asp-action="NuovoUtente" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo">
+        <label>Nome <input name="NuovoUtente.Nome" required maxlength="150" /></label>
+        <label>E-mail <input name="NuovoUtente.Email" type="email" required maxlength="256" /></label>
+        <label>Ruolo
+            <select name="NuovoUtente.Ruolo">
+                @foreach (var r in Enum.GetValues<RuoloAzienda>())
+                {
+                    <option value="@((int)r)" selected="@(r == RuoloAzienda.AmministratoreAzienda)">@GestioneController.NomeRuolo(r)</option>
+                }
+            </select>
+        </label>
+        <label>Sede
+            <select name="NuovoUtente.IdInsediamento">
+                <option value="">Tutte le sedi</option>
+                @foreach (var s in sedi)
+                {
+                    <option value="@s.IdInsediamento">@s.Nome</option>
+                }
+            </select>
+        </label>
+        <button type="submit" class="piccolo">Crea e genera invito</button>
+    </form>
+</div>

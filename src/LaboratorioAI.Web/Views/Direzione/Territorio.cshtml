@@ -1,0 +1,74 @@
+@{
+    ViewData["Titolo"] = "Andamento territorio";
+}
+@* Cruscotto Direzione, fase 2 (13/10/2026): fatturato per territorio (sede del cliente in AZW) e confronto sede di Pesaro. *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Andamento territorio</h1>
+        <p class="sottotitolo">Fatturato per regione, provincia e comune della sede del cliente (AZW), con clienti attivi, nuovi e persi. Riservato alla Direzione.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-tenue" href="/Direzione">Indicatori economici</a>
+        @if (ViewData["PuoModificare"] is true)
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-importa" title="Rilegge il file AZW (ultima copia di Copia.bat). Qualche minuto.">Aggiorna da AZW</button>
+        }
+    </div>
+</div>
+
+<p class="sottotesto" id="aggiornamento"></p>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Dal <input type="number" id="f-dal" min="2018" /></label>
+        <label>Al <input type="number" id="f-al" min="2018" /></label>
+        <label>Dettaglio
+            <select id="f-livello">
+                <option value="Regione">Regione</option>
+                <option value="Provincia" selected>Provincia</option>
+                <option value="Comune">Comune</option>
+            </select>
+        </label>
+        <label>Regione <select id="f-regione"><option value="">Tutte</option></select></label>
+        <label>Provincia <select id="f-provincia"><option value="">Tutte</option></select></label>
+        <label>Area <select id="f-centro"><option value="">Tutte</option></select></label>
+        <label>Voce di ricavo <select id="f-voce"><option value="">Tutte</option></select></label>
+        <label>Chi fa il lavoro (commessa) <select id="f-commessa"><option value="">Tutti</option></select></label>
+        <label>Responsabile cliente (zona) <select id="f-zona"><option value="">Tutti</option></select></label>
+        <label>Commerciale <select id="f-commerciale"><option value="">Tutti</option></select></label>
+    </div>
+    <div class="azioni-filtri" style="margin-top:0.5rem">
+        <button type="button" class="pulsante" id="btn-cerca">Mostra</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-azzera">Azzera filtri</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Esporta Excel</button>
+    </div>
+</section>
+
+<section class="riquadro" id="commento-ai"></section>
+
+<section class="riquadro">
+    <h2 style="margin-top:0">Sede di Pesaro: com'è andata la zona</h2>
+    <p class="sottotesto" id="pesaro-testo"></p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-pesaro"><thead></thead><tbody></tbody></table>
+    </div>
+    <p class="nota">Crescita media annua «prima» dal primo anno all'anno prima dell'apertura, «dopo» da lì all'ultimo anno completo.
+        Rimini e Forlì-Cesena servono da confronto: misurano quanto è cresciuta l'azienda dove la sede non c'entra. Il 2020–2021 risente del Covid.
+        Il confronto usa gli stessi filtri (area, voce, commerciale…), ma non quelli di regione e provincia.</p>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2 id="titolo-elenco">Fatturato per provincia</h2><span class="sottotesto" id="conteggio"></span></div>
+    <div class="tabella-scorrevole" style="max-height:40rem">
+        <table class="tabella" id="tabella-zone"><thead></thead><tbody><tr><td class="sottotesto">Caricamento…</td></tr></tbody></table>
+    </div>
+    <p class="nota">Il territorio è la sede del cliente in AZW (provincia e comune dell'anagrafica). «Attivi» = clienti con fatturato netto positivo nell'anno;
+        «nuovi» = attivi e non attivi l'anno prima; «persi» = attivi l'anno prima e non quest'anno; i clienti tolti dai Clienti da seguire perché <em>acquisiti da un nostro cliente</em> sono contati a parte come «acq.», non fra i persi. Il commerciale è quello attuale del cliente
+        (codice venditore AZW, senza storico). Le note di credito sono già sottratte.</p>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/direzione-territorio.js" asp-append-version="true"></script>
+}

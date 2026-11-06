@@ -1,0 +1,32 @@
+@model List<LaboratorioAI.Tracciabilita.Web.Models.RigaAzienda>
+@{
+    ViewData["Titolo"] = "Aziende";
+}
+<div class="testa-pagina">
+    <h1>Aziende clienti</h1>
+    <a class="pulsante" asp-action="NuovaAzienda">Nuova azienda</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <p class="nota">Nessuna azienda ancora. Crea la prima con «Nuova azienda».</p>
+}
+else
+{
+    <table class="elenco">
+        <thead><tr><th>Azienda</th><th>Settore</th><th>Servizio</th><th>Sedi</th><th>Utenti</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.RagioneSociale</td>
+                <td>@a.Settore</td>
+                <td><span class="tag @(a.Stato == LaboratorioAI.Tracciabilita.Core.Enumerazioni.StatoServizio.Attivo ? "" : "spento")">@a.Stato</span></td>
+                <td>@a.Sedi</td>
+                <td>@a.Utenti</td>
+                <td><a asp-action="Azienda" asp-route-id="@a.IdAzienda">Apri</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

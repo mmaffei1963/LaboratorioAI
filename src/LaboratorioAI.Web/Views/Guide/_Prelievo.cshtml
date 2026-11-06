@@ -1,0 +1,63 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Prelievo vocale» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A segnare i dati dei campioni <strong>mentre li prelevi</strong>, dal telefono, anche <strong>dettando a voce</strong>
+        e anche <strong>senza rete</strong> (magazzini, celle). Al rientro generi un <strong>riepilogo del giro</strong> da cui inserire i campioni in ArcLab.</p>
+    <p>I dati restano <strong>solo sul tuo telefono</strong> (o PC) finché non svuoti il giro: non vanno al server. Il programma non inserisce nulla in ArcLab da solo.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Prima volta: preparare il telefono</summary>
+    <ol class="passi">
+        <li>Apri la pagina <strong>Prelievo vocale</strong> dal telefono quando hai la rete (es. in ufficio): da quel momento funziona anche offline.
+            Con la rete la pagina scarica anche gli <strong>elenchi di ArcLab</strong> per le tendine (clienti, insediamenti, controlli, matrici, imballaggi, luoghi e punti di prelievo)
+            e li tiene sul telefono; per rinfrescarli premi <span class="tasto">Aggiorna elenchi</span>.</li>
+        <li>Per dettare usa il <strong>microfono della tastiera</strong> del telefono (il tasto 🎤 della tastiera) dentro ogni campo.
+            Se accanto al campo c'è il pulsante 🎤 puoi usare anche quello.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Segnare un prelievo</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">+ Nuovo lotto</span> e compila <strong>Cliente</strong>, <strong>Località / Insediamento</strong> e <strong>Controllo</strong>
+            (il numero ID se lo sai, altrimenti la descrizione). Iniziando a scrivere compare la tendina: scegli la voce giusta.
+            La tendina di <strong>Località</strong> mostra gli insediamenti del cliente scelto. Se il valore non è in elenco, scrivilo a mano: va bene lo stesso.</li>
+        <li>Premi <span class="tasto">+ Aggiungi campione</span> e compila:
+            <strong>Denominazione</strong> (completa, con il numero di lotto del prodotto: <strong>finisce nel rapporto di prova</strong>, rileggila),
+            <strong>Matrice</strong> e <strong>Temperatura</strong> di prelievo. Gli altri campi se li hai.</li>
+        <li><strong>Punto di prelievo</strong>: con cliente e località scelti dalle tendine, la tendina propone i punti già usati in quell'insediamento
+            (i più frequenti degli ultimi 2 anni); lo stesso vale per il <strong>Luogo di prelievo</strong>. Se il punto non si sa, spunta <em>sconosciuto / n.a.</em>.</li>
+        <li>Per un campione simile premi <span class="tasto">Duplica</span> e cambia solo quello che serve.</li>
+    </ol>
+    <img class="schermata" style="max-width:300px" src="/img/guide/prelievo-campione.png" alt="Prelievo vocale: lotto con cliente, località, controllo e un campione" loading="lazy" />
+    <p class="nota">Sotto ogni campione compare <span style="color:#b00">in rosso</span> cosa manca. Tutto si salva da solo man mano che scrivi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Al rientro: inserire in ArcLab</summary>
+    <ol class="passi">
+        <li>In fondo alla pagina premi <span class="tasto">Genera riepilogo</span>: compare il riepilogo di tutto il giro, lotto per lotto.</li>
+        <li><span class="tasto">Copia</span> per incollarlo dove ti serve, oppure <span class="tasto">Stampa / PDF</span>.</li>
+        <li>Inserisci i campioni in ArcLab partendo dal riepilogo.</li>
+        <li>Quando hai finito, premi <span class="tasto">Svuota giro</span> per ripartire pulito al prossimo giro.</li>
+    </ol>
+    <p class="nota"><strong>Non svuotare il giro</strong> prima di aver inserito tutto in ArcLab: i dati non sono salvati altrove.</p>
+</details>
+
+<details class="situazione">
+    <summary>Dettare tutto di fila e far sistemare all'AI (serve la rete)</summary>
+    <ol class="passi">
+        <li>Apri <strong>Dettato libero (AI)</strong> in alto e detta tutto di seguito: cliente, località, controllo, poi i campioni uno dopo l'altro.</li>
+        <li>Quando hai la rete premi <span class="tasto">Struttura con AI</span>: l'AI crea lotti e campioni e li aggiunge in fondo all'elenco,
+            e ti segnala cosa manca.</li>
+        <li>Controlla i campi creati, soprattutto la <strong>denominazione</strong>.</li>
+    </ol>
+    <p class="nota">Senza rete usa direttamente i campi: il dettato libero resta salvato e lo strutturi dopo.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

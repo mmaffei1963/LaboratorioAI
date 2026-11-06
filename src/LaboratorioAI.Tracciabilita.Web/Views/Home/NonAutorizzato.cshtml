@@ -1,0 +1,18 @@
+@{
+    ViewData["Titolo"] = "Operazione non consentita";
+    var cosa = ViewData["Cosa"] as string;
+}
+<div class="riquadro riquadro-errore">
+    <h1>Operazione non consentita</h1>
+    @if (cosa == "configurazione")
+    {
+        <p>Questa operazione è riservata a chi ha il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>
+            (impostazioni, categorie e controlli, sblocco dei lotti).</p>
+    }
+    else
+    {
+        <p>Il tuo utente ha il ruolo di <strong>sola consultazione</strong> (o non ha ancora un ruolo): puoi guardare tutto, ma non registrare né correggere.</p>
+    }
+    <p class="nota">Se pensi che sia un errore, chiedi al servizio MARE.A di cambiare il tuo ruolo.</p>
+    <p><a class="pulsante pulsante-tenue" href="/">Torna alla Home</a></p>
+</div>

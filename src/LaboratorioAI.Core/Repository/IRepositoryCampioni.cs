@@ -13,6 +13,9 @@ public interface IRepositoryCampioni
     /// <summary>Campioni con tutte le prove verificate ma privi di certificato.</summary>
     Task<IReadOnlyList<CampioneDaValidare>> DaValidareAsync(CancellationToken ct = default);
 
+    /// <summary>Solo il numero dei campioni da validare (stessa regola di <see cref="DaValidareAsync"/>), per il contatore della home.</summary>
+    Task<int> ContaDaValidareAsync(CancellationToken ct = default);
+
     /// <summary>
     /// Campione con l'elenco completo delle prove. Nullo se inesistente.
     /// Con <paramref name="includiProveEscluse"/> a true include anche la riga

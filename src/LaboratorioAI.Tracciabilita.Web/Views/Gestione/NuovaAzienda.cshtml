@@ -1,0 +1,39 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloNuovaAzienda
+@{
+    ViewData["Titolo"] = "Nuova azienda";
+}
+<h1>Nuova azienda</h1>
+
+<form method="post" asp-action="NuovaAzienda" class="modulo">
+    <div asp-validation-summary="ModelOnly" class="errore"></div>
+
+    <label asp-for="RagioneSociale"></label>
+    <input asp-for="RagioneSociale" autofocus />
+    <span asp-validation-for="RagioneSociale" class="errore"></span>
+
+    <label asp-for="PartitaIva"></label>
+    <input asp-for="PartitaIva" />
+
+    <label asp-for="Email"></label>
+    <input asp-for="Email" type="email" />
+    <span asp-validation-for="Email" class="errore"></span>
+
+    <label asp-for="Settore"></label>
+    <select asp-for="Settore" asp-items="Html.GetEnumSelectList<LaboratorioAI.Tracciabilita.Core.Enumerazioni.ProfiloSettore>()"></select>
+
+    <label asp-for="NomeSede"></label>
+    <input asp-for="NomeSede" />
+    <span asp-validation-for="NomeSede" class="errore"></span>
+
+    <label asp-for="SiglaSede"></label>
+    <input asp-for="SiglaSede" maxlength="12" />
+    <span asp-validation-for="SiglaSede" class="errore"></span>
+
+    <label asp-for="MaxInsediamenti"></label>
+    <input asp-for="MaxInsediamenti" type="number" min="1" />
+
+    <label asp-for="MaxUtenti"></label>
+    <input asp-for="MaxUtenti" type="number" min="1" />
+
+    <button type="submit">Crea azienda</button>
+</form>

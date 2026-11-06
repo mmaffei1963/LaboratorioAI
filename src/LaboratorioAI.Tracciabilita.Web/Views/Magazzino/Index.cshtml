@@ -1,0 +1,59 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloMagazzino
+@{ ViewData["Titolo"] = "Magazzino"; }
+<div class="testa-pagina"><h1>Magazzino materie prime</h1><span class="nota">@Model.Righe.Count lotti</span></div>
+<p>
+    <a asp-action="Index" asp-route-vista="da-impegnare" class="@(Model.Vista == "da-impegnare" ? "pulsante" : "")">Da impegnare</a>
+    <a asp-action="Index" asp-route-vista="in-uso" class="@(Model.Vista == "in-uso" ? "pulsante" : "")">In uso</a>
+    <a asp-action="Index" asp-route-vista="tutti" class="@(Model.Vista == "tutti" ? "pulsante" : "")">Tutti in magazzino</a>
+</p>
+<form method="get" class="riga-modulo">
+    <input type="hidden" name="vista" value="@Model.Vista" />
+    <label>Cerca (lotto, articolo, fornitore)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Arrivo</th><th>Articolo</th><th>Fornitore</th><th>Matrice</th><th>Lotto</th><th>Scadenza</th><th>Giacenza</th><th>Impegno</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@r.DataArrivo?.ToString("dd/MM/yyyy")</td>
+            <td>@r.Articolo</td><td>@r.Fornitore</td><td>@r.Matrice</td>
+            <td><a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@r.IdLotto">@r.Codice</a></td>
+            <td>@r.DataScadenza?.ToString("dd/MM/yyyy")</td>
+            <td>@r.Giacenza.ToString("0.##") @r.UnitaMisura</td>
+            <td style="white-space:nowrap">
+                @if (r.InUsoAperto)
+                {
+                    <span class="tag">in uso dal @r.InUsoDal?.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                    <form method="post" asp-action="Esaurito" asp-route-id="@r.IdLotto" asp-route-vista="@Model.Vista" asp-route-cerca="@Model.Cerca" style="display:inline"
+                          onsubmit="return confirm('Segnare il lotto @r.Codice come esaurito? La giacenza residua viene azzerata.');">
+                        <button type="submit" class="piccolo">Esaurito</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-action="MettiInUso" asp-route-id="@r.IdLotto" asp-route-vista="@Model.Vista" asp-route-cerca="@Model.Cerca" style="display:inline">
+                        <input type="date" name="data" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <button type="submit" class="piccolo">Metti in uso</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="8">Nessun lotto.</td></tr> }
+    </tbody>
+</table>
+@if (Model.Rimanenze.Count > 0)
+{
+    <h2>Rimanenze per articolo</h2>
+    <table class="elenco">
+        <thead><tr><th>Fornitore</th><th>Articolo</th><th>Quantità</th></tr></thead>
+        <tbody>
+        @foreach (var x in Model.Rimanenze)
+        {
+            <tr><td>@x.Fornitore</td><td>@x.Articolo</td><td>@x.Quantita.ToString("0.##") @x.UnitaMisura</td></tr>
+        }
+        </tbody>
+    </table>
+}

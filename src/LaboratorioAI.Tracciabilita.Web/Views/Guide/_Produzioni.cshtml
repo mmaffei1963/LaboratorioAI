@@ -1,0 +1,31 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A <strong>ritrovare cosa è stato prodotto</strong>: per ogni giorno, il prodotto, il suo lotto e i lotti di materia prima usati (con i kg, se registrati).</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cercare una produzione</summary>
+    <ol class="passi">
+        <li>In <strong>Produzione → Produzioni</strong> scrivi in <strong>Cerca</strong> il prodotto o il lotto.</li>
+        <li>Se vuoi, limita il periodo con <strong>Dal</strong> e <strong>Al</strong>.</li>
+        <li>Premi <span class="tasto">Cerca</span> e clicca sulla riga per aprirla.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Leggere il dettaglio</summary>
+    <p>Per ogni ingrediente vedi lotto, articolo, fornitore e <strong>kg usati</strong>. La colonna <strong>Origine</strong> dice se il lotto era <em>proposto</em> dal programma, <em>confermato</em> da te o <em>modificato</em> (aggiunto o tolto a mano).</p>
+</details>
+
+<details class="situazione">
+    <summary>Sapere dove è finito un prodotto di quel giorno</summary>
+    <p>Apri il lotto del prodotto finito da <strong>Magazzino e lotti → Prodotti finiti</strong>: nella sua scheda, <span class="tasto">Rintracciabilità</span> mostra i clienti raggiunti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho sbagliato i lotti di una produzione</summary>
+    <p class="attenzione">Oggi una produzione registrata non si modifica da qui. Se hai sbagliato, scrivilo al servizio MARE.A: si corregge lasciando traccia, senza cancellare.</p>
+</details>

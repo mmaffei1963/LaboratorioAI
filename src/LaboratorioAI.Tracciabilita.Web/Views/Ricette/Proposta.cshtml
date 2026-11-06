@@ -1,0 +1,85 @@
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloProposta
+@{ ViewData["Titolo"] = "Lotti da usare - " + Model.Nome; }
+<div class="testa-pagina"><h1>Lotti da usare: @Model.Nome</h1></div>
+<p><a asp-action="Scheda" asp-route-id="@Model.IdRicetta">« Ricetta</a></p>
+<form method="get" class="riga-modulo">
+    <label>Giorno di produzione
+        <input type="date" name="data" value="@Model.Giorno.ToString("yyyy-MM-dd")" /></label>
+    @if (Model.FornitoriPresenti.Count > 0)
+    {
+        <fieldset style="border:1px solid #b6c2cc;border-radius:4px;background:#fff">
+            <legend>Escludi fornitori</legend>
+            @foreach (var f in Model.FornitoriPresenti)
+            {
+                <label style="flex-direction:row;align-items:center;gap:.4rem;font-weight:400">
+                    <input type="checkbox" name="escludi" value="@f.IdFornitore" checked="@Model.Esclusi.Contains(f.IdFornitore)" /> @f.Fornitore</label>
+            }
+        </fieldset>
+    }
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+@if (Model.LottoInterno is not null)
+{
+    <p class="avviso ok">Lotto interno del @Model.Giorno.ToString("dd/MM/yyyy"): <strong>@Model.LottoInterno</strong>
+        @if (Model.LottoInternoEsistente) { <span>(già in uso per questo prodotto in quel giorno)</span> }</p>
+}
+<p class="nota">Per ogni fornitore ancora attivo (ultima consegna entro 90 giorni dall'ultimo lotto impegnato per quell'ingrediente), i lotti più recenti già messi in uso a quella data.</p>
+<form method="post" asp-action="Produci" asp-route-id="@Model.IdRicetta">
+    <input type="hidden" name="data" value="@Model.Giorno.ToString("yyyy-MM-dd")" />
+    @foreach (var e in Model.Esclusi) { <input type="hidden" name="escludi" value="@e" /> }
+@foreach (var i in Model.Ingredienti)
+{
+    <h2>@i.Nome <span class="nota">(ultimi @i.LottiPerFornitore per fornitore@(i.QuantitaTeorica is > 0 ? $"; ricetta: {i.QuantitaTeorica:0.###} kg" : ""))</span></h2>
+    <table class="elenco">
+        <thead><tr><th></th><th>Fornitore</th><th>Lotto</th><th>Articolo</th><th>Impegnato il</th><th>Scadenza</th>@if (Model.ModoConsumi != ModoQuantitaConsumi.SoloLotti) { <th>Kg usati</th> }</tr></thead>
+        <tbody>
+        @foreach (var f in i.Fornitori)
+        {
+            foreach (var l in f.Lotti)
+            {
+                <tr>
+                    <td><input type="checkbox" name="lotti" value="@(l.IdLotto):@(l.IdCategoria)" checked /></td>
+                    <td>@f.Fornitore</td>
+                    <td><a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@l.IdLotto">@l.Codice</a></td>
+                    <td>@l.Articolo</td>
+                    <td>@l.DataImpegno.ToString("dd/MM/yyyy")</td>
+                    <td>@(l.DataScadenza?.ToString("dd/MM/yyyy"))</td>
+                    @if (Model.ModoConsumi != ModoQuantitaConsumi.SoloLotti)
+                    {
+                        <td><input type="number" name="kg[@l.IdLotto]" step="0.01" min="0.01" style="width:6rem"
+                                   placeholder="@(Model.ModoConsumi == ModoQuantitaConsumi.Teorica ? "auto" : "")" /></td>
+                    }
+                </tr>
+            }
+        }
+        @if (i.Fornitori.Count == 0)
+        {
+            <tr><td colspan="7">Nessun lotto trovato per questo giorno.</td></tr>
+        }
+        </tbody>
+    </table>
+    @if (i.Scartati.Count > 0)
+    {
+        <p class="nota">Fornitori non proposti perché ormai inattivi:
+            @string.Join(", ", i.Scartati.Select(s => $"{s.Fornitore} (ultimo lotto {s.UltimoImpegno:dd/MM/yyyy})"))</p>
+    }
+}
+    <h2>Registra la produzione</h2>
+    @if (Model.ModoConsumi == ModoQuantitaConsumi.Manuale)
+    {
+        <p class="nota">Scrivi i kg usati per ogni lotto spuntato@(Model.ConsumiObbligatori ? " (obbligatorio)" : " (facoltativo)"). Il magazzino dei lotti cala di quei kg.</p>
+    }
+    else if (Model.ModoConsumi == ModoQuantitaConsumi.Teorica)
+    {
+        <p class="nota">Lascia vuoti i kg usati («auto»): si calcolano dalla ricetta in base alla quantità prodotta@(Model.QuantitaRiferimento is > 0 ? $" (ricetta riferita a {Model.QuantitaRiferimento:0.##} kg)" : ""), divisi in parti uguali tra i lotti spuntati dello stesso ingrediente. Se scrivi dei kg, valgono quelli@(Model.ConsumiObbligatori ? ". La quantità prodotta è obbligatoria" : "").</p>
+    }
+    <p class="nota">Sono spuntati tutti i lotti proposti: togli la spunta a quelli che non hai usato. Nel registro finiscono solo i lotti spuntati.</p>
+    <div class="modulo" style="max-width:26rem">
+        <label>Quantità prodotta (kg@(Model.ModoConsumi == ModoQuantitaConsumi.Teorica && Model.ConsumiObbligatori ? ", obbligatoria" : ", facoltativa"))
+            <input type="number" name="quantita" step="0.01" min="0.01" /></label>
+        <label>Note (facoltative)
+            <input type="text" name="note" maxlength="500" /></label>
+        <button type="submit">Oggi ho prodotto: registra</button>
+    </div>
+</form>

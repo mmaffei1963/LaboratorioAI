@@ -87,44 +87,8 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         normale.Font.Name = "Arial";
         normale.Font.Size = 9;
 
-        var headerImg = Immagine(percorsoWwwRoot, "intestazione_marea_pulita.png")
-                        ?? Immagine(percorsoWwwRoot, "intestazione carta intestata MAREA.png");
-        var footerImg = Immagine(percorsoWwwRoot, "Piede carta intestata MAREA.png");
-        bool cartaIntestata = headerImg is not null || footerImg is not null;
-
         var sec = doc.AddSection();
-        sec.PageSetup.PageFormat = PageFormat.A4;
-        sec.PageSetup.LeftMargin = Unit.FromCentimeter(2);
-        sec.PageSetup.RightMargin = Unit.FromCentimeter(2);
-        sec.PageSetup.TopMargin = Unit.FromCentimeter(cartaIntestata ? 3.4 : 1.0);
-        sec.PageSetup.BottomMargin = Unit.FromCentimeter(cartaIntestata ? 2.2 : 1.0);
-        sec.PageSetup.HeaderDistance = Unit.FromCentimeter(0.6);
-        sec.PageSetup.FooterDistance = Unit.FromCentimeter(0.4);
-
-        if (headerImg is not null)
-        {
-            var hp = sec.Headers.Primary.AddParagraph();
-            hp.Format.Alignment = ParagraphAlignment.Center;
-            var img = hp.AddImage(headerImg);
-            img.LockAspectRatio = true;
-            img.Width = Unit.FromCentimeter(16.5);
-        }
-        if (footerImg is not null)
-        {
-            var fp = sec.Footers.Primary.AddParagraph();
-            fp.Format.Alignment = ParagraphAlignment.Center;
-            var img = fp.AddImage(footerImg);
-            img.LockAspectRatio = true;
-            img.Width = Unit.FromCentimeter(17);
-        }
-
-        if (!cartaIntestata)
-        {
-            // Nessuna carta intestata disponibile: intestazione testuale (comportamento precedente).
-            var h = sec.AddParagraph("MARE.A s.r.l"); h.Format.Font.Bold = true; h.Format.Font.Size = 12;
-            Piccolo(sec, "Sede legale e operativa: Via E. Toti, 2 • 47841 Cattolica (RN) • Tel 0541 830442 • Fax 0541 830460");
-            Piccolo(sec, "info@mare-a.com • www.mare-a.com • Cod. Fisc. e P. Iva 03670240401 • Laboratorio Analisi");
-        }
+        CartaIntestataRapporti.Applica(sec, percorsoWwwRoot);   // 03/11/2026: comune a tutti i rapporti di taratura
 
         var tit = sec.AddParagraph("RAPPORTO DI TARATURA");
         tit.Format.Alignment = ParagraphAlignment.Center; tit.Format.Font.Bold = true; tit.Format.Font.Size = 13;
@@ -137,7 +101,8 @@ public class GeneratoreRapportoTaratura : IGeneratoreRapportoTaratura
         RigaInfo(t, "Rapporto n°", d.NumeroRapporto, "Data taratura", d.DataTaratura.ToString("dd/MM/yyyy", It));
         RigaInfo(t, "Rif. istruzione", d.RiferimentoIstruzione ?? "—", "Data scadenza",
             d.DataScadenza is DateOnly s ? s.ToString("dd/MM/yyyy", It) : "—");
-        RigaInfo(t, "Committente", d.Committente ?? "MARE.A (interno)", "Redatto da", d.RedattoDa ?? "—");
+        RigaInfo(t, "Committente", CartaIntestataRapporti.Committente(d.Committente), "Redatto da", d.RedattoDa ?? "—");
+        if (!string.IsNullOrWhiteSpace(d.Insediamento)) RigaInfo(t, "Insediamento", d.Insediamento!, "", "");
 
         // Modalità di taratura (testo fisso, in corsivo)
         var metTit = sec.AddParagraph("Modalità di taratura:");

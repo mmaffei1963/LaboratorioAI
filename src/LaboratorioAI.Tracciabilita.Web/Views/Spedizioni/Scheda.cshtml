@@ -1,0 +1,31 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaSpedizione
+@{ ViewData["Titolo"] = "Spedizione a " + Model.Cliente; }
+<div class="testa-pagina"><h1>Spedizione a @Model.Cliente</h1>
+    @if (Model.Annullata) { <span class="tag spento">annullata</span> }</div>
+<p><a asp-action="Index">« Tutte le spedizioni</a></p>
+<dl>
+    <dt>Data</dt><dd>@Model.Data.ToString("dd/MM/yyyy")</dd>
+    <dt>Documento</dt><dd>@(string.IsNullOrEmpty(Model.NumeroDocumento) ? "non indicato" : Model.NumeroDocumento + (Model.DataDocumento is { } dd ? " del " + dd.ToString("dd/MM/yyyy") : ""))</dd>
+    @if (!string.IsNullOrWhiteSpace(Model.Note)) { <dt>Note</dt><dd>@Model.Note</dd> }
+</dl>
+<h2>Lotti spediti</h2>
+<table class="elenco">
+    <thead><tr><th>Lotto</th><th>Prodotto</th><th>Quantità</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td><a asp-controller="Lotti" asp-action="Rintracciabilita" asp-route-id="@r.IdLotto" asp-route-tipo="pf">@r.Lotto</a></td>
+            <td>@r.Prodotto</td>
+            <td>@(r.Quantita is null ? "-" : r.Quantita.Value.ToString("0.##") + " " + r.UnitaMisura)</td>
+        </tr>
+    }
+    </tbody>
+</table>
+@if (!Model.Annullata)
+{
+    <form method="post" asp-action="Annulla" asp-route-id="@Model.IdSpedizione"
+          onsubmit="return confirm('Annullare questa spedizione? Il magazzino dei lotti verrà ripristinato.');">
+        <button type="submit" class="piccolo">Annulla la spedizione</button>
+    </form>
+}

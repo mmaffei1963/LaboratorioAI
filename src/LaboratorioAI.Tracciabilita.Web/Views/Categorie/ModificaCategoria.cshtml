@@ -1,0 +1,24 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloCategoria
+@{ ViewData["Titolo"] = Model.IdCategoria == 0 ? "Nuova categoria" : "Categoria " + Model.Nome; }
+<p><a asp-action="Categorie">« Categorie</a></p>
+<div class="testa-pagina"><h1>@(Model.IdCategoria == 0 ? "Nuova categoria" : Model.Nome)</h1></div>
+<form method="post" asp-action="SalvaCategoria" class="modulo">
+    <div asp-validation-summary="All" class="errore"></div>
+    <input type="hidden" asp-for="IdCategoria" />
+    <label asp-for="Nome"></label>
+    <input asp-for="Nome" autofocus />
+    <label asp-for="IdProfiloControllo"></label>
+    <select asp-for="IdProfiloControllo">
+        <option value="">(nessuno: solo i controlli minimi)</option>
+        @foreach (var p in Model.Profili) { <option value="@p.Id" selected="@(Model.IdProfiloControllo == p.Id)">@p.Nome</option> }
+    </select>
+    <span class="nota">Non trovi il profilo giusto? <a asp-action="NuovoProfilo">Creane uno nuovo</a>.</span>
+    <label asp-for="Note">Note</label>
+    <input asp-for="Note" />
+    <label style="font-weight:400"><input type="checkbox" asp-for="Attivo" style="padding:0" /> @Html.DisplayNameFor(m => m.Attivo)</label>
+    @if (Model.IdCategoria != 0 && Model.ArticoliAttivi > 0)
+    {
+        <p class="nota">@Model.ArticoliAttivi @(Model.ArticoliAttivi == 1 ? "articolo in uso appartiene" : "articoli in uso appartengono") a questa categoria. Se la metti fuori uso non si potrà più scegliere nelle accettazioni, negli ordini e nelle ricette nuove; i lotti già registrati la conservano.</p>
+    }
+    <button type="submit">Salva</button>
+</form>

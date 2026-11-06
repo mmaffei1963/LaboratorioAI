@@ -1,0 +1,20 @@
+@model List<LaboratorioAI.Tracciabilita.Web.Navigazione.Guida>
+@{ ViewData["Titolo"] = "Guide"; }
+<div class="barra-strumenti">
+    <div>
+        <h1>Guide</h1>
+        <p class="sottotitolo">Come si usano le funzioni di Tracciato, spiegato per situazioni: scegli quella che ti interessa e segui i passi.
+            Dalla pagina di una funzione la guida si apre anche con il pulsante <strong>? Guida</strong> in alto a destra.</p>
+        <p class="sottotitolo">Se è la prima volta, comincia da <a href="/Guide/Panoramica">«Come funziona Tracciato»</a>.</p>
+    </div>
+</div>
+<div class="elenco-guide">
+    @foreach (var g in Model)
+    {
+        <a class="scheda-guida" href="/Guide/@g.Codice">
+            <strong>@g.Titolo</strong>
+            <span>@g.Descrizione</span>
+            <small>Aggiornata il @g.Aggiornata.ToString("dd/MM/yyyy")</small>
+        </a>
+    }
+</div>

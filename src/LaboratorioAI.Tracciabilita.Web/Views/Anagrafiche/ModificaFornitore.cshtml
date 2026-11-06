@@ -1,0 +1,19 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloFornitore
+@{ ViewData["Titolo"] = Model.IdFornitore == 0 ? "Nuovo fornitore" : "Fornitore"; }
+<h1>@(Model.IdFornitore == 0 ? "Nuovo fornitore" : Model.RagioneSociale)</h1>
+<p><a asp-action="Fornitori">« Agenda fornitori</a></p>
+<form method="post" asp-action="SalvaFornitore" class="modulo">
+    <div asp-validation-summary="ModelOnly" class="errore"></div>
+    <input type="hidden" asp-for="IdFornitore" />
+    <label asp-for="RagioneSociale"></label><input asp-for="RagioneSociale" autofocus /><span asp-validation-for="RagioneSociale" class="errore"></span>
+    <label asp-for="PartitaIva"></label><input asp-for="PartitaIva" />
+    <label asp-for="Indirizzo"></label><input asp-for="Indirizzo" />
+    <label asp-for="Cap"></label><input asp-for="Cap" />
+    <label asp-for="Citta"></label><input asp-for="Citta" />
+    <label asp-for="Provincia"></label><input asp-for="Provincia" maxlength="2" />
+    <label asp-for="Telefono"></label><input asp-for="Telefono" />
+    <label asp-for="Email"></label><input asp-for="Email" type="email" /><span asp-validation-for="Email" class="errore"></span>
+    <label asp-for="Note"></label><input asp-for="Note" />
+    <label style="font-weight:400"><input type="checkbox" asp-for="Attivo" style="padding:0" /> @Html.DisplayNameFor(m => m.Attivo)</label>
+    <button type="submit">Salva</button>
+</form>

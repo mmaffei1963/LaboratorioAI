@@ -63,6 +63,7 @@ public class ImportatoreTermometriEsterni : IImportatoreTermometriEsterni
             {
                 NumeroRapporto = numero,
                 Tipologia = tip,
+                TipoTermometro = global::LaboratorioAI.Core.Tarature.RinnoviTermometri.TipoDaTipologia(tip),   // 03/11/2026
                 DataTaratura = Data(row, cTar),
                 DataScadenza = Data(row, cScad),
                 Cliente = cliente,

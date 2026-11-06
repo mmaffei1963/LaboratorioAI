@@ -1,0 +1,95 @@
+@using System.Globalization
+@model List<(LaboratorioAI.Core.Entita.Socio Socio, LaboratorioAI.Core.Entita.TrasfertaAzw Trasferta)>
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string N(decimal v) => v == 0m ? "" : v.ToString("N2", it);
+    var anno = (int)ViewData["Anno"]!;
+    var daAzw = (bool)ViewData["TrasferteDaAzw"]!;
+    var mio = (int)ViewData["SocioCorrente"]!;
+    var nomiMesi = new[] { "", "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
+    var soci = Model.Select(x => x.Socio).GroupBy(s => s.IdSocio).Select(g => g.First()).ToList();
+}
+@* Compensi soci (22/10/2026): rimborsi delle trasferte con mezzo privato, letti da AZW (tabella Viaggi). *@
+<style>
+    .tr td, .tr th { padding: 4px 8px !important; }
+    .tr tr.totale td { font-weight: 700; border-top: 2px solid #9CA3AF; }
+    .tr-note { font-size: .78rem; color: #6B7280; }
+</style>
+
+@if (ViewData["AvvisoSviluppo"] is string avvSvil) { <section class="riquadro" style="border-left:4px solid #B45309"><strong>@avvSvil</strong></section> }
+<div class="barra-strumenti">
+    <div>
+        <h1>Rimborsi trasferte soci @anno</h1>
+        <p class="sottotitolo">Trasferte con mezzo privato registrate in AZW (maschera ConteggioKm, tabella Viaggi), per data della trasferta. Rimborso = km × costo al km + autostrada + vitto e alloggio + costi diversi. Il totale dell'anno entra nel conguaglio dei compensi. Dati AZW importati il @(((DateTime?)ViewData["UltimaImportazione"])?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—").</p>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:flex-start">
+        <a class="pulsante" href="@Url.Action("EsportaTrasferte", new { anno })">Esporta Excel</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", new { anno })">Prospetto compensi</a>
+    </div>
+</div>
+
+<section class="riquadro">
+    <form method="get" style="display:flex;gap:.6rem;align-items:flex-end">
+        <label>Anno<input type="number" name="anno" value="@anno" min="2017" max="@(DateTime.Today.Year + 1)" style="width:6rem" onchange="this.form.submit()" /></label>
+        @if (!daAzw) { <strong>Per il @anno le trasferte non entrano nel conguaglio: sono già comprese negli altri rimborsi (anno caricato dal vecchio Excel).</strong> }
+    </form>
+</section>
+
+@if (Model.Count == 0)
+{
+    <section class="riquadro"><p>Nessuna trasferta con mezzo privato dei soci nel @anno. Se te ne aspetti, controlla l'importazione AZW («⟳ AZW» in alto) e in Impostazioni → Soci il nome usato nelle trasferte.</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Per mese</h2></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella tr">
+                <thead><tr><th>Socio</th>@for (var m = 1; m <= 12; m++) { <th class="numerico">@nomiMesi[m]</th> }<th class="numerico">Km</th><th class="numerico">Totale</th></tr></thead>
+                <tbody>
+                @foreach (var s in soci)
+                {
+                    var righe = Model.Where(x => x.Socio.IdSocio == s.IdSocio).Select(x => x.Trasferta).ToList();
+                    <tr>
+                        <td>@s.Nome</td>
+                        @for (var m = 1; m <= 12; m++)
+                        {
+                            var mm = m;
+                            <td class="numerico">@N(righe.Where(t => t.Data.Month == mm).Sum(t => t.Rimborso))</td>
+                        }
+                        <td class="numerico">@righe.Sum(t => t.Km).ToString("N0", it)</td>
+                        <td class="numerico"><strong>@righe.Sum(t => t.Rimborso).ToString("N2", it)</strong></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @foreach (var s in soci)
+    {
+        var righe = Model.Where(x => x.Socio.IdSocio == s.IdSocio).Select(x => x.Trasferta).ToList();
+        <section class="riquadro">
+            <details open="@(s.IdSocio == mio)">
+                <summary style="cursor:pointer;font-weight:600">@(s.Nome + " · " + righe.Count + " trasferte · " + righe.Sum(t => t.Rimborso).ToString("N2", it) + " €")</summary>
+                <div class="tabella-scorrevole" style="margin-top:.4rem">
+                    <table class="tabella tr">
+                        <thead><tr><th>Data</th><th class="numerico">Km</th><th class="numerico">€/km</th><th class="numerico">Chilometrico</th><th class="numerico">Autostrada</th><th class="numerico">Vitto e alloggio</th><th class="numerico">Diversi</th><th class="numerico">Rimborso</th><th>Note</th></tr></thead>
+                        <tbody>
+                        @foreach (var t in righe)
+                        {
+                            <tr>
+                                <td>@t.Data.ToString("dd/MM/yyyy")</td><td class="numerico">@t.Km.ToString("0.#", it)</td><td class="numerico">@t.CostoKm.ToString("0.00##", it)</td>
+                                <td class="numerico">@N(t.CostoChilometrico)</td><td class="numerico">@N(t.Autostrada)</td><td class="numerico">@N(t.VittoAlloggio)</td><td class="numerico">@N(t.CostiDiversi)</td>
+                                <td class="numerico"><strong>@t.Rimborso.ToString("N2", it)</strong></td><td>@t.Note</td>
+                            </tr>
+                        }
+                        <tr class="totale"><td>Totale</td><td class="numerico">@righe.Sum(t => t.Km).ToString("N0", it)</td><td></td><td class="numerico">@N(righe.Sum(t => t.CostoChilometrico))</td><td class="numerico">@N(righe.Sum(t => t.Autostrada))</td><td class="numerico">@N(righe.Sum(t => t.VittoAlloggio))</td><td class="numerico">@N(righe.Sum(t => t.CostiDiversi))</td><td class="numerico">@righe.Sum(t => t.Rimborso).ToString("N2", it)</td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+    }
+    <p class="tr-note">Le trasferte si modificano in AZW (maschera delle trasferte); qui si leggono soltanto. Si vedono solo quelle con mezzo privato.</p>
+}

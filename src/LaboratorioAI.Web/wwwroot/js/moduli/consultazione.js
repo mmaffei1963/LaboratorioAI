@@ -24,7 +24,9 @@ async function caricaAnagrafiche() {
         popolaSelect(document.getElementById('f-cliente'),      clienti);
         popolaSelect(document.getElementById('f-insediamento'), insediamenti);
         popolaSelect(document.getElementById('f-matrice'),      matrici,    'Tutte');
-        popolaSelect(document.getElementById('f-controllo'),    controlli);
+        // Nell'elenco dei controlli si mostra anche l'Id, per riconoscerli e cercarli più facilmente.
+        popolaSelect(document.getElementById('f-controllo'),
+            controlli.map(c => ({ id: c.id ?? c.Id, nome: `${c.nome ?? c.Nome} (ID ${c.id ?? c.Id})` })));
         popolaSelect(document.getElementById('f-labesterno'),   laboratori);
         popolaSelect(document.getElementById('f-metodo'),       metodi);
     } catch (errore) {
@@ -56,7 +58,8 @@ function leggiCriteri() {
         idCliente:      numero('f-cliente'),
         idInsediamento: numero('f-insediamento'),
         idMatrice:      numero('f-matrice'),
-        idControllo:    numero('f-controllo'),
+        // L'Id scritto a mano prevale sulla scelta dall'elenco dei nomi.
+        idControllo:    numero('f-idcontrollo') ?? numero('f-controllo'),
 
         codiceLim:             valore('f-codice'),
         verbalePrelievo:       valore('f-verbale'),
@@ -183,9 +186,11 @@ async function esporta(pulsante, url = '/api/consultazione/esporta', nomeDefault
 }
 
 // ── Prove del campione (click dall'elenco o dal lookup) ────
+// Prova in subappalto: conta solo l'accreditamento del laboratorio esterno, mai quello di MARE.A (Art. 8.2).
 function accreditamento(p) {
-    if (p.accreditato)        return '<strong style="color:#1a7f37">MARE.A</strong>';
-    if (p.accreditatoEsterno) return '<strong style="color:#1a7f37">esterno</strong>';
+    if (p.laboratorioEsterno)
+        return p.accreditatoEsterno ? '<strong style="color:#1a7f37">esterno</strong>' : '<span style="color:#9a9a9a">no</span>';
+    if (p.accreditato) return '<strong style="color:#1a7f37">MARE.A</strong>';
     return '<span style="color:#9a9a9a">no</span>';
 }
 

@@ -1,0 +1,109 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var approva = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.PreventiviApprova);
+}
+@* Guida «Preventivi analisi» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A preparare un'<strong>offerta di analisi</strong> su carta intestata MARE.A, partendo dai controlli che
+        abbiamo già in ArcLab: prezzi, metodi e accreditamento li prende il programma. Alla fine scarichi l'offerta in Word o PDF e la mandi al cliente.</p>
+    <p>L'offerta richiama sempre le <strong>Condizioni Generali di Fornitura</strong> e dura 12 mesi con rinnovo automatico.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Fare un nuovo preventivo</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuovo preventivo</span>.</li>
+        <li><strong>Cliente:</strong> scrivi parte del nome in <em>Cerca cliente in archivio</em> e sceglilo: i dati si compilano da soli.
+            Se è un cliente nuovo, compila i campi a mano.</li>
+        <li><strong>Offerta:</strong> scrivi l'<em>Oggetto</em> (es. «Analisi acque potabili»), controlla la data, scegli le <em>Condizioni di pagamento</em>
+            dall'elenco (scrivi qualche lettera). Puoi sceglierne <strong>più di una</strong>: si aggiungono separate da una riga vuota
+            (ognuna può avere più righe, es. banca e IBAN) e nell'offerta compaiono con la casella da spuntare e la frase «indicare con una X la modalità scelta».</li>
+        <li><strong>Righe:</strong> in <em>Aggiungi controllo esistente</em> scrivi il nome o l'ID del controllo e sceglilo. Ripeti per ogni controllo.</li>
+        <li>Aggiungi se servono le <em>voci accessorie</em> (prelievo, trasferta, relazione di shelf-life…). Oltre al titolo puoi scrivere un
+            <em>testo descrittivo</em>: nell'offerta il titolo e il testo occupano tutta la larghezza e il prezzo va sotto, a destra.</li>
+        <li>Premi <span class="tasto">Salva bozza</span>: il preventivo prende il suo numero (es. 2026/012).</li>
+        <li>Premi <span class="tasto">Offerta PDF</span> (o <span class="tasto">Offerta Word</span> se vuoi ritoccarla) e mandala al cliente.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/preventivi-righe.png" alt="Righe del preventivo: aggiungi controllo, voci accessorie, tabella con prezzi e totali" loading="lazy" />
+    <p class="nota">Il prezzo base di ogni controllo arriva da ArcLab; puoi cambiare quantità e sconto direttamente nella tabella.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio fare uno sconto</summary>
+    <ol class="passi">
+        <li>Nella riga del controllo scrivi la percentuale nella colonna <strong>Sconto %</strong>.</li>
+        <li>Sotto la tabella compare <em>«⚑ Il preventivo applica uno sconto: prima dell'invio serve l'approvazione»</em>.</li>
+        <li>Nell'offerta il prezzo compare così: <em>«Prezzo: € 142,00 – sconto 10% = € 127,80 (IVA escl.)»</em>. I prezzi sono sempre IVA esclusa; l'IVA è solo nel totale.</li>
+        <li>Premi <span class="tasto">Richiedi approvazione</span> invece di Salva bozza.</li>
+    </ol>
+    <p class="dopo"><strong>Cosa succede dopo:</strong> il preventivo passa a <em>DaApprovare</em> (con il simbolo ⚑ nel registro).
+        Il Responsabile lo apre e preme <span class="tasto">Approva</span>. <strong>Non mandare l'offerta al cliente finché non è approvata.</strong></p>
+</details>
+
+<details class="situazione">
+    <summary>Più controlli in un'unica voce con un prezzo solo (pacchetto)</summary>
+    <ol class="passi">
+        <li>Spunta la casella a sinistra dei controlli da unire (almeno due; le voci accessorie no).</li>
+        <li>Premi <span class="tasto">Raggruppa selezionate</span>.</li>
+        <li>Correggi la descrizione se vuoi e metti il prezzo del pacchetto.</li>
+    </ol>
+    <p class="nota">Gli ID dei controlli d'origine restano sempre scritti tra parentesi: in accettazione si capisce cosa fare.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il controllo non esiste in ArcLab (analisi da mandare fuori)</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">+ Controllo in subappalto (campo libero)</span>.</li>
+        <li>Scrivi il nome del controllo e il prezzo concordato.</li>
+        <li>Usa <em>Verifica che il metodo non sia già nostro</em>: se lo facciamo noi, usa il controllo esistente.</li>
+        <li>Aggiungi i metodi (parametro, riferimento, unità, laboratorio esterno) e premi <span class="tasto">Aggiungi al preventivo</span>.</li>
+    </ol>
+    <p class="nota">Nell'offerta compare la frase sul subappalto del laboratorio esterno scelto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riprendere o correggere un preventivo già fatto</summary>
+    <ol class="passi">
+        <li>Nel <strong>Registro preventivi</strong> in alto trova il preventivo (numero, cliente, oggetto) e premi <span class="tasto">Apri</span>.</li>
+        <li>Modifica e premi <span class="tasto">Salva bozza</span>; poi rigenera l'offerta.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/preventivi-registro.png" alt="Registro preventivi con numero, stato, cliente e pulsante Apri" loading="lazy" />
+    <p class="nota"><span class="tasto">Elimina</span> si usa solo per bozze sbagliate. Il numero di un preventivo eliminato non viene riusato.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il cliente deve anche approvare le Condizioni Generali</summary>
+    <p>Dopo aver salvato l'offerta, vai in <strong>Commerciale → Condizioni e firme</strong>, apri il cliente e, in <em>Nuova richiesta di approvazione</em>,
+        scegli l'offerta in <em>Offerta da accettare insieme</em>. Il Firmatario approverà Condizioni e offerta nello stesso passaggio.
+        Vedi la guida di «Condizioni e firme».</p>
+</details>
+
+@if (approva)
+{
+    <h2>Solo per chi approva</h2>
+    <details class="situazione">
+        <summary>Approvare un preventivo con sconto</summary>
+        <ol class="passi">
+            <li>Nel registro cerca i preventivi con <strong>⚑</strong> e stato <em>DaApprovare</em> e premi <span class="tasto">Apri</span>.</li>
+            <li>Controlla sconti e totali, poi premi <span class="tasto">Approva</span>.</li>
+        </ol>
+    </details>
+}
+
+<h2>Stati del preventivo</h2>
+<table class="tabella tabella-guida">
+    <thead><tr><th>Stato</th><th>Cosa vuol dire</th></tr></thead>
+    <tbody>
+        <tr><td>Bozza</td><td>In preparazione: si può cambiare tutto.</td></tr>
+        <tr><td>DaApprovare ⚑</td><td>C'è uno sconto: aspetta l'approvazione del Responsabile.</td></tr>
+        <tr><td>Approvato</td><td>Lo sconto è approvato: l'offerta si può mandare.</td></tr>
+    </tbody>
+</table>
+
+<p class="nota">I prezzi sono letti da ArcLab: il programma non scrive niente sul gestionale. La revisione delle Condizioni richiamata nell'offerta è quella di
+    Impostazioni documenti. Dubbi o problemi: Mirko Maffei.</p>

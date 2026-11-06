@@ -1,0 +1,73 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestione = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.LaboratoriEsterniAccreditamento);
+}
+@* Guida «Laboratori Esterni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Due cose:</p>
+    <ul>
+        <li>vedere <strong>quali analisi mandiamo fuori</strong> (a quale laboratorio, per quale cliente, in che periodo);</li>
+        <li>tenere sotto controllo l'<strong>accreditamento ACCREDIA</strong> dei laboratori esterni: ogni notte il programma controlla se ACCREDIA ha pubblicato
+            un nuovo elenco prove e lo segnala qui.</li>
+    </ul>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Quali analisi abbiamo mandato fuori?</summary>
+    <ol class="passi">
+        <li>Metti le date in <strong>Data analisi da / a</strong> (è il giorno in cui il campione va consegnato al laboratorio esterno).</li>
+        <li>Se vuoi, scegli <em>Laboratorio</em>, <em>Matrice</em>, <em>Cliente</em> o scrivi il <em>Numero lotto</em>.</li>
+        <li>Premi <span class="tasto">Cerca</span>: compaiono i totali, il <strong>riepilogo per metodo</strong> e l'<strong>elenco delle prove</strong>.</li>
+        <li><span class="tasto">Esporta in Excel</span> (in alto, se hai il permesso) scarica il risultato.</li>
+    </ol>
+    <p class="nota">Spunta <em>Solo spediti in originale</em> per vedere i campioni per cui al cliente è andato solo il certificato del laboratorio esterno, senza un nostro certificato.</p>
+</details>
+
+<details class="situazione">
+    <summary>Accreditamenti da sistemare</summary>
+    <p>Il riquadro <strong>Accreditamenti da sistemare</strong> elenca le incoerenze trovate: per esempio un metodo segnato accreditato in ArcLab ma che nell'elenco ACCREDIA
+        del laboratorio non c'è (o il contrario), o un numero ACCREDIA non aggiornato. È solo un avviso: <strong>le correzioni si fanno in ArcLab</strong>.</p>
+    <p class="nota">Per una prova in subappalto conta l'accreditamento del <strong>laboratorio esterno</strong>, non il nostro: per questo è importante che il flag in ArcLab sia giusto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Quali laboratori controlliamo</summary>
+    <p>Nella tabella <strong>Laboratori esterni monitorati</strong> c'è ogni laboratorio con numero e sede ACCREDIA, stato e ultima revisione confermata.
+        Il pulsante <span class="tasto">Verifica metodi</span> apre il confronto metodo per metodo.</p>
+</details>
+
+@if (gestione)
+{
+    <h2>Per chi gestisce gli accreditamenti</h2>
+    <details class="situazione">
+        <summary>ACCREDIA ha pubblicato una nuova revisione: confermarla</summary>
+        <ol class="passi">
+            <li>In <strong>Accreditamenti ACCREDIA — revisioni da confermare</strong> apri il <strong>PDF</strong> della nuova revisione e controllalo.</li>
+            <li>Se è tutto in ordine premi <span class="tasto">Conferma</span>. Se hai dubbi lasciala in attesa.</li>
+            <li>Dopo la conferma i metodi di quel laboratorio vanno <strong>riverificati</strong>: premi <span class="tasto">Verifica metodi</span> sul laboratorio.</li>
+        </ol>
+    </details>
+    <details class="situazione">
+        <summary>Verificare i metodi di un laboratorio</summary>
+        <ol class="passi">
+            <li>Premi <span class="tasto">Verifica metodi</span> sul laboratorio: si apre l'elenco dei metodi che gli affidiamo, con il link al PDF ACCREDIA confermato.</li>
+            <li>Per ogni metodo confronta il riferimento normativo con il PDF e scegli <em>Accreditato</em> o <em>Non accreditato</em> (il suggerimento del programma è solo un aiuto).</li>
+            <li>Se la tua scelta è diversa dal flag di ArcLab, il metodo comparirà tra gli <strong>accreditamenti da sistemare</strong>: correggilo in ArcLab.</li>
+        </ol>
+    </details>
+    <details class="situazione">
+        <summary>Aggiungere un laboratorio, controllare subito, pulsanti tecnici</summary>
+        <ul class="passi">
+            <li><span class="tasto">Aggiungi laboratorio</span>: scegli il laboratorio da ArcLab e scrivi numero e sede ACCREDIA (numerazione 2025). Disattivare non cancella nulla.</li>
+            <li><span class="tasto">Esegui controllo ora</span>: fa subito il controllo notturno (può richiedere qualche minuto).</li>
+            <li><span class="tasto">Ri-estrai testo mancante</span> e <span class="tasto">Ri-scarica PDF corrotti</span>: da usare solo se Mirko lo chiede.</li>
+        </ul>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

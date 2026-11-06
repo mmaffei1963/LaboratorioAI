@@ -1,0 +1,81 @@
+@using System.Globalization
+@model LaboratorioAI.Web.Controllers.ModelloBase
+@{
+    var b = Model.Base;
+    ViewData["Titolo"] = "Base di calcolo: " + b.Nome;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var dis = Model.InUso ? "disabled" : "";
+    var scelti = b.ElencoElementi().Select(e => e.Centro + ":" + e.Voce).ToHashSet();
+    // Nomi dei centri di costo AZW (tabella CENTCOST, verificati il 2/10/2026).
+    var nomiCentri = new Dictionary<string, string>
+    {
+        ["03"] = "Amministrazione", ["04"] = "Laboratorio", ["05"] = "Sicurezza - HACCP - Ambiente",
+        ["06"] = "Igienico-sanitaria", ["FOR"] = "Formazione", ["FON"] = "Formazione accreditata", ["PRY"] = "Consulenti esterni"
+    };
+    var centri = Model.VociAzw.GroupBy(v => v.Centro).OrderBy(g => g.Key, StringComparer.Ordinal).ToList();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@b.Nome</h1>
+        <p class="sottotitolo">La modifica vale subito per gli accordi che usano questa base (finché nessun loro trimestre è chiuso). Spunta i centri di costo e le voci AZW che contano per la provvigione. «Tutto il centro» include anche le voci che compariranno in futuro. Accanto a ogni voce: fatturato netto degli ultimi 12 mesi, per riconoscerla.</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Basi", "AccordiProvvigioni")">← Basi di calcolo</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+@if (Model.InUso)
+{
+    <section class="riquadro"><strong>Questa base è usata da un accordo che copre un trimestre già chiuso e non si può modificare.</strong>
+        <p class="sottotesto">Per cambiarla: duplicala, modifica la copia e assegnala alle voci di una nuova versione dell'accordo (in bozza).</p>
+        <form method="post" asp-action="DuplicaBase"><input type="hidden" name="id" value="@b.IdBaseCalcolo" /><button type="submit" class="pulsante">Duplica questa base</button></form>
+    </section>
+}
+
+<form method="post" asp-action="SalvaBase">
+    <input type="hidden" name="id" value="@b.IdBaseCalcolo" />
+    <section class="riquadro">
+        <div class="griglia-filtri">
+            <label>Nome<input type="text" name="nome" value="@b.Nome" maxlength="100" required @dis /></label>
+            <label>Descrizione<input type="text" name="descrizione" value="@b.Descrizione" maxlength="500" @dis /></label>
+            <label><span><input type="checkbox" name="tuttoIlFatturato" value="true" @(b.TuttoIlFatturato ? "checked" : "") @dis /> Tutto il fatturato (ignora le caselle sotto)</span></label>
+            <label><span><input type="checkbox" name="attivo" value="true" @(b.Attivo ? "checked" : "") @dis /> Base attiva (sceglibile negli accordi)</span></label>
+        </div>
+    </section>
+
+    @if (Model.VociAzw.Count == 0)
+    {
+        <section class="riquadro"><p class="sottotesto">Nessun dato per centro e voce: esegui l'importazione da AZW dalla pagina Provvigioni.</p></section>
+    }
+    @foreach (var g in centri)
+    {
+        var nomeCentro = nomiCentri.TryGetValue(g.Key, out var nc) ? nc : "";
+        var intero = scelti.Contains(g.Key + ":*");
+        <section class="riquadro">
+            <div class="barra-risultati">
+                <h2>Centro @g.Key @(nomeCentro.Length > 0 ? "— " + nomeCentro : "")</h2>
+                <label><input type="checkbox" name="elementi" value="@(g.Key):*" @(intero ? "checked" : "") @dis /> Tutto il centro</label>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:0.3rem 1rem">
+                @foreach (var v in g)
+                {
+                    var valore = v.Centro + ":" + v.Voce;
+                    <label style="font-weight:normal">
+                        <input type="checkbox" name="elementi" value="@valore" @(scelti.Contains(valore) || intero ? "checked" : "") @dis />
+                        <strong>@(v.Voce.Length > 0 ? v.Voce : "(senza voce)")</strong>
+                        <span class="sottotesto">@v.Ultimi12Mesi.ToString("N0", it) € in 12 mesi</span>
+                    </label>
+                }
+            </div>
+        </section>
+    }
+
+    @if (!Model.InUso)
+    {
+        <section class="riquadro" style="text-align:right"><button type="submit" class="pulsante">Salva base</button></section>
+    }
+</form>

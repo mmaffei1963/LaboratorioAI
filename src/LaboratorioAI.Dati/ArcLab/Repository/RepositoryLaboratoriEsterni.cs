@@ -41,6 +41,55 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // INVIO CAMPIONI (06/11/2026) — dalla query Access «campioni per lab esterno»
+    // ═══════════════════════════════════════════════════════════════
+
+    // Data analisi = data ricevimento + ritardo analisi (come in Access). Escluse: campioni certificati, prove esitate
+    // (valore inserito o verificata), prove escluse dal RdP e la riga di servizio (annullate).
+    private static readonly string SqlProveDaInviare = $"""
+        SELECT x.* FROM (
+            SELECT DISTINCT ca.IdCampione, pr.IdProva,
+                   CONCAT(LTRIM(RTRIM(i.NomeInsed)), ' - ', LTRIM(RTRIM(i.IndirizzoInsed)), ' ', LTRIM(RTRIM(i.[CittàInsed])), ' ',
+                          LTRIM(RTRIM(i.CapInsed)), ' ( ', LTRIM(RTRIM(i.ProvinciaInsed)), ' )') AS ClienteInsediamento,
+                   CONCAT(lo.CodLotto, '/', ca.CodCampione)            AS NumeroCampione,
+                   CONVERT(nvarchar(500), ca.DenomCampione)            AS DenominazioneCampione,
+                   CONVERT(nvarchar(500), rm.DenominazioneRiga)        AS Prova,
+                   CONVERT(nvarchar(500), m.RifBiblio)                 AS RifBiblio,
+                   CONVERT(nvarchar(500), m.RifMetodo)                 AS RifMetodo,
+                   DATEADD(day, CAST(ISNULL(ca.RitardoAnalisi, 0) AS int), CAST(lo.DataRic AS date)) AS DataAnalisi,
+                   CONVERT(nvarchar(50), ca.TempPrelievo)              AS TemperaturaPrelievo,
+                   lo.DataRic                                          AS DataRicezione,
+                   CAST(lo.OraRic AS time)                             AS OraRicezione,
+                   CONVERT(nvarchar(300), le.LabEsterno)               AS LabEsterno
+            FROM Campione ca
+            INNER JOIN Lotto lo             ON lo.IdLotto = ca.IdLotto
+            INNER JOIN prove pr             ON pr.IdCampione = ca.IdCampione
+                                            AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}
+            INNER JOIN rigametodo rm        ON rm.IdRigametodo = pr.IdRigaMetodo
+            INNER JOIN metodo m             ON m.IdMetodo = rm.IdMetodo
+            INNER JOIN LabEsterno le        ON le.IdLabEsterno = rm.IdLabEsterno
+            LEFT  JOIN commessa cm          ON cm.IdCommessa = lo.IdCommessa
+            LEFT  JOIN ContattoCliente cc   ON cc.IDContatto = cm.IDContatto
+            LEFT  JOIN Insediamento i       ON i.IDInsediamento = cc.IDInsediamento
+            WHERE rm.IdLabEsterno = @IdLab
+              AND (ca.IdCertificato IS NULL OR ca.IdCertificato = 0)
+              AND ISNULL(pr.EsclusodaRdp, 0) = 0
+              AND pr.ValoreCalcolato IS NULL
+              AND ISNULL(pr.VerificaValore, 0) = 0
+              AND lo.DataRic IS NOT NULL
+        ) x
+        WHERE x.DataAnalisi >= @Dal AND x.DataAnalisi <= @Al
+        ORDER BY x.DataAnalisi, x.NumeroCampione, x.Prova
+        """;
+
+    public async Task<IReadOnlyList<ProvaDaInviare>> ProveDaInviareAsync(int idLabEsterno, DateTime dal, DateTime al, CancellationToken ct = default)
+    {
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<ProvaDaInviare>(new CommandDefinition(SqlProveDaInviare,
+            new { IdLab = idLabEsterno, Dal = dal.Date, Al = al.Date }, commandTimeout: 90, cancellationToken: ct))).ToList();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // INTERROGAZIONE
     // ═══════════════════════════════════════════════════════════════
 
@@ -86,8 +135,11 @@ public class RepositoryLaboratoriEsterni : IRepositoryLaboratoriEsterni
             rm.DenominazioneRiga,
             m.RifBiblio       AS RiferimentoNormativo,
             le.LabEsterno     AS LaboratorioEsterno,
+            -- Accreditato presso il laboratorio che ha eseguito la prova (rm.IdLabEsterno), non presso
+            -- un qualsiasi laboratorio a cui è affidato lo stesso metodo (corretto l'08/10/2026).
             CASE WHEN EXISTS (SELECT 1 FROM labEstMetodo lem
                               WHERE lem.IdMetodo = m.IdMetodo
+                                AND lem.IdLabEsterno = rm.IdLabEsterno
                                 AND lem.AccrLabEsterno = 1) THEN 1 ELSE 0 END AS AccreditatoEsterno,
             NULLIF(ca.IdCertificato, 0) AS IdCertificato,
             CASE WHEN ep.Anno IS NOT NULL THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS EsternoPresente

@@ -187,8 +187,17 @@ async function approva() {
     const r = await salva();
     if (!r) return;
     try {
-        await api(`/api/controlli/${r.idPropostaControllo}/approva`, { method: 'POST' });
-    } catch (e) { alert(e.message); return; }
+        const esito = await api(`/api/controlli/${r.idPropostaControllo}/approva`, { method: 'POST' });
+        // In caso di errore l'endpoint risponde comunque con lo stato aggiornato (Approvato, non
+        // Trasmesso): api() lo scarta perché la risposta è un errore HTTP, quindi lo si ricava qui.
+        $('form-stato').textContent = 'Stato: ' + esito.stato;
+    } catch (e) {
+        alert(e.message);
+        $('form-stato').textContent = 'Stato: Approvato';
+        caricaRegistro();
+        return;
+    }
+    alert('Proposta approvata: email con i dati per ArcLab inviata.');
     $('pannello-form').classList.add('nascosto');
     caricaRegistro();
 }

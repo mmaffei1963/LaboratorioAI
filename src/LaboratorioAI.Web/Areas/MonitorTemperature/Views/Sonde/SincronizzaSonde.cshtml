@@ -1,0 +1,97 @@
+@model List<LaboratorioAI.Dati.MonitorTemperature.Models.MappaSonda>
+
+@{
+    ViewData["Title"] = "Sincronizzazione Sonde";
+}
+
+<div class="container mt-4">
+
+    <h1>Sincronizzazione Sonde</h1>
+
+    <p class="text-muted">
+        ArcLab viene utilizzato in sola lettura per identificare
+        le sonde e le apparecchiature e aggiornare la mappatura
+        (tabella MappaSonde). Il seriale attualmente associato a
+        ciascuna sonda resta gestito da EconormaAcquisizione.
+    </p>
+
+    <div class="alert alert-info">
+
+        <strong>Risultato sincronizzazione</strong>
+
+        <br />
+
+        Nuove sonde inserite:
+        <strong>@ViewBag.Inserite</strong>
+
+        <br />
+
+        Sonde già presenti:
+        <strong>@ViewBag.GiaPresenti</strong>
+
+    </div>
+
+    <table class="table table-striped table-bordered align-middle">
+
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Id apparecchio sonda</th>
+                <th>Codice Econorma</th>
+                <th>Seriale sonda</th>
+                <th>Attiva</th>
+                <th>Data creazione</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>
+                        @item.IdMappa
+                    </td>
+
+                    <td>
+                        @item.IdApparecchioSonda
+                    </td>
+
+                    <td>
+                        <strong>
+                            @item.CodiceEconorma
+                        </strong>
+                    </td>
+
+                    <td>
+                        @item.SerialeSonda
+                    </td>
+
+                    <td>
+                        @if (item.Attiva)
+                        {
+                            <span class="badge bg-success">
+                                SI
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                NO
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        @(item.DataCreazione.ToString("dd/MM/yyyy HH:mm:ss"))
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

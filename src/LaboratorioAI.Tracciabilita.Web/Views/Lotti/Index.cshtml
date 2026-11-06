@@ -1,0 +1,51 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoLotti
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ ViewData["Titolo"] = Model.FiltroTipo == "pf" ? "Prodotti finiti" : "Materie prime"; }
+<div class="testa-pagina"><h1>@(Model.FiltroTipo == "pf" ? "Lotti di prodotto finito" : "Lotti di materie prime")</h1><span class="nota">@Model.Totale trovati</span></div>
+<p>
+    <a asp-action="Index" asp-route-tipo="mp" class="@(Model.FiltroTipo == "mp" ? "pulsante" : "")">Materie prime</a>
+    <a asp-action="Index" asp-route-tipo="pf" class="@(Model.FiltroTipo == "pf" ? "pulsante" : "")">Prodotti finiti</a>
+</p>
+<form method="get" class="riga-modulo">
+    <input type="hidden" name="tipo" value="@Model.FiltroTipo" />
+    <label>Cerca (codice, articolo, fornitore)
+        <input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <label style="flex-direction:row;align-items:center;gap:.4rem">
+        <input type="checkbox" name="soloInMagazzino" value="true" checked="@Model.SoloInMagazzino" />
+        Solo in magazzino</label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Arrivo</th><th>Lotto</th><th>Articolo</th><th>Fornitore</th><th>Stato</th><th>Giacenza</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Righe)
+    {
+        <tr>
+            <td>@(r.DataArrivo?.ToString("dd/MM/yyyy"))</td>
+            <td><a asp-action="Scheda" asp-route-id="@r.IdLotto" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@Model.Pagina">@r.Codice</a></td>
+            <td>@r.Articolo</td>
+            <td>@r.Fornitore</td>
+            <td><span class="tag @(r.Stato == StatoLotto.Bloccato || r.Stato == StatoLotto.Richiamato ? "spento" : "")">@r.Stato</span></td>
+            <td>@r.Giacenza.ToString("0.##") @r.UnitaMisura</td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0)
+    {
+        <tr><td colspan="6">Nessun lotto trovato.</td></tr>
+    }
+    </tbody>
+</table>
+@if (Model.Pagine > 1)
+{
+    <p>
+        @if (Model.Pagina > 1)
+        {
+            <a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@(Model.Pagina - 1)">« Precedente</a>
+        }
+        Pagina @Model.Pagina di @Model.Pagine
+        @if (Model.Pagina < Model.Pagine)
+        {
+            <a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@(Model.Pagina + 1)">Successiva »</a>
+        }
+    </p>
+}

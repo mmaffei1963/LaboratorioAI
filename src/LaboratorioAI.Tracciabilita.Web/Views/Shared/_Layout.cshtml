@@ -1,0 +1,152 @@
+@using LaboratorioAI.Tracciabilita.Web.Navigazione
+@inject IWebHostEnvironment Ambiente
+@{
+    var autenticato = User.Identity?.IsAuthenticated == true;
+    var gestore = User.HasClaim("tr:gestore", "true");
+    var percorso = Context.Request.Path.Value ?? "/";
+    var guidaPagina = autenticato ? Guide.PerPercorso(percorso, gestore) : null;
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Titolo"] — Tracciato</title>
+    <link rel="stylesheet" href="~/css/sito.css" asp-append-version="true" />
+</head>
+<body>
+<header class="intestazione">
+    <a class="marchio" href="/">
+        <span class="marchio-sigla">TR</span>
+        <span class="marchio-testo">
+            <strong>Tracciato</strong>
+            <small>by MARE.A</small>
+        </span>
+    </a>
+    @if (autenticato)
+    {
+        <div class="intestazione-utente">
+            <a class="pulsante-home" href="/" title="Torna alla pagina principale">⌂ Home</a>
+            @if (guidaPagina is not null)
+            {
+                <a class="pulsante-guida" href="/Guide/@guidaPagina.Codice" data-guida="@guidaPagina.Codice" title="Come si usa questa pagina">? Guida</a>
+            }
+            else
+            {
+                <a class="pulsante-guida" href="/Guide" title="Guide d'uso delle funzioni">? Guide</a>
+            }
+            <span class="utente-nome">@User.Identity!.Name</span>
+            <form method="post" asp-controller="Account" asp-action="Esci">
+                <button type="submit" class="pulsante-esci">Esci</button>
+            </form>
+        </div>
+    }
+</header>
+
+@if (autenticato)
+{
+    @* Menu generato da Navigazione/MenuApplicazione.cs (stessa fonte della pagina principale). *@
+    <nav class="navigazione">
+        @foreach (var gruppo in MenuApplicazione.Per(gestore))
+        {
+            var attivo = gruppo.Voci.Any(v => { var u = v.Url.Split('?')[0]; return percorso.Equals(u, StringComparison.OrdinalIgnoreCase) || percorso.StartsWith(u + "/", StringComparison.OrdinalIgnoreCase); });
+            <div class="gruppo@(attivo ? " attivo" : "")">
+                <button type="button" class="gruppo-testo" aria-expanded="false">@gruppo.Titolo ▾</button>
+                <div class="menu">
+                    @foreach (var voce in gruppo.Voci)
+                    {
+                        <a href="@voce.Url">@voce.Titolo</a>
+                    }
+                </div>
+            </div>
+        }
+    </nav>
+}
+
+<main class="contenuto">
+    @if (TempData["Messaggio"] is string messaggio)
+    {
+        <p class="avviso ok">@messaggio</p>
+    }
+    @if (TempData["Errore"] is string erroreAvviso)
+    {
+        <p class="avviso ko">@erroreAvviso</p>
+    }
+    @RenderBody()
+</main>
+
+@if (autenticato)
+{
+    <aside id="pannello-guida" class="pannello-guida" aria-hidden="true">
+        <div class="pannello-guida-testa">
+            <strong id="pannello-guida-titolo">Guida</strong>
+            <a id="pannello-guida-intera" href="/Guide" title="Apri a pagina intera (stampabile)">Pagina intera</a>
+            <button type="button" id="pannello-guida-chiudi" title="Chiudi">✕</button>
+        </div>
+        <div id="pannello-guida-corpo">
+            <div id="pannello-guida-testo" class="guida"></div>
+        </div>
+    </aside>
+}
+
+<footer class="pie">
+    <span>MARE.A srl — Tracciato, la tracciabilità alimentare a canone</span>
+    <span>
+        Cattolica (RN)
+        @if (Ambiente.IsDevelopment())
+        {
+            <em class="ambiente">Sviluppo</em>
+        }
+    </span>
+</footer>
+
+<script>
+    // Menu in alto: si apre al tocco (iPhone/iPad) e, con il mouse, anche al passaggio.
+    (() => {
+        const gruppi = [...document.querySelectorAll('.navigazione .gruppo')];
+        const chiudiTutti = (tranne) => gruppi.forEach(g => {
+            if (g === tranne) return;
+            g.classList.remove('aperto');
+            g.querySelector('.gruppo-testo')?.setAttribute('aria-expanded', 'false');
+        });
+        gruppi.forEach(g => g.querySelector('.gruppo-testo')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const apri = !g.classList.contains('aperto');
+            chiudiTutti(g);
+            g.classList.toggle('aperto', apri);
+            e.currentTarget.setAttribute('aria-expanded', apri ? 'true' : 'false');
+            if (!apri) e.currentTarget.blur();
+        }));
+        document.addEventListener('click', (e) => { if (!e.target.closest('.navigazione')) chiudiTutti(null); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudiTutti(null); });
+    })();
+
+    // Guide: «? Guida» apre la guida della pagina in un pannello laterale, senza lasciare la pagina.
+    (() => {
+        const b = document.querySelector('.pulsante-guida[data-guida]');
+        const p = document.getElementById('pannello-guida');
+        if (!b || !p) return;
+        const chiudi = () => { p.classList.remove('aperto'); p.setAttribute('aria-hidden', 'true'); };
+        b.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (p.classList.contains('aperto')) { chiudi(); return; }
+            const corpo = document.getElementById('pannello-guida-testo');
+            if (!corpo.dataset.caricata) {
+                corpo.innerHTML = '<p class="sottotesto">Caricamento…</p>';
+                try {
+                    const r = await fetch(`/Guide/${encodeURIComponent(b.dataset.guida)}/pannello`);
+                    corpo.innerHTML = r.ok ? await r.text() : '<p>Guida non disponibile.</p>';
+                    corpo.dataset.caricata = '1';
+                } catch { corpo.innerHTML = '<p>Guida non disponibile.</p>'; }
+            }
+            document.getElementById('pannello-guida-intera').href = b.href;
+            document.getElementById('pannello-guida-titolo').textContent = 'Guida · ' + (document.title.split(' — ')[0] || '');
+            p.classList.add('aperto'); p.setAttribute('aria-hidden', 'false');
+        });
+        document.getElementById('pannello-guida-chiudi').addEventListener('click', chiudi);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
+    })();
+</script>
+@await RenderSectionAsync("Script", required: false)
+</body>
+</html>

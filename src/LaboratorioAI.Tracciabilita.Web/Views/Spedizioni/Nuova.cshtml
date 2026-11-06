@@ -1,0 +1,49 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloNuovaSpedizione
+@{ ViewData["Titolo"] = "Nuova spedizione"; }
+<h1>Nuova spedizione</h1>
+<p><a asp-action="Index">« Spedizioni</a></p>
+@if (Model.Clienti.Count == 0)
+{
+    <p class="avviso">Non ci sono clienti in agenda: <a asp-controller="Clienti" asp-action="Nuovo">inserisci il primo cliente</a>.</p>
+}
+<form method="post" asp-action="Registra" class="modulo" style="max-width:60rem">
+    <label>Data della spedizione
+        <input type="date" name="data" value="@Model.Data.ToString("yyyy-MM-dd")" required /></label>
+    <label>Cliente (<a asp-controller="Clienti" asp-action="Nuovo" target="_blank">nuovo cliente</a>)
+        <select name="idCliente" required>
+            <option value="">— scegli —</option>
+            @foreach (var c in Model.Clienti)
+            {
+                <option value="@c.IdCliente" selected="@(Model.IdCliente == c.IdCliente)">@c.Nome</option>
+            }
+        </select></label>
+    <label>Numero del documento di trasporto (facoltativo)
+        <input type="text" name="numeroDocumento" maxlength="50" value="@Model.NumeroDocumento" /></label>
+    <label>Data del documento (facoltativa)
+        <input type="date" name="dataDocumento" value="@Model.DataDocumento?.ToString("yyyy-MM-dd")" /></label>
+    <label>Note (facoltative)
+        <input type="text" name="note" maxlength="500" value="@Model.Note" /></label>
+    <h2>Lotti spediti</h2>
+    <p class="nota">Scegli i lotti di prodotto finito spediti (sono quelli attivi degli ultimi 90 giorni). La quantità è facoltativa: se la scrivi, il magazzino del lotto cala.</p>
+    <table class="elenco">
+        <thead><tr><th>Lotto</th><th>Quantità</th></tr></thead>
+        <tbody>
+        @for (var i = 0; i < Model.RigheVuote; i++)
+        {
+            <tr>
+                <td>
+                    <select name="lotto" style="min-width:24rem">
+                        <option value="">—</option>
+                        @foreach (var l in Model.Lotti)
+                        {
+                            <option value="@l.IdLotto">@l.Testo</option>
+                        }
+                    </select>
+                </td>
+                <td><input type="number" name="quantita" step="0.01" min="0.01" style="width:7rem" /></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <button type="submit">Registra la spedizione</button>
+</form>

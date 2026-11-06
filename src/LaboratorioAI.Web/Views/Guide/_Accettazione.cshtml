@@ -1,0 +1,70 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var trasmetti = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.AccettazioneTrasmetti);
+}
+@* Guida «Accettazione campioni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A fare l'<strong>accettazione dei campioni fuori sede</strong> (dal consulente o dal cliente): scegli cliente e commessa,
+        inserisci i campioni, stampi etichette e schede di ricezione. I dati restano in LaboratorioAI e diventano un <strong>file (tracciato XML)</strong>
+        che viene importato in ArcLab in modo controllato. LaboratorioAI <strong>non scrive mai</strong> direttamente in ArcLab.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Accettare un lotto di campioni</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova accettazione</span>.</li>
+        <li><strong>Cliente:</strong> scrivi qualche lettera e sceglilo dall'elenco; poi scegli <strong>Insediamento</strong> e <strong>Commessa (controllo)</strong>.
+            <span class="tasto">Esploso controllo</span> mostra le prove che contiene.</li>
+        <li>Scegli <strong>Prelevatore</strong> e <strong>Ricevitore</strong>.</li>
+        <li>Premi <span class="tasto">Aggiungi campione</span> e compila <strong>Denominazione</strong>, <strong>Matrice</strong>, imballaggio, data/ora e punto di prelievo,
+            <strong>temperatura di prelievo</strong> e di ricezione. Le prove si caricano da sole dal controllo della commessa.</li>
+        <li>Per il campione successivo simile premi <span class="tasto">Duplica</span> e cambia solo quello che serve (il programma avvisa se un duplicato è rimasto identico).</li>
+        <li>Premi <span class="tasto">Salva bozza</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/accettazione-lotto.png" alt="Accettazione: dati del lotto, campioni e pulsanti Salva bozza e Genera tracciato" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Stampare etichette e schede di ricezione</summary>
+    <ul class="passi">
+        <li><span class="tasto">Etichette lotto</span> / <span class="tasto">Schede ricezione lotto</span>: per tutti i campioni del lotto.</li>
+        <li>Sul singolo campione, <span class="tasto">Etichetta campione</span> e <span class="tasto">Scheda ricezione</span>: il programma chiede se stampare tutto il lotto
+            (OK) o solo quel campione (Annulla).</li>
+        <li>Se un campione va a un <strong>laboratorio esterno</strong>, nel riquadro <em>Laboratorio esterno</em> trovi <span class="tasto">PDF richiesta analisi</span>
+            e <span class="tasto">PDF catena di custodia</span>.</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Shelf life: l'analisi deve partire più avanti</summary>
+    <p>Spunta <em>Shelf life / inizio posticipato</em> e scrivi i giorni di ritardo: il programma calcola la data indicativa di inizio analisi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riprendere un'accettazione</summary>
+    <p>Apri <strong>Registro accettazioni</strong> in alto: c'è lo stato di ognuna (Bozza, DaTrasmettere, Trasmesso, Importato).
+        Apri quella che ti serve. Bozze e accettazioni da trasmettere si possono anche <span class="tasto">Elimina</span>re; quelle trasmesse no.</p>
+</details>
+
+@if (trasmetti)
+{
+    <h2>Per chi trasmette ad ArcLab</h2>
+    <details class="situazione">
+        <summary>Controllare e generare il tracciato XML</summary>
+        <ol class="passi">
+            <li>Premi <span class="tasto">Verifica importabilità</span>: il programma controlla che cliente, commessa, matrici e metodi esistano ancora in ArcLab.
+                Se compare l'elenco in rosso, sistema quei punti.</li>
+            <li>Quando compare <span style="color:#1a7f37;font-weight:600">✓ … il tracciato è importabile</span>, premi <span class="tasto">Genera tracciato XML</span>:
+                scarica il file e l'accettazione passa a <em>Trasmesso</em>.</li>
+            <li>Consegna il file XML per l'import in ArcLab.</li>
+        </ol>
+        <p class="nota">Dopo la trasmissione l'accettazione non si modifica più; si possono ancora ristampare etichette e schede.</p>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

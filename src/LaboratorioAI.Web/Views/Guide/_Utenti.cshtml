@@ -1,0 +1,42 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Utenti e ruoli» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A decidere <strong>chi entra</strong> in LaboratorioAI e <strong>cosa può fare</strong>. Ogni persona ha uno o più <strong>ruoli</strong>
+        (i permessi si sommano); ogni ruolo ha i suoi <strong>permessi</strong>. Chi entra per la prima volta senza essere registrato riceve solo «Consultazione».
+        Le modifiche valgono <strong>subito</strong> e restano nel registro attività.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Dare accesso a una persona nuova</summary>
+    <ol class="passi">
+        <li>Scheda <strong>Persone</strong>: premi <span class="tasto">Aggiungi persona</span>.</li>
+        <li>Scrivi nome e <strong>e-mail aziendale</strong> (quella con cui accede, es. nome@@mare-a.com o una casella condivisa).</li>
+        <li>Spunta i <strong>ruoli</strong> e premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="nota">Non serve aspettare che la persona entri: al primo accesso il programma la riconosce dall'e-mail e le dà i ruoli già assegnati.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare i ruoli di qualcuno, o togliere l'accesso</summary>
+    <ul class="passi">
+        <li>Clicca la persona, cambia le spunte dei ruoli e premi <span class="tasto">Salva</span>.</li>
+        <li>Per togliere l'accesso (es. chi lascia l'azienda) premi <span class="tasto">Disattiva</span>: la persona non entra più ma resta nello storico. Si può riattivare.</li>
+    </ul>
+    <p class="nota">Il ruolo Amministratore lo assegna solo un amministratore; deve restare sempre almeno un amministratore attivo, e non puoi togliere l'amministrazione a te stesso.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare cosa può fare un ruolo</summary>
+    <ol class="passi">
+        <li>Scheda <strong>Ruoli e permessi</strong>: la tabella ha i permessi in riga e i ruoli in colonna.</li>
+        <li>Spunta o togli le caselle che ti servono.</li>
+        <li>Premi <span class="tasto">Salva le modifiche</span>: vale per <strong>tutte</strong> le persone con quel ruolo.</li>
+    </ol>
+    <p class="nota">Le caselle condivise (es. stafflab@@, info@@) sono usate da più persone: nel registro attività compare la casella, non la persona.</p>
+</details>
+
+<p class="nota">La tabella completa di ruoli e permessi concordata è nel documento «Ruoli e permessi di LaboratorioAI». Dubbi o problemi: Mirko Maffei.</p>

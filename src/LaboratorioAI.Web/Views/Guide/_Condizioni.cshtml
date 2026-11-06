@@ -1,0 +1,215 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestione = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.CondizioniGestione);
+    var firmatari = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.CondizioniFirmatari);
+}
+@* Guida «Condizioni e firme» (11/10/2026). Linguaggio semplice, per situazioni. Nomi dei pulsanti tra .tasto,
+   uguali a quelli della pagina. Aggiornare la data in Navigazione/Guide.cs quando si cambia il testo. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Ogni cliente deve approvare le nostre <em>Condizioni Generali di Fornitura</em>, e in modo
+        specifico alcune clausole (lo chiede la legge, artt. 1341-1342 del Codice Civile). Lo fa una persona del cliente con i poteri
+        per farlo: il <strong>Firmatario</strong>. Il Firmatario riceve per e-mail un link personale, apre la pagina, legge e approva
+        in pochi minuti, senza password. Poi gli arriva una ricevuta in PDF.</p>
+    <p><strong>Il tuo lavoro</strong> è far arrivare il link alla persona giusta. Tutto il resto (promemoria, ricevute, registro) lo fa il programma.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+@if (firmatari)
+{
+    <details class="situazione">
+        <summary>Il cliente mi dice chi deve firmare</summary>
+        <ol class="passi">
+            <li>Nella sezione <span class="tasto">Cliente</span> scrivi almeno 2 lettere del nome del cliente e sceglilo dall'elenco.</li>
+            <li>Sotto <strong>Firmatario</strong> compila nome, cognome, qualifica (di solito <em>Legale rappresentante</em>) e la sua
+                <strong>e-mail personale</strong> (es. mario.rossi@azienda.it, non info@@).</li>
+            <li>Premi <span class="tasto">Designa come Firmatario</span>.</li>
+            <li>Più in basso premi <span class="tasto">Crea richiesta</span>.</li>
+            <li>Nella tabella <em>Richieste del cliente</em> premi <span class="tasto">Invia link</span>.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-designa.png" alt="Riquadro Firmatario con il pulsante Designa come Firmatario" loading="lazy" />
+        <img class="schermata" src="/img/guide/condizioni-richiesta.png" alt="Crea richiesta e, nella tabella, Invia link (o Reinvia)" loading="lazy" />
+        <p class="dopo"><strong>Cosa succede dopo:</strong> il Firmatario riceve subito l'e-mail con il link. Se non approva, il
+            programma gli rimanda il link da solo dopo 7 e dopo 14 giorni. Quando approva, la ricevuta arriva a lui e all'e-mail aziendale.</p>
+        <p class="nota">Se scrivi un'e-mail generica (info@@, amministrazione@@…) il programma ti chiede conferma: si può, ma è meglio un indirizzo personale.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Non so chi deve firmare (o non lo sa il cliente al telefono)</summary>
+        <ol class="passi">
+            <li>Apri il cliente nella sezione <span class="tasto">Cliente</span>.</li>
+            <li>Nel riquadro tratteggiato <em>«Non sai chi è il Firmatario? Chiedilo al cliente»</em> controlla l'e-mail: è quella
+                aziendale di ArcLab. Puoi cambiarla o aggiungerne altre separate da <strong>;</strong></li>
+            <li>Premi <span class="tasto">Invia la richiesta al cliente</span> e conferma.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-chiedi-cliente.png" alt="Riquadro Chiedilo al cliente con il pulsante Invia la richiesta al cliente" loading="lazy" />
+        <p class="dopo"><strong>Cosa succede dopo:</strong> il cliente riceve un'e-mail con il pulsante <em>Indica il Firmatario</em>.
+            Chi la legge scrive nome, cognome, ruolo ed e-mail della persona che firmerà. Entro un minuto quella persona riceve il
+            link per approvare. Se nessuno risponde, promemoria automatici dopo 7 e 14 giorni.</p>
+        <p class="nota">Il riquadro non compare se il cliente ha già un Firmatario: in quel caso vai alla situazione precedente.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Voglio sapere a che punto è un cliente</summary>
+        <ol class="passi">
+            <li>Apri il cliente nella sezione <span class="tasto">Cliente</span>.</li>
+            <li>Guarda <strong>Firmatario</strong> (chi è stato designato e quando), le righe dell'invito sotto <em>Chiedilo al cliente</em>
+                e la tabella <strong>Richieste del cliente</strong>.</li>
+        </ol>
+        <table class="tabella tabella-guida">
+            <thead><tr><th>Stato della richiesta</th><th>Cosa vuol dire</th></tr></thead>
+            <tbody>
+                <tr><td>da inviare</td><td>Preparata, il link non è ancora partito.</td></tr>
+                <tr><td>inviata</td><td>Il Firmatario ha ricevuto il link ma non l'ha ancora aperto.</td></tr>
+                <tr><td>aperta</td><td>Ha aperto la pagina ma non ha ancora confermato.</td></tr>
+                <tr><td>approvata</td><td>Fatto. C'è la ricevuta.</td></tr>
+                <tr><td>annullata</td><td>Non vale più (es. Firmatario sbagliato).</td></tr>
+            </tbody>
+        </table>
+        <p class="nota">Per vedere tutti i clienti insieme: sezione <em>Richiesta del Firmatario ai clienti</em> → <span class="tasto">Scarica la situazione cliente per cliente (Excel)</span>.</p>
+            <img class="schermata" src="/img/guide/condizioni-situazione.png" alt="Sezione Richiesta del Firmatario ai clienti con la situazione" loading="lazy" />
+    </details>
+
+    <details class="situazione">
+        <summary>Ho sbagliato l'e-mail, oppure il cliente vuole cambiare Firmatario</summary>
+        <ol class="passi">
+            <li>Apri il cliente.</li>
+            <li>Sotto <strong>Firmatario</strong> scrivi i dati giusti e premi <span class="tasto">Designa come Firmatario</span>.</li>
+            <li>Nella tabella <em>Richieste del cliente</em> premi <span class="tasto">Invia link</span>.</li>
+        </ol>
+        <p class="dopo"><strong>Cosa succede dopo:</strong> il link mandato prima all'indirizzo sbagliato <strong>smette di funzionare</strong>;
+            parte un link nuovo alla persona giusta. Il vecchio Firmatario resta nello storico.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Il cliente dice che non gli è arrivato niente, o che il pulsante non si apre</summary>
+        <ol class="passi">
+            <li>Apri il cliente e controlla che l'e-mail del Firmatario sia scritta giusta (spesso è un errore di battitura).</li>
+            <li>Chiedi di guardare nella <strong>posta indesiderata/spam</strong>: il mittente è <em>no-reply@mare-a.com</em>, oggetto
+                <em>«MARE.A – Condizioni Generali di Fornitura…»</em>.</li>
+            <li>Se l'e-mail è arrivata ma <strong>il pulsante rosso non si apre</strong> (succede con alcuni firewall aziendali): digli di cliccare
+                sull'<strong>indirizzo scritto sotto il pulsante</strong>, nel riquadro grigio. Quello si apre sempre.</li>
+            <li>Se l'e-mail era giusta, nella tabella <em>Richieste del cliente</em> premi <span class="tasto">Reinvia</span>.
+                Se era sbagliata, segui la situazione precedente.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-richiesta.png" alt="Pulsante Reinvia nella tabella Richieste del cliente" loading="lazy" />
+        <p class="nota">Dopo «Reinvia» vale solo l'ultimo link: quello vecchio non funziona più.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Il link è scaduto o dice «Link non valido»</summary>
+        <p>Il link vale 30 giorni e solo l'ultimo inviato funziona. Apri il cliente e premi <span class="tasto">Reinvia</span>
+            (oppure, se il cliente doveva ancora indicare il Firmatario, <span class="tasto">Invia la richiesta al cliente</span>).</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Il cliente vuole di nuovo la ricevuta</summary>
+        <p>Apri il cliente: nella tabella <em>Richieste del cliente</em>, sulla richiesta approvata, premi <span class="tasto">Ricevuta</span>
+            e salva il PDF da mandargli. Il cliente può anche riaprire il suo link entro 90 giorni e scaricarla da lì.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Il cliente porta (o spedisce) campioni ma non ha ancora approvato</summary>
+        <p><strong>Accetta i campioni normalmente.</strong> Poi apri il cliente e, se non ha il Firmatario, mandagli la richiesta
+            (situazione «Non so chi deve firmare»), oppure chiedi al telefono chi è e designalo. Se è lì in sede, chiedigli di farlo
+            subito dal telefono: bastano due minuti.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Tanti clienti insieme con l'Excel (quando conosciamo già i Firmatari)</summary>
+        <ol class="passi">
+            <li>Sezione <em>Invio massivo</em>: premi <span class="tasto">1. Scarica l'elenco da compilare (Excel)</span>.</li>
+            <li>Nell'Excel compila nome, cognome, qualifica ed e-mail del Firmatario solo per i clienti che conosci. Le righe senza e-mail vengono saltate. Non toccare la colonna «ID cliente».</li>
+            <li>Scegli il file e premi <span class="tasto">2. Carica e controlla</span>: vedi riga per riga cosa succederà (nuovo, cambia, salta, errore).</li>
+            <li>Se va bene premi <span class="tasto">3. Prepara Firmatari e richieste</span>. Non parte ancora nessuna e-mail.</li>
+            <li>Avvisa @(gestione ? "il Responsabile (o fallo tu)" : "il Responsabile"): sarà lui a premere <span class="tasto">4. Metti in coda l'invio dei link</span>.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-excel.png" alt="Sezione Invio massivo con i pulsanti numerati" loading="lazy" />
+        <p class="nota">Se hai sbagliato qualcosa, correggi l'Excel e ricaricalo: aggiorna solo le righe con l'e-mail, non cancella niente.</p>
+    </details>
+}
+
+@if (gestione)
+{
+    <h2>Solo per il Responsabile</h2>
+
+    <details class="situazione">
+        <summary>Pubblicare una nuova revisione delle Condizioni</summary>
+        <ol class="passi">
+            <li>Sezione <em>Revisioni delle Condizioni</em>: <span class="tasto">Nuova revisione</span> (oppure <span class="tasto">Copia in una nuova revisione</span> dalla precedente).</li>
+            <li>Il riferimento (es. <em>Mod. Com. 05 Rev. 19 del …</em>) lo compone il programma da numero e data: controlla solo che siano giusti.</li>
+            <li>Premi <span class="tasto">Carica PDF</span> e scegli il PDF definitivo.</li>
+            <li>Controlla l'elenco delle clausole da approvare (per la Rev. 19: <span class="tasto">Carica le clausole della Rev. 19</span>) e scrivi «Cosa cambia».</li>
+            <li><span class="tasto">Salva bozza</span>, ricontrolla, poi <span class="tasto">Pubblica</span>.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-revisioni.png" alt="Sezione Revisioni delle Condizioni con il pulsante Nuova revisione" loading="lazy" />
+        <p class="dopo"><strong>Attenzione:</strong> dopo «Pubblica» PDF e clausole <strong>non si possono più cambiare</strong>.
+            Ricordati di aggiornare anche il riferimento in Impostazioni documenti alla data di entrata in vigore.
+            «Ritira» si può usare solo se è stata pubblicata per errore e nessuno ha ancora ricevuto richieste.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Far partire gli invii a tutti i clienti (e fermarli)</summary>
+        <ol class="passi">
+            <li>Sezione <em>Richiesta del Firmatario ai clienti</em>: <span class="tasto">1. Guarda la situazione</span> e scarica l'Excel per un controllo.</li>
+            <li><span class="tasto">2. Prepara gli inviti</span> (lo possono fare anche i commerciali): crea gli inviti, non invia.</li>
+            <li><span class="tasto">3. Metti in coda gli inviti</span>.</li>
+            <li>Per i Firmatari già noti (Excel dell'invio massivo): <span class="tasto">4. Metti in coda l'invio dei link</span>.</li>
+        </ol>
+        <img class="schermata" src="/img/guide/condizioni-situazione.png" alt="Pulsanti Guarda la situazione, Prepara gli inviti, Metti in coda gli inviti" loading="lazy" />
+        <p class="dopo"><strong>Cosa succede dopo:</strong> le e-mail partono da sole, una ogni pochi secondi, al massimo 1000 al giorno
+            in tutto; inviti e promemoria solo nei giorni feriali dalle 8 alle 18. Lo stato è in alto nella sezione Invio massivo.
+            Per fermare tutto: <span class="tasto">Ferma l'invio</span> (quello che non è partito resta pronto).</p>
+        <p class="nota">Evita i giri massivi da aprile a luglio: Brevo serve per le campagne Legionella degli hotel.</p>
+    </details>
+
+    <details class="situazione">
+        <summary>Controllare che il registro delle evidenze sia integro</summary>
+        <p>Sezione <em>Registro delle evidenze</em>: <span class="tasto">Verifica integrità</span>. Deve dire che la catena è integra.
+            Il registro tiene traccia di ogni passo (invii, aperture, spunte, approvazioni) e non si può modificare: è la prova in caso di contestazione.</p>
+            <img class="schermata" src="/img/guide/condizioni-registro.png" alt="Registro delle evidenze con il pulsante Verifica integrità" loading="lazy" />
+    </details>
+}
+
+<h2>Cosa vede il cliente</h2>
+<p>Utile quando lo guidi al telefono.</p>
+<ol class="passi">
+    <li><strong>Se gli abbiamo chiesto chi firma:</strong> un'e-mail da MARE.A con il pulsante rosso <em>Indica il Firmatario</em>.
+        La pagina chiede nome, cognome, ruolo ed e-mail (due volte). Poi un messaggio di ringraziamento.</li>
+    <li><strong>Il Firmatario</strong> riceve un'e-mail con il pulsante rosso <em>Apri la pagina di approvazione</em>. Nella pagina:
+        apre il PDF delle Condizioni, spunta le tre caselle, controlla i suoi dati e preme <em>Inviami il codice</em>.
+        Riceve subito un'e-mail con un <strong>codice di 6 cifre</strong> (vale 10 minuti), lo scrive nella pagina e preme <em>Confermo e firmo con il codice</em>.
+        Il pulsante del codice si attiva solo dopo aver aperto il PDF e spuntato tutte e tre le caselle.</li>
+    <li>Subito dopo riceve la <strong>ricevuta in PDF</strong> per e-mail.</li>
+</ol>
+<p class="nota">Non serve registrarsi né avere password. Il link è personale: non va inoltrato ad altri.
+    Il codice è la firma elettronica dell'approvazione: dal 15/10/2026 la sola spunta delle caselle non basta per le clausole vessatorie
+    (Cassazione, ord. 20945/2026). Se il codice non arriva: posta indesiderata, poi dopo un minuto «chiedere un nuovo codice»; al massimo 5 codici l'ora e 5 tentativi per codice.</p>
+<div class="schermate-telefono">
+    <figure><img class="schermata" src="/img/guide/condizioni-cliente-indica.png" alt="Pagina Indica il Firmatario sul telefono" loading="lazy" /><figcaption>Indica il Firmatario</figcaption></figure>
+    <figure><img class="schermata" src="/img/guide/condizioni-cliente-firma-1.png" alt="Pagina di approvazione: documenti e prima casella" loading="lazy" /><figcaption>1-2. Documenti e accettazione</figcaption></figure>
+    <figure><img class="schermata" src="/img/guide/condizioni-cliente-firma-2.png" alt="Pagina di approvazione: clausole" loading="lazy" /><figcaption>3. Clausole</figcaption></figure>
+    <figure><img class="schermata" src="/img/guide/condizioni-cliente-firma-3.png" alt="Pagina di approvazione: dati e conferma" loading="lazy" /><figcaption>4-5. Chi approva e conferma</figcaption></figure>
+</div>
+
+<h2>Cosa fa il programma da solo</h2>
+<ul>
+    <li>Promemoria dopo 7 e 14 giorni a chi non ha risposto o non ha approvato.</li>
+    <li>Ricevuta PDF al Firmatario e all'e-mail aziendale, appena approva.</li>
+    <li>Le risposte dei clienti alle nostre e-mail arrivano a <strong>refertazione@mare-a.com</strong> (oggetto con «Condizioni Generali»).</li>
+    <li>Se il commerciale designa a mano un Firmatario, l'eventuale richiesta al cliente in corso si annulla da sola.</li>
+</ul>
+
+<h2>Parole da conoscere</h2>
+<dl class="glossario">
+    <dt>Firmatario</dt><dd>La persona del cliente che approva le Condizioni (legale rappresentante o con i poteri per farlo).</dd>
+    <dt>Revisione</dt><dd>La versione delle Condizioni in vigore (es. Rev. 19). Una volta pubblicata non cambia più.</dd>
+    <dt>Richiesta</dt><dd>La richiesta di approvazione mandata al Firmatario per una revisione.</dd>
+    <dt>Invito</dt><dd>L'e-mail all'azienda per farci dire chi è il Firmatario.</dd>
+    <dt>Ricevuta</dt><dd>Il PDF che conferma l'approvazione (numero RA-anno-progressivo).</dd>
+</dl>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

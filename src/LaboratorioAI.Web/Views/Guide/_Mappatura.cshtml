@@ -1,0 +1,69 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var valida = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.MappaturaValidazione);
+}
+@* Guida «Mappatura incubatori» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A verificare che un incubatore, frigo o cella abbia <strong>la stessa temperatura su tutti i ripiani</strong>.
+        Metti il CDR in ogni posizione (A, B, C, D…), fai 5 letture per ripiano e il programma dice se ogni ripiano è <strong>entro</strong> la tolleranza
+        e se tra i ripiani ci sono differenze significative (IO 04-02).</p>
+    <p>I CDR si inseriscono nella pagina <em>Taratura termometri</em>.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Fare la mappatura di un'apparecchiatura</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova mappatura</span> e scegli il <strong>CDR</strong> usato.</li>
+        <li><strong>Committente:</strong> se lo strumento è di un cliente scrivi il <em>Cliente</em> e sceglilo dall'elenco ArcLab, poi scegli l'<em>Insediamento</em>.
+            Lascia vuoto se è nostro. Cliente e insediamento vanno nella testata del rapporto.</li>
+        <li><strong>Apparecchiatura:</strong> se è nostra scegli <em>Interno MARE.A</em> e sceglila dall'elenco; se è del cliente scegli <em>Del cliente</em>
+            e scrivi marca, modello e matricola (l'elenco propone quelle del cliente già mappate).</li>
+        <li><strong>Condizioni di esercizio:</strong> temperatura di lavoro (es. 37), tolleranza ± (es. 3) e risoluzione del CDR.</li>
+        <li><strong>Misure:</strong> il ripiano A ha già 5 righe: scrivi le 5 temperature lette dal CDR. Per il ripiano successivo premi
+            <span class="tasto">Aggiungi ripiano (5 letture)</span> (diventa B, poi C…).</li>
+        <li>Premi <span class="tasto">Calcola</span>.</li>
+        <li>Premi <span class="tasto">Salva mappatura</span> e poi <span class="tasto">Rapporto PDF</span> (o Word).</li>
+    </ol>
+    <img class="schermata" src="/img/guide/mappatura-risultati.png" alt="Risultati della mappatura: media, intervallo ammesso, tabella dei ripiani e giudizio" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Come leggo i risultati?</summary>
+    <ul class="passi">
+        <li>In alto: temperatura media, differenza dal valore di esercizio e <strong>intervallo ammesso</strong>.</li>
+        <li>Nella tabella ogni ripiano è <strong style="color:#1a7f37">entro</strong> o <strong style="color:#b3261e">FUORI</strong> (riga rossa).</li>
+        <li>Sotto, la frase in verde dice che <strong>non</strong> ci sono differenze significative tra i ripiani; in rosso che ci sono.</li>
+    </ul>
+    <p class="dopo"><strong>Se un ripiano è FUORI o la frase è rossa:</strong> quel ripiano non va usato (o l'apparecchiatura va regolata).
+        Avvisa il Responsabile o la Qualità prima di usarla per le prove.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho più apparecchiature uguali da mappare</summary>
+    <p>Salva la prima e premi <span class="tasto">Duplica per altra apparecchiatura</span>: restano CDR e condizioni. Cambia l'apparecchiatura,
+        correggi le letture e salva. La casella <em>copia letture nel duplicato</em> decide se copiare anche le letture.</p>
+</details>
+
+<details class="situazione">
+    <summary>Riaprire una mappatura, ristampare il rapporto, controllo AI</summary>
+    <p>Clicca la riga nel <strong>Registro mappature</strong>. Dopo il salvataggio, <span class="tasto">Analizza (AI)</span> segnala problemi come
+        ripiani con meno di 5 letture, tolleranza mancante o CDR scaduto: è un aiuto, la decisione resta tua.</p>
+</details>
+
+@if (valida)
+{
+    <h2>Solo per Responsabile e Qualità</h2>
+    <details class="situazione">
+        <summary>Validare il calcolo ed eliminare dal registro</summary>
+        <p><span class="tasto">Valida calcoli</span> rifà tre casi di prova e li confronta con il foglio storico: esito atteso
+            <strong style="color:#1a7f37">VALIDATO</strong>, con PDF nel registro validazioni.
+            <span class="tasto">Elimina dal registro</span> toglie una mappatura sbagliata senza cancellarla (si ripristina con <em>Mostra eliminate</em>).</p>
+    </details>
+}
+
+<p class="nota">Dubbi sul metodo: Qualità. Problemi con il programma: Mirko Maffei.</p>

@@ -5,11 +5,45 @@
 <div class="barra-strumenti">
     <div>
         <h1>Ordini di Accettazione</h1>
-        <p class="sottotitolo">Genera l'Ordine di Accettazione dei lotti già ricevuti in ArcLab (sola lettura: nulla viene scritto sul gestionale). Il documento riporta il riepilogo dei campioni con i prezzi di commessa, il riquadro delle condizioni (Allegato A Rev. 19) e l'allegato tecnico per campione. Il PDF va poi pubblicato sul portale Palomar.</p>
+        <p class="sottotitolo">Gli Ordini di Accettazione dei clienti con accesso al Portale li pubblica Palomar partendo dai dati di ArcLab. Qui si stampa l'<strong>Ordine da firmare per i clienti privati</strong> (pulsante «Stampa da firmare» della scheda lotto di ArcLab, oppure dalla tabella qui sotto), si ritrovano i privati per numero di lotto al momento dell'invio del Rapporto di Prova e si può vedere l'anteprima dell'Ordine di qualsiasi lotto. Sola lettura su ArcLab.</p>
     </div>
 </div>
 
 <section class="riquadro">
+    <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap">
+        <h2 style="margin:0">Consegnati ai privati</h2>
+        <label>Cerca (n. lotto, cliente o e-mail)
+            <input type="search" id="p-cerca" placeholder="es. 2026/01234" style="min-width:16rem" />
+        </label>
+        <label>Senza ricerca: ultimi
+            <select id="p-giorni">
+                <option value="30">30 giorni</option>
+                <option value="90" selected>90 giorni</option>
+                <option value="365">12 mesi</option>
+            </select>
+        </label>
+        <button class="pulsante" id="btn-privati">Cerca</button>
+    </div>
+    <p class="sottotesto" id="p-msg"></p>
+    <h3 style="margin-bottom:0.3rem">Rapporto di Prova da inviare per e-mail</h3>
+    <div class="tabella-scorrevole" style="max-height:24rem">
+        <table class="tabella" id="tabella-privati-email">
+            <thead><tr><th>Lotto</th><th>Ricevuto</th><th>Cliente</th><th class="numerico">Camp.</th><th>E-mail</th><th>Firmato il</th><th>Note</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <h3 style="margin-bottom:0.3rem">Rapporto di Prova da consegnare a mano</h3>
+    <div class="tabella-scorrevole" style="max-height:24rem">
+        <table class="tabella" id="tabella-privati-mano">
+            <thead><tr><th>Lotto</th><th>Ricevuto</th><th>Cliente</th><th class="numerico">Camp.</th><th>E-mail</th><th>Firmato il</th><th>Note</th><th></th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <p class="sottotesto">«Entrambi» compare fra quelli da inviare per e-mail. Per correggere e-mail, modalità, data della firma o nota usa «Modifica» sulla riga.</p>
+</section>
+
+<section class="riquadro">
+    <h2 style="margin-top:0">Lotti ricevuti</h2>
     <div class="griglia-filtri">
         <label>Dal (data ricezione)
             <input type="date" id="f-dal" />
@@ -17,16 +51,20 @@
         <label>Al (data ricezione)
             <input type="date" id="f-al" />
         </label>
-        <div style="display:flex;align-items:flex-end;gap:0.5rem">
+        <label>Cliente
+            <input type="text" id="f-cliente" list="lista-clienti" placeholder="scrivi e scegli dall'elenco" autocomplete="off" />
+            <datalist id="lista-clienti"></datalist>
+        </label>
+        <label>Insediamento
+            <select id="f-insediamento" disabled><option value="">— scegli prima il cliente —</option></select>
+        </label>
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap">
             <button class="pulsante" id="btn-carica">Carica lotti</button>
-            <button class="pulsante secondario" id="btn-schedulati" title="Registra come emessi tutti i lotti del periodo non ancora emessi, pronti (guardia anti-doppione)">Genera schedulati (periodo)</button>
         </div>
         <label class="casella" style="grid-column:1/-1"><input type="checkbox" id="filtro-non-pronti" /> mostra anche i lotti senza parametri caricati (non generabili)</label>
+        <p class="sottotesto" style="grid-column:1/-1;margin:0">Il cliente si sceglie dall'elenco che compare scrivendo (se non lo scegli, vale come parte del nome). Con un cliente puoi svuotare le date per cercare in tutto l'archivio (al massimo 2000 lotti, i più recenti).</p>
     </div>
     <p class="sottotesto" id="msg"></p>
-</section>
-
-<section class="riquadro">
     <div class="tabella-scorrevole" style="max-height:32rem">
         <table class="tabella" id="tabella-lotti">
             <thead>
@@ -34,11 +72,61 @@
                     <th>Cod. lotto</th>
                     <th>Data ric.</th>
                     <th>Cliente</th>
+                    <th>Insediamento</th>
                     <th class="numerico">Campioni</th>
                     <th>Stato</th>
                     <th></th>
                 </tr>
             </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<dialog id="dlg-privato" style="max-width:32rem;width:95%">
+    <h3 style="margin-top:0" id="dlg-titolo">Modifica</h3>
+    <label style="display:block">Rapporto di Prova
+        <select id="dlg-consegna">
+            <option value="1">per e-mail</option>
+            <option value="2">ritiro a mano</option>
+            <option value="3">entrambi</option>
+        </select>
+    </label>
+    <label style="display:block;margin-top:0.5rem">E-mail
+        <input type="email" id="dlg-email" style="width:100%" />
+    </label>
+    <label style="display:block;margin-top:0.5rem">Firmato il
+        <input type="date" id="dlg-firmato" />
+    </label>
+    <label style="display:block;margin-top:0.5rem">Note
+        <textarea id="dlg-note" rows="2" style="width:100%"></textarea>
+    </label>
+    <p class="sottotesto" id="dlg-msg"></p>
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+        <button class="pulsante pulsante-tenue" id="dlg-annulla" type="button">Annulla</button>
+        <button class="pulsante" id="dlg-salva" type="button">Salva</button>
+    </div>
+</dialog>
+
+<section class="riquadro">
+    <div style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap">
+        <h2 style="margin:0">Registro di controllo</h2>
+        <span class="sottotesto">(stampe per i privati e, fino al 14/10/2026, emissioni per Palomar)</span>
+        <label>Ultimi
+            <select id="reg-giorni">
+                <option value="1">1 giorno</option>
+                <option value="7" selected>7 giorni</option>
+                <option value="30">30 giorni</option>
+                <option value="90">90 giorni</option>
+            </select>
+        </label>
+        <label class="casella"><input type="checkbox" id="reg-solo-problemi" /> solo problemi</label>
+        <button class="pulsante pulsante-tenue" id="btn-registro">Aggiorna</button>
+    </div>
+    <p class="sottotesto" id="reg-msg"></p>
+    <div class="tabella-scorrevole" style="max-height:28rem">
+        <table class="tabella" id="tabella-registro">
+            <thead><tr><th>Data/ora</th><th>Esito</th><th>Lotto</th><th>Messaggio</th><th>File Palomar</th><th></th></tr></thead>
             <tbody></tbody>
         </table>
     </div>

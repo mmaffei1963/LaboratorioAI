@@ -28,6 +28,9 @@
         <label><input type="checkbox" class="k-chk" data-chiave="vettore" checked /> 6 · Lotti senza vettore</label>
         <label><input type="checkbox" class="k-chk" data-chiave="coerenza" checked /> 7 · Coerenza prelevatore/vettore</label>
         <label><input type="checkbox" class="k-chk" data-chiave="stampa" checked /> 8 · Campioni non pronti stampa</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="prezzimarea" checked /> 10 · Prezzi commesse diversi da Marea</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="commessemarea" checked /> 11 · Altre differenze commesse ArcLab/Marea</label>
+        <label><input type="checkbox" class="k-chk" data-chiave="senzacontratto" checked /> 12 · Commesse senza numero di contratto</label>
     </div>
     <div class="azioni-filtri" style="margin-top:0.8rem">
         <div style="flex:1"></div>
@@ -234,6 +237,162 @@
                     <th>Id lotto</th><th>Cod lotto</th><th>Data ric.</th><th>Id camp.</th><th>Cod camp.</th><th>Cliente</th>
                     <th>Id prova</th><th>Id riga met.</th><th>Denominazione riga</th><th>Parametro</th>
                     <th>Verifica</th><th>Inizio</th><th>Fine</th><th>Arrot.</th><th>MaxDec.</th><th>Anomalia</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 9. Denominazioni dei metodi -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">9 · Denominazioni dei metodi da controllare</summary>
+        <p class="sottotesto">Metodi attivi la cui denominazione (Metodo.DettagliMetodo, quella stampata nel Rapporto di Prova e
+            nell'Ordine di Accettazione) <strong>non cita il parametro</strong> oppure è <strong>usata per parametri diversi</strong>
+            (es. «Manganese» sul metodo del mercurio). Il confronto ignora accenti e maiuscole e guarda anche la parte inglese:
+            ci saranno falsi allarmi, che si segnano una volta come corretti e non ricompaiono finché in ArcLab non cambiano
+            denominazione o parametro. Le correzioni si fanno in ArcLab. «Rapporti emessi» conta i rapporti di prova del periodo
+            con prove di quel metodo: se è maggiore di zero, la denominazione sbagliata è già uscita.</p>
+        <div class="griglia-filtri">
+            <label>Rapporti dall'anno<input type="number" id="n-da" min="1990" max="2100" /></label>
+            <label>all'anno<input type="number" id="n-a" min="1990" max="2100" /></label>
+            <label class="casella" style="align-self:end"><input type="checkbox" id="n-verificate" /> mostra anche quelle segnate corrette</label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="n-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="n-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="n-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:30rem;margin-top:0.6rem">
+            <table class="tabella" id="n-tab">
+                <thead><tr>
+                    <th>Segnalazione</th><th>Id metodo</th><th>Parametro</th><th>Denominazione</th><th>Metodo</th>
+                    <th class="numerico">Rapporti emessi</th><th>Ultimo</th><th>Verifica</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 10. Prezzi commesse ArcLab ↔ Marea (28/10/2026) -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">10 · Prezzi delle commesse: ArcLab ↔ Marea</summary>
+        <p class="sottotesto">Confronta il prezzo delle <strong>commesse di laboratorio attive</strong> di ArcLab (per insediamento e
+            controllo) con i <strong>listini del database Marea</strong>: ogni riga di listino va alla sua commessa con il numero di
+            contratto (Listini.IDContratto = commessa.NContratto) e il controllo; le righe senza contratto per cliente
+            (Marea.Clienti.IDArcLab) e controllo. Fa fede ArcLab. Casi: <em>prezzo diverso</em>, <em>manca in Marea</em>, <em>solo in Marea</em> (nessuna commessa
+            attiva in ArcLab per quel cliente e controllo), <em>prezzi diversi tra insediamenti</em> dello stesso cliente in ArcLab.
+            Solo clienti <strong>attivi in ArcLab e con codice contabilità</strong> (anche per le righe di Marea): gli altri non vanno nel
+            portale. Esclusi i clienti obsoleti in Marea e le commesse senza prezzo. «Manca in Marea» solo per le commesse con numero di
+            contratto: il portale prende solo quelle (le commesse senza contratto sono nella sezione 12). Sola lettura su entrambi i database.</p>
+        <div class="griglia-filtri">
+            <label>Caso
+                <select id="z-caso">
+                    <option value="">tutti</option>
+                    <option>Prezzo diverso</option>
+                    <option>Manca in Marea</option>
+                    <option>Solo in Marea</option>
+                    <option>Prezzi diversi tra insediamenti</option>
+                </select>
+            </label>
+            <label>Cliente o controllo<input type="text" id="z-testo" placeholder="filtra…" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="z-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="z-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="z-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:30rem;margin-top:0.6rem">
+            <table class="tabella" id="z-tab">
+                <thead><tr>
+                    <th>Caso</th><th>Cliente</th><th>Insediamento</th><th>Controllo</th><th>Commessa</th>
+                    <th class="numerico">Prezzo ArcLab</th><th class="numerico">Prezzo Marea</th><th class="numerico">Differenza</th>
+                    <th>Commessa ArcLab: data / ultimo rinnovo</th><th>Ultimo campione</th><th>Ultima modifica Marea</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 11. Commesse ArcLab ↔ Marea oltre ai prezzi (28/10/2026) -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">11 · Commesse: altre differenze ArcLab ↔ Marea</summary>
+        <p class="sottotesto">Oltre ai prezzi (sezione 10) confronta le <strong>commesse di laboratorio attive</strong> di ArcLab con il
+            database Marea. Fa fede ArcLab. Casi: <em>descrizione diversa</em> (descrizione nel listino di Marea diversa dalla descrizione
+            della commessa in ArcLab, DescrIncarico; abbinamento per contratto come nella sezione 10); <em>commessa mancante in Marea</em>; <em>non attiva in ArcLab</em> (commessa non obsoleta in
+            Marea senza commessa attiva in ArcLab); <em>insediamento diverso</em>; <em>controllo non riconoscibile</em> (la
+            descrizione della commessa in Marea non inizia con l'ID del controllo); <em>parametri diversi</em> (parametri della
+            commessa in Marea diversi da quelli del controllo in ArcLab, confrontati per nome: possibili falsi allarmi se i nomi sono
+            scritti in modo molto diverso). Solo clienti attivi in ArcLab e con codice contabilità; a parte il caso <em>cliente attivo nel
+            portale ma non in ArcLab</em>: clienti non obsoleti nel portale che in ArcLab non sono attivi, non hanno il codice
+            contabilità, non esistono o non sono collegati (da far disattivare nel portale), con quante righe di listino e commesse
+            hanno ancora e l'ultimo accesso al portale. Sola lettura su entrambi i database.</p>
+        <div class="griglia-filtri">
+            <label>Caso
+                <select id="w-caso">
+                    <option value="">tutti</option>
+                    <option>Descrizione diversa</option>
+                    <option>Commessa mancante in Marea</option>
+                    <option>Non attiva in ArcLab</option>
+                    <option>Insediamento diverso</option>
+                    <option>Controllo non riconoscibile</option>
+                    <option>Parametri diversi</option>
+                    <option>Cliente attivo nel portale ma non in ArcLab</option>
+                </select>
+            </label>
+            <label>Cliente o controllo<input type="text" id="w-testo" placeholder="filtra…" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="w-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="w-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="w-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:30rem;margin-top:0.6rem">
+            <table class="tabella" id="w-tab">
+                <thead><tr>
+                    <th>Caso</th><th>Cliente</th><th>Insediamento</th><th>Controllo</th><th>Commessa ArcLab</th><th>Commessa Marea</th><th>Dettaglio</th>
+                    <th>Commessa ArcLab: data / ultimo rinnovo</th><th>Ultimo campione</th><th>Ultima modifica listino Marea</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<!-- 12. Commesse attive senza numero di contratto (28/10/2026) -->
+<section class="riquadro">
+    <details>
+        <summary style="cursor:pointer;font-weight:600">12 · Commesse attive senza numero di contratto</summary>
+        <p class="sottotesto">Commesse di laboratorio attive (senza data di scadenza) di clienti attivi con codice contabilità, che in ArcLab
+            <strong>non hanno il numero di contratto</strong> (commessa.NContratto vuoto). Senza contratto la commessa non arriva nel
+            portale: vanno sistemate in ArcLab. «Ultimo campione» = data di ricevimento dell'ultimo lotto sulla commessa, per partire
+            da quelle in uso.</p>
+        <div class="griglia-filtri">
+            <label>Uso
+                <select id="y-uso">
+                    <option value="">tutte</option>
+                    <option value="1">con campioni nell'ultimo anno</option>
+                    <option value="3">con campioni negli ultimi 3 anni</option>
+                    <option value="mai">mai usate</option>
+                </select>
+            </label>
+            <label>Cliente o controllo<input type="text" id="y-testo" placeholder="filtra…" /></label>
+        </div>
+        <div class="azioni-filtri" style="margin-top:0.6rem">
+            <span id="y-info" class="sottotesto" style="flex:1"></span>
+            <button type="button" class="pulsante pulsante-tenue" id="y-esporta">Esporta Excel</button>
+            <button type="button" class="pulsante" id="y-cerca">Cerca</button>
+        </div>
+        <div class="tabella-scorrevole" style="max-height:30rem;margin-top:0.6rem">
+            <table class="tabella" id="y-tab">
+                <thead><tr>
+                    <th>Commessa</th><th>Cliente</th><th>Insediamento</th><th>Controllo</th><th>Descrizione incarico</th>
+                    <th class="numerico">Prezzo</th><th>Data commessa</th><th>Ultimo campione</th><th class="numerico">Lotti</th>
                 </tr></thead>
                 <tbody></tbody>
             </table>

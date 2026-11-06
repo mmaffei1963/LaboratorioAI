@@ -1,0 +1,43 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Qui tieni l'<strong>agenda dei fornitori</strong> e l'<strong>elenco dei prodotti</strong> (materie prime, imballaggi, prodotti finiti). Ordini, accettazioni e ricette partono da questi elenchi: più sono in ordine, meno devi scrivere dopo.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Aggiungere un fornitore</summary>
+    <ol class="passi">
+        <li>Apri <strong>Anagrafiche → Fornitori</strong> e premi <span class="tasto">Nuovo fornitore</span>.</li>
+        <li>Scrivi ragione sociale, città, telefono e soprattutto l'<strong>e-mail per gli ordini</strong>: serve per mandargli l'ordine dal programma.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Aggiungere un prodotto o una materia prima</summary>
+    <ol class="passi">
+        <li>Apri <strong>Anagrafiche → Prodotti e materie prime</strong> e premi <span class="tasto">Nuovo articolo</span>.</li>
+        <li>Scrivi la descrizione e scegli il <strong>tipo</strong> (materia prima, prodotto finito…), la <strong>matrice abituale</strong>, l'<strong>unità di misura</strong> e se è biologico.</li>
+        <li>Spunta i <strong>fornitori</strong> da cui lo compri: così negli ordini li trovi già abbinati.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="nota">La matrice abituale decide quali controlli ti propone l'accettazione, quindi sceglila con cura.</p>
+</details>
+
+<details class="situazione">
+    <summary>Aggiungere o cambiare una matrice (categoria)</summary>
+    <p>Le categorie e i controlli da fare all'arrivo si gestiscono in <strong>Anagrafiche → Categorie e controlli</strong> (guida «Categorie e profili di controllo»). Serve il ruolo Qualità o Amministratore azienda.</p>
+</details>
+
+<details class="situazione">
+    <summary>Non uso più un fornitore o un prodotto</summary>
+    <p>Non si cancellano: aprilo e togli la spunta «In uso». Resta nello storico (i lotti vecchi non perdono il loro fornitore), ma non compare più nelle scelte nuove.
+        Per un fornitore che non fornisce più <em>un</em> articolo, togli la spunta di quell'articolo nella scheda del prodotto.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cerco un fornitore o un prodotto</summary>
+    <p>Usa la casella <strong>Cerca</strong> in cima all'elenco: scrivi parte del nome, della città o del codice.</p>
+</details>

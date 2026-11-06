@@ -1,0 +1,68 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+@* Guida «Come funziona Tracciato». *@
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Tracciato tiene il filo della tua produzione: <strong>quale merce è arrivata, da chi, in quali lotti, con cosa è stato fatto ogni prodotto e a quali clienti è stato consegnato</strong>.
+        Se un fornitore ti avvisa di un problema, in pochi clic sai quali prodotti e quali clienti sono coinvolti.</p>
+</div>
+
+<h2>Il giro completo</h2>
+<div class="tappe">
+    <span>1 · Ordine</span><i>›</i><span>2 · Accettazione</span><i>›</i><span>3 · Magazzino</span><i>›</i><span>4 · Produzione</span><i>›</i><span>5 · Spedizione</span><i>›</i><span>6 · Richiamo (se serve)</span>
+</div>
+<ol class="passi">
+    <li><strong>Ordine</strong> (cartella <em>Ordini e arrivi</em>): scrivi cosa ordini a un fornitore e mandalo per e-mail o stampalo.</li>
+    <li><strong>Accettazione</strong>: quando la merce arriva, registri documento, lotto del fornitore, scadenza e controlli, e dai il giudizio. Si stampa l'<strong>etichetta</strong> con il QR.</li>
+    <li><strong>Magazzino</strong>: i lotti accettati entrano in magazzino. Quando un lotto passa in produzione lo metti <em>in uso</em>; quando finisce lo segni <em>esaurito</em>.</li>
+    <li><strong>Produzione</strong>: dalla ricetta scegli «Oggi ho prodotto»: il programma propone i lotti da usare, tu confermi e viene registrata la produzione con il lotto del prodotto finito.</li>
+    <li><strong>Spedizione</strong>: registri i lotti di prodotto finito che partono per ogni cliente.</li>
+    <li><strong>Richiamo</strong>: se un lotto è sospetto, parti da lui e vedi tutti i lotti e i clienti coinvolti; puoi <em>simulare</em> (prova senza conseguenze) o avviare il richiamo vero.</li>
+</ol>
+
+<h2>Come orientarsi nel programma</h2>
+<dl class="glossario">
+    <dt>Home</dt><dd>La pagina con le <strong>cartelle</strong>. Clicca una cartella per vedere le sue funzioni; con la <strong>stellina ☆</strong> le metti nei <strong>Preferiti</strong> (si ricordano in questo browser).</dd>
+    <dt>Cerca una funzione</dt><dd>La casella in cima alla Home: scrivi una parola (per esempio «lotto») e compaiono le funzioni che la contengono. Il tasto <span class="tasto">/</span> porta subito alla casella.</dd>
+    <dt>Menu in alto</dt><dd>Le stesse cartelle, sempre a portata di mano: passa il mouse (o tocca) per aprire il menu.</dd>
+    <dt>Ruoli</dt><dd>Ogni persona ha un ruolo, deciso dal servizio MARE.A. <em>Consultazione</em> guarda soltanto; <em>Ricevimento merci</em> e <em>Produzione</em> lavorano ogni giorno; <em>Qualità</em> e <em>Amministratore azienda</em> possono anche cambiare le impostazioni, le categorie e i controlli e sbloccare i lotti.</dd>
+    <dt>? Guida</dt><dd>Il pulsante giallo in alto a destra. Sulla pagina di una funzione apre la guida di quella funzione in un pannello laterale, senza lasciare la pagina.</dd>
+</dl>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Comincio da zero: cosa preparo prima?</summary>
+    <ol class="passi">
+        <li>In <strong>Anagrafiche</strong> controlla l'elenco dei <strong>fornitori</strong> e dei <strong>prodotti</strong> (materie prime e prodotti finiti).</li>
+        <li>In <strong>Impostazioni</strong> scegli se vuoi registrare i kg usati in ogni produzione.</li>
+        <li>In <strong>Produzione → Ricette</strong> crea la ricetta di ogni prodotto, con gli ingredienti e le matrici in cui cercare i lotti.</li>
+        <li>In <strong>Spedizioni e clienti → Clienti</strong> inserisci i clienti a cui consegni (con l'e-mail, per gli avvisi di richiamo).</li>
+    </ol>
+    <p class="dopo">Da qui in poi il lavoro di ogni giorno è: accettazione della merce → «Oggi ho prodotto» → spedizione.</p>
+</details>
+
+<details class="situazione">
+    <summary>È arrivata della merce</summary>
+    <p>Vai in <strong>Ordini e arrivi → Accettazioni</strong>. Trovi la guida passo per passo nel pulsante <span class="tasto">? Guida</span> di quella pagina.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho prodotto oggi</summary>
+    <p>Vai in <strong>Produzione → Ricette</strong>, apri la ricetta e premi <span class="tasto">Lotti da usare in un giorno</span>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un fornitore mi segnala un lotto con problemi</summary>
+    <p>Vai in <strong>Rintracciabilità e richiamo → Richiamo e simulazione</strong>, cerca il lotto e apri l'anteprima: vedi subito prodotti e clienti coinvolti.
+        <strong>Non serve avviare il richiamo per guardare</strong>: l'anteprima non cambia nulla.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho sbagliato a registrare qualcosa</summary>
+    <ul class="passi">
+        <li><strong>Un'accettazione:</strong> in <em>Accettazioni</em> usa il link <span class="tasto">Correggi</span>.</li>
+        <li><strong>Una spedizione:</strong> aprila e usa <span class="tasto">Annulla la spedizione</span> (il magazzino viene ripristinato).</li>
+        <li><strong>Un lotto bloccato per errore:</strong> aprine la scheda e usa <span class="tasto">Sblocca il lotto</span>.</li>
+    </ul>
+    <p class="nota">Nulla si cancella davvero: ogni correzione lascia traccia nel registro attività, perché i dati di tracciabilità devono restare affidabili.</p>
+</details>

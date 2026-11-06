@@ -1,0 +1,54 @@
+@using LaboratorioAI.Core.Entita
+@model IReadOnlyList<PacchettoConsulenza>
+@{
+    ViewData["Titolo"] = "Pacchetti di settore";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Pacchetti di settore</h1>
+        <p class="sottotitolo">Sostituiscono i modelli Word per settore: attività, contenuti spuntati, analisi di laboratorio (controlli ArcLab) e prezzi proposti. Nel preventivo si sceglie il pacchetto e poi si adatta al cliente. Per crearne uno simile a un esistente apri quello e usa «Duplica pacchetto».</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Attivita", "PreventiviConsulenza")">Attività</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "PreventiviConsulenza")">← Preventivi</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead><tr><th>Pacchetto</th><th>Attività</th><th>Analisi</th><th>Note</th><th>Ultima modifica</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                <tr style="@(p.Attivo ? "" : "opacity:0.55")">
+                    <td><strong>@p.Nome</strong> @(p.Attivo ? "" : "(non attivo)")</td>
+                    <td>@p.Righe.Count</td>
+                    <td>@p.Analisi.Count</td>
+                    <td class="sottotesto">@p.Descrizione</td>
+                    <td class="sottotesto">@(p.DataUltimaModifica?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")) @p.UltimaModificaDa</td>
+                    <td><a class="pulsante pulsante-tenue" href="@Url.Action("Pacchetto", "PreventiviConsulenza", new { id = p.IdPacchettoConsulenza })">Modifica</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="griglia-filtri" style="margin-top:0.6rem;background:#f7f7f7;padding:0.5rem">
+        <div style="grid-column:1/-1"><strong>Revisione in riunione</strong> <span class="sottotesto">— Excel con le analisi generiche dei pacchetti e i controlli ArcLab che potrebbero corrispondere: scrivete l'ID del controllo giusto e reimportate il file.</span></div>
+        <div class="azioni-filtri"><a class="pulsante pulsante-tenue" href="@Url.Action("EsportaRevisionePacchetti", "PreventiviConsulenza")">Scarica Excel di revisione</a></div>
+        <form method="post" asp-action="ImportaRevisionePacchetti" enctype="multipart/form-data" style="display:flex;gap:0.4rem;align-items:flex-end;grid-column:span 2">
+            <label>Excel compilato<input type="file" name="file" accept=".xlsx" required /></label>
+            <button type="submit" class="pulsante pulsante-tenue">Importa revisione</button>
+        </form>
+    </div>
+    <form method="post" asp-action="NuovoPacchetto" class="griglia-filtri" style="margin-top:0.6rem">
+        <label>Nuovo pacchetto<input type="text" name="nome" maxlength="100" required placeholder="es. Agriturismo" /></label>
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Crea</button></div>
+    </form>
+</section>

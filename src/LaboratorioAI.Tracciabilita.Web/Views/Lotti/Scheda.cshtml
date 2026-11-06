@@ -1,0 +1,80 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaLotto
+@inject LaboratorioAI.Tracciabilita.Web.Servizi.PermessiUtente Permessi
+@{ ViewData["Titolo"] = "Lotto " + Model.Codice; }
+<p><a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@Model.Pagina">« @(string.IsNullOrWhiteSpace(Model.Cerca) && !Model.SoloInMagazzino ? "Tutti i lotti" : "Torna alla ricerca")</a></p>
+<div class="testa-pagina">
+    <h1>Lotto @Model.Codice</h1>
+    <a class="pulsante" asp-action="Rintracciabilita" asp-route-id="@Model.IdLotto" asp-route-cerca="@Model.Cerca" asp-route-soloInMagazzino="@Model.SoloInMagazzino" asp-route-tipo="@Model.FiltroTipo" asp-route-pagina="@Model.Pagina">Rintracciabilità</a>
+</div>
+<div class="scheda">
+    <p><strong>Articolo:</strong> @Model.Articolo @(Model.Categoria is null ? "" : "(" + Model.Categoria + ")")</p>
+    <p><strong>Fornitore:</strong> @(Model.Fornitore ?? "— (prodotto in azienda)")</p>
+    <p><strong>Tipo:</strong> @Model.Tipo — <strong>Stato:</strong> @Model.Stato
+        @if (!string.IsNullOrEmpty(Model.MotivoBlocco)) { <span> (@Model.MotivoBlocco)</span> }</p>
+    @if (Model.DataScadenza is not null)
+    {
+        <p><strong>@(Model.ETmc ? "Da consumarsi preferibilmente entro" : "Scadenza"):</strong> @Model.DataScadenza.Value.ToString("dd/MM/yyyy")</p>
+    }
+    @if (Model.GiornoLottoInterno is not null)
+    {
+        <p><strong>Giorno di produzione:</strong> @Model.GiornoLottoInterno.Value.ToString("dd/MM/yyyy")</p>
+    }
+    <p><strong>Giacenza attuale:</strong> @Model.Giacenza.ToString("0.##") @Model.UnitaMisura
+       <span class="nota">(somma dei movimenti)</span></p>
+</div>
+@if (Model.Stato is LaboratorioAI.Tracciabilita.Core.Enumerazioni.StatoLotto.Bloccato or LaboratorioAI.Tracciabilita.Core.Enumerazioni.StatoLotto.Richiamato && !await Permessi.PuoConfigurareAsync())
+{
+    <div class="scheda">
+        <h2>Sblocco del lotto</h2>
+        <p class="nota">Il lotto è fermo. Per sbloccarlo serve il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>.</p>
+    </div>
+}
+else if (Model.Stato is LaboratorioAI.Tracciabilita.Core.Enumerazioni.StatoLotto.Bloccato or LaboratorioAI.Tracciabilita.Core.Enumerazioni.StatoLotto.Richiamato)
+{
+    <div class="scheda">
+        <h2>Sblocco del lotto</h2>
+        <p class="nota">Usalo quando il blocco non serve più (esito favorevole, errore di blocco, prova di richiamo). Il motivo resta nel registro attività.</p>
+        <form method="post" asp-action="Sblocca" asp-route-id="@Model.IdLotto" class="modulo" style="max-width:34rem">
+            <input type="hidden" name="cerca" value="@Model.Cerca" /><input type="hidden" name="soloInMagazzino" value="@Model.SoloInMagazzino.ToString().ToLower()" />
+            <input type="hidden" name="tipo" value="@Model.FiltroTipo" /><input type="hidden" name="pagina" value="@Model.Pagina" />
+            <label>Motivo dello sblocco <input name="motivo" required maxlength="300" /></label>
+            <button type="submit" onclick="return confirm('Sbloccare questo lotto?')">Sblocca il lotto</button>
+        </form>
+    </div>
+}
+<div class="scheda">
+    <h2>Arrivi (accettazioni)</h2>
+    <table class="elenco">
+        <thead><tr><th>Arrivo</th><th>Documento</th><th>Quantità</th><th>Note</th></tr></thead>
+        <tbody>
+        @foreach (var a in Model.Accettazioni)
+        {
+            <tr>
+                <td>@a.DataArrivo.ToString("dd/MM/yyyy")</td>
+                <td>@a.TipoDocumento @a.NumeroDocumento @(a.DataDocumento is null ? "" : "del " + a.DataDocumento.Value.ToString("dd/MM/yyyy"))</td>
+                <td>@a.Quantita.ToString("0.##") @a.UnitaMisura</td>
+                <td>@a.Note</td>
+            </tr>
+        }
+        @if (Model.Accettazioni.Count == 0) { <tr><td colspan="4">Nessun arrivo registrato.</td></tr> }
+        </tbody>
+    </table>
+</div>
+<div class="scheda">
+    <h2>Movimenti</h2>
+    <table class="elenco">
+        <thead><tr><th>Data</th><th>Tipo</th><th>Quantità</th><th>Nota</th></tr></thead>
+        <tbody>
+        @foreach (var mv in Model.Movimenti)
+        {
+            <tr>
+                <td>@mv.Data.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                <td>@mv.Tipo</td>
+                <td>@mv.Quantita.ToString("+0.##;-0.##;0") @mv.UnitaMisura</td>
+                <td>@mv.Nota</td>
+            </tr>
+        }
+        @if (Model.Movimenti.Count == 0) { <tr><td colspan="4">Nessun movimento.</td></tr> }
+        </tbody>
+    </table>
+</div>

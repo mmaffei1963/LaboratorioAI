@@ -27,14 +27,19 @@ public class RepositoryMetodi : IRepositoryMetodi
             m.RifBiblio          AS RiferimentoNormativo,
             p.NomeParametro,
             rm.DenominazioneRiga,
+            m.Acronimo,
+            m.RifMetodo,
+            m.DettagliMetodo,
+            rm.UnitaMisura,
             ISNULL(m.Accreditato, 0)      AS Accreditato,
             le.LabEsterno        AS LaboratorioEsterno,
             ISNULL(lem.AccrLabEsterno, 0) AS AccreditatoEsterno
         FROM Metodo m
         LEFT JOIN Parametro p ON p.IdParametro = m.IdParametro
         OUTER APPLY (
-            SELECT TOP 1 r.DenominazioneRiga
+            SELECT TOP 1 r.DenominazioneRiga, u.UnitaMisura
             FROM rigametodo r
+            LEFT JOIN Unitadimisura u ON u.IdUnita = r.IdUnita
             WHERE r.IdMetodo = m.IdMetodo
             ORDER BY r.IdRigametodo
         ) rm
@@ -42,6 +47,7 @@ public class RepositoryMetodi : IRepositoryMetodi
             SELECT TOP 1 x.AccrLabEsterno, x.IdLabEsterno
             FROM labEstMetodo x
             WHERE x.IdMetodo = m.IdMetodo
+            ORDER BY x.IdLabEstMetodo   -- sempre lo stesso laboratorio se il metodo ne ha più di uno
         ) lem
         LEFT JOIN LabEsterno le ON le.IdLabEsterno = lem.IdLabEsterno
         WHERE EXISTS (SELECT 1 FROM ProceduraMetodo pm WHERE pm.IdMetodi = m.IdMetodo AND pm.Attivo = 1)
@@ -143,14 +149,18 @@ public class RepositoryMetodi : IRepositoryMetodi
             p.NomeParametro,
             ISNULL(m.Accreditato, 0)      AS Accreditato,
             le.LabEsterno        AS LaboratorioEsterno,
-            ISNULL(lem.AccrLabEsterno, 0) AS AccreditatoEsterno,
+            -- Laboratorio della riga del controllo (rm.IdLabEsterno) e accreditamento per quella coppia
+            -- metodo + laboratorio (corretto l'08/10/2026: prima qualsiasi laboratorio del metodo).
+            CASE WHEN EXISTS (SELECT 1 FROM labEstMetodo lem
+                              WHERE lem.IdMetodo = m.IdMetodo
+                                AND lem.IdLabEsterno = rm.IdLabEsterno
+                                AND lem.AccrLabEsterno = 1) THEN 1 ELSE 0 END AS AccreditatoEsterno,
             CASE WHEN pm.IdMetodi IS NOT NULL THEN 1 ELSE 0 END AS Attivo
         FROM rigametodo rm
         INNER JOIN Controllo co    ON co.IDControllo = rm.IdControllo
         INNER JOIN Metodo m        ON m.IdMetodo = rm.IdMetodo
         LEFT  JOIN Parametro p     ON p.IdParametro = m.IdParametro
-        LEFT  JOIN labEstMetodo lem ON lem.IdMetodo = m.IdMetodo
-        LEFT  JOIN LabEsterno le   ON le.IdLabEsterno = lem.IdLabEsterno
+        LEFT  JOIN LabEsterno le   ON le.IdLabEsterno = rm.IdLabEsterno
         LEFT  JOIN (
             SELECT DISTINCT IdMetodi
             FROM ProceduraMetodo
@@ -179,16 +189,35 @@ public class RepositoryMetodi : IRepositoryMetodi
     /// errori di conversione implicita.
     ///
     /// Sono considerate solo le commesse senza data di scadenza incarico,
-    /// cioè quelle attualmente in vigore.
+    /// cioè quelle attualmente in vigore, con un cliente effettivamente
+    /// valorizzato (alcune commesse molto datate hanno Cod_Cliente NULL —
+    /// prassi diversa in anni passati — e, restando senza scadenza,
+    /// resterebbero altrimenti per sempre nel calcolo), con quel cliente
+    /// ancora attivo (Clienti.Attivo = 1) e con l'insediamento della
+    /// commessa non segnato come non più in uso (Insediamento.NonInUso):
+    /// un cliente cessato o un insediamento dismesso non devono influenzare
+    /// il prezzo minimo/massimo mostrato come attuale.
+    ///
+    /// Esclusa anche la commessa con CodContabilita "MIRKO1": è MARE.A
+    /// stessa (cliente interno/di test), non un cliente reale.
     /// </remarks>
     private const string SqlPrezzi = """
         WITH Attive AS (
             SELECT cm.PrezzoControllo, cm.Cod_Cliente
             FROM commessa cm
+            LEFT JOIN Insediamento ins ON ins.IDInsediamento = cm.IDInsediamento
             WHERE cm.IDControllo = @IdControllo
               AND cm.DataScadenzaInc IS NULL
               AND cm.PrezzoControllo IS NOT NULL
               AND cm.PrezzoControllo > 0
+              AND cm.Cod_Cliente IS NOT NULL
+              AND ISNULL(ins.NonInUso, 0) = 0
+              AND CAST(cm.Cod_Cliente AS VARCHAR(50)) <> 'MIRKO1'
+              AND EXISTS (
+                    SELECT 1 FROM Clienti cl
+                    WHERE CAST(cl.CodContabilita AS VARCHAR(50)) = CAST(cm.Cod_Cliente AS VARCHAR(50))
+                      AND cl.Attivo = 1
+              )
         ),
         Estremi AS (
             SELECT MIN(PrezzoControllo) AS Minimo,

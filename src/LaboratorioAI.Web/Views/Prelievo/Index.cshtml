@@ -13,6 +13,14 @@
 </div>
 
 <p class="sottotesto" id="stato-salvataggio"></p>
+<p class="sottotesto" style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+    <span id="stato-elenchi">Elenchi di ArcLab non ancora scaricati: si possono comunque scrivere i valori a mano.</span>
+    <button type="button" class="pulsante pulsante-tenue" id="btn-aggiorna-elenchi" title="Scarica da ArcLab clienti, insediamenti, controlli, matrici, imballaggi e punti di prelievo per le tendine (anche offline)">Aggiorna elenchi</button>
+</p>
+<datalist id="dl-clienti"></datalist>
+<datalist id="dl-controlli"></datalist>
+<datalist id="dl-matrici"></datalist>
+<datalist id="dl-imballaggi"></datalist>
 
 <section class="riquadro" id="pannello-dettato">
     <details>
@@ -51,9 +59,9 @@
             <button type="button" class="pulsante pulsante-tenue lotto-rm">Rimuovi lotto</button>
         </div>
         <div class="griglia-filtri">
-            <label style="grid-column:1/-1">Cliente *<span class="campo-voce"><input type="text" data-f="cliente" /><button type="button" class="mic" title="Detta">🎤</button></span></label>
-            <label style="grid-column:1/-1">Località / Insediamento *<span class="campo-voce"><input type="text" data-f="localita" /><button type="button" class="mic">🎤</button></span></label>
-            <label style="grid-column:1/-1">Controllo (ID o descrizione) *<span class="campo-voce"><input type="text" data-f="controllo" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Cliente *<span class="campo-voce"><input type="text" data-f="cliente" list="dl-clienti" autocomplete="off" placeholder="scegli dall'elenco o scrivi" /><button type="button" class="mic" title="Detta">🎤</button></span></label>
+            <label style="grid-column:1/-1">Località / Insediamento *<span class="campo-voce"><input type="text" data-f="localita" autocomplete="off" placeholder="insediamenti del cliente scelto, o scrivi" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Controllo (ID o descrizione) *<span class="campo-voce"><input type="text" data-f="controllo" list="dl-controlli" autocomplete="off" placeholder="scegli dall'elenco o scrivi" /><button type="button" class="mic">🎤</button></span></label>
             <label style="grid-column:1/-1">Note lotto<span class="campo-voce"><input type="text" data-f="note" /><button type="button" class="mic">🎤</button></span></label>
         </div>
 
@@ -75,15 +83,15 @@
         <div class="griglia-filtri">
             <label style="grid-column:1/-1">Denominazione campione * <span class="critico">(critico — descrizione completa + n° lotto)</span>
                 <span class="campo-voce"><input type="text" data-f="denominazione" /><button type="button" class="mic">🎤</button></span></label>
-            <label>Matrice *<span class="campo-voce"><input type="text" data-f="matrice" /><button type="button" class="mic">🎤</button></span></label>
-            <label>Imballaggio<span class="campo-voce"><input type="text" data-f="imballaggio" /><button type="button" class="mic">🎤</button></span></label>
+            <label>Matrice *<span class="campo-voce"><input type="text" data-f="matrice" list="dl-matrici" autocomplete="off" /><button type="button" class="mic">🎤</button></span></label>
+            <label>Imballaggio<span class="campo-voce"><input type="text" data-f="imballaggio" list="dl-imballaggi" autocomplete="off" /><button type="button" class="mic">🎤</button></span></label>
             <label>Temperatura prelievo °C *<input type="number" step="0.1" data-f="temperatura" placeholder="es. -18 / 4 / 20" /></label>
             <label>Data/ora prelievo<input type="datetime-local" data-f="dataOra" /></label>
-            <div><label>Punto di prelievo<span class="campo-voce"><input type="text" data-f="punto" /><button type="button" class="mic">🎤</button></span></label>
+            <div><label>Punto di prelievo<span class="campo-voce"><input type="text" data-f="punto" autocomplete="off" placeholder="punti già usati qui, o scrivi" /><button type="button" class="mic">🎤</button></span></label>
                 <label class="casella"><input type="checkbox" data-f="puntoSconosciuto" /> sconosciuto / n.a.</label></div>
             <label class="casella" style="grid-column:1/-1"><input type="checkbox" data-f="shelfLife" /> shelf life (inizio analisi posticipato)</label>
             <label class="riga-ritardo" style="display:none">Ritardo analisi (giorni)<input type="number" step="1" data-f="ritardo" /></label>
-            <label style="grid-column:1/-1">Luogo di prelievo (se diverso dall'insediamento)<span class="campo-voce"><input type="text" data-f="luogo" placeholder="nome + indirizzo" /><button type="button" class="mic">🎤</button></span></label>
+            <label style="grid-column:1/-1">Luogo di prelievo (se diverso dall'insediamento)<span class="campo-voce"><input type="text" data-f="luogo" autocomplete="off" placeholder="luoghi già usati qui, o nome + indirizzo" /><button type="button" class="mic">🎤</button></span></label>
             <label style="grid-column:1/-1">Note campione<span class="campo-voce"><input type="text" data-f="noteCampione" /><button type="button" class="mic">🎤</button></span></label>
         </div>
         <p class="mancanti sottotesto" style="color:#b00"></p>

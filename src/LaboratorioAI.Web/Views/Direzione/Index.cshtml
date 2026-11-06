@@ -1,0 +1,59 @@
+@{
+    ViewData["Titolo"] = "Indicatori economici";
+}
+@* Cruscotto Direzione, fase 1 (13/10/2026): indicatori economici da AZW, come Power BI. Riservato al ruolo Direzione. *@
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Indicatori economici</h1>
+        <p class="sottotitolo">Fatturato, costi e margini di MAREA e delle aree, dalla contabilità analitica di AZW (la stessa fonte di Power BI). Riservato alla Direzione.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-tenue" href="/Direzione/Voci">Classificazione voci</a>
+        @if (ViewData["PuoModificare"] is true)
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-importa" title="Rilegge il file AZW (ultima copia di Copia.bat): fatture, incassi, contabilità analitica. Qualche minuto.">Aggiorna da AZW</button>
+        }
+    </div>
+</div>
+
+<p class="sottotesto" id="aggiornamento"></p>
+<p class="avviso nascosto" id="avviso-voci" style="background:#fff3cd;border:1px solid #e0c46c;padding:0.5rem 0.8rem;border-radius:6px"></p>
+
+<section class="riquadro">
+    <div class="azioni-filtri">
+        <label>Area
+            <select id="f-centro"><option value="">Tutta MAREA</option></select>
+        </label>
+        <label>Dal <input type="number" id="f-dal" min="2017" style="width:6rem" /></label>
+        <label>Al <input type="number" id="f-al" min="2017" style="width:6rem" /></label>
+        <button type="button" class="pulsante" id="btn-cerca">Mostra</button>
+        <div style="flex:1"></div>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Esporta Excel</button>
+    </div>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-indicatori">
+            <thead></thead>
+            <tbody><tr><td class="sottotesto">Caricamento…</td></tr></tbody>
+        </table>
+    </div>
+    <p class="nota" id="nota-area"></p>
+</section>
+
+<section class="riquadro" id="commento-ai"></section>
+
+<section class="riquadro">
+    <h2>Come si calcolano</h2>
+    <ul class="sottotesto" style="line-height:1.6">
+        <li><strong>Fonte:</strong> tabella <em>dati_importati_preconsuntivo</em> del file AZW, ricaricata ogni notte; importi con segno: ricavi positivi, costi negativi. Le voci sono classificate in <a href="/Direzione/Voci">Classificazione voci</a> (all'inizio come in Power BI).</li>
+        <li><strong>Margine di contribuzione</strong> = fatturato − spese variabili. <strong>Fatturato di pareggio</strong> = spese fisse ÷ (margine ÷ fatturato).</li>
+        <li><strong>Valore aggiunto</strong> = fatturato − costi esterni (esclusi personale, ammortamenti e imposte); <strong>EBITDA</strong> = valore aggiunto − personale; <strong>EBIT</strong> = EBITDA − ammortamenti (conti FS56800, FT56900, FT56901, FP56500, FP56502).</li>
+        <li><strong>Utile ante imposte</strong> = utile di bilancio + imposte (conti MX82504 e MX82502).</li>
+        <li><strong>Per un'area</strong> alle spese fisse si aggiunge 1/5 delle spese fisse dell'Amministrazione (centro 03), come in Power BI; al totale MAREA no, perché lì sono già comprese.</li>
+        <li><strong>Differenze con Power BI:</strong> coincidono al centesimo fatturato, spese variabili, materie prime, margine, personale, ammortamenti, imposte e utili. Cambiano per definizione valore aggiunto, EBITDA, EBIT e ROS (in Power BI l'EBITDA comprende ammortamenti e imposte) e, sul totale MAREA, spese fisse e pareggio (in Power BI vi è aggiunto anche 1/5 dell'Amministrazione).</li>
+    </ul>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/direzione.js" asp-append-version="true"></script>
+}

@@ -20,13 +20,18 @@ public record MetodoRicercabile
     public string? RiferimentoNormativo { get; init; }
     public string? NomeParametro { get; init; }
     public string? DenominazioneRiga { get; init; }
+    /// <summary>05/11/2026 (Zatterin, prove su superfici indistinguibili): dati che distinguono metodi con stessa norma e parametro.</summary>
+    public string? Acronimo { get; init; }
+    public string? RifMetodo { get; init; }
+    public string? DettagliMetodo { get; init; }
+    public string? UnitaMisura { get; init; }
     public bool Accreditato { get; init; }
     public string? LaboratorioEsterno { get; init; }
     public bool AccreditatoEsterno { get; init; }
 
-    /// <summary>Testo su cui opera la ricerca incrementale nell'interfaccia.</summary>
+    /// <summary>Testo su cui opera la ricerca incrementale nell'interfaccia (anche ID, sigla, dettagli e unità di misura).</summary>
     public string TestoRicerca =>
-        string.Join(' ', new[] { RiferimentoNormativo, NomeParametro, DenominazioneRiga }
+        string.Join(' ', new[] { IdMetodo.ToString(), RiferimentoNormativo, NomeParametro, DenominazioneRiga, Acronimo, RifMetodo, DettagliMetodo, UnitaMisura }
             .Where(s => !string.IsNullOrWhiteSpace(s)));
 }
 

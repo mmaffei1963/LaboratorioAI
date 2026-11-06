@@ -16,10 +16,32 @@ internal static class OrdineAccettazioneDocx
 {
     private static readonly CultureInfo It = CultureInfo.GetCultureInfo("it-IT");
 
-    private const string FontNome = "Montserrat";
-    private const uint MargineLatoTwips = 1134; // 2 cm
+    internal const string FontNome = "Montserrat";
+    internal const uint MargineLatoTwips = 1134; // 2 cm
 
-    public static byte[] Genera(OrdineAccettazione o, string percorsoModello)
+    /// <summary>
+    /// Frase di verifica ACCREDIA per le prove in subappalto, al singolare se il laboratorio esterno
+    /// coinvolto nel documento è uno solo (simbolo "§"), al plurale se sono più d'uno (simboli "§1",
+    /// "§2", ecc., necessari per distinguerli). Stessa frase usata in Preventivi/Offerte.
+    /// </summary>
+    internal static string TestoVerificaAccredia(int numeroLaboratori) =>
+        TestiOfferta.NotaSubappalto(numeroLaboratori);
+
+    /// <summary>Simbolo del laboratorio esterno: "§" da solo se nel documento ce n'è uno solo, "§N" se ce ne sono più d'uno.</summary>
+    internal static string Simbolo(int numeroLaboratoriTotali, int numero) =>
+        numeroLaboratoriTotali > 1 ? "§" + numero : "§";
+
+    /// <summary>
+    /// Spiegazione dei recapiti insediamenti, riportata prima della tabella: sono gli indirizzi email
+    /// a cui arrivano le comunicazioni sui rapporti di prova generati dall'ordine.
+    /// </summary>
+    private const string TestoRecapitiInsediamenti =
+        "Di seguito i recapiti degli insediamenti del Cliente risultanti nei nostri archivi: sono gli " +
+        "indirizzi email a cui il Laboratorio può inviare avvisi di cortesia relativi al presente ordine e ai " +
+        "rapporti di prova, che sono comunque pubblicati nel Portale clienti. Si invita il Cliente a verificarne " +
+        "l'aggiornamento e la correttezza e a segnalarci eventuali variazioni prima dell'emissione dei rapporti di prova.";
+
+    public static byte[] Genera(OrdineAccettazione o, string percorsoModello, IReadOnlyList<InsediamentoContatto> insediamenti)
     {
         using var ms = new MemoryStream();
         using (var fs = File.OpenRead(percorsoModello)) fs.CopyTo(ms);
@@ -41,7 +63,7 @@ internal static class OrdineAccettazioneDocx
 
             // Titolo
             Aggiungi(Para("ORDINE DI ACCETTAZIONE", bold: true, size: 28, align: JustificationValues.Center, spazioPrima: 120, spazioDopo: 60));
-            Aggiungi(Para($"Riferimento lotto n. {Vuoto(o.CodLotto)}        Stampato in data {DateTime.Today.ToString("dd/MM/yyyy", It)}",
+            Aggiungi(Para($"Accettazione n. {Vuoto(o.CodLotto)}        Emesso il {DateTime.Today.ToString("dd/MM/yyyy", It)}",
                 size: 18, align: JustificationValues.Center, spazioDopo: string.IsNullOrWhiteSpace(o.RiferimentoModulo) ? 160 : 20));
             if (!string.IsNullOrWhiteSpace(o.RiferimentoModulo))
                 Aggiungi(Para(o.RiferimentoModulo!.Trim(), size: 15, italic: true, align: JustificationValues.Center, spazioDopo: 160));
@@ -82,53 +104,107 @@ internal static class OrdineAccettazioneDocx
             te.Append(RigaImporto("TOTALE (IVA compresa)", o.TotaleConIva, true));
             Aggiungi(te);
 
+            // Recapiti insediamenti: indirizzo email a cui arrivano le comunicazioni sui rapporti di
+            // prova generati dall'ordine. Solo se il cliente è in archivio ArcLab e ha insediamenti.
+            if (insediamenti.Count > 0)
+            {
+                Aggiungi(Titolo("RECAPITI INSEDIAMENTI PER LE COMUNICAZIONI"));
+                Aggiungi(Para(TestoRecapitiInsediamenti, size: 17, spazioDopo: 80));
+                var ti = Tabella(2552, 4252, 2835);
+                ti.Append(RigaTab(true, "F3F3F3", ("Insediamento", 2552, false), ("Indirizzo", 4252, false), ("Email", 2835, false)));
+                foreach (var ins in insediamenti)
+                {
+                    var tr = new TableRow();
+                    tr.Append(new TableCell(
+                        new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "2552" }),
+                        Para(ins.Nome, size: 17, cella: true)));
+                    tr.Append(new TableCell(
+                        new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "4252" }),
+                        Para(ins.Indirizzo ?? "—", size: 17, cella: true)));
+                    tr.Append(CellaEmail(ins.Email, 2835));
+                    ti.Append(tr);
+                }
+                Aggiungi(ti);
+                Aggiungi(Para("", spazioDopo: 120));
+            }
+
             // ── Riquadro condizioni (Allegato A Rev. 19) ───────────
             Aggiungi(RiquadroCondizioni(o.RevisioneCondizioni));
 
             // ── Allegato tecnico ───────────────────────────────────
             Aggiungi(Para("ALLEGATO TECNICO", bold: true, size: 24, spazioPrima: 240, spazioDopo: 120));
 
-            var frasiLab = new List<string>();
+            // Numerazione dei laboratori esterni distinti (§1, §2, ...), come nelle offerte/preventivi:
+            // il semplice "*" non basta più a distinguerli quando in uno stesso ordine ricorrono più
+            // laboratori diversi. Non essendoci qui un ID ArcLab del laboratorio (solo il nome), la
+            // numerazione è per nome distinto, nel primo ordine in cui compare; le frasi si riportano
+            // una sola volta ciascuna, dopo l'intero allegato tecnico.
+            var numeroLab = new Dictionary<string, int>();
+            var fraseLab = new List<string>();
+            foreach (var c in o.Campioni)
+                foreach (var an in c.Analisi)
+                {
+                    if (string.IsNullOrWhiteSpace(an.LaboratorioEsterno)) continue;
+                    var nomeLab = an.LaboratorioEsterno!.Trim();
+                    if (numeroLab.ContainsKey(nomeLab)) continue;
+                    numeroLab[nomeLab] = numeroLab.Count + 1;
+                    fraseLab.Add(TestiOfferta.FraseSubappalto(an.FraseLabEsterno, nomeLab));
+                }
+
             foreach (var c in o.Campioni)
             {
                 Aggiungi(DoppiaRiga());
                 Aggiungi(Titolo(c.Riferimento + " — " + (c.Denominazione ?? "").ToUpperInvariant()));
 
-                var d = Tabella(false, 3600, 13400);
+                var d = Tabella(false, 4080, 5558); // etichette su una riga, i valori possono andare a capo // larghezza utile A4 con margini di 2 cm = 9638 twips
                 DatoRiga(d, "Riferimento", c.Riferimento);
                 DatoRiga(d, "Descrizione", c.Denominazione);
                 DatoRiga(d, "Matrice", c.Matrice);
-                DatoRiga(d, "Imballaggio", c.Imballaggio);
-                DatoRiga(d, "Punto di prelievo", c.PuntoPrelievo);
+                if (!string.IsNullOrWhiteSpace(c.Imballaggio)) DatoRiga(d, "Imballaggio", c.Imballaggio);
+                if (!string.IsNullOrWhiteSpace(c.PuntoPrelievo)) DatoRiga(d, "Punto di prelievo", c.PuntoPrelievo);
+                if (c.LuogoPrelievo is not null) DatoRiga(d, "Luogo di prelievo", c.LuogoPrelievo);
                 DatoRiga(d, "Data accettazione", o.DataRicezione?.ToString("dd/MM/yyyy", It));
-                DatoRiga(d, "Data prelievo", o.DataPrelievo?.ToString("dd/MM/yyyy", It));
-                DatoRiga(d, "T° di ricevimento", c.TemperaturaRicevimento);
-                DatoRiga(d, "Priorità", c.PrioritaTesto);
+                if (o.DataPrelievo is not null) DatoRiga(d, "Data prelievo", o.DataPrelievo?.ToString("dd/MM/yyyy", It));
+                if (!string.IsNullOrWhiteSpace(c.TemperaturaRicevimento)) DatoRiga(d, "T° di ricevimento", c.TemperaturaRicevimento);
+                // Priorità solo se urgente su richiesta del Cliente; prelievo e autocontrollo (Allegato A, Artt. 5.3 e 7.2).
+                if (c.Urgente) DatoRiga(d, "Priorità", "Urgente (su richiesta del Cliente)");
+                if (!string.IsNullOrWhiteSpace(c.Prelevatore)) DatoRiga(d, "Prelievo eseguito da", c.Prelevatore);
+                if (c.AutocontrolloTesto is not null) DatoRiga(d, "Autocontrollo", c.AutocontrolloTesto);
+                if (c.ComunicazioneAnticipataTesto is not null) DatoRiga(d, "Comunicazione anticipata dei fuori limite", c.ComunicazioneAnticipataTesto);
+                if (o.GiudizioConformitaTesto is not null) DatoRiga(d, "Giudizio di conformità e pareri", o.GiudizioConformitaTesto);
                 var ctrl = c.Controllo is null ? null
                     : c.Controllo + (c.IdControllo is int idc ? $" (ID controllo {idc})" : "");
-                DatoRiga(d, "Controllo", ctrl);
+                if (ctrl is not null) DatoRiga(d, "Controllo", ctrl);   // campi vuoti non stampati (15/10/2026)
                 Aggiungi(d);
 
                 Aggiungi(Para("Analisi", bold: true, size: 20, spazioPrima: 100, spazioDopo: 40));
                 if (c.Analisi.Count > 0)
                 {
-                    var ta = Tabella(4900, 4900);
-                    ta.Append(RigaTab(true, "F7F7F7", ("Denominazione", 4900, false), ("Metodo", 4900, false)));
-                    foreach (var an in c.Analisi)
+                    var ta = Tabella(4650, 4140, 850);
+                    ta.Append(RigaTab(true, "F7F7F7", ("Denominazione", 4650, false), ("Metodo", 4140, false), ("Accr.", 850, false)));
+                    foreach (var (an, numero) in c.AnalisiRaggruppate())
                     {
-                        var par = an.EtichettaParametro;
-                        if (!string.IsNullOrWhiteSpace(an.LaboratorioEsterno)) par += "  *";
-                        ta.Append(RigaTab(false, null, (par, 4900, false), (an.Metodo ?? "—", 4900, false)));
-                        if (!string.IsNullOrWhiteSpace(an.FraseLabEsterno))
-                            frasiLab.Add(an.FraseLabEsterno!.Trim());
+                        // Come nelle offerte/preventivi: in subappalto il simbolo del laboratorio esterno
+                        // (§, §1, §2...) sostituisce l'indicazione di accreditamento nostro.
+                        var accr = !string.IsNullOrWhiteSpace(an.LaboratorioEsterno)
+                            ? Simbolo(numeroLab.Count, numeroLab[an.LaboratorioEsterno!.Trim()])
+                            : (an.Accreditato ? "Sì" : "—");
+                        ta.Append(RigaTab(false, null, (CampioneAccettazione.EtichettaRaggruppata(an, numero), 4650, false), (an.Metodo ?? "—", 4140, false), (accr, 850, false)));
                     }
                     Aggiungi(ta);
                 }
                 else Aggiungi(Para("Nessuna prova associata.", size: 17));
             }
 
-            foreach (var frase in frasiLab.Distinct())
-                Aggiungi(Para("* " + frase, size: 16));
+            // Frasi dei laboratori esterni (subappalto): una sola volta per laboratorio, con il simbolo
+            // corrispondente a quello riportato nell'allegato tecnico (semplice "§" se il laboratorio è uno solo).
+            for (var i = 0; i < fraseLab.Count; i++)
+                Aggiungi(Para($"{Simbolo(numeroLab.Count, i + 1)} {fraseLab[i]}", size: 16));
+
+            // Avviso ACCREDIA: una sola volta per documento (non ripetuto per ogni campione/laboratorio),
+            // evidenziato perché vale per tutte le prove in subappalto marcate con §.
+            if (numeroLab.Count > 0)
+                Aggiungi(Para(TestoVerificaAccredia(numeroLab.Count), bold: true, size: 17, shadingFill: "FFF3D6", spazioPrima: 120, spazioDopo: 120));
 
             // ── Pagina finale: dati aziendali ──────────────────────
             Aggiungi(Para("DATI AZIENDALI", bold: true, size: 26, spazioDopo: 120, pageBreakBefore: true));
@@ -142,6 +218,21 @@ internal static class OrdineAccettazioneDocx
             Aggiungi(Voce("Email", o.InsediamentoEmail));
 
             doc.MainDocumentPart.Document.Save();
+
+            // Piè di pagina: modulo, n. accettazione e "Pagina X di Y" su ogni piè di pagina del modello
+            // (30/09/2026), in fondo, senza toccare la grafica della carta intestata.
+            foreach (var footerPart in doc.MainDocumentPart.FooterParts)
+            {
+                var para = new Paragraph(new ParagraphProperties(new Justification { Val = JustificationValues.Center }));
+                para.Append(RunPiede(GeneratoreOrdineAccettazione.PiedePagina(o) + "Pagina "));
+                var fPag = new SimpleField { Instruction = "PAGE" }; fPag.Append(RunPiede("1"));
+                var fTot = new SimpleField { Instruction = "NUMPAGES" }; fTot.Append(RunPiede("1"));
+                para.Append(fPag);
+                para.Append(RunPiede(" di "));
+                para.Append(fTot);
+                footerPart.Footer.Append(para);
+                footerPart.Footer.Save();
+            }
         }
 
         return ms.ToArray();
@@ -150,9 +241,9 @@ internal static class OrdineAccettazioneDocx
     // ── Riquadro condizioni: tabella a cella unica con bordo e sfondo ──
     private static Table RiquadroCondizioni(string revisione)
     {
-        var t = Tabella(true, 17000);
+        var t = Tabella(true, 9638);
         var cellPr = new TableCellProperties(
-            new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "17000" },
+            new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "9638" },
             new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = "F7F7F7" });
         var cell = new TableCell(cellPr);
         cell.Append(Para(TestiCondizioniAccettazione.TitoloRiquadro, bold: true, size: 20, spazioPrima: 60, spazioDopo: 40, cella: true));
@@ -170,10 +261,10 @@ internal static class OrdineAccettazioneDocx
     }
 
     // ── Helper testo ───────────────────────────────────────────────
-    private static string Vuoto(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s!.Trim();
-    private static string Fmt(decimal v) => v.ToString("N2", It);
+    internal static string Vuoto(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s!.Trim();
+    internal static string Fmt(decimal v) => v.ToString("N2", It);
 
-    private static Paragraph Para(string testo, bool bold = false, int size = 20, bool italic = false,
+    internal static Paragraph Para(string testo, bool bold = false, int size = 20, bool italic = false,
         JustificationValues? align = null, string? shadingFill = null, int spazioPrima = 0, int spazioDopo = 0,
         bool cella = false, bool pageBreakBefore = false)
     {
@@ -202,11 +293,11 @@ internal static class OrdineAccettazioneDocx
         return para;
     }
 
-    private static Paragraph Titolo(string testo) =>
+    internal static Paragraph Titolo(string testo) =>
         Para(testo, bold: true, size: 22, shadingFill: "EEEEEE", spazioPrima: 160, spazioDopo: 60);
 
     // Doppia riga nera: paragrafo vuoto con bordo inferiore "double" (due filetti paralleli).
-    private static Paragraph DoppiaRiga()
+    internal static Paragraph DoppiaRiga()
     {
         var pPr = new ParagraphProperties(
             new SpacingBetweenLines { Before = "220", After = "40" },
@@ -225,7 +316,17 @@ internal static class OrdineAccettazioneDocx
         return para;
     }
 
-    private static Run RunTesto(string testo, bool bold)
+    internal static Run RunPiede(string testo)
+    {
+        var rPr = new RunProperties(
+            new RunFonts { Ascii = FontNome, HighAnsi = FontNome, ComplexScript = FontNome },
+            new FontSize { Val = "14" });
+        var run = new Run(new Text(testo) { Space = SpaceProcessingModeValues.Preserve });
+        run.PrependChild(rPr);
+        return run;
+    }
+
+    internal static Run RunTesto(string testo, bool bold)
     {
         var rPr = new RunProperties();
         rPr.Append(new RunFonts { Ascii = FontNome, HighAnsi = FontNome, ComplexScript = FontNome });
@@ -248,9 +349,9 @@ internal static class OrdineAccettazioneDocx
     }
 
     // ── Helper tabelle ─────────────────────────────────────────────
-    private static Table Tabella(params int[] larghezze) => Tabella(true, larghezze);
+    internal static Table Tabella(params int[] larghezze) => Tabella(true, larghezze);
 
-    private static Table Tabella(bool bordi, params int[] larghezze)
+    internal static Table Tabella(bool bordi, params int[] larghezze)
     {
         var props = new TableProperties(
             new TableWidth { Type = TableWidthUnitValues.Dxa, Width = larghezze.Sum().ToString() });
@@ -273,7 +374,7 @@ internal static class OrdineAccettazioneDocx
         return t;
     }
 
-    private static TableRow RigaTab(bool grassetto, string? shadingFill, params (string Testo, int Larghezza, bool Destra)[] celle)
+    internal static TableRow RigaTab(bool grassetto, string? shadingFill, params (string Testo, int Larghezza, bool Destra)[] celle)
     {
         var tr = new TableRow();
         foreach (var (testo, larghezza, destra) in celle)
@@ -287,19 +388,67 @@ internal static class OrdineAccettazioneDocx
         return tr;
     }
 
-    private static void DatoRiga(Table t, string label, string? valore)
+    /// <summary>
+    /// Cella email con andata a capo manuale quando è lunga: un indirizzo email non ha spazi, quindi
+    /// il word-wrap normale non lo spezzerebbe e sforerebbe la larghezza della colonna. L'interruzione
+    /// si inserisce dopo ogni carattere "di aggancio" naturale (@ . _ -) quando il segmento accumulato
+    /// supera una soglia, così l'indirizzo va a capo dentro la cella.
+    /// </summary>
+    private static TableCell CellaEmail(string? email, int larghezza)
+    {
+        var rPr = new RunProperties();
+        rPr.Append(new RunFonts { Ascii = FontNome, HighAnsi = FontNome, ComplexScript = FontNome });
+        rPr.Append(new FontSize { Val = "17" });
+
+        var para = new Paragraph(new ParagraphProperties());
+        var testo = string.IsNullOrWhiteSpace(email) ? null : email!.Trim();
+        if (testo is null)
+        {
+            var run = new Run(new Text("—") { Space = SpaceProcessingModeValues.Preserve });
+            run.PrependChild((RunProperties)rPr.CloneNode(true));
+            para.Append(run);
+        }
+        else
+        {
+            const int sogliaSegmento = 16;
+            var ultimo = 0;
+            for (var i = 0; i < testo.Length; i++)
+            {
+                var spezzabile = testo[i] is '@' or '.' or '_' or '-';
+                if (spezzabile && i - ultimo >= sogliaSegmento)
+                {
+                    var run = new Run(new Text(testo.Substring(ultimo, i - ultimo + 1)) { Space = SpaceProcessingModeValues.Preserve });
+                    run.PrependChild((RunProperties)rPr.CloneNode(true));
+                    para.Append(run);
+                    para.Append(new Run(new Break()));
+                    ultimo = i + 1;
+                }
+            }
+            if (ultimo < testo.Length)
+            {
+                var run = new Run(new Text(testo.Substring(ultimo)) { Space = SpaceProcessingModeValues.Preserve });
+                run.PrependChild((RunProperties)rPr.CloneNode(true));
+                para.Append(run);
+            }
+        }
+
+        var tcPr = new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = larghezza.ToString() });
+        return new TableCell(tcPr, para);
+    }
+
+    internal static void DatoRiga(Table t, string label, string? valore)
     {
         var tr = new TableRow();
         tr.Append(new TableCell(
-            new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "3600" }),
+            new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "2600" }),
             Para(label, bold: true, size: 18, cella: true)));
         tr.Append(new TableCell(
-            new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "13400" }),
+            new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "7038" }),
             Para(string.IsNullOrWhiteSpace(valore) ? "—" : valore!.Trim(), size: 18, cella: true)));
         t.Append(tr);
     }
 
-    private static TableRow RigaImporto(string label, decimal importo, bool grassetto)
+    internal static TableRow RigaImporto(string label, decimal importo, bool grassetto)
     {
         var tr = new TableRow();
         tr.Append(new TableCell(

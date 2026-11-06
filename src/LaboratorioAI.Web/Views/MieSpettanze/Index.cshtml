@@ -1,0 +1,36 @@
+@model LaboratorioAI.Web.Controllers.ModelloSpettanze
+@{
+    ViewData["Titolo"] = "Le mie spettanze";
+    var r = Model.Risultato;
+    var anni = Enumerable.Range(2024, DateTime.Today.Year - 2024 + 1).Reverse().ToList();
+}
+<div class="barra-strumenti">
+    <div>
+        <h1>Le mie spettanze</h1>
+        <p class="sottotitolo">I compensi a percentuale previsti dal tuo contratto, calcolati sugli incassi registrati da MARE.A, e le fatture che hai emesso (acconti).</p>
+    </div>
+    @if (r is not null)
+    {
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:flex-start">
+            <form method="post" asp-action="Aggiorna" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Aggiornamento in corso (qualche minuto)…';">
+                <input type="hidden" name="anno" value="@Model.Anno" />
+                <button type="submit" class="pulsante" title="Rilegge fatture e incassi dalla contabilità">Aggiorna dati da AZW</button>
+            </form>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Esporta", new { anno = Model.Anno, fDal = Context.Request.Query["fDal"].ToString(), fAl = Context.Request.Query["fAl"].ToString(), iDal = Context.Request.Query["iDal"].ToString(), iAl = Context.Request.Query["iAl"].ToString() })">Esporta Excel</a>
+        </div>
+    }
+</div>
+@if (TempData["Messaggio"] is string msg) { <section class="riquadro"><strong>@msg</strong></section> }
+@if (TempData["Errore"] is string err) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@err</strong></section> }
+@if (r is null)
+{
+    <section class="riquadro"><p>Il tuo utente non è collegato a un consulente: chiedi a Mirko Maffei.</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <span class="sottotesto">Anno:</span>
+        @foreach (var a in anni) { <a class="pulsante @(a == Model.Anno ? "" : "pulsante-tenue")" href="@Url.Action("Index", new { anno = a })">@a</a> }
+    </section>
+    <partial name="~/Views/SpettanzeConsulenti/_Risultato.cshtml" model="r" />
+}

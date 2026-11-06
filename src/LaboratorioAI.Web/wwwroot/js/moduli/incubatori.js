@@ -2,27 +2,43 @@
 // rapporto, duplicazione, analisi AI e validazione del calcolo.
 
 import { chiamaApi, inviaJson, testo, avvisa, occupa } from '../comune.js';
+import { creaCommittente } from './committente-taratura.js';
+import { numeriPerGruppo, aggiungiGruppo, urlElenco, conteggioRegistro, classeRiga, marcaEliminata, collegaRipristino, eliminaDalRegistro } from '../registro-strumenti.js';
 
 const $ = (id) => document.getElementById(id);
 const num = (v) => { const x = parseFloat(String(v).replace(',', '.')); return isNaN(x) ? 0 : x; };
 const gg = (x, d = 2) => (x == null ? '—' : Number(x).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
 
-let cdrs = [], clienti = [], strumenti = [], misure = [];
+let cdrs = [], strumenti = [], misure = [];
+// 03/11/2026: il cliente sta nel committente; lo strumento del cliente si scrive (o si sceglie tra quelli già tarati).
+const committente = creaCommittente('/api/incubatori', 'c', caricaMisuratoriCliente);
+let misuratoriCliente = [];
+// Misuratori del cliente già tarati (il misuratore è quello della cella: segue l'origine dell'apparecchiatura).
+async function caricaMisuratoriCliente() {
+    const c = committente.leggi();
+    misuratoriCliente = [];
+    if (c.idClienteArcLab || c.committente) {
+        const q = c.idClienteArcLab ? `idCliente=${c.idClienteArcLab}` : `committente=${encodeURIComponent(c.committente)}`;
+        try { misuratoriCliente = await chiamaApi(`/api/incubatori/misuratori-cliente?${q}`); } catch { misuratoriCliente = []; }
+    }
+    aggiornaDatalist('m'); aggiornaDatalist('a');
+}
 
 // ══ Caricamenti ══
 async function caricaRegistro() {
     try {
-        const r = await chiamaApi('/api/incubatori/elenco');
-        $('conteggio-registro').textContent = `${r.length} tarature`;
+        const r = await chiamaApi(urlElenco('/api/incubatori/elenco'));
+        $('conteggio-registro').textContent = conteggioRegistro(r, 'tarature');
         $('tabella-registro').querySelector('tbody').innerHTML = r.length === 0
             ? '<tr><td colspan="6" class="vuoto">Nessuna taratura.</td></tr>'
-            : r.map(t => `<tr class="riga-cliccabile" data-id="${t.idTaratura}">
-                <td>${testo(t.numeroRapporto)}</td><td>${testo(t.misuratoreIdentificazione)}</td>
+            : r.map(t => `<tr class="riga-cliccabile${classeRiga(t)}" data-id="${t.idTaratura}">
+                <td>${testo(t.numeroRapporto)}${marcaEliminata(t, t.idTaratura)}</td><td>${testo(t.misuratoreIdentificazione)}</td>
                 <td>${testo(t.apparecchiaturaIdentificazione)}</td>
                 <td class="numerico">${gg(t.valoreNominale)}</td><td>${testo(t.dataTaratura)}</td>
                 <td>${t.dataScadenza ? testo(t.dataScadenza) : '—'} ${t.scaduta ? '<strong style="color:#b3261e">scaduta</strong>' : ''}</td></tr>`).join('');
         $('tabella-registro').querySelectorAll('.riga-cliccabile').forEach(x =>
             x.addEventListener('click', () => apri(Number(x.dataset.id))));
+        collegaRipristino($('tabella-registro'), '/api/incubatori', caricaRegistro);
     } catch (e) { avvisa(e.message, 'errore'); }
 }
 
@@ -36,32 +52,43 @@ async function caricaCdr() {
 }
 
 async function caricaAnagrafiche() {
-    try { clienti = await chiamaApi('/api/incubatori/clienti'); } catch { clienti = []; }
+    await committente.carica();
     try { strumenti = await chiamaApi('/api/incubatori/strumenti'); } catch { strumenti = []; }
     aggiornaDatalist('m');
     aggiornaDatalist('a');
 }
 
-// Sorgente del datalist secondo l'origine (interno = strumenti, cliente = clienti).
+// Il misuratore è quello della cella (03/11/2026): segue l'origine dell'apparecchiatura, non ha una scelta propria.
+const origine = (pref) => $(pref === 'm' ? 'a-origine' : pref + '-origine')?.value ?? 'interno';
+
+// Sorgente del datalist secondo l'origine (interno = strumenti ArcLab, cliente = strumenti del cliente già tarati).
 function aggiornaDatalist(pref) {
-    const origine = $(pref + '-origine').value;
-    const voci = origine === 'interno' ? strumenti : clienti;
-    $('lista-' + pref).innerHTML = voci.map(v => `<option value="${testo(v.nome)}">`).join('');
+    const delCliente = pref === 'm' ? misuratoriCliente : committente.strumenti();
+    const voci = origine(pref) === 'interno'
+        ? strumenti.map(v => v.nome)
+        : delCliente.map(v => v.identificazione);
+    $('lista-' + pref).innerHTML = voci.map(v => `<option value="${testo(v)}">`).join('');
 }
 
 function risolviStrumento(pref) {
-    const origine = $(pref + '-origine').value;
     const nome = $(pref + '-identificazione').value.trim();
-    const interno = origine === 'interno';
-    const lista = interno ? strumenti : clienti;
-    const trovato = lista.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase());
+    const interno = origine(pref) === 'interno';
+    const trovato = interno ? strumenti.find(v => (v.nome || '').toLowerCase() === nome.toLowerCase()) : null;
     return {
         identificazione: nome,
         codice: $(pref + '-codice').value.trim() || null,
         interno,
-        idStrumentoArcLab: interno && trovato ? trovato.id : null,
-        idClienteArcLab: !interno && trovato ? trovato.id : null
+        idStrumentoArcLab: trovato ? trovato.id : null,
+        idClienteArcLab: null
     };
+}
+
+// Strumento del cliente scelto tra quelli già tarati: riprende il codice.
+function riprendiCodice(pref) {
+    if (origine(pref) === 'interno' || $(pref + '-codice').value.trim()) return;
+    const nome = $(pref + '-identificazione').value.trim().toLowerCase();
+    const s = (pref === 'm' ? misuratoriCliente : committente.strumenti()).find(v => (v.identificazione || '').toLowerCase() === nome);
+    if (s?.codice) $(pref + '-codice').value = s.codice;
 }
 
 // ══ Form ══
@@ -69,7 +96,8 @@ function nuova() {
     ['t-id', 't-numero', 't-scadenza', 'm-identificazione', 'm-codice', 'a-identificazione', 'a-codice', 't-nominale'].forEach(id => $(id).value = '');
     $('t-cdr').value = ''; $('t-istruzione').value = 'IO 04-02';
     $('t-tolleranza').value = '1'; $('t-risoluzione').value = '0.1'; $('t-mappa').value = '0';
-    $('m-origine').value = 'interno'; $('a-origine').value = 'interno';
+    $('a-origine').value = 'interno';
+    committente.svuota();
     $('t-responsabile').value = $('t-responsabile').value; // conserva default
     $('t-data').value = new Date().toISOString().substring(0, 10);
     aggiornaDatalist('m'); aggiornaDatalist('a');
@@ -90,8 +118,8 @@ async function apri(id) {
         const t = await chiamaApi('/api/incubatori/' + id);
         $('t-id').value = t.idTaratura;
         $('t-cdr').value = t.idCampioneRiferimento;
-        $('m-origine').value = t.misuratoreInterno ? 'interno' : 'cliente';
         $('a-origine').value = t.apparecchiaturaInterna ? 'interno' : 'cliente';
+        await committente.imposta(t);
         aggiornaDatalist('m'); aggiornaDatalist('a');
         $('m-identificazione').value = t.misuratoreIdentificazione ?? '';
         $('m-codice').value = t.misuratoreCodice ?? '';
@@ -119,8 +147,12 @@ async function apri(id) {
 }
 
 function renderMisure() {
+    // Numerazione della lettura nella posizione: riparte a ogni cambio di posizione (come nei termometri, 09/10/2026).
+    // Solo di supporto all'inserimento: non finisce nei rapporti.
+    const numeri = numeriPerGruppo(misure.map(m => m.posizione));
     $('tabella-misure').querySelector('tbody').innerHTML = misure.map((m, i) =>
         `<tr>
+            <td class="numerico" style="color:#888">${numeri[i]}</td>
             <td><input type="text" data-i="${i}" data-c="posizione" value="${testo(m.posizione)}" style="width:4rem" /></td>
             <td class="numerico"><input type="number" step="0.001" data-i="${i}" data-c="temperaturaRilevata" value="${m.temperaturaRilevata}" style="width:7rem" /></td>
             <td class="numerico"><input type="number" step="0.001" data-i="${i}" data-c="letturaStrumento" value="${m.letturaStrumento}" style="width:7rem" /></td>
@@ -131,6 +163,9 @@ function renderMisure() {
             const v = inp.dataset.c === 'posizione' ? inp.value : num(inp.value);
             misure[Number(inp.dataset.i)][inp.dataset.c] = v;
         }));
+    // Alla fine della modifica di una "Posizione" ricalcola la numerazione.
+    $('tabella-misure').querySelectorAll('input[data-c="posizione"]').forEach(inp =>
+        inp.addEventListener('change', () => renderMisure()));
     $('tabella-misure').querySelectorAll('.mis-rm').forEach(b =>
         b.addEventListener('click', () => { misure.splice(Number(b.dataset.i), 1); renderMisure(); }));
 }
@@ -179,6 +214,7 @@ function corpoSalva() {
         misuratoreInterno: m.interno, misuratoreIdStrumentoArcLab: m.idStrumentoArcLab, misuratoreIdClienteArcLab: m.idClienteArcLab,
         apparecchiaturaIdentificazione: a.identificazione, apparecchiaturaCodice: a.codice,
         apparecchiaturaInterna: a.interno, apparecchiaturaIdStrumentoArcLab: a.idStrumentoArcLab, apparecchiaturaIdClienteArcLab: a.idClienteArcLab,
+        ...committente.leggi(),
         valoreNominale: num($('t-nominale').value), tolleranza: num($('t-tolleranza').value),
         risoluzioneStrumento: num($('t-risoluzione').value), dispersioneMappatura: num($('t-mappa').value),
         numeroRapporto: $('t-numero').value || null,
@@ -224,7 +260,7 @@ function duplica() {
     $('t-responsabile').value = stato.responsabile;
     $('a-origine').value = stato.aOrig; aggiornaDatalist('a');
     $('a-identificazione').value = stato.aId; $('a-codice').value = stato.aCod;
-    $('m-origine').value = 'interno'; aggiornaDatalist('m');
+    aggiornaDatalist('m');
     misure = nuoveMisure.length ? nuoveMisure : [nuovaMisura('A')];
     renderMisure();
     $('taratura-numero').textContent = '';
@@ -333,11 +369,22 @@ async function valida(pulsante) {
 }
 
 // ══ Avvio ══
-$('m-origine')?.addEventListener('change', () => aggiornaDatalist('m'));
-$('a-origine')?.addEventListener('change', () => aggiornaDatalist('a'));
+$('a-identificazione')?.addEventListener('change', () => riprendiCodice('a'));
+$('a-origine')?.addEventListener('change', () => { aggiornaDatalist('a'); aggiornaDatalist('m'); });
+$('m-identificazione')?.addEventListener('change', () => riprendiCodice('m'));
+$('mostra-eliminate')?.addEventListener('change', caricaRegistro);
+$('btn-elimina-registro')?.addEventListener('click', async () => {
+    const numero = $('t-numero')?.value?.trim();
+    if (await eliminaDalRegistro('/api/incubatori', $('t-id').value, numero ? 'la taratura ' + numero : 'la taratura aperta')) {
+        $('pannello-taratura').classList.add('nascosto');
+        await caricaRegistro();
+    }
+});
 $('btn-nuova-taratura')?.addEventListener('click', nuova);
 $('btn-taratura-annulla')?.addEventListener('click', () => $('pannello-taratura').classList.add('nascosto'));
 $('btn-misura-riga')?.addEventListener('click', () => { misure.push(nuovaMisura(misure.length ? misure[misure.length - 1].posizione : 'A')); renderMisure(); });
+// «Aggiungi 10 letture»: completa il gruppo a 10 o ne apre uno nuovo con la lettera successiva (10 A, 10 B, …).
+$('btn-misura-gruppo')?.addEventListener('click', () => { aggiungiGruppo(misure, m => m.posizione, p => nuovaMisura(p), 10); renderMisure(); });
 $('btn-calcola')?.addEventListener('click', (e) => calcola(e.currentTarget));
 $('btn-taratura-salva')?.addEventListener('click', (e) => salva(e.currentTarget));
 $('btn-taratura-duplica')?.addEventListener('click', duplica);

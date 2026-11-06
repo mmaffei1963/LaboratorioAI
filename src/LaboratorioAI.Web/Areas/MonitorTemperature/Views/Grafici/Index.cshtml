@@ -1,0 +1,1212 @@
+@model List<LaboratorioAI.Dati.MonitorTemperature.Models.StoricoTemperatura>
+
+@using System.Text.Json
+
+@{
+    ViewData["Title"] =
+        "Monitor";
+
+    string periodo =
+        ViewBag.Periodo ?? "24h";
+
+    string codiceSondaSelezionato =
+        ViewBag.CodiceSonda ?? "TUTTE";
+
+    DateTime? dataDa =
+        ViewBag.DataDa as DateTime?;
+
+    DateTime? dataA =
+        ViewBag.DataA as DateTime?;
+
+    bool filtroPersonalizzato =
+        ViewBag.FiltroPersonalizzato ?? false;
+
+    var sondeDisponibili =
+        ViewBag.SondeDisponibili
+        as List<string>
+        ?? new List<string>();
+
+    var datiGrafico =
+        Model.Select(x => new
+        {
+            codiceSonda = x.CodiceSonda,
+            apparecchiatura = x.Apparecchiatura,
+            dataOra = x.DataOra.ToString("o"),
+            temperatura = x.TemperaturaCorretta,
+            limiteMin = x.LimiteMin,
+            limiteMax = x.LimiteMax,
+            allarme = x.AllarmeCalcolato
+        })
+        .ToList();
+
+    string jsonDati =
+        JsonSerializer.Serialize(
+            datiGrafico);
+
+    DateTime? dataMin =
+        Model.Any()
+            ? Model.Min(x => x.DataOra)
+            : null;
+
+    DateTime? dataMax =
+        Model.Any()
+            ? Model.Max(x => x.DataOra)
+            : null;
+
+    string testoPeriodo =
+        "Nessun dato";
+
+    if (
+        dataMin.HasValue
+        &&
+        dataMax.HasValue)
+    {
+        testoPeriodo =
+            $"{dataMin.Value:dd/MM/yyyy HH:mm} - {dataMax.Value:dd/MM/yyyy HH:mm}";
+    }
+
+    string descrizioneFiltro;
+
+    if (filtroPersonalizzato)
+    {
+        string da =
+            dataDa.HasValue
+                ? dataDa.Value.ToString("dd/MM/yyyy")
+                : "inizio archivio";
+
+        string a =
+            dataA.HasValue
+                ? dataA.Value.ToString("dd/MM/yyyy")
+                : "oggi";
+
+        descrizioneFiltro =
+            $"Periodo personalizzato: {da} - {a}";
+    }
+    else
+    {
+        descrizioneFiltro =
+            periodo switch
+            {
+                "24h" => "Ultime 24 ore",
+                "48h" => "Ultime 48 ore",
+                "7g" => "Ultimi 7 giorni",
+                "30g" => "Ultimi 30 giorni",
+                "tutto" => "Tutto lo storico",
+                _ => "Periodo selezionato"
+            };
+    }
+}
+
+
+<style>
+
+    .grafico-card {
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        background: white;
+        height: 100%;
+    }
+
+    .grafico-card.allarme {
+        border: 2px solid #dc3545;
+    }
+
+    .grafico-card.ferma {
+        border: 2px solid #ffc107;
+    }
+
+    .grafico-header {
+        padding: 10px 12px 4px 12px;
+        font-size: 0.90rem;
+        font-weight: 600;
+        min-height: 52px;
+    }
+
+    .grafico-body {
+        height: 230px;
+        padding: 4px 8px 8px 8px;
+    }
+
+    .grafico-body canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .badge-stato {
+        float: right;
+        margin-left: 5px;
+    }
+
+    .periodo-box {
+        display: inline-block;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+
+    @@page {
+        size: A4 landscape;
+        margin: 6mm;
+    }
+
+    @@media print {
+
+        nav,
+        header,
+        footer,
+        .navbar,
+        .no-print {
+            display: none !important;
+        }
+
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+        }
+
+        .container-fluid {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        h2 {
+            font-size: 18px !important;
+            margin-bottom: 2mm !important;
+        }
+
+        .periodo-box {
+            font-size: 9px !important;
+            padding: 2mm 3mm !important;
+            margin-bottom: 2mm !important;
+        }
+
+        #contenitoreGrafici {
+            --bs-gutter-x: 5px !important;
+            --bs-gutter-y: 5px !important;
+        }
+
+        #contenitoreGrafici > div {
+            width: 25% !important;
+            flex: 0 0 25% !important;
+            max-width: 25% !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .grafico-header {
+            font-size: 8px !important;
+            min-height: 30px !important;
+            padding: 3px 5px !important;
+        }
+
+        .grafico-body {
+            height: 145px !important;
+            padding: 2px 4px 4px 4px !important;
+        }
+
+        .grafico-card {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            box-shadow: none !important;
+        }
+
+        canvas {
+            max-height: 145px !important;
+        }
+    }
+
+</style>
+
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+
+        <div>
+
+            <h2 class="mb-0">
+                Monitor Grafici
+            </h2>
+
+            <small class="text-muted">
+                Un grafico per ogni sonda Econorma
+            </small>
+
+        </div>
+
+
+        <div class="no-print">
+
+            <button type="button"
+                    class="btn btn-success"
+                    onclick="window.print();">
+
+                Stampa / PDF
+
+            </button>
+
+            <a asp-controller="Grafici" asp-area="MonitorTemperature"
+               asp-action="EsportaExcel"
+               asp-route-periodo="@periodo"
+               asp-route-codiceSonda="@codiceSondaSelezionato"
+               asp-route-dataDa="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : null)"
+               asp-route-dataA="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : null)"
+               class="btn btn-outline-success">
+
+                Esporta Excel
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="mb-3">
+
+        <span class="periodo-box">
+
+            <strong>
+                Filtro:
+            </strong>
+
+            @descrizioneFiltro
+
+            &nbsp;|&nbsp;
+
+            <strong>
+                Sonda:
+            </strong>
+
+            @(codiceSondaSelezionato == "TUTTE"
+                ? "Tutte"
+                : codiceSondaSelezionato)
+
+            &nbsp;|&nbsp;
+
+            <strong>
+                Periodo visualizzato:
+            </strong>
+
+            @testoPeriodo
+
+            &nbsp;|&nbsp;
+
+            <strong>
+                Misure:
+            </strong>
+
+            @Model.Count
+
+        </span>
+
+    </div>
+
+
+    <div class="mb-3 no-print">
+
+        <a asp-controller="Monitor" asp-area="MonitorTemperature"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            Dashboard
+
+        </a>
+
+
+        <a asp-controller="Monitor" asp-area="MonitorTemperature"
+           asp-action="Monitor"
+           class="btn btn-outline-primary">
+
+            Monitor generale
+
+        </a>
+
+
+        <a asp-controller="MonitorControllo" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           class="btn btn-outline-primary">
+
+            Monitor Controllo
+
+        </a>
+
+
+        <a asp-controller="Differenze" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="@periodo"
+           class="btn btn-outline-dark">
+
+            Monitor Differenze
+
+        </a>
+
+    </div>
+
+
+    <div class="mb-3 no-print">
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="24h"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "24h" ? "btn-primary" : "btn-outline-primary")">
+
+            24 ore
+
+        </a>
+
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="48h"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "48h" ? "btn-primary" : "btn-outline-primary")">
+
+            48 ore
+
+        </a>
+
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="7g"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "7g" ? "btn-primary" : "btn-outline-primary")">
+
+            7 giorni
+
+        </a>
+
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="30g"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "30g" ? "btn-primary" : "btn-outline-primary")">
+
+            30 giorni
+
+        </a>
+
+
+        <a asp-controller="Grafici" asp-area="MonitorTemperature"
+           asp-action="Index"
+           asp-route-periodo="tutto"
+           asp-route-codiceSonda="@codiceSondaSelezionato"
+           class="btn @(!filtroPersonalizzato && periodo == "tutto" ? "btn-primary" : "btn-outline-primary")">
+
+            Tutto
+
+        </a>
+
+    </div>
+
+
+    <div class="card mb-4 no-print">
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-controller="Grafici" asp-area="MonitorTemperature"
+                  asp-action="Index"
+                  class="row g-3 align-items-end">
+
+                <input type="hidden"
+                       name="periodo"
+                       value="@periodo" />
+
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="codiceSonda">
+
+                        Sonda
+
+                    </label>
+
+                    <select id="codiceSonda"
+                            name="codiceSonda"
+                            class="form-select">
+
+                        <option value="TUTTE"
+                                selected="@(codiceSondaSelezionato == "TUTTE")">
+
+                            Tutte le sonde
+
+                        </option>
+
+                        @foreach (
+                            string codice
+                            in sondeDisponibili)
+                        {
+                            <option value="@codice"
+                                    selected="@(codiceSondaSelezionato == codice)">
+
+                                @codice
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="dataDa">
+
+                        Data inizio
+
+                    </label>
+
+                    <input type="date"
+                           id="dataDa"
+                           name="dataDa"
+                           value="@(dataDa.HasValue ? dataDa.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-12 col-md-3">
+
+                    <label class="form-label fw-bold"
+                           for="dataA">
+
+                        Data fine
+
+                    </label>
+
+                    <input type="date"
+                           id="dataA"
+                           name="dataA"
+                           value="@(dataA.HasValue ? dataA.Value.ToString("yyyy-MM-dd") : "")"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-12 col-md-3">
+
+                    <button type="submit"
+                            class="btn btn-primary me-2">
+
+                        Applica filtro
+
+                    </button>
+
+                    <a asp-controller="Grafici" asp-area="MonitorTemperature"
+                       asp-action="Index"
+                       asp-route-periodo="24h"
+                       class="btn btn-outline-secondary">
+
+                        Azzera filtro
+
+                    </a>
+
+                </div>
+
+            </form>
+
+            <div class="small text-muted mt-3">
+
+                Se imposti Data inizio e/o Data fine,
+                il periodo personalizzato ha precedenza
+                sui pulsanti rapidi.
+                La data finale comprende tutta
+                la giornata selezionata.
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+
+            Nessun dato disponibile
+            con i filtri selezionati.
+
+        </div>
+    }
+
+
+    <div id="contenitoreGrafici"
+         class="row g-3">
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+    const dati =
+            @Html.Raw(jsonDati);
+
+    const periodo =
+        "@periodo";
+
+    const filtroPersonalizzato =
+        @filtroPersonalizzato.ToString().ToLowerInvariant();
+
+    const sogliaSondaFermaMinuti =
+        90;
+
+
+    function numeroSonda(codice) {
+
+        const numero =
+            parseInt(
+                codice
+                    .replace("T", "")
+                    .trim()
+            );
+
+        if (isNaN(numero)) {
+            return 9999;
+        }
+
+        return numero;
+    }
+
+
+    function etichettaData(dataOra) {
+
+        const data =
+            new Date(
+                dataOra);
+
+        if (
+            !filtroPersonalizzato
+            &&
+            periodo === "24h")
+        {
+            return data.toLocaleTimeString(
+                "it-IT",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+        }
+
+        if (
+            !filtroPersonalizzato
+            &&
+            periodo === "48h")
+        {
+            return data.toLocaleString(
+                "it-IT",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+        }
+
+        return data.toLocaleString(
+            "it-IT",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+    }
+
+
+    const gruppi = {};
+
+
+    dati.forEach(
+        function(riga) {
+
+            if (!gruppi[riga.codiceSonda]) {
+                gruppi[riga.codiceSonda] = [];
+            }
+
+            gruppi[riga.codiceSonda]
+                .push(riga);
+        });
+
+
+    const codiciSonda =
+        Object.keys(gruppi)
+            .sort(
+                function(a, b) {
+
+                    return numeroSonda(a)
+                        - numeroSonda(b);
+                });
+
+
+    const contenitore =
+        document.getElementById(
+            "contenitoreGrafici");
+
+
+    codiciSonda.forEach(
+        function(codiceSonda) {
+
+            const serie =
+                gruppi[codiceSonda]
+                    .sort(
+                        function(a, b) {
+
+                            return new Date(a.dataOra)
+                                - new Date(b.dataOra);
+                        });
+
+
+            if (serie.length === 0) {
+                return;
+            }
+
+
+            const ultimo =
+                serie[
+                    serie.length - 1
+                ];
+
+
+            const ultimaData =
+                new Date(
+                    ultimo.dataOra);
+
+
+            const minutiSenzaDati =
+                (
+                    new Date()
+                    -
+                    ultimaData
+                )
+                / 60000;
+
+
+            const sondaFerma =
+                minutiSenzaDati
+                > sogliaSondaFermaMinuti;
+
+
+            const sondaInAllarme =
+                ultimo.allarme === 1;
+
+
+            let classeCard =
+                "";
+
+            let badge =
+                '<span class="badge bg-success badge-stato">OK</span>';
+
+            let coloreTemperatura =
+                "#198754";
+
+
+            if (sondaFerma) {
+
+                classeCard =
+                    "ferma";
+
+                badge =
+                    '<span class="badge bg-warning text-dark badge-stato">FERMA</span>';
+
+                coloreTemperatura =
+                    "#ffc107";
+            }
+            else if (sondaInAllarme) {
+
+                classeCard =
+                    "allarme";
+
+                badge =
+                    '<span class="badge bg-danger badge-stato">ALLARME</span>';
+
+                coloreTemperatura =
+                    "#dc3545";
+            }
+
+
+            const apparecchiatura =
+                ultimo.apparecchiatura;
+
+
+            const idCanvas =
+                "grafico_"
+                +
+                codiceSonda.replace(
+                    /[^a-zA-Z0-9]/g,
+                    "_");
+
+
+            const colonna =
+                document.createElement(
+                    "div");
+
+
+            colonna.className =
+                "col-xl-3 col-lg-4 col-md-6";
+
+
+            colonna.innerHTML =
+                `
+                    <div class="grafico-card ${classeCard}">
+
+                        <div class="grafico-header">
+
+                            ${codiceSonda}
+                            —
+                            ${apparecchiatura}
+
+                            ${badge}
+
+                        </div>
+
+                        <div class="grafico-body">
+
+                            <canvas id="${idCanvas}">
+                            </canvas>
+
+                        </div>
+
+                    </div>
+                `;
+
+
+            contenitore.appendChild(
+                colonna);
+
+
+            const labels =
+                serie.map(
+                    function(x) {
+
+                        return etichettaData(
+                            x.dataOra);
+                    });
+
+
+            const temperature =
+                serie.map(
+                    function(x) {
+
+                        return x.temperatura;
+                    });
+
+
+            const limiteMin =
+                serie.map(
+                    function(x) {
+
+                        return x.limiteMin;
+                    });
+
+
+            const limiteMax =
+                serie.map(
+                    function(x) {
+
+                        return x.limiteMax;
+                    });
+
+
+            const valoriValidi =
+                [];
+
+
+            temperature.forEach(
+                function(v) {
+
+                    if (v !== null) {
+                        valoriValidi.push(v);
+                    }
+                });
+
+
+            limiteMin.forEach(
+                function(v) {
+
+                    if (v !== null) {
+                        valoriValidi.push(v);
+                    }
+                });
+
+
+            limiteMax.forEach(
+                function(v) {
+
+                    if (v !== null) {
+                        valoriValidi.push(v);
+                    }
+                });
+
+
+            let minimoScala =
+                undefined;
+
+            let massimoScala =
+                undefined;
+
+
+            if (valoriValidi.length > 0) {
+
+                const minimo =
+                    Math.min(
+                        ...valoriValidi);
+
+                const massimo =
+                    Math.max(
+                        ...valoriValidi);
+
+                let margine =
+                    (
+                        massimo
+                        -
+                        minimo
+                    )
+                    * 0.15;
+
+
+                if (margine < 0.5) {
+                    margine = 0.5;
+                }
+
+
+                minimoScala =
+                    minimo
+                    -
+                    margine;
+
+                massimoScala =
+                    massimo
+                    +
+                    margine;
+            }
+
+
+            const canvas =
+                document.getElementById(
+                    idCanvas);
+
+
+            new Chart(
+                canvas,
+                {
+                    type:
+                        "line",
+
+                    data:
+                    {
+                        labels:
+                            labels,
+
+                        datasets:
+                        [
+                            {
+                                label:
+                                    "Limite minimo",
+
+                                data:
+                                    limiteMin,
+
+                                borderColor:
+                                    "#dc3545",
+
+                                backgroundColor:
+                                    "#dc3545",
+
+                                borderDash:
+                                    [6, 4],
+
+                                borderWidth:
+                                    2,
+
+                                pointRadius:
+                                    0,
+
+                                tension:
+                                    0,
+
+                                fill:
+                                    false
+                            },
+
+                            {
+                                label:
+                                    "Limite massimo",
+
+                                data:
+                                    limiteMax,
+
+                                borderColor:
+                                    "#fd7e14",
+
+                                backgroundColor:
+                                    "#fd7e14",
+
+                                borderDash:
+                                    [6, 4],
+
+                                borderWidth:
+                                    2,
+
+                                pointRadius:
+                                    0,
+
+                                tension:
+                                    0,
+
+                                fill:
+                                    false
+                            },
+
+                            {
+                                label:
+                                    "Temperatura",
+
+                                data:
+                                    temperature,
+
+                                borderColor:
+                                    coloreTemperatura,
+
+                                backgroundColor:
+                                    coloreTemperatura,
+
+                                borderWidth:
+                                    4,
+
+                                pointRadius:
+                                    periodo === "24h"
+                                    &&
+                                    !filtroPersonalizzato
+                                        ? 3
+                                        : 1,
+
+                                pointBackgroundColor:
+                                    coloreTemperatura,
+
+                                pointBorderColor:
+                                    coloreTemperatura,
+
+                                pointHoverRadius:
+                                    6,
+
+                                tension:
+                                    0.20,
+
+                                fill:
+                                    false
+                            }
+                        ]
+                    },
+
+
+                    options:
+                    {
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction:
+                        {
+                            intersect:
+                                false,
+
+                            mode:
+                                "index"
+                        },
+
+
+                        plugins:
+                        {
+                            legend:
+                            {
+                                display:
+                                    false
+                            },
+
+
+                            tooltip:
+                            {
+                                callbacks:
+                                {
+                                    title:
+                                        function(elementi) {
+
+                                            if (
+                                                elementi.length
+                                                === 0)
+                                            {
+                                                return "";
+                                            }
+
+
+                                            const indice =
+                                                elementi[0]
+                                                    .dataIndex;
+
+
+                                            const data =
+                                                new Date(
+                                                    serie[indice]
+                                                        .dataOra);
+
+
+                                            return data
+                                                .toLocaleString(
+                                                    "it-IT",
+                                                    {
+                                                        day:
+                                                            "2-digit",
+
+                                                        month:
+                                                            "2-digit",
+
+                                                        year:
+                                                            "numeric",
+
+                                                        hour:
+                                                            "2-digit",
+
+                                                        minute:
+                                                            "2-digit",
+
+                                                        second:
+                                                            "2-digit"
+                                                    });
+                                        },
+
+
+                                    label:
+                                        function(context) {
+
+                                            if (
+                                                context.dataset.label
+                                                !== "Temperatura")
+                                            {
+                                                return null;
+                                            }
+
+
+                                            if (
+                                                context.raw
+                                                === null
+                                                ||
+                                                context.raw
+                                                === undefined)
+                                            {
+                                                return "Temperatura: -";
+                                            }
+
+
+                                            return "Temperatura: "
+                                                +
+                                                Number(
+                                                    context.raw)
+                                                    .toFixed(1)
+                                                    .replace(
+                                                        ".",
+                                                        ",")
+                                                +
+                                                " °C";
+                                        }
+                                }
+                            }
+                        },
+
+
+                        scales:
+                        {
+                            x:
+                            {
+                                grid:
+                                {
+                                    display:
+                                        false
+                                },
+
+                                ticks:
+                                {
+                                    autoSkip:
+                                        true,
+
+                                    maxTicksLimit:
+                                        filtroPersonalizzato
+                                            ? 8
+                                            : periodo === "7g"
+                                                ? 7
+                                                : 6,
+
+                                    maxRotation:
+                                        filtroPersonalizzato
+                                            ? 45
+                                            : 0,
+
+                                    minRotation:
+                                        filtroPersonalizzato
+                                            ? 45
+                                            : 0,
+
+                                    font:
+                                    {
+                                        size:
+                                            9
+                                    }
+                                }
+                            },
+
+
+                            y:
+                            {
+                                suggestedMin:
+                                    minimoScala,
+
+                                suggestedMax:
+                                    massimoScala,
+
+                                ticks:
+                                {
+                                    font:
+                                    {
+                                        size:
+                                            9
+                                    },
+
+                                    callback:
+                                        function(valore) {
+
+                                            return Number(
+                                                valore)
+                                                .toFixed(1)
+                                                .replace(
+                                                    ".",
+                                                    ",");
+                                        }
+                                }
+                            }
+                        }
+                    }
+                });
+        });
+
+</script>

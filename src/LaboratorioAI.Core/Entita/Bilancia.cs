@@ -59,6 +59,12 @@ public class TaraturaBilancia
     public int? BilanciaIdStrumentoArcLab { get; set; }
     public int? BilanciaIdClienteArcLab { get; set; }
 
+    // ── Committente (03/11/2026): cliente e insediamento ArcLab, separati dallo strumento. Vuoto = interno MARE.A ──
+    public int? IdClienteArcLab { get; set; }
+    public string? Committente { get; set; }
+    public int? IdInsediamentoArcLab { get; set; }
+    public string? Insediamento { get; set; }
+
     public double Portata { get; set; }
     public double UnitaFormato { get; set; }
     public double CoefficienteSensibilitaTermica { get; set; }

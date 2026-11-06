@@ -1,0 +1,128 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloMieProvvigioni
+@{
+    ViewData["Titolo"] = "Le mie provvigioni";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Cat(VoceProvvigione v) => LaboratorioAI.Core.Provvigioni.EtichetteProvvigioni.Voce(v);
+    var imp = Model.UltimaImportazione;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Le mie provvigioni</h1>
+        <p class="sottotitolo">Il tuo lavoro: clienti, incassi e provvigioni maturate. Dati contabili aggiornati a ogni importazione; i valori dei trimestri non ancora chiusi possono variare.</p>
+    </div>
+    @if (Model.Commerciale is not null)
+    {
+        <form method="post" asp-action="Aggiorna" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Aggiornamento in corso (qualche minuto)…';">
+            <input type="hidden" name="anno" value="@Model.Anno" />
+            <button type="submit" class="pulsante" title="Rilegge fatture e incassi dalla contabilità">Aggiorna dati da AZW</button>
+        </form>
+    }
+</div>
+@if (TempData["Messaggio"] is string msgAgg) { <section class="riquadro"><strong>@msgAgg</strong></section> }
+@if (TempData["Errore"] is string errAgg) { <section class="riquadro" style="border-left:4px solid #B91C1C"><strong>@errAgg</strong></section> }
+
+@if (Model.Commerciale is null)
+{
+    <section class="riquadro"><strong>Il tuo utente non è collegato a un commerciale.</strong><p class="sottotesto">Chiedi a chi gestisce le provvigioni di collegarlo.</p></section>
+}
+else if (!Model.CalcoloAttivo || imp is null)
+{
+    <section class="riquadro"><strong>Calcolo non ancora disponibile.</strong><p class="sottotesto">@(imp is null ? "I dati contabili non sono ancora stati importati." : "Le regole di calcolo per il tuo profilo non sono ancora attive.")</p></section>
+}
+else
+{
+    <section class="riquadro">
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+            <span class="sottotesto">@Model.Commerciale.Nome — anno:</span>
+            @foreach (var a in new[] { Model.Anno - 1, Model.Anno, Model.Anno + 1 }.Where(x => x <= DateTime.Today.Year + 1).Distinct())
+            {
+                <a class="pulsante @(a == Model.Anno ? "" : "pulsante-tenue")" href="@Url.Action("Index", "MieProvvigioni", new { anno = a })">@a</a>
+            }
+            <span class="sottotesto" style="margin-left:1rem">Dati contabili al @(imp.DataModificaFile?.ToLocalTime().ToString("dd/MM/yyyy") ?? "n/d")</span>
+        </div>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Per trimestre</h2><span class="sottotesto">Totale @Model.Anno: <strong>@Euro(Model.Trimestri.Sum(t => t.Provvigione))</strong></span></div>
+        @if (Model.Trimestri.Count == 0)
+        {
+            <p class="sottotesto">Nessun movimento in questo anno.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Trimestre</th><th class="numerico">Incassato in perimetro</th><th class="numerico">Note di credito</th><th class="numerico">Provvigione</th><th>Stato</th></tr></thead>
+                    <tbody>
+                    @foreach (var t in Model.Trimestri)
+                    {
+                        <tr><td>@t.Etichetta</td><td class="numerico">@Euro(t.Incassato)</td><td class="numerico">@Euro(t.NoteCredito)</td><td class="numerico">@Euro(t.Provvigione)</td><td>@(t.Chiuso ? "definitivo" : "provvisorio")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Premio annuale</h2></div>
+        @if (Model.Premio is null)
+        {
+            <p class="sottotesto">Nessun incasso da clienti nuovi in questo anno.</p>
+        }
+        else
+        {
+            <p>Incassato dai clienti nuovi: <strong>@Euro(Model.Premio.BaseIncassata)</strong>.
+               Premio raggiunto: <strong>@Euro(Model.Premio.Premio)</strong>.
+               @if (Model.Premio.ProssimaSoglia is { } soglia) { <text>Prossima soglia: @Euro(soglia) (mancano @Euro(soglia - Model.Premio.BaseIncassata)).</text> }
+               else { <text>Hai raggiunto la soglia più alta.</text> }
+            </p>
+        }
+    </section>
+
+    @if (Model.Obiettivi.Count > 0)
+    {
+        <section class="riquadro">
+            <div class="barra-risultati"><h2>Clienti in sviluppo — obiettivi @Model.Anno</h2></div>
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Cliente</th><th>Azione prevista</th><th class="numerico">Obiettivo</th><th class="numerico">Incassato</th><th class="numerico">Avanzamento</th><th class="numerico">Provvigione</th></tr></thead>
+                    <tbody>
+                    @foreach (var o in Model.Obiettivi)
+                    {
+                        <tr>
+                            <td>@(o.Nome.Length > 0 ? o.Nome : "—") <span class="sottotesto">(@o.Codice)</span></td>
+                            <td>@o.Azione</td>
+                            <td class="numerico">@Euro(o.Obiettivo)</td>
+                            <td class="numerico">@Euro(o.Cumulato)</td>
+                            <td class="numerico">@((o.Obiettivo > 0 ? Math.Min(999m, o.Cumulato / o.Obiettivo * 100m) : 0m).ToString("N0", it))% @(o.Raggiunto ? "✓" : "")</td>
+                            <td class="numerico">@Euro(o.Provvigione)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    <section class="riquadro">
+        <details open>
+            <summary style="cursor:pointer;font-weight:600">I miei clienti con movimenti nel @Model.Anno (@Model.Clienti.Count)</summary>
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Cliente</th><th>Voce</th><th class="numerico">Incassato</th><th class="numerico">Provvigione</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in Model.Clienti)
+                    {
+                        <tr><td>@(c.Nome.Length > 0 ? c.Nome : "—") <span class="sottotesto">(@c.Codice)</span></td><td>@Cat(c.Voce)</td><td class="numerico">@Euro(c.Base)</td><td class="numerico">@Euro(c.Provvigione)</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </section>
+}

@@ -1,0 +1,52 @@
+@model LaboratorioAI.Tracciabilita.Web.Navigazione.Guida
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> La <strong>categoria</strong> (o matrice) dice di che tipo è una materia prima: farina, olio, imballo… A ogni categoria è abbinato un <strong>profilo di controllo</strong>, cioè l'elenco dei controlli che l'accettazione ti propone quando arriva quella merce. Qui li gestisci senza passare dall'importazione.</p>
+    <p class="nota">Riservato a chi ha il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Aggiungere una categoria</summary>
+    <ol class="passi">
+        <li>Apri <strong>Anagrafiche → Categorie e controlli</strong> e premi <span class="tasto">Nuova categoria</span>.</li>
+        <li>Scrivi il nome (per esempio «Farina 00 in sacchi»).</li>
+        <li>Scegli il <strong>profilo di controllo</strong>. Se non c'è quello giusto, creane uno nuovo con il link sotto la scelta.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="nota">Poi, in <em>Anagrafiche → Prodotti e materie prime</em>, assegna la categoria agli articoli: da lì viene proposta in ordini, accettazioni e ricette.</p>
+</details>
+
+<details class="situazione">
+    <summary>Mettere fuori uso una categoria che non serve (per esempio «Prova»)</summary>
+    <ol class="passi">
+        <li>Nell'elenco clicca la categoria (con <strong>Cerca</strong> la trovi per nome).</li>
+        <li>Togli la spunta <strong>In uso</strong> e premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="dopo">Non si può più scegliere nelle cose nuove, ma i lotti e le accettazioni già registrati la conservano. Per rivederla nell'elenco spunta «mostra anche quelle fuori uso».</p>
+    <p class="attenzione">Se ci sono articoli in uso in quella categoria, la pagina te lo dice: prima spostali in un'altra categoria, altrimenti restano senza una scelta valida per i nuovi arrivi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Creare o cambiare un profilo di controllo</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Profili di controllo</span> (in alto nell'elenco categorie) e poi <span class="tasto">Nuovo profilo</span>, oppure clicca un profilo esistente.</li>
+        <li>Scrivi il nome (per esempio «Farine e sfarinati»).</li>
+        <li>Spunta <strong>Si fa</strong> per ogni controllo da fare all'arrivo. <strong>Obbligatorio</strong> dice se va sempre compilato; l'<strong>istruzione</strong> è un promemoria che compare nell'accettazione.</li>
+        <li>Premi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="dopo">La modifica vale dalle <strong>prossime accettazioni</strong>; quelle già registrate non cambiano e conservano i controlli che avevano.</p>
+    <p class="nota">I controlli disponibili sono: etichettatura, integrità della confezione, temperatura, verifica organolettica o visiva, prelievo campione/analisi, certificato, pallet e automezzo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Togliere un controllo da un profilo</summary>
+    <p>Apri il profilo e <strong>togli la spunta «Si fa»</strong> a quel controllo. Non viene cancellato: smette di essere proposto, ma le accettazioni vecchie lo conservano.</p>
+    <p class="attenzione">Un profilo usato da categorie in uso non si può mettere fuori uso: abbina prima quelle categorie a un altro profilo.</p>
+</details>
+
+<details class="situazione">
+    <summary>Una categoria non ha nessun profilo</summary>
+    <p>L'accettazione propone solo i controlli minimi: etichettatura, integrità della confezione e temperatura. Per avere gli altri abbina un profilo.</p>
+</details>

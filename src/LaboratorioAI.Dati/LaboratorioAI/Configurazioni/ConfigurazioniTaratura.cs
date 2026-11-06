@@ -53,6 +53,10 @@ public class ConfigurazioneTaratura : IEntityTypeConfiguration<Taratura>
         e.Property(x => x.StrumentoIdentificazione).HasMaxLength(255).IsRequired();
         e.Property(x => x.StrumentoCodice).HasMaxLength(100);
         e.Property(x => x.Committente).HasMaxLength(255);
+        e.Property(x => x.Insediamento).HasMaxLength(255);   // 03/11/2026
+        e.Property(x => x.TipoTermometro).HasConversion<int>().HasDefaultValue(global::LaboratorioAI.Core.Tarature.TipoTermometro.NonIndicato);
+        e.Property(x => x.Servizio).HasConversion<int>().HasDefaultValue(global::LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro.SoloTaratura)
+            .HasSentinel((global::LaboratorioAI.Core.Tarature.ServizioTaraturaTermometro)0);   // 0 non è un valore valido: il default del db serve solo alle righe esistenti
         e.Property(x => x.NumeroRapporto).HasMaxLength(50);
         e.Property(x => x.RiferimentoIstruzione).HasMaxLength(100);
         e.Property(x => x.Responsabile).HasMaxLength(255);
@@ -84,6 +88,8 @@ public class ConfigurazioneTaraturaIncubatore : IEntityTypeConfiguration<Taratur
         e.Property(x => x.MisuratoreIdentificazione).HasMaxLength(255).IsRequired();
         e.Property(x => x.MisuratoreCodice).HasMaxLength(100);
         e.Property(x => x.ApparecchiaturaIdentificazione).HasMaxLength(255).IsRequired();
+        e.Property(x => x.Committente).HasMaxLength(255);   // 03/11/2026
+        e.Property(x => x.Insediamento).HasMaxLength(255);
         e.Property(x => x.ApparecchiaturaCodice).HasMaxLength(100);
         e.Property(x => x.NumeroRapporto).HasMaxLength(50);
         e.Property(x => x.RiferimentoIstruzione).HasMaxLength(100);
@@ -132,6 +138,8 @@ public class ConfigurazioneTaraturaMappatura : IEntityTypeConfiguration<Taratura
         e.HasKey(x => x.IdMappatura);
 
         e.Property(x => x.ApparecchiaturaIdentificazione).HasMaxLength(255).IsRequired();
+        e.Property(x => x.Committente).HasMaxLength(255);   // 03/11/2026
+        e.Property(x => x.Insediamento).HasMaxLength(255);
         e.Property(x => x.ApparecchiaturaCodice).HasMaxLength(100);
         e.Property(x => x.NumeroRapporto).HasMaxLength(50);
         e.Property(x => x.RiferimentoIstruzione).HasMaxLength(100);

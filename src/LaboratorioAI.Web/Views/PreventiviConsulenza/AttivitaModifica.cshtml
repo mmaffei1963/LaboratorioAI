@@ -1,0 +1,59 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model AttivitaConsulenza
+@{
+    ViewData["Titolo"] = Model.Descrizione;
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    var contenuti = Model.Contenuti.OrderBy(c => c.Ordine).ToList();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@Model.Descrizione</h1>
+        <p class="sottotitolo">Incarico ArcLab @Model.IdTipoIncarico · tipo commessa @(Model.IdTipoCommessa?.ToString() ?? "—"). La descrizione si cambia in ArcLab. I valori qui sono quelli proposti quando si aggiunge l'attività a un preventivo: nel preventivo restano modificabili.</p>
+    </div>
+    <div><a class="pulsante pulsante-tenue" href="@Url.Action("Attivita", "PreventiviConsulenza")">← Attività</a></div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<form method="post" asp-action="AttivitaSalva" asp-route-id="@Model.IdAttivitaConsulenza">
+    <section class="riquadro">
+        <div class="griglia-filtri">
+            <label>Modalità di prezzo
+                <select name="modalitaPrezzo">
+                    @foreach (var m in Enum.GetValues<ModalitaPrezzoConsulenza>()) { <option value="@m" selected="@(m == Model.ModalitaPrezzo)">@m</option> }
+                </select>
+            </label>
+            <label>Unità (per «PerUnita»)<input type="text" name="unitaMisura" value="@Model.UnitaMisura" maxlength="30" placeholder="partecipante, campione…" /></label>
+            <label>Prezzo proposto €<input type="text" name="prezzoProposto" value="@(Model.PrezzoProposto?.ToString("0.##", it))" /></label>
+            <label>Prezzo anni successivi €<input type="text" name="prezzoSuccessiviProposto" value="@(Model.PrezzoSuccessiviProposto?.ToString("0.##", it))" /></label>
+            <label class="sottotesto"><input type="checkbox" name="attivo" value="true" checked="@Model.Attivo" /> attiva (selezionabile nei preventivi)</label>
+            <input type="hidden" name="attivo" value="false" />
+        </div>
+        <label style="display:block;margin-top:0.6rem">Testo nel contratto<textarea name="testoOfferta" rows="4" style="width:100%">@Model.TestoOfferta</textarea></label>
+        <label style="display:block;margin-top:0.6rem">Testo per il secondo anno e successivi (solo canoni)<textarea name="testoSuccessivi" rows="3" style="width:100%">@Model.TestoSuccessivi</textarea></label>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Contenuti da spuntare (@contenuti.Count)</h2></div>
+        <p class="sottotesto">«Predefinito» = già spuntato quando si aggiunge l'attività a un preventivo. I contenuti non attivi non compaiono più.</p>
+        @for (var i = 0; i < contenuti.Count; i++)
+        {
+            var c = contenuti[i];
+            <div style="display:flex;gap:0.5rem;align-items:center;margin:0.2rem 0;@(c.Attivo ? "" : "opacity:0.55")">
+                <input type="hidden" name="contenuti[@i].IdContenutoAttivita" value="@c.IdContenutoAttivita" />
+                <input type="text" name="contenuti[@i].Testo" value="@c.Testo" maxlength="500" style="flex:1" />
+                <label class="sottotesto"><input type="checkbox" name="contenuti[@i].Predefinito" value="true" checked="@c.Predefinito" /> predefinito</label>
+                <input type="hidden" name="contenuti[@i].Predefinito" value="false" />
+                <label class="sottotesto"><input type="checkbox" name="contenuti[@i].Attivo" value="true" checked="@c.Attivo" /> attivo</label>
+                <input type="hidden" name="contenuti[@i].Attivo" value="false" />
+            </div>
+        }
+        <label style="display:block;margin-top:0.6rem">Nuovo contenuto<input type="text" name="nuovoContenuto" maxlength="500" style="width:100%" /></label>
+        <div class="azioni-filtri" style="margin-top:0.6rem"><div style="flex:1"></div><button type="submit" class="pulsante">Salva</button></div>
+    </section>
+</form>

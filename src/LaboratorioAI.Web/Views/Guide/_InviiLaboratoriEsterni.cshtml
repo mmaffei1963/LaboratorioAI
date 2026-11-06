@@ -1,0 +1,30 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Invio campioni ai laboratori esterni» (06/11/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Quando spediamo campioni a un laboratorio esterno gli mandiamo per e-mail un Excel con i dati dei campioni
+        e le prove richieste (le stesse colonne della vecchia query di Access). L'e-mail parte con copia a <strong>refertazione@mare-a.com</strong>,
+        dove arrivano anche le risposte del laboratorio. I dati si leggono da ArcLab; gli indirizzi dei laboratori si scrivono qui.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Devo inviare i campioni spediti oggi</summary>
+    <ol class="passi">
+        <li>Il laboratorio è già su <strong>Centro Ricerche Marine</strong>; cambialo se serve.</li>
+        <li>Scegli il periodo della <strong>data analisi</strong> (data di ricevimento + ritardo analisi) e premi <span class="tasto">Cerca campioni</span>.</li>
+        <li>Compaiono i campioni non certificati con prove di quel laboratorio non ancora esitate né escluse. Togli la spunta a quelli che non partono.
+            La colonna «Già inviato» segnala i campioni già mandati allo stesso laboratorio (quelli con tutte le prove già inviate non sono spuntati).</li>
+        <li>Se vuoi controllare il file premi <span class="tasto">Scarica Excel</span>; poi <span class="tasto">Invia al laboratorio</span>.</li>
+    </ol>
+    <p class="nota">Ogni invio resta nel «Registro degli invii», con l'Excel spedito. Se l'e-mail non parte l'invio è registrato come non riuscito e si può ripetere.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il laboratorio non ha indirizzi e-mail</summary>
+    <ol class="passi">
+        <li>Apri «Indirizzi dei laboratori», scrivi i destinatari (separati da punto e virgola) ed eventuali altri indirizzi in copia, poi <span class="tasto">Salva</span>.</li>
+    </ol>
+</details>

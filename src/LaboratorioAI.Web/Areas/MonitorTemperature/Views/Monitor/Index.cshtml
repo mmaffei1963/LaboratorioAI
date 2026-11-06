@@ -1,0 +1,398 @@
+﻿@model List<LaboratorioAI.Dati.MonitorTemperature.Models.StoricoTemperatura>
+
+@{
+    ViewData["Title"] = "Monitor Temperature";
+
+    DateTime adesso = DateTime.Now;
+
+    // Econorma effettua normalmente una lettura ogni ora.
+    // Consideriamo una sonda ferma solo dopo 90 minuti
+    // senza nuove misure.
+    int minutiSoglia = 90;
+
+    int totaleSonde = Model.Count;
+
+    int sondeFerme = Model.Count(x =>
+        (adesso - x.DataOra).TotalMinutes > minutiSoglia);
+
+    int sondeOperative = totaleSonde - sondeFerme;
+
+    int sondeInAllarme = Model.Count(x =>
+        x.AllarmeCalcolato == 1);
+
+    DateTime? ultimoAggiornamento = null;
+
+    if (Model.Any())
+    {
+        ultimoAggiornamento = Model.Max(x => x.DataOra);
+    }
+}
+
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+    }
+</style>
+
+<div class="container-fluid">
+
+    <div class="text-center mb-4">
+
+        <h1 class="display-5">
+            Monitor Temperature
+        </h1>
+
+        <p class="text-muted">
+            Stato attuale delle apparecchiature monitorate
+        </p>
+
+    </div>
+
+
+    <div class="row mb-4">
+
+        <div class="col-md-2 mb-2">
+
+            <div class="card text-center h-100">
+
+                <div class="card-body">
+
+                    <h3>
+                        @totaleSonde
+                    </h3>
+
+                    <div>
+                        Sonde totali
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2 mb-2">
+
+            <div class="card text-center h-100 border-success">
+
+                <div class="card-body">
+
+                    <h3 class="text-success">
+                        @sondeOperative
+                    </h3>
+
+                    <div>
+                        Operative
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2 mb-2">
+
+            <div class="card text-center h-100 border-warning">
+
+                <div class="card-body">
+
+                    <h3 class="text-warning">
+                        @sondeFerme
+                    </h3>
+
+                    <div>
+                        Ferme &gt; @minutiSoglia min
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2 mb-2">
+
+            <div class="card text-center h-100 border-danger">
+
+                <div class="card-body">
+
+                    <h3 class="text-danger">
+                        @sondeInAllarme
+                    </h3>
+
+                    <div>
+                        In allarme
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-2">
+
+            <div class="card text-center h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted">
+                        Ultima lettura ricevuta
+                    </div>
+
+                    @if (ultimoAggiornamento.HasValue)
+                    {
+                        DateTime ultimaData = ultimoAggiornamento.Value;
+
+                        double minutiUltimoAggiornamento =
+                            (adesso - ultimaData).TotalMinutes;
+
+                        <h4 class="mt-2">
+                            @ultimaData.ToString("dd/MM/yyyy HH:mm:ss")
+                        </h4>
+
+                        @if (minutiUltimoAggiornamento <= minutiSoglia)
+                        {
+                            <span class="badge bg-success">
+                                ACQUISIZIONE ATTIVA
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                ACQUISIZIONE FERMA
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <h4 class="text-danger mt-2">
+                            Nessun dato
+                        </h4>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+
+        <a asp-action="Monitor"
+           class="btn btn-primary">
+
+            Monitor generale
+
+        </a>
+
+        <a asp-controller="Sonde" asp-area="MonitorTemperature" asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            Sonde ArcLab
+
+        </a>
+
+        <button type="button"
+                class="btn btn-outline-dark no-print"
+                onclick="window.print()">
+
+            Stampa / PDF
+
+        </button>
+
+        <a asp-action="EsportaExcelDashboard"
+           class="btn btn-outline-success no-print">
+
+            Esporta Excel
+
+        </a>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-striped table-bordered align-middle">
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>Sonda</th>
+
+                    <th>Apparecchiatura</th>
+
+                    <th>Codice</th>
+
+                    <th>Data / Ora</th>
+
+                    <th>Temperatura</th>
+
+                    <th>Limite Min</th>
+
+                    <th>Limite Max</th>
+
+                    <th>Stato</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    double minutiSenzaDati =
+                        (adesso - item.DataOra).TotalMinutes;
+
+                    bool sondaFerma =
+                        minutiSenzaDati > minutiSoglia;
+
+                    string classeRiga = "";
+
+                    if (sondaFerma)
+                    {
+                        classeRiga = "table-warning";
+                    }
+                    else if (item.AllarmeCalcolato == 1)
+                    {
+                        classeRiga = "table-danger";
+                    }
+
+                    string temperaturaTesto = "";
+
+                    if (item.TemperaturaCorretta.HasValue)
+                    {
+                        temperaturaTesto =
+                            item.TemperaturaCorretta.Value.ToString("0.0");
+                    }
+
+                    string limiteMinTesto = "";
+
+                    if (item.LimiteMin.HasValue)
+                    {
+                        limiteMinTesto =
+                            item.LimiteMin.Value.ToString("0.0");
+                    }
+
+                    string limiteMaxTesto = "";
+
+                    if (item.LimiteMax.HasValue)
+                    {
+                        limiteMaxTesto =
+                            item.LimiteMax.Value.ToString("0.0");
+                    }
+
+                    int minutiFermo =
+                        (int)Math.Floor(minutiSenzaDati);
+
+
+                    <tr class="@classeRiga">
+
+                        <td>
+
+                            <strong>
+                                @item.CodiceSonda
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <a asp-action="Storico"
+                               asp-route-codice="@item.CodiceApparecchiatura">
+
+                                @item.Apparecchiatura
+
+                            </a>
+
+                        </td>
+
+
+                        <td>
+                            @item.CodiceApparecchiatura
+                        </td>
+
+
+                        <td>
+
+                            @item.DataOra.ToString("dd/MM/yyyy HH:mm:ss")
+
+                            @if (sondaFerma)
+                            {
+                                <br />
+
+                                <small class="text-danger">
+                                    Nessun dato da @minutiFermo min
+                                </small>
+                            }
+
+                        </td>
+
+
+                        <td>
+
+                            @if (!string.IsNullOrWhiteSpace(temperaturaTesto))
+                            {
+                                <strong>
+                                    @temperaturaTesto °C
+                                </strong>
+                            }
+
+                        </td>
+
+
+                        <td>
+                            @limiteMinTesto
+                        </td>
+
+
+                        <td>
+                            @limiteMaxTesto
+                        </td>
+
+
+                        <td>
+
+                            @if (sondaFerma)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    FERMA
+                                </span>
+                            }
+                            else if (item.AllarmeCalcolato == 1)
+                            {
+                                <span class="badge bg-danger">
+                                    ALLARME
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">
+                                    OK
+                                </span>
+                            }
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

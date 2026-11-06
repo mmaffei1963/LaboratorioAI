@@ -1,0 +1,67 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var prezzi = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.MetodiPrezzi);
+}
+@* Guida «Metodi e controlli» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A rispondere a due domande, leggendo ArcLab:</p>
+    <ul>
+        <li><strong>«Che controllo uso per queste analisi?»</strong>: scegli uno o più metodi e trovi i controlli che li contengono.</li>
+        <li><strong>«Cosa c'è dentro questo controllo?»</strong>: scegli il controllo e vedi i suoi metodi, con accreditamento e subappalto.</li>
+    </ul>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Trovare il controllo giusto partendo dalle analisi</summary>
+    <ol class="passi">
+        <li>Nel riquadro <strong>Dai metodi ai controlli</strong> scrivi il parametro o la norma (es. «Legionella», «ISO 11731») e scegli il metodo dalla tendina.
+            Ripeti per ogni metodo che ti serve.</li>
+        <li>Scegli cosa deve contenere il controllo:
+            <em>tutti i metodi</em> (anche altri in più), <em>almeno uno</em>, oppure <em>esattamente questi</em> (né più né meno).</li>
+        <li>Premi <span class="tasto">Cerca controlli</span>.</li>
+        <li>A destra compare l'elenco dei controlli, con il numero di metodi e se sono <span class="esito-ok">Attivi</span>. Premi <span class="tasto">Esplodi</span>
+            per vederne il contenuto.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/metodi-ricerca.png" alt="Metodi e controlli: metodi scelti, opzioni tutti/almeno uno/esattamente e controlli trovati" loading="lazy" />
+    <p class="nota">Se non esiste un controllo con esattamente quei metodi, si può proporre in <strong>Commerciale → Proposta controlli</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cerco un controllo con le prove di un altro controllo più qualcosa</summary>
+    <ol class="passi">
+        <li>In <strong>Dai metodi ai controlli</strong>, nella casella <em>Prendi i metodi da un controllo</em>, scrivi il nome o l'ID del controllo
+            che ha già le prove che ti servono (es. A, B, C) e premi <span class="tasto">Aggiungi i suoi metodi</span>.</li>
+        <li>Aggiungi le altre prove (es. D) come al solito, lascia <em>tutti i metodi</em> e premi <span class="tasto">Cerca controlli</span>:
+            escono i controlli che contengono A, B, C e D.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Vedere cosa contiene un controllo</summary>
+    <ol class="passi">
+        <li>Nel riquadro <strong>Dal controllo ai metodi</strong> scegli il controllo dall'elenco, oppure scrivi il suo <strong>ID</strong>.</li>
+        <li>Premi <span class="tasto">Esplodi</span>.</li>
+        <li>A destra trovi ogni metodo con riferimento normativo, parametro, <strong>accreditamento</strong> e <strong>subappalto</strong> (laboratorio esterno).</li>
+    </ol>
+</details>
+
+@if (prezzi)
+{
+    <details class="situazione">
+        <summary>Che prezzo hanno i clienti su questo controllo?</summary>
+        <p>Quando esplodi un controllo, sopra la tabella compare il riquadro dei <strong>prezzi</strong> applicati nelle commesse dei clienti:
+            prezzo unico, oppure minimo e massimo con il cliente e quanti clienti lo applicano. Utile per preparare un'offerta coerente.</p>
+    </details>
+}
+
+<details class="situazione">
+    <summary>Filtrare un elenco lungo</summary>
+    <p>Sopra i risultati c'è la casella <em>Filtra i risultati…</em>: scrivi una parte del nome e la tabella si restringe subito.</p>
+</details>
+
+<p class="nota">Dati letti da ArcLab: i controlli e i metodi si modificano in ArcLab. Dubbi o problemi: Mirko Maffei.</p>

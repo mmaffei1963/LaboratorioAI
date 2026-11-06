@@ -1,0 +1,33 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Sigle laboratori esterni» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Per ogni laboratorio esterno (letto da ArcLab) si indicano la <strong>sigla</strong> usata nel nome dei certificati per Palomar
+        (…-EST-<strong>SIGLA</strong>-idLab-…) e le <strong>parole chiave</strong> con cui il programma riconosce il laboratorio leggendo il PDF.
+        Servono alla pagina <em>Certificati esterni · rinomina</em>.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Un laboratorio nuovo compare in cima all'elenco</summary>
+    <ol class="passi">
+        <li>I laboratori in cima, non ancora salvati, mostrano una <strong>proposta</strong> di sigla.</li>
+        <li>Controlla la sigla (quella concordata con Palomar) e scrivi le parole chiave separate da virgola (es. <em>sicural</em>).</li>
+        <li>Premi <span class="tasto">Salva</span> sulla riga.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>I certificati di un laboratorio non vengono riconosciuti</summary>
+    <p>Apri un suo PDF e cerca una parola che compare sempre (nome, ragione sociale, dominio del sito). Aggiungila alle <strong>parole chiave</strong> del laboratorio
+        e salva; poi rianalizza il certificato con <em>rianalizza (ignora cache)</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Una sigla non è più valida</summary>
+    <p><strong>Disattivala</strong> (non si cancella): i certificati già rinominati restano come sono.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

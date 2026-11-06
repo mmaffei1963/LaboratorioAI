@@ -1,0 +1,47 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Consulenze: documenti e deleghe» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Tre cose a supporto dei rapportini di consulenza:</p>
+    <ul>
+        <li>il <strong>registro delle deleghe operative</strong> per cliente e consulente (generazione, firma, archivio);</li>
+        <li>i dati dei <strong>consulenti</strong> che non stanno in ArcLab (qualifica, iscrizione all'Albo);</li>
+        <li>i <strong>documenti tipo</strong> che il consulente sceglie nel rapportino.</li>
+    </ul>
+    <p>Una delega compare nei rapportini solo se è <strong>firmata</strong> e in essere alla data dell'intervento, per quel cliente e quel consulente.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Preparare una delega operativa</summary>
+    <ol class="passi">
+        <li>In <strong>Genera una nuova delega</strong> scegli il cliente (solo clienti con commessa di consulenza attiva).</li>
+        <li>Spunta le sedi operative (o <em>tutte le sedi</em>, anche future), scegli il <strong>consulente delegato</strong> e scrivi nome e cognome del legale rappresentante.</li>
+        <li>Premi <span class="tasto">Genera delega (Word e PDF)</span> e falla firmare al cliente.</li>
+    </ol>
+    <p class="nota">Se il consulente non ha la <strong>qualifica</strong> compilata nella sezione <em>Consulenti</em>, la delega non si può generare.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il cliente ha firmato: registrare la firma</summary>
+    <ol class="passi">
+        <li>In <strong>Deleghe operative</strong> cerca il cliente e premi <span class="tasto">Carica</span>.</li>
+        <li>Sulla delega in attesa apri <strong>Registra firma</strong>: data di sottoscrizione e, se ce l'hai, la copia firmata (PDF o foto).</li>
+        <li>Premi <span class="tasto">Registra firma</span>: da quel momento la delega vale nei rapportini.</li>
+    </ol>
+    <p class="nota">Per una delega firmata su carta prima del programma usa <em>Registra a mano una delega già firmata</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Documenti tipo dei rapportini</summary>
+    <p>Sono i documenti che il consulente può indicare nel rapportino (manuale HACCP, DVR, piano di autocontrollo…). Per ognuno:</p>
+    <ul class="passi">
+        <li><strong>Può richiamare il Laboratorio</strong>: se il documento è modificato o emesso, il consulente deve spuntare la verifica sulle Condizioni del Laboratorio.</li>
+        <li><strong>Piano analitico</strong>: nel rapportino compare la riga dedicata al piano di autocontrollo analitico.</li>
+    </ul>
+    <p class="nota"><span class="tasto">+ Nuovo documento tipo</span> per aggiungerne uno. Quelli non più usati si disattivano.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

@@ -1,0 +1,18 @@
+@* «Chiedi alla guida» (11/10/2026): domanda libera, risponde l'AI leggendo solo le guide che la persona può vedere.
+   Il comportamento è in wwwroot/js/moduli/chiedi-guida.js (caricato dal layout). *@
+<div class="chiedi-guida">
+    <label class="chiedi-titolo">💬 Chiedi alla guida</label>
+    <div class="chiedi-riga">
+        <textarea rows="2" maxlength="1000" placeholder="Scrivi cosa vuoi fare, es. «come rimando un campione al laboratorio esterno?»"></textarea>
+        <button type="button" class="pulsante chiedi-invia">Chiedi</button>
+    </div>
+    <div class="chiedi-risposta" hidden></div>
+    <div class="chiedi-voti" hidden>
+        <span>La risposta ti è stata utile?</span>
+        <button type="button" data-voto="1" title="Utile">👍</button>
+        <button type="button" data-voto="-1" title="Non utile">👎</button>
+        <span class="chiedi-grazie"></span>
+    </div>
+    <p class="chiedi-avviso">Le domande vengono registrate per migliorare le guide: non scrivere dati personali o dei clienti.
+        Risponde l'AI leggendo le guide: se qualcosa non torna, controlla la guida o chiedi a Mirko.</p>
+</div>

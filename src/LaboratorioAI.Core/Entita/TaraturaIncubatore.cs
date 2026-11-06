@@ -29,6 +29,12 @@ public class TaraturaIncubatore
     public int? ApparecchiaturaIdStrumentoArcLab { get; set; }
     public int? ApparecchiaturaIdClienteArcLab { get; set; }
 
+    // ── Committente (03/11/2026): cliente e insediamento ArcLab, separati dallo strumento. Vuoto = interno MARE.A ──
+    public int? IdClienteArcLab { get; set; }
+    public string? Committente { get; set; }
+    public int? IdInsediamentoArcLab { get; set; }
+    public string? Insediamento { get; set; }
+
     // ── Condizioni di esercizio ─────────────────────────────────────
     public double ValoreNominale { get; set; }
     public double Tolleranza { get; set; }

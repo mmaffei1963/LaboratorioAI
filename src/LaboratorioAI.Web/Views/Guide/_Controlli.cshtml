@@ -1,0 +1,81 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var approva = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ControlliApprova);
+}
+@* Guida «Proposta controlli» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Quando un cliente chiede un gruppo di analisi che in ArcLab non esiste ancora come <strong>controllo</strong>,
+        lo proponi qui scegliendo i metodi dal catalogo. Chi approva lo controlla e il programma manda un'e-mail con tutti i dati
+        a chi lo inserisce in ArcLab. <strong>LaboratorioAI non scrive mai in ArcLab</strong>: l'inserimento resta a mano.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Proporre un controllo nuovo</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova proposta</span>.</li>
+        <li>In <em>Aggiungi metodo</em> scrivi il nome del parametro o del metodo e sceglilo dalla tendina. Ripeti per ogni metodo.</li>
+        <li>Controlla la tabella: denominazione, riferimento, unità, laboratorio esterno, cifre significative e prezzo vengono dal catalogo.</li>
+        <li>Scrivi il <strong>Nome controllo</strong>, oppure premi <span class="tasto">Proponi nome</span> e il programma ne suggerisce uno in base ai metodi.</li>
+        <li>Aggiungi una nota se serve (es. per quale cliente) e premi <span class="tasto">Salva bozza</span>.</li>
+    </ol>
+    <img class="schermata" src="/img/guide/controlli-proposta.png" alt="Proposta controllo: nome, Proponi nome, Aggiungi metodo e tabella dei metodi" loading="lazy" />
+    <p class="dopo"><strong>Cosa succede dopo:</strong> la proposta resta nel <strong>Registro proposte</strong> in attesa. Avvisa chi approva
+        (Responsabile o Qualità): sarà lui a premere «Approva e invia email».</p>
+</details>
+
+<details class="situazione">
+    <summary>Il programma dice che esiste già un controllo con gli stessi metodi</summary>
+    <p>Prima di salvare, il programma controlla se in ArcLab c'è già un controllo con gli stessi metodi e te li elenca.
+        <strong>Di solito conviene usare quello esistente</strong> (nel preventivo, con il suo ID). Salva comunque solo se serve davvero un controllo diverso.</p>
+</details>
+
+<details class="situazione">
+    <summary>Modificare un controllo che esiste già</summary>
+    <ol class="passi">
+        <li>Apri <em>Modifica un controllo esistente (attivo)</em> e cerca il controllo per nome o codice: si carica con i suoi metodi.</li>
+        <li>Aggiungi o togli i metodi.</li>
+        <li><strong>Cambia il nome</strong>: la proposta diventa un controllo nuovo (quello vecchio non si tocca).</li>
+        <li>Premi <span class="tasto">Salva bozza</span>.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Messaggi che possono comparire</summary>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Messaggio</th><th>Cosa fare</th></tr></thead>
+        <tbody>
+            <tr><td>«Un controllo può contenere metodi di un solo laboratorio esterno»</td><td>Separa in due controlli i metodi dei due laboratori.</td></tr>
+            <tr><td>«Cifre significative / MaxDecimali mancanti»</td><td>Il metodo nel catalogo non ha l'arrotondamento: chiedi alla Qualità di completarlo.</td></tr>
+            <tr><td>«Hai caricato il controllo …: devi cambiargli il nome»</td><td>Stai modificando un controllo esistente: dai un nome nuovo.</td></tr>
+        </tbody>
+    </table>
+</details>
+
+<details class="situazione">
+    <summary>Ritrovare o eliminare una proposta</summary>
+    <p>Apri il <strong>Registro proposte</strong> in alto: c'è lo stato di ogni proposta e, quando è stata inserita
+        in ArcLab, il suo IdControllo. Premi <span class="tasto">Apri</span> per riprenderla, oppure <span class="tasto">Elimina</span> se era sbagliata
+        (si può finché non è stata inserita in ArcLab).</p>
+</details>
+
+@if (approva)
+{
+    <h2>Solo per chi approva</h2>
+    <details class="situazione">
+        <summary>Approvare una proposta</summary>
+        <ol class="passi">
+            <li>Apri la proposta dal <strong>Registro proposte</strong>.</li>
+            <li>Controlla nome, metodi, laboratorio esterno e arrotondamenti.</li>
+            <li>Premi <span class="tasto">Approva e invia email</span>.</li>
+        </ol>
+        <p class="dopo"><strong>Cosa succede dopo:</strong> parte un'e-mail con tutti i dati da inserire in ArcLab.
+            Chi la riceve crea il controllo a mano nel gestionale.</p>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

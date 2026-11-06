@@ -15,8 +15,9 @@
     <div class="azioni"><button class="pulsante" id="btn-nuova-taratura">Nuova mappatura</button></div>
 </div>
 
-<section class="riquadro">
-    <div class="barra-risultati"><h2>Registro mappature</h2><span id="conteggio-registro" class="sottotesto"></span></div>
+<section class="riquadro" id="riquadro-registro" data-puo-eliminare="@(Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.MappaturaValidazione) ? "true" : "false")">
+    <div class="barra-risultati"><h2>Registro mappature</h2><span id="conteggio-registro" class="sottotesto" style="margin-left:auto"></span>
+        <label class="casella" style="margin-left:14px" title="Mostra anche le righe eliminate dal registro (restano nel database)"><input type="checkbox" id="mostra-eliminate" /> Mostra eliminate</label></div>
     <div class="tabella-scorrevole">
         <table class="tabella" id="tabella-registro">
             <thead><tr><th>N° rapporto</th><th>Apparecchiatura</th><th class="numerico">Esercizio °C</th><th>Data</th><th>Scadenza</th></tr></thead>
@@ -64,10 +65,17 @@
         <label>Responsabile del rapporto<input type="text" id="t-responsabile" value="@responsabile" /></label>
     </div>
 
+    <h3>Committente <span class="sottotesto">(cliente e insediamento ArcLab; vuoto = mappatura interna MARE.A)</span></h3>
+    <div class="griglia-filtri">
+        <label>Cliente<input type="text" id="c-cliente" list="lista-c-clienti" placeholder="anagrafica ArcLab (vuoto = interno)" />
+            <datalist id="lista-c-clienti"></datalist></label>
+        <label>Insediamento<select id="c-insediamento" disabled><option value="">—</option></select></label>
+    </div>
+
     <h3>Apparecchiatura</h3>
     <div class="griglia-filtri">
-        <label>Origine<select id="a-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Cliente</option></select></label>
-        <label>Identificazione<input type="text" id="a-identificazione" list="lista-a" /><datalist id="lista-a"></datalist></label>
+        <label>Origine<select id="a-origine"><option value="interno">Interno MARE.A</option><option value="cliente">Del cliente</option></select></label>
+        <label>Identificazione<input type="text" id="a-identificazione" list="lista-a" placeholder="interno: da ArcLab · cliente: marca, modello, matricola" /><datalist id="lista-a"></datalist></label>
         <label>Codice<input type="text" id="a-codice" /></label>
     </div>
 
@@ -113,6 +121,11 @@
         <label class="casella"><input type="checkbox" id="t-copia-letture" checked /> copia letture nel duplicato</label>
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-duplica">Duplica per altra apparecchiatura</button>
         <div style="flex:1"></div>
+        @if (Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.MappaturaValidazione))
+        {
+            <button type="button" class="pulsante pulsante-tenue" id="btn-elimina-registro" style="color:var(--rosso)"
+                    title="Toglie dal registro (non cancella: si ripristina con «Mostra eliminate»)">Elimina dal registro</button>
+        }
         <button type="button" class="pulsante pulsante-tenue" id="btn-taratura-annulla">Annulla</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-analizza">Analizza (AI)</button>
         <button type="button" class="pulsante pulsante-secondario" id="btn-taratura-pdf">Rapporto PDF</button>

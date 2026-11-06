@@ -40,14 +40,16 @@ public class BilanceController : Controller
     private readonly IContestoUtente _utente;
     private readonly IServizioVersione _versione;
     private readonly IServizioAudit _audit;
+    private readonly IWebHostEnvironment _ambiente;
 
     public BilanceController(
         ContestoLaboratorioAI ctx, IServizioBilancia calcolo, IServizioValidazioneBilancia validazione,
         IServizioControlliBilancia controlli, IGeneratoreRapportoBilancia generatore,
         IGeneratoreRapportoValidazione generatoreValidazione, IClientAnthropic ia,
         IRepositoryAnagrafiche anagrafiche, IContestoUtente utente, IServizioVersione versione,
-        IServizioAudit audit)
+        IServizioAudit audit, IWebHostEnvironment ambiente)
     {
+        _ambiente = ambiente;
         _ctx = ctx; _calcolo = calcolo; _validazione = validazione; _controlli = controlli;
         _generatore = generatore; _generatoreValidazione = generatoreValidazione; _ia = ia;
         _anagrafiche = anagrafiche; _utente = utente; _versione = versione; _audit = audit;
@@ -62,6 +64,23 @@ public class BilanceController : Controller
     [HttpGet("api/bilance/clienti")]
     public async Task<IActionResult> Clienti(CancellationToken ct) =>
         Json((await _anagrafiche.ClientiAsync(ct)).Select(c => new { c.Id, c.Nome }));
+
+    // 03/11/2026: insediamenti del cliente e strumenti del cliente già tarati (per riproporli)
+    [HttpGet("api/bilance/insediamenti/{idCliente:int}")]
+    public async Task<IActionResult> Insediamenti(int idCliente, CancellationToken ct) =>
+        Json((await _anagrafiche.InsediamentiAsync(idCliente, ct)).Select(i => new { i.Id, i.Nome }));
+
+    [HttpGet("api/bilance/strumenti-cliente")]
+    public async Task<IActionResult> StrumentiCliente([FromQuery] int? idCliente, [FromQuery] string? committente, CancellationToken ct)
+    {
+        var nome = committente?.Trim();
+        if (idCliente is null && string.IsNullOrEmpty(nome)) return Json(Array.Empty<object>());
+        var righe = await _ctx.TaratureBilance.AsNoTracking()
+            .Where(t => t.Attivo && (idCliente != null ? t.IdClienteArcLab == idCliente : t.Committente == nome))
+            .Select(t => new { I = t.BilanciaIdentificazione, C = t.BilanciaModello, D = t.DataTaratura })
+            .ToListAsync(ct);
+        return Json(CommittenteTaratura.Distinti(righe.Select(r => ((string?)r.I, r.C, r.D))));
+    }
 
     [HttpGet("api/bilance/strumenti")]
     public async Task<IActionResult> Strumenti(CancellationToken ct) =>
@@ -140,19 +159,60 @@ public class BilanceController : Controller
 
     // ── Registro / dettaglio tarature ───────────────────────────────
     [HttpGet("api/bilance/elenco")]
-    public async Task<IActionResult> Elenco(CancellationToken ct)
+    public async Task<IActionResult> Elenco([FromQuery] bool eliminate, CancellationToken ct)
     {
-        var righe = await _ctx.TaratureBilance.AsNoTracking().Where(t => t.Attivo)
+        // eliminate=true: anche le righe eliminate dal registro (Attivo = false), per «Mostra eliminate» (09/10/2026).
+        var righe = await _ctx.TaratureBilance.AsNoTracking().Where(t => eliminate || t.Attivo)
             .OrderByDescending(t => t.DataTaratura).Take(500)
             .Select(t => new
             {
-                t.IdTaratura, t.NumeroRapporto, t.BilanciaIdentificazione, t.Portata,
+                t.IdTaratura, t.Attivo, t.NumeroRapporto, t.BilanciaIdentificazione, t.Portata,
                 DataTaratura = t.DataTaratura.ToString("dd/MM/yyyy"),
                 DataScadenza = t.DataScadenza.HasValue ? t.DataScadenza.Value.ToString("dd/MM/yyyy") : null,
                 Scaduta = t.DataScadenza.HasValue && t.DataScadenza.Value < DateTime.Today
             })
             .ToListAsync(ct);
         return Json(righe);
+    }
+
+    // ── Eliminazione dal registro (09/10/2026) ──────────────────────
+    // Nessuna cancellazione fisica: Attivo = false, con motivo obbligatorio nel registro delle operazioni.
+    // Il numero di rapporto non viene riusato (la numerazione conta anche le righe eliminate).
+    // Solo i responsabili (permesso di validazione del calcolo).
+    [HttpPost("api/bilance/{id:int}/elimina")]
+    [RichiedePermesso(Permessi.BilanceValidazione)]
+    public async Task<IActionResult> Elimina(int id, [FromBody] RichiestaEliminazioneRegistro req, CancellationToken ct)
+    {
+        var motivo = req?.Motivo?.Trim();
+        if (string.IsNullOrEmpty(motivo)) return BadRequest(new { messaggio = "Indica il motivo dell'eliminazione." });
+        var t = await _ctx.TaratureBilance.FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
+        if (!t.Attivo) return Json(new { messaggio = "La taratura era già eliminata dal registro." });
+        t.Attivo = false;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.eliminata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaBilancia", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto, Motivo = motivo }, ct: ct);
+        return Json(new { messaggio = "La taratura " + (t.NumeroRapporto ?? "") + " è stata eliminata dal registro." });
+    }
+
+    [HttpPost("api/bilance/{id:int}/ripristina")]
+    [RichiedePermesso(Permessi.BilanceValidazione)]
+    public async Task<IActionResult> Ripristina(int id, CancellationToken ct)
+    {
+        var t = await _ctx.TaratureBilance.FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
+        if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
+        if (t.Attivo) return Json(new { messaggio = "La taratura è già nel registro." });
+        t.Attivo = true;
+        t.DataUltimaModifica = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        await _audit.RegistraAsync(
+            AreaFunzionale.Bilance, "bilance.ripristinata", EsitoOperazione.Successo,
+            tipoEntita: "TaraturaBilancia", idEntita: id.ToString(),
+            dettaglio: new { t.NumeroRapporto }, ct: ct);
+        return Json(new { messaggio = "La taratura " + (t.NumeroRapporto ?? "") + " è stata ripristinata nel registro." });
     }
 
     [HttpGet("api/bilance/{id:int}")]
@@ -166,6 +226,9 @@ public class BilanceController : Controller
             t.IdTaratura, t.IdPesiera,
             t.BilanciaIdentificazione, t.BilanciaModello, t.BilanciaInterna,
             t.BilanciaIdStrumentoArcLab, t.BilanciaIdClienteArcLab,
+            t.IdClienteArcLab, t.IdInsediamentoArcLab, t.Insediamento,
+            Committente = CommittenteTaratura.DaStrumentoVecchio(t.Committente, false,
+                (t.BilanciaInterna, t.BilanciaIdClienteArcLab, t.BilanciaIdentificazione)),
             t.Portata, t.UnitaFormato, t.CoefficienteSensibilitaTermica, t.MaxIncertezzaAmmessa,
             t.TemperaturaTaratura, t.TemperaturaUtilizzo,
             t.CampoTaratura, t.TempoStabilizzazione, t.TempoIntervalloLettura, t.MaxVariazioneTemperatura, t.Tipo, t.Sda, t.TermometroUtilizzato,
@@ -202,7 +265,11 @@ public class BilanceController : Controller
         t.BilanciaModello = Vuoto(req.BilanciaModello);
         t.BilanciaInterna = req.BilanciaInterna;
         t.BilanciaIdStrumentoArcLab = req.BilanciaIdStrumentoArcLab;
-        t.BilanciaIdClienteArcLab = req.BilanciaIdClienteArcLab;
+        t.BilanciaIdClienteArcLab = null;   // 03/11/2026: il cliente sta nel committente
+        t.IdClienteArcLab = req.IdClienteArcLab;
+        t.Committente = CommittenteTaratura.Testo(req.Committente);
+        t.IdInsediamentoArcLab = t.Committente is null ? null : req.IdInsediamentoArcLab;
+        t.Insediamento = t.Committente is null ? null : CommittenteTaratura.Testo(req.Insediamento);
         t.Portata = req.Portata;
         t.UnitaFormato = req.UnitaFormato;
         t.CoefficienteSensibilitaTermica = req.CoefficienteSensibilitaTermica;
@@ -281,7 +348,9 @@ public class BilanceController : Controller
             DataScadenza = t.DataScadenza is DateTime ds ? DateOnly.FromDateTime(ds) : null,
             RiferimentoIstruzione = t.RiferimentoIstruzione,
             RedattoDa = redattoDa,
-            Committente = t.BilanciaInterna ? "MARE.A (interno)" : "Cliente",
+            Committente = CommittenteTaratura.DaStrumentoVecchio(t.Committente, true,
+                (t.BilanciaInterna, t.BilanciaIdClienteArcLab, t.BilanciaIdentificazione)),
+            Insediamento = t.Insediamento,
             BilanciaIdentificazione = t.BilanciaIdentificazione,
             BilanciaModello = t.BilanciaModello,
             Portata = t.Portata,
@@ -305,7 +374,7 @@ public class BilanceController : Controller
         };
 
         bool word = string.Equals(req?.Formato, "word", StringComparison.OrdinalIgnoreCase);
-        var contenuto = word ? _generatore.GeneraWord(dr) : _generatore.GeneraPdf(dr);
+        var contenuto = word ? _generatore.GeneraWord(dr, _ambiente.WebRootPath) : _generatore.GeneraPdf(dr, _ambiente.WebRootPath);
         return File(contenuto, word ? MimeRtf : MimePdf, _generatore.NomeFile(dr, word ? "rtf" : "pdf"));
     }
 
@@ -574,6 +643,11 @@ public record RichiestaSalvaBilancia
     public bool BilanciaInterna { get; init; }
     public int? BilanciaIdStrumentoArcLab { get; init; }
     public int? BilanciaIdClienteArcLab { get; init; }
+    // 03/11/2026: committente (cliente e insediamento ArcLab), separato dallo strumento
+    public int? IdClienteArcLab { get; init; }
+    public string? Committente { get; init; }
+    public int? IdInsediamentoArcLab { get; init; }
+    public string? Insediamento { get; init; }
     public double Portata { get; init; }
     public double UnitaFormato { get; init; }
     public double CoefficienteSensibilitaTermica { get; init; }

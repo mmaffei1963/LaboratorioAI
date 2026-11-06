@@ -1,0 +1,61 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Ordini di Accettazione» (14/10/2026): ordine da firmare per i clienti privati. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Gli Ordini di Accettazione dei clienti che usano il Portale li pubblica <strong>Palomar</strong> partendo dai dati di ArcLab:
+        LaboratorioAI non li emette più. Per i <strong>clienti privati</strong> (lo «Spett. Cliente», senza accesso al Portale) si stampa invece qui
+        l'<strong>Ordine da firmare</strong>: riepilogo dei campioni, Condizioni Generali per i privati, come vuole ricevere il Rapporto di Prova
+        (e-mail o a mano) e lo spazio per le firme. Ordine e Condizioni si firmano insieme alla consegna del campione; l'originale va nel raccoglitore delle schede dei privati, senza scansione.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Un privato consegna il campione</summary>
+    <ol class="passi">
+        <li>In ArcLab, dalla scheda del lotto, premi <span class="tasto">Stampa da firmare</span> (oppure qui, nella tabella <em>Lotti ricevuti</em>, il pulsante con lo stesso nome).</li>
+        <li>Si apre la pagina del lotto. Chiedi al cliente <strong>come vuole il Rapporto di Prova</strong>: per e-mail, ritiro a mano o entrambi.</li>
+        <li>Se lo vuole per e-mail scrivi l'indirizzo (in ArcLab non c'è un campo apposta: viene ricordato qui e riproposto la volta successiva per lo stesso cliente — verificalo con lui).</li>
+        <li>Lascia spuntato <em>firmato alla consegna (oggi)</em> e premi <span class="tasto">Stampa da firmare</span>: il PDF si apre in una nuova scheda, stampalo.</li>
+        <li>Fai firmare l'Ordine al cliente (Nome e cognome, firma, data e ora), firma per MARE.A e archivia l'originale nel raccoglitore.</li>
+    </ol>
+    <p class="dopo">La stampa resta archiviata e registrata in <strong>Consegnati ai privati</strong>. Se ristampi lo stesso lotto si aggiorna la stessa registrazione (conta le stampe).</p>
+    <p class="nota">Se i campioni non hanno ancora i parametri caricati in ArcLab la stampa non è possibile: carica i parametri e ricarica la pagina.</p>
+</details>
+
+<details class="situazione">
+    <summary>Devo inviare il Rapporto di Prova a un privato</summary>
+    <ol class="passi">
+        <li>Apri <strong>Ordini di Accettazione</strong> e nel riquadro <em>Consegnati ai privati</em> scrivi il <strong>numero di lotto</strong> (va bene anche una parte, il nome del cliente o l'e-mail), poi <span class="tasto">Cerca</span>.</li>
+        <li>Se il lotto è fra quelli <strong>da inviare per e-mail</strong>, clicca l'indirizzo (apre la posta con l'oggetto già scritto) o premi <span class="tasto">Copia</span>, e invia il Rapporto.</li>
+        <li>Se è fra quelli <strong>da consegnare a mano</strong>, il cliente passa a ritirarlo.</li>
+    </ol>
+    <p class="nota">«Entrambi» compare fra quelli per e-mail con la scritta <em>(anche a mano)</em>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il cliente dà l'e-mail dopo, o la data della firma è sbagliata</summary>
+    <ol class="passi">
+        <li>Cerca il lotto in <em>Consegnati ai privati</em> e premi <span class="tasto">Modifica</span>.</li>
+        <li>Correggi modalità, e-mail, data della firma o aggiungi una nota, poi <span class="tasto">Salva</span>.</li>
+    </ol>
+    <p class="dopo">Ogni modifica resta nel registro attività con il tuo nome. Le righe «non firmato» in rosso sono ordini stampati senza firma registrata.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere l'Ordine di un qualsiasi lotto</summary>
+    <ol class="passi">
+        <li>Nel riquadro <em>Lotti ricevuti</em> scegli il periodo e, se serve, scegli il <strong>cliente</strong> (scrivi parte del nome e scegli dall'elenco che compare) e, se vuoi, l'<strong>insediamento</strong> dalla tendina; poi premi <span class="tasto">Carica lotti</span>. Con un cliente puoi lasciare vuote le date per cercare in tutto l'archivio.</li>
+        <li>Premi <span class="tasto">Anteprima</span>: è la versione con i testi del Portale, solo da consultare (non viene registrata).</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Cambiare i testi per i privati (Qualità)</summary>
+    <ol class="passi">
+        <li>Apri <strong>Impostazioni documenti</strong>, sezione Documenti.</li>
+        <li>Modifica le voci <em>Ordine da firmare (privati)</em>: riquadro «Verifica e accettazione», Condizioni Generali di Fornitura, dichiarazione sopra le firme.</li>
+    </ol>
+    <p class="nota">Nelle Condizioni la parola <code>[revisione]</code> viene sostituita con la revisione corrente delle Condizioni Generali di Fornitura.</p>
+</details>

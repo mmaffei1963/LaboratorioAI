@@ -1,0 +1,28 @@
+@{
+    ViewData["Titolo"] = "Manualistica: chi approva";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Manualistica: chi approva</h1>
+        <p class="sottotitolo">Per ogni tipo di manuale, chi può approvarne i modelli. Privacy, piscine e legionellosi sono materie diverse e le approva chi le conosce. Finché per un tipo non è indicato nessuno, i suoi modelli restano in attesa e non si possono approvare. Togliere una persona non cancella le approvazioni che ha già dato: quelle restano nella storia dei documenti prodotti.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div id="elenco-tipi"></div>
+</section>
+
+<dialog id="dlg-avviso">
+    <form method="dialog">
+        <h2 id="avviso-titolo">Attenzione</h2>
+        <div id="avviso-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/manualistica-approvatori.js" asp-append-version="true"></script>
+}

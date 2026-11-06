@@ -36,6 +36,7 @@ public class MetodiController : Controller
             m.RiferimentoNormativo,
             m.NomeParametro,
             m.DenominazioneRiga,
+            m.Acronimo, m.RifMetodo, m.DettagliMetodo, m.UnitaMisura,   // 05/11/2026
             m.Accreditato,
             m.LaboratorioEsterno,
             m.AccreditatoEsterno,

@@ -1,0 +1,63 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Le mie provvigioni» (11/10/2026). Nessuna schermata: i dati sono personali. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A vedere <strong>le tue provvigioni</strong>: quanto hanno pagato i tuoi clienti, quanto hai maturato
+        trimestre per trimestre, il premio annuale e gli obiettivi sui clienti in sviluppo. Vedi solo i tuoi dati; nessun altro commerciale li vede.</p>
+    <p>Le provvigioni si calcolano sull'<strong>incassato</strong> (non sul fatturato), secondo il tuo accordo. I dati arrivano dalla contabilità (AZW).</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Voglio sapere quanto ho maturato</summary>
+    <ol class="passi">
+        <li>Apri <strong>Commerciale → Le mie provvigioni</strong>.</li>
+        <li>In alto scegli l'anno (anno scorso, quest'anno).</li>
+        <li>La tabella <strong>Per trimestre</strong> mostra per ogni trimestre l'incassato, le note di credito e la provvigione; in alto a destra il totale dell'anno.</li>
+    </ol>
+    <table class="tabella tabella-guida">
+        <thead><tr><th>Stato del trimestre</th><th>Cosa vuol dire</th></tr></thead>
+        <tbody>
+            <tr><td>provvisorio</td><td>Il trimestre non è ancora chiuso: il valore può cambiare (incassi in arrivo, note di credito).</td></tr>
+            <tr><td>definitivo</td><td>Trimestre chiuso dall'amministrazione: è il valore che viene pagato.</td></tr>
+        </tbody>
+    </table>
+    <p class="nota">La data «Dati contabili al …» dice fino a quando sono aggiornati gli incassi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Il premio annuale: quanto mi manca?</summary>
+    <p>Nel riquadro <strong>Premio annuale</strong> trovi quanto hai incassato dai <strong>clienti nuovi</strong>, il premio già raggiunto e
+        <strong>quanto manca alla prossima soglia</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Clienti in sviluppo e obiettivi</summary>
+    <p>Se hai clienti «in sviluppo» concordati, il riquadro <strong>Clienti in sviluppo — obiettivi</strong> mostra per ognuno l'azione prevista,
+        l'obiettivo, quanto ha già pagato, la percentuale di avanzamento (✓ quando è raggiunto) e la provvigione.</p>
+</details>
+
+<details class="situazione">
+    <summary>Voglio vedere cliente per cliente</summary>
+    <p>In fondo, <strong>I miei clienti con movimenti</strong> elenca ogni cliente con la voce (es. analisi, consulenza), l'incassato e la provvigione.
+        Utile per controllare se un pagamento è stato contato.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedo «Il tuo utente non è collegato a un commerciale» o «Calcolo non ancora disponibile»</summary>
+    <p>Il tuo accesso non è ancora collegato alla tua scheda di commerciale, o il tuo accordo non è ancora inserito.
+        Avvisa chi gestisce le provvigioni: lo sistema in pochi minuti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Un importo non mi torna</summary>
+    <ol class="passi">
+        <li>Controlla la data «Dati contabili al …»: un pagamento successivo non è ancora conteggiato.</li>
+        <li>Cerca il cliente in <em>I miei clienti con movimenti</em>.</li>
+        <li>Se ancora non torna, segnalalo all'amministrazione indicando cliente, trimestre e importo.</li>
+    </ol>
+</details>
+
+<p class="nota">Le regole di calcolo sono quelle del tuo accordo provvigioni. Dubbi: amministrazione o Mirko Maffei.</p>

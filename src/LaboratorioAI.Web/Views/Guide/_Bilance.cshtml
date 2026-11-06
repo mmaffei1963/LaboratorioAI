@@ -1,0 +1,68 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var valida = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.BilanceValidazione);
+}
+@* Guida «Taratura bilance» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A tarare una bilancia (nostra o di un cliente) con le masse della <strong>pesiera</strong>, secondo l'IO 4-05
+        (metodo EURAMET cg-18): prova di <strong>eccentricità</strong>, di <strong>ripetibilità</strong> e di <strong>linearità</strong>.
+        Il programma calcola errori e incertezza, dice se la bilancia rispetta l'incertezza massima ammessa e prepara il rapporto.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Tarare una bilancia</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova taratura</span>, scegli la <strong>Pesiera</strong> e il <em>Termometro utilizzato</em> (scrivi qualche lettera e scegli).</li>
+        <li><strong>Committente:</strong> se lo strumento è di un cliente scrivi il <em>Cliente</em> e sceglilo dall'elenco ArcLab, poi scegli l'<em>Insediamento</em>.
+            Lascia vuoto se è nostro. Cliente e insediamento vanno nella testata del rapporto.</li>
+        <li><strong>Bilancia:</strong> scegli l'<em>Origine</em> (<em>Interno MARE.A</em> o <em>Del cliente</em>: per quelle dei clienti scrivi marca e matricola), poi modello, tipo e
+            <strong>Portata</strong> in grammi. Controlla l'<em>Unità di formato</em> (la divisione, es. 0,0001) e le temperature.</li>
+        <li><strong>Eccentricità:</strong> metti il carico indicato sotto il titolo (circa un terzo della portata) nelle diverse posizioni del piatto
+            e scrivi le letture; inserisci anche carico nominale e valore convenzionale della massa.</li>
+        <li><strong>Ripetibilità:</strong> 5 pesate dello stesso carico, una per riga. Il programma consiglia il carico massimo del
+            <em>campo di taratura</em> (campo di applicazione), se compilato; altrimenti la portata.</li>
+        <li><strong>Linearità:</strong> premi <span class="tasto">Aggiungi 5 punti</span> (propone 0, 25, 50, 75 e 100% della portata) e scrivi le letture.
+            Valore convenzionale, incertezza e masse da usare (colonna <em>Composizione</em>) li prende il programma dalla pesiera.</li>
+        <li>Premi <span class="tasto">Calcola</span>, poi <span class="tasto">Salva taratura</span> e <span class="tasto">Rapporto PDF</span> (o Word).</li>
+    </ol>
+    <p class="dopo"><strong>Nei Risultati:</strong> se l'eccentricità è conforme e se l'incertezza massima resta sotto la <em>Max incertezza ammessa</em>
+        (<strong style="color:#1a7f37">CONFORME</strong>). Se è <strong style="color:#b3261e">NON CONFORME</strong> non usare la bilancia e avvisa il Responsabile o la Qualità.</p>
+    <img class="schermata" src="/img/guide/bilance-prove.png" alt="Taratura bilancia: prove di eccentricità, ripetibilità e linearità con Calcola" loading="lazy" />
+    <p class="nota">Se in <em>Composizione</em> compare «nessuna combinazione», con le masse della pesiera non si arriva a quel carico: cambia il carico.</p>
+</details>
+
+<details class="situazione">
+    <summary>Inserire o aggiornare la pesiera</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuova pesiera</span>, oppure clicca una pesiera nell'elenco <strong>Pesiere</strong>.</li>
+        <li>Per partire dalla nostra, premi <span class="tasto">Carica pesiera MARE.A</span>: compila le masse, ma <strong>controlla i valori</strong>
+            (soprattutto mpe e classe) con il certificato.</li>
+        <li>Per ogni massa: nominale, valore convenzionale, incertezza, mpe, classe OIML, certificato e date. Poi <span class="tasto">Salva pesiera</span>.</li>
+    </ol>
+    <p class="nota">Quando arriva il nuovo certificato delle masse, aggiorna la pesiera prima di fare altre tarature.</p>
+</details>
+
+<details class="situazione">
+    <summary>Più bilance nello stesso giro, riaprire, controllo AI</summary>
+    <p><span class="tasto">Duplica per altra bilancia</span> riparte con la stessa pesiera e le stesse impostazioni. Per riaprire una taratura clicca la riga del
+        <strong>Registro tarature</strong>. <span class="tasto">Analizza (AI)</span>, dopo il salvataggio, segnala per esempio ripetibilità con meno di 5 letture,
+        eccentricità non superata o errori anomali: è un aiuto, la decisione resta tua.</p>
+</details>
+
+@if (valida)
+{
+    <h2>Solo per Responsabile e Qualità</h2>
+    <details class="situazione">
+        <summary>Validare il calcolo ed eliminare dal registro</summary>
+        <p><span class="tasto">Valida calcoli</span> rifà l'esempio ufficiale EURAMET cg-18 e controlla che i risultati coincidano: esito atteso
+            <strong style="color:#1a7f37">VALIDATO</strong>, con PDF nel registro validazioni.
+            <span class="tasto">Elimina dal registro</span> toglie una taratura sbagliata senza cancellarla (si ripristina con <em>Mostra eliminate</em>).</p>
+    </details>
+}
+
+<p class="nota">Dubbi sul metodo: Qualità. Problemi con il programma: Mirko Maffei.</p>

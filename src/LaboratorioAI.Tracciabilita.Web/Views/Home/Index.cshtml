@@ -1,0 +1,91 @@
+@using LaboratorioAI.Tracciabilita.Web.Navigazione
+@{
+    ViewData["Titolo"] = "Home";
+    var autenticato = User.Identity?.IsAuthenticated == true;
+    var gestore = User.HasClaim("tr:gestore", "true");
+    var cartelle = autenticato ? MenuApplicazione.Per(gestore) : new List<GruppoMenu>();
+    const string Stella = "M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z";
+}
+@if (!autenticato)
+{
+    <div class="riquadro">
+        <h1>Tracciato</h1>
+        <p class="sottotitolo">La tracciabilità della tua produzione, dal fornitore al cliente.</p>
+        <p><a class="pulsante" asp-controller="Account" asp-action="Accesso">Accedi</a></p>
+    </div>
+}
+else
+{
+    @* Cartelle generate da Navigazione/MenuApplicazione.cs: stessa fonte del menu in testata.
+       Clic sulla cartella: si apre la finestra con le sue funzioni. Ricerca: filtra nel browser le funzioni,
+       senza chiamate al server; il tasto «/» porta alla casella. Preferiti: stellina accanto a ogni funzione,
+       salvati in questo browser. *@
+    <div class="home-testata">
+        <h1>Dove vuoi andare?</h1>
+        <p class="sottotitolo">Benvenuto, @User.Identity!.Name. Dentro ogni cartella trovi le funzioni di Tracciato; con <strong>? Guide</strong> in alto trovi come si usano.</p>
+        <div class="home-cerca">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            <input type="search" id="home-cerca" placeholder="Cerca una funzione (es. ordini, lotto, richiamo)…" autocomplete="off"
+                   aria-label="Cerca una funzione" aria-controls="home-risultati" />
+        </div>
+    </div>
+
+    <section class="home-risultati" id="home-risultati" aria-live="polite" hidden>
+        <div class="home-voci" id="home-risultati-elenco"></div>
+        <p class="home-preferiti-vuoto" id="home-risultati-vuoto" hidden>Nessuna funzione trovata. Prova con un'altra parola.</p>
+    </section>
+
+    <section class="home-preferiti" aria-labelledby="titolo-preferiti">
+        <h2 id="titolo-preferiti">Preferiti</h2>
+        <div class="home-preferiti-elenco" id="preferiti-elenco"></div>
+        <p class="home-preferiti-vuoto" id="preferiti-vuoto">Apri una cartella e clicca la stellina ☆ accanto a una funzione: la ritrovi qui, a un clic.</p>
+    </section>
+
+    <div class="home-cartelle" id="home-cartelle">
+        @foreach (var c in cartelle)
+        {
+            <button type="button" class="home-cartella" data-apri="cartella-@c.Codice" data-cartella="@c.Codice" aria-haspopup="dialog">
+                <span class="home-cartella-riga">
+                    <span class="home-icona" aria-hidden="true">
+                        <svg width="26" height="26" viewBox="0 0 24 24"><path d="@c.Icona" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </span>
+                </span>
+                <span class="home-cartella-nome">@c.TitoloHome</span>
+                <span class="home-cartella-sotto">@c.Descrizione · @c.Voci.Count @(c.Voci.Count == 1 ? "funzione" : "funzioni")</span>
+            </button>
+        }
+    </div>
+
+    @foreach (var c in cartelle)
+    {
+        <dialog class="home-finestra" id="cartella-@c.Codice" data-cartella="@c.Codice" aria-labelledby="titolo-@c.Codice">
+            <header>
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="@c.Icona" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <h2 id="titolo-@c.Codice">@c.TitoloHome</h2>
+                <form method="dialog"><button class="home-chiudi" aria-label="Chiudi">✕</button></form>
+            </header>
+            <div class="home-voci">
+                @foreach (var v in c.Voci)
+                {
+                    <div class="home-voce-blocco">
+                        <a class="home-voce" href="@v.Url" data-titolo="@v.Titolo" data-cartella-nome="@c.TitoloHome" data-icona="@c.Icona">
+                            <strong>@v.Titolo</strong>
+                            <span>@v.Descrizione</span>
+                        </a>
+                        <button type="button" class="home-stella" data-stella="@v.Url" aria-pressed="false"
+                                title="Aggiungi ai preferiti" aria-label="Preferito: @v.Titolo">
+                            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="@Stella" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /></svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </dialog>
+    }
+}
+
+@section Script {
+    @if (autenticato)
+    {
+        <script src="~/js/home.js" asp-append-version="true"></script>
+    }
+}

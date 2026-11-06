@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text;
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Enumerazioni;
@@ -13,7 +15,8 @@ namespace LaboratorioAI.Web.Controllers;
 
 /// <summary>
 /// Proposta di nuovi controlli (consulenti/clienti). Scrive in tabelle di staging
-/// (schema «controlli»), MAI su ArcLab; genera un XML per l'import supervisionato.
+/// (schema «controlli»), MAI su ArcLab. All'approvazione invia un'email con tutti i dati
+/// utili per l'inserimento manuale del controllo in ArcLab (nessun import automatico).
 /// </summary>
 [RichiedePermesso(Permessi.ControlliProponi)]
 public class ControlliController : Controller
@@ -23,12 +26,17 @@ public class ControlliController : Controller
     private readonly IClientAnthropic _ia;
     private readonly IContestoUtente _utente;
     private readonly IServizioAudit _audit;
+    private readonly IServizioEmail _email;
+    private readonly IConfiguration _config;
+    private readonly ILogger<ControlliController> _log;
 
     public ControlliController(
         ContestoLaboratorioAI ctx, IRepositoryControlli catalogo,
-        IClientAnthropic ia, IContestoUtente utente, IServizioAudit audit)
+        IClientAnthropic ia, IContestoUtente utente, IServizioAudit audit,
+        IServizioEmail email, IConfiguration config, ILogger<ControlliController> log)
     {
         _ctx = ctx; _catalogo = catalogo; _ia = ia; _utente = utente; _audit = audit;
+        _email = email; _config = config; _log = log;
     }
 
     public IActionResult Index()
@@ -268,7 +276,8 @@ public class ControlliController : Controller
         return Ok();
     }
 
-    // ── Approvazione (abilita l'import automatico in ArcLab) ──
+    // ── Approvazione: segna la proposta approvata e invia subito l'email con i dati per
+    // l'inserimento manuale in ArcLab (nessun import automatico). ──
     [HttpPost("api/controlli/{id:int}/approva")]
     [RichiedePermesso(Permessi.ControlliApprova)]
     public async Task<IActionResult> Approva(int id, CancellationToken ct)
@@ -277,8 +286,8 @@ public class ControlliController : Controller
             .FirstOrDefaultAsync(x => x.IdPropostaControllo == id, ct);
         if (p is null) return NotFound(new { messaggio = "Proposta non trovata." });
         if (p.Righe.Count == 0) return BadRequest(new { messaggio = "Nessun metodo: aggiungine almeno uno." });
-        if (p.Stato == StatoProposta.Importato)
-            return BadRequest(new { messaggio = "Proposta già importata in ArcLab." });
+        if (p.Stato is StatoProposta.Trasmesso or StatoProposta.Importato)
+            return BadRequest(new { messaggio = "Proposta già trasmessa: non è più possibile approvarla di nuovo." });
 
         p.Stato = StatoProposta.Approvato;
         p.DataUltimaModifica = DateTime.UtcNow;
@@ -287,7 +296,92 @@ public class ControlliController : Controller
             AreaFunzionale.Controlli, "proposta.approvata", EsitoOperazione.Successo,
             tipoEntita: "PropostaControllo", idEntita: id.ToString(),
             dettaglio: new { p.Controllo, Metodi = p.Righe.Count }, ct: ct);
+
+        var destinatari = _config.GetSection("Controlli:EmailResponsabili").Get<string[]>() ?? Array.Empty<string>();
+        try
+        {
+            await _email.InviaAsync(
+                destinatari,
+                $"Nuovo controllo da inserire in ArcLab: {p.Controllo}",
+                CorpoEmailApprovazione(p), ct);
+
+            p.Stato = StatoProposta.Trasmesso;
+            p.DataTrasmissione = DateTime.UtcNow;
+            p.DataUltimaModifica = DateTime.UtcNow;
+            await _ctx.SaveChangesAsync(ct);
+            await _audit.RegistraAsync(
+                AreaFunzionale.Controlli, "proposta.trasmessa", EsitoOperazione.Successo,
+                tipoEntita: "PropostaControllo", idEntita: id.ToString(),
+                dettaglio: new { Destinatari = destinatari }, ct: ct);
+        }
+        catch (Exception ex)
+        {
+            // La proposta resta Approvato (non Trasmesso): l'utente può ritentare l'invio
+            // ripremendo "Approva", che è idempotente finché non si passa a Trasmesso/Importato.
+            _log.LogError(ex, "Invio email proposta controllo {Id} non riuscito", id);
+            await _audit.RegistraAsync(
+                AreaFunzionale.Controlli, "proposta.trasmessa", EsitoOperazione.Errore,
+                tipoEntita: "PropostaControllo", idEntita: id.ToString(),
+                dettaglio: new { Errore = ex.Message }, ct: ct);
+            return StatusCode(502, new
+            {
+                p.IdPropostaControllo,
+                Stato = p.Stato.ToString(),
+                messaggio = "Proposta approvata, ma l'invio dell'email non è riuscito: " + ex.Message + ". Riprova con \"Approva\"."
+            });
+        }
+
         return Json(new { p.IdPropostaControllo, Stato = p.Stato.ToString() });
+    }
+
+    /// <summary>Corpo HTML dell'email inviata all'approvazione, con tutti i dati per creare
+    /// manualmente il controllo (e la relativa commessa, se nuova) in ArcLab.</summary>
+    private static string CorpoEmailApprovazione(PropostaControllo p)
+    {
+        static string E(string? s) => WebUtility.HtmlEncode(s ?? "");
+
+        var sb = new StringBuilder();
+        sb.Append("<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222\">");
+        sb.Append($"<h2 style=\"margin:0 0 4px\">{E(p.Controllo)}</h2>");
+        sb.Append($"<p style=\"margin:0 0 12px;color:#555\">Codice locale: <b>{E(p.CodiceLocale)}</b> &middot; Origine: {E(p.Origine)}</p>");
+
+        if (p.IdControlloEsistenteArcLab is int idEsist)
+            sb.Append($"<p><b>Modifica del controllo ArcLab esistente ID {idEsist}</b>: creare un nuovo controllo con i metodi sottostanti (non sovrascrivere l'esistente).</p>");
+        else
+            sb.Append("<p>Nuovo controllo: nessun controllo di partenza in ArcLab.</p>");
+
+        if (!string.IsNullOrWhiteSpace(p.Note))
+            sb.Append($"<p><b>Note:</b> {E(p.Note)}</p>");
+
+        sb.Append("<table style=\"border-collapse:collapse;width:100%;margin-top:8px\" cellpadding=\"6\">");
+        sb.Append("<thead><tr style=\"background:#f0f0f0;text-align:left\">");
+        foreach (var intestazione in new[] { "#", "Metodo", "Denominazione riga", "Rif. biblio", "U.M.", "Lab esterno", "Cifre sign.", "Max decimali", "Costo €", "Sconto %" })
+            sb.Append($"<th style=\"border:1px solid #ddd\">{E(intestazione)}</th>");
+        sb.Append("</tr></thead><tbody>");
+
+        decimal totale = 0;
+        foreach (var r in p.Righe.OrderBy(r => r.Progressivo))
+        {
+            totale += r.CostoMetodoEuro ?? 0m;
+            sb.Append("<tr>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{r.Progressivo}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{E(r.Metodo)} (ID {r.IdMetodoArcLab})</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{E(r.DenominazioneRiga)}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{E(r.RifBiblio)}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{E(r.UnitaMisura)}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{E(r.LabEsterno)}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{r.CifreSignificative}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{r.MaxDecimali}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{r.CostoMetodoEuro:0.00}</td>");
+            sb.Append($"<td style=\"border:1px solid #ddd\">{r.ScontoRiga:0.##}</td>");
+            sb.Append("</tr>");
+        }
+
+        sb.Append("</tbody></table>");
+        sb.Append($"<p style=\"margin-top:10px\"><b>Totale (senza sconti riga): {totale:0.00} €</b></p>");
+        sb.Append("<p style=\"color:#888;font-size:12px;margin-top:16px\">Email generata automaticamente da Laboratorio AI all'approvazione della proposta. Il controllo NON viene inserito automaticamente in ArcLab: va creato a mano.</p>");
+        sb.Append("</div>");
+        return sb.ToString();
     }
 }
 

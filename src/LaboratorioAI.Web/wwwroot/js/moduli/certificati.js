@@ -72,8 +72,10 @@ async function apri(idCertificato) {
             dati.prove.map(p => `
                 <tr>
                     <td><strong>${testo(p.parametro)}</strong>
-                        ${p.accreditato ? '<span class="etichetta etichetta-conforme">accreditato MARE.A</span>' : ''}
-                        ${p.accreditatoEsterno ? '<span class="etichetta etichetta-conforme">accreditato lab esterno</span>' : ''}
+                        ${/* Prova in subappalto: conta solo l'accreditamento del laboratorio esterno, mai quello di MARE.A (Art. 8.2). */
+                          p.laboratorioEsterno
+                            ? (p.accreditatoEsterno ? '<span class="etichetta etichetta-conforme">accreditato lab esterno</span>' : '')
+                            : (p.accreditato ? '<span class="etichetta etichetta-conforme">accreditato MARE.A</span>' : '')}
                         <div class="sottotesto">Eseguito da ${p.laboratorioEsterno
                             ? `${testo(p.laboratorioEsterno)}${p.numeroLaboratorioEsterno ? ` — n° ${testo(p.numeroLaboratorioEsterno)}` : ''}`
                             : 'MARE.A'}</div></td>

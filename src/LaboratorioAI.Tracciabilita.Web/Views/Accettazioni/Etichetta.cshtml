@@ -1,0 +1,78 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloEtichetta
+@using LaboratorioAI.Tracciabilita.Core.Enumerazioni
+@{ Layout = null; var gruppi = new[] { "Controllo automezzo", "Etichettatura e confezionamento", "Controllo temperatura", "Campionatura" }; }
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<title>Accettazione in entrata</title>
+<style>
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2933; margin: 1.5cm; font-size: 13px; }
+    h1 { font-size: 1.4rem; margin: 0; color: #8a1c14; }
+    .testa { display: flex; justify-content: space-between; border-bottom: 3px solid #8a1c14; padding-bottom: .4rem; }
+    .dati { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem 1rem; margin: .8rem 0; }
+    .dati div span { display: block; color: #52606d; font-size: 11px; }
+    .dati div strong { display: block; border-bottom: 1px solid #b6c2cc; min-height: 1.3em; }
+    .riquadri { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+    .riquadro { border: 2px solid #2d3a8c; padding: .4rem .6rem; }
+    .riquadro h3 { margin: 0 0 .3rem; font-size: 12px; color: #8a1c14; text-transform: uppercase; }
+    .voce { display: flex; justify-content: space-between; gap: .5rem; border-bottom: 1px dotted #b6c2cc; padding: 3px 0; }
+    .casella { min-width: 5rem; border: 1px solid #2d3a8c; padding: 0 .3rem; min-height: 1.2em; text-align: center; }
+    .giudizio { margin-top: 1rem; display: flex; gap: .6rem; align-items: center; }
+    .qr { text-align: center; font-size: 10px; color: #52606d; }
+    .qr svg { width: 2.6cm; height: 2.6cm; display: block; margin: 0 auto 2px; }
+    .firma { margin-top: 2.5rem; text-align: right; color: #8a1c14; font-weight: 600; }
+    @@media print { .nascondi { display: none; } body { margin: 1cm; } }
+</style>
+</head>
+<body>
+<p class="nascondi">@if (!Model.Vuota && Model.IdAccettazione > 0) { <a href="@Url.Action("Correggi", "Accettazioni", new { id = Model.IdAccettazione })">Correggi i dati</a> }
+    <button onclick="window.print()">Stampa</button> <button onclick="if (window.opener) { window.close(); } else { location.href='@Url.Action("Index", "Accettazioni")'; }">Chiudi</button></p>
+<div class="testa"><div><h1>Accettazione in entrata</h1><div>@Model.Azienda@(string.IsNullOrWhiteSpace(Model.Sede) ? "" : " - " + Model.Sede)</div></div>
+    <div style="display:flex; gap:1rem; align-items:flex-start"><div>Mod. ACC-01<br />@(Model.Vuota ? "Scheda da compilare" : "Accettato il " + (Model.Accettata?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")))</div>
+    @if (!string.IsNullOrEmpty(Model.UrlLotto)) { <div class="qr" id="qr" data-url="@Model.UrlLotto"></div> }</div></div>
+<div class="dati">
+    <div><span>N. ordine</span><strong>@Model.NumeroOrdine</strong></div>
+    <div><span>Fornitore</span><strong>@Model.Fornitore</strong></div>
+    <div><span>Materia prima</span><strong>@Model.Articolo@(Model.Matrice is null ? "" : " (" + Model.Matrice + ")")</strong></div>
+    <div><span>Tipo documento</span><strong>@Model.TipoDocumento</strong></div>
+    <div><span>Data documento</span><strong>@Model.DataDocumento?.ToString("dd/MM/yyyy")</strong></div>
+    <div><span>N. documento</span><strong>@Model.NumeroDocumento</strong></div>
+    <div><span>Lotto</span><strong style="font-size:1.4em">@Model.Lotto</strong></div>
+    <div><span>Quantità</span><strong>@(Model.Quantita is { } q ? q.ToString("0.##") + " " + Model.UnitaMisura : "")</strong></div>
+    <div><span>@(Model.ETmc ? "TMC" : "Scadenza")</span><strong>@Model.DataScadenza?.ToString("dd/MM/yyyy")</strong></div>
+    <div><span>Data produzione</span><strong>@Model.DataProduzione?.ToString("dd/MM/yyyy")</strong></div>
+    <div><span>Ente bio</span><strong>@Model.EnteBio</strong></div>
+</div>
+<div class="riquadri">
+@foreach (var g in gruppi)
+{
+    var voci = Model.Voci.Where(v => v.Gruppo == g).ToList();
+    <div class="riquadro">
+        <h3>@g</h3>
+        @foreach (var v in voci) { <div class="voce"><span>@v.Nome</span><span class="casella">@v.Esito</span></div> }
+        @if (voci.Count == 0 && Model.Vuota) { <div class="voce"><span>&nbsp;</span><span class="casella"></span></div> }
+    </div>
+}
+</div>
+<div class="giudizio"><strong>Giudizio di accettazione</strong>
+    <span class="casella" style="min-width:9rem">@(Model.Giudizio is { } gdz ? gdz.ToString() : "")</span></div>
+@if (!string.IsNullOrWhiteSpace(Model.Note)) { <p><strong>Note:</strong> @Model.Note</p> }
+<div class="firma">FIRMA RESPONSABILE: ______________________</div>
+@if (!string.IsNullOrEmpty(Model.UrlLotto))
+{
+    <script src="~/js/qrcode.js"></script>
+    <script>
+        (function () {
+            var el = document.getElementById('qr');
+            try {
+                var q = qrcode(0, 'M');
+                q.addData(el.getAttribute('data-url'));
+                q.make();
+                el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 8, scalable: true }) + 'Scheda del lotto';
+            } catch (e) { el.textContent = ''; }
+        })();
+    </script>
+}
+</body>
+</html>

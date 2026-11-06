@@ -1,0 +1,87 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Entita
+@model LaboratorioAI.Web.Controllers.ModelloElencoPreventiviConsulenza
+@{
+    ViewData["Titolo"] = "Preventivi consulenza";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    string Stato(StatoPreventivoConsulenza s) => s switch
+    {
+        StatoPreventivoConsulenza.Bozza => "bozza",
+        StatoPreventivoConsulenza.Inviato => "inviato",
+        StatoPreventivoConsulenza.Accettato => "accettato",
+        StatoPreventivoConsulenza.Rifiutato => "rifiutato",
+        _ => "annullato"
+    };
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Preventivi di consulenza e formazione</h1>
+        <p class="sottotitolo">Contratti della serie C, composti dalle attività (le descrizioni incarico di ArcLab) o partendo da un pacchetto di settore. Il documento rinvia alle Condizioni Generali di consulenza; dal contratto accettato si ricavano i dati per le commesse in ArcLab.</p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <form method="post" asp-action="Nuovo"><button type="submit" class="pulsante">Nuovo preventivo</button></form>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Attivita", "PreventiviConsulenza")">Attività</a>
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Pacchetti", "PreventiviConsulenza")">Pacchetti di settore</a>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+@if (ViewData["SenzaAttivita"] is true)
+{
+    <section class="riquadro"><strong>Prima di tutto carica le attività da ArcLab:</strong> pagina <a href="@Url.Action("Attivita", "PreventiviConsulenza")">Attività</a> → «Allinea con ArcLab». Vengono creati anche i pacchetti di settore dai modelli Word.</section>
+}
+
+<section class="riquadro">
+    <form method="get" class="griglia-filtri">
+        <label>Anno
+            <select name="anno">@foreach (var a in Model.Anni) { <option value="@a" selected="@(a == Model.Anno)">@a</option> }</select>
+        </label>
+        <label>Stato
+            <select name="stato">
+                <option value="">tutti</option>
+                @foreach (var s in Enum.GetValues<StatoPreventivoConsulenza>()) { <option value="@s" selected="@(Model.Stato == s.ToString())">@Stato(s)</option> }
+            </select>
+        </label>
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Filtra</button></div>
+    </form>
+    <label class="sottotesto" style="display:block;margin:0.4rem 0">Cerca
+        <input type="search" id="filtro-preventivi" placeholder="cliente, numero, consulente" autocomplete="off" style="max-width:24rem" />
+    </label>
+    @if (Model.Elenco.Count == 0)
+    {
+        <p class="sottotesto">Nessun preventivo.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-preventivi">
+                <thead><tr><th>Numero</th><th>Cliente</th><th>Settore</th><th>Redattore</th><th>Consulente</th><th>Data</th><th>Stato</th><th class="numerico">Primo anno</th><th class="numerico">Anni successivi</th></tr></thead>
+                <tbody>
+                @foreach (var p in Model.Elenco)
+                {
+                    <tr>
+                        <td><a href="@Url.Action("Modifica", "PreventiviConsulenza", new { id = p.IdPreventivoConsulenza })">@p.NumeroCompleto</a></td>
+                        <td>@(p.RagioneSociale ?? "—")</td>
+                        <td>@p.SettoreAttivita</td>
+                        <td>@(p.IdUtenteConsulente is int ir && Model.Redattori.TryGetValue(ir, out var red) ? red : "—")</td>
+                        <td>@p.ConsulenteNome</td>
+                        <td>@p.DataOfferta?.ToString("dd/MM/yyyy")</td>
+                        <td>@Stato(p.Stato)</td>
+                        <td class="numerico">@Euro(p.TotalePrimoAnno)@if (p.Blocchi.Count > 1) { <br /><span class="sottotesto" title="Il totale è quello del primo blocco: i blocchi non si sommano">+ altri @(p.Blocchi.Count - 1) blocchi</span> }</td>
+                        <td class="numerico">@(p.TotaleAnniSuccessivi > 0 ? Euro(p.TotaleAnniSuccessivi) : "")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/preventivi-consulenza.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,75 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestisci = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ScadenziarioGestione);
+}
+@* Guida «Scadenziario tarature» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> A vedere <strong>quali tarature stanno per scadere</strong>:</p>
+    <ul>
+        <li><strong>Interni (ArcLab):</strong> i nostri strumenti, letti dal piano tarature di ArcLab, raggruppati per tipo.</li>
+        <li><strong>Esterni (clienti):</strong> i termometri dei clienti che abbiamo tarato, con consegna e fatturazione.</li>
+    </ul>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Quali strumenti nostri devo tarare a breve?</summary>
+    <ol class="passi">
+        <li>Nel riquadro <strong>Interni (ArcLab)</strong> scrivi in <em>Preavviso (giorni)</em> quanti giorni vuoi guardare avanti (es. 30).</li>
+        <li>Premi <span class="tasto">Aggiorna</span>: compaiono gli strumenti in scadenza, divisi per tipo (termometri, incubatori, bilance…).</li>
+        <li>La colonna <strong>Giorni</strong> dice quanti giorni mancano: in rosso se è già scaduta (numero negativo), in arancio entro 15 giorni,
+            «mai» se lo strumento non è mai stato tarato.</li>
+    </ol>
+    <p class="nota">Questi dati vengono da ArcLab e qui <strong>non si modificano</strong>: date e frequenze si cambiano nel piano tarature di ArcLab.</p>
+</details>
+
+<details class="situazione">
+    <summary>Quali termometri dei clienti scadono?</summary>
+    <ol class="passi">
+        <li>Nel riquadro <strong>Esterni (clienti)</strong> lascia <em>Stato</em> su «in uso» e scrivi i giorni di <em>Preavviso</em> (es. 30):
+            compaiono quelle che scadono entro quei giorni, comprese le già scadute. Puoi filtrare anche per <em>Cliente</em> e <em>Riferimento</em>.</li>
+        <li>Le tarature scadute da più di 12 mesi (conta la data di scadenza) sono nascoste: di solito sono clienti che non tornano. Spunta
+            <em>mostra anche scadute da oltre 12 mesi</em> per vederle.</li>
+        <li>L'elenco mostra cliente, riferimento e date: è la lista dei clienti da avvisare o da chiamare per la nuova taratura.</li>
+        <li>Puoi filtrare anche per <em>Tipo</em> (a sonda, a gabbia, pirometro, datalogger) e per <em>Servizio</em>
+            (solo taratura, oppure termometro nuovo fornito da noi + taratura).</li>
+    </ol>
+    <img class="schermata" src="/img/guide/scadenziario-esterni.png" alt="Elenco dei termometri dei clienti con filtri di scadenza e da fatturare" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Cosa c'è ancora da fatturare?</summary>
+    <p>Spunta <strong>solo da fatturare</strong>: restano le righe rosate, cioè i termometri tarati e non ancora fatturati.
+        In alto a destra c'è il conteggio. Le tarature dei termometri dei clienti fatte nella pagina <em>Taratura termometri</em> arrivano qui da sole,
+        già segnate «da fatturare».</p>
+</details>
+
+@if (gestisci)
+{
+    <h2>Per chi gestisce lo scadenziario</h2>
+    <details class="situazione">
+        <summary>Segnare consegna e fattura</summary>
+        <ol class="passi">
+            <li>Premi <span class="tasto">Modifica</span> sulla riga del termometro.</li>
+            <li>Compila <em>Data consegna</em>, <em>Operatore consegna</em> e, quando c'è, <em>Rif. fattura</em>; spunta <strong>fatturato</strong>.</li>
+            <li>Premi <span class="tasto">Salva</span>: la riga non compare più tra quelle da fatturare.</li>
+        </ol>
+        <p class="nota">Ogni taratura ha uno <strong>stato</strong>: <em>in uso</em>, <em>rinnovata</em> (sostituita da una più recente) o <em>dismessa</em>
+            (il cliente non la riporterà più). Solo quelle in uso vanno in scadenza. Usa i pulsanti <span class="tasto">Rinnovata</span> e
+            <span class="tasto">Dismessa</span> sulla riga (e <span class="tasto">Rimetti in uso</span> per tornare indietro). Quando registri una
+            taratura nuova, il programma propone quelle dello stesso cliente e tipologia da segnare come rinnovate.</p>
+    </details>
+    <details class="situazione">
+        <summary>Aggiungere un termometro a mano o importare lo storico</summary>
+        <p><span class="tasto">Nuovo termometro</span> aggiunge una riga a mano (es. una taratura fatta prima del programma).
+            <span class="tasto">Importa storico da Excel</span> carica il vecchio archivio; <span class="tasto">Elimina</span> toglie dall'elenco una riga sbagliata (resta nel database).
+            <span class="tasto">Svuota archivio importato</span> toglie solo le righe
+            importate (le tarature fatte nel programma restano), per reimportare un file corretto.</p>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

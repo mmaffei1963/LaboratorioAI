@@ -1,0 +1,94 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Statistiche";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Statistiche</h1>
+        <p class="sottotitolo">
+            Ricerca trasversale sull'archivio, a livello di singola prova (parametro
+            analizzato). Solo lettura, nessuna scrittura su ArcLab.
+        </p>
+    </div>
+    <div class="azioni">
+        <button class="pulsante pulsante-secondario" id="btn-esporta" disabled>
+            Esporta in Excel
+        </button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Data ricezione da<input type="date" id="f-ric-da" /></label>
+        <label>Data ricezione a<input type="date" id="f-ric-a" /></label>
+        <label>Data prelievo da<input type="date" id="f-prel-da" /></label>
+        <label>Data prelievo a<input type="date" id="f-prel-a" /></label>
+
+        <label>Cliente<input type="search" id="f-cliente" placeholder="parte del nome" /></label>
+        <label>Insediamento<input type="search" id="f-insediamento" placeholder="parte del nome" /></label>
+        <label>Città insediamento<input type="search" id="f-citta" placeholder="parte del nome" /></label>
+        <label>Provincia insediamento<input type="search" id="f-provincia" placeholder="es. RN" /></label>
+        <label>CAP insediamento<input type="search" id="f-cap" /></label>
+
+        <label>Descrizione incarico (commessa)
+            <input type="search" id="f-descrincarico" placeholder='parte del testo, es. "leg"' />
+        </label>
+        <label>Metodo / parametro
+            <input type="search" id="f-metodo" placeholder="parte del testo" />
+        </label>
+        <label>Denominazione campione<input type="search" id="f-denominazione" placeholder="parte del nome" /></label>
+        <label>Matrice<input type="search" id="f-matrice" placeholder="parte del nome" /></label>
+
+        <label>N° certificato<input type="search" id="f-certificato" /></label>
+        <label>N° campione<input type="search" id="f-numcampione" placeholder="es. 4530 o 4530/01" /></label>
+        <label>Accreditato
+            <select id="f-accreditato">
+                <option value="">Tutti</option>
+                <option value="si">Sì</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+        <label>Valore calcolato da<input type="number" step="any" id="f-valore-da" /></label>
+        <label>Valore calcolato a<input type="number" step="any" id="f-valore-a" /></label>
+    </div>
+
+    <div class="azioni-filtri">
+        <div style="flex:1"></div>
+        <button class="pulsante" id="btn-cerca">Cerca</button>
+    </div>
+</section>
+
+<div id="pannello-sintesi" class="griglia-schede nascosto"></div>
+
+<div id="pannello-esiti" style="display:none">
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>Dettaglio prove</h2>
+            <span id="conteggio-dettaglio" class="sottotesto"></span>
+        </div>
+        <div class="tabella-scorrevole">
+            <table class="tabella" id="tabella-dettaglio">
+                <thead>
+                    <tr>
+                        <th>Cliente</th><th>Insediamento</th><th>Città</th>
+                        <th>Commessa</th><th>N° certificato</th><th>N° campione</th>
+                        <th>Denominazione campione</th><th>Matrice</th>
+                        <th>Data ricezione</th><th>Data prelievo</th><th>Temp. prelievo</th>
+                        <th>Parametro</th><th>Metodo</th>
+                        <th class="numerico">Valore calcolato</th><th>UM</th>
+                        <th>Accreditato</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="avviso-troncato" class="avviso nascosto">
+            Elenco troncato: affina i filtri per un conteggio completo.
+        </div>
+    </section>
+</div>
+
+@section Script {
+    <script type="module" src="~/js/moduli/statistiche.js" asp-append-version="true"></script>
+}

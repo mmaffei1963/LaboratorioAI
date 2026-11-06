@@ -30,6 +30,13 @@ public interface IRepositoryRicercaErrori
     /// </summary>
     Task<IReadOnlyList<RigaMetodoDoppio>> MetodiDoppiAsync(CancellationToken ct = default);
 
+    /// <summary>Metodi attivi con parametro e denominazione (DettagliMetodo), per il controllo delle denominazioni.</summary>
+    Task<IReadOnlyList<RigaMetodoDenominazione>> MetodiDenominazioneAsync(CancellationToken ct = default);
+
+    /// <summary>Rapporti di prova emessi nel periodo con prove dei metodi indicati (numero e ultimo).</summary>
+    Task<IReadOnlyList<RigaRapportiMetodo>> RapportiPerMetodoAsync(
+        IReadOnlyCollection<int> idMetodi, int annoDa, int annoA, CancellationToken ct = default);
+
     /// <summary>Lotti (per anno di ricezione) con IdRicevitore non valorizzato.</summary>
     Task<IReadOnlyList<RigaLottoErrore>> LottiSenzaRicevitoreAsync(int annoDa, int annoA, CancellationToken ct = default);
 
@@ -50,6 +57,18 @@ public interface IRepositoryRicercaErrori
     /// </summary>
     Task<IReadOnlyList<RigaCampioneStampa>> CampioniProntiStampaAsync(
         DateOnly? da, DateOnly? a, string? codLotto, string? codCampione, CancellationToken ct = default);
+
+    /// <summary>
+    /// 28/10/2026: commesse di laboratorio attive di ArcLab (prezzo per insediamento e controllo) e listini del database
+    /// Marea collegati ai clienti ArcLab (Clienti.IDArcLab, clienti non obsoleti). Sola lettura su entrambi.
+    /// </summary>
+    Task<(IReadOnlyList<CommessaPrezzoArcLab> Commesse, IReadOnlyList<ListinoMarea> Listini)> PrezziCommesseMareaAsync(CancellationToken ct = default);
+
+    /// <summary>28/10/2026: dati per il confronto delle commesse ArcLab ↔ Marea oltre ai prezzi (sola lettura su entrambi).</summary>
+    Task<DatiCommesseMarea> CommesseMareaAsync(CancellationToken ct = default);
+
+    /// <summary>28/10/2026: commesse di laboratorio attive senza numero di contratto (clienti attivi con codice contabilità).</summary>
+    Task<IReadOnlyList<CommessaSenzaContratto>> CommesseSenzaContrattoAsync(CancellationToken ct = default);
 }
 
 /// <summary>Una prova che concorre a un doppione di parametro sullo stesso campione.</summary>
@@ -164,4 +183,40 @@ public record RigaCoerenzaPrelevatore
     public bool AnomaliaVettore { get; init; }
     /// <summary>È presente un verbale di prelievo che per un prelievo interno non dovrebbe esserci.</summary>
     public bool AnomaliaVerbale { get; init; }
+}
+
+/// <summary>Metodo attivo con parametro e denominazione (DettagliMetodo, quella stampata nel Rapporto di Prova).</summary>
+public record RigaMetodoDenominazione
+{
+    public int IdMetodo { get; init; }
+    public int? IdParametro { get; init; }
+    public string? NomeParametro { get; init; }
+    public string? DettagliMetodo { get; init; }
+    public string? RifBiblio { get; init; }
+}
+
+/// <summary>Rapporti di prova emessi con un metodo nel periodo.</summary>
+public record RigaRapportiMetodo
+{
+    public int IdMetodo { get; init; }
+    public int NRapporti { get; init; }
+    public DateTime? UltimoRapporto { get; init; }
+}
+
+/// <summary>Metodo con denominazione sospetta, con rapporti emessi e verifica (per pagina ed Excel).</summary>
+public record RigaDenominazioneSospetta
+{
+    public string Tipo { get; init; } = "";
+    public string Motivo { get; init; } = "";
+    public int IdMetodo { get; init; }
+    public int? IdParametro { get; init; }
+    public string? NomeParametro { get; init; }
+    public string? DettagliMetodo { get; init; }
+    public string? RifBiblio { get; init; }
+    public int NRapporti { get; init; }
+    public DateTime? UltimoRapporto { get; init; }
+    public bool Verificata { get; init; }
+    public string? VerificataDa { get; init; }
+    public DateTime? VerificataIl { get; init; }
+    public string? NoteVerifica { get; init; }
 }

@@ -1,0 +1,79 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    var gestore = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.RapportiniGestione);
+}
+@* Guida «Rapportini di consulenza» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Dopo ogni intervento il consulente scrive il <strong>rapportino</strong>: cosa ha fatto, su quali documenti, quanto si fattura.
+        Il PDF arriva al cliente (tramite Palomar, all'e-mail dell'insediamento) <strong>prima della fattura</strong>: il cliente ha <strong>3 giorni lavorativi</strong>
+        per fare osservazioni. Poi il rapportino viene confermato e passa al prefatturato.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Compilare il rapportino di un intervento</summary>
+    <ol class="passi">
+        <li>Premi <span class="tasto">Nuovo rapportino</span>.</li>
+        <li><strong>Cliente:</strong> cerca per ragione sociale e sceglilo, poi scegli l'<strong>insediamento</strong>: sotto compare l'e-mail a cui arriverà il PDF (controllala).</li>
+        <li><strong>Intervento:</strong> data, consulente, ore, dove (presso il cliente, in sede, da remoto) e la <strong>commessa di consulenza</strong> di ArcLab.</li>
+        <li><strong>Fatturazione:</strong> a ore, a consuntivo, oppure convenzione a prezzo stabilito (in questo caso il sopralluogo è solo rendicontato).
+            Scegli la <em>voce di fattura</em> e scrivi la <em>descrizione breve</em> che andrà in fattura.</li>
+        <li><strong>Attività svolta:</strong> descrivi in modo puntuale cosa hai esaminato o modificato e con che esito (almeno 80 caratteri: niente frasi generiche di una riga).</li>
+        <li><strong>Documentazione:</strong> premi <span class="tasto">+ Aggiungi documento</span> per ogni documento consegnato o modificato (revisione, data, cosa è stato fatto).</li>
+        <li>Se serve, compila il <em>Follow-up</em> e l'<strong>importo</strong> (a corpo o tariffa × ore).</li>
+        <li>Premi <span class="tasto">Anteprima PDF</span> per controllare, poi <span class="tasto">Salva e invia al cliente</span> (o <span class="tasto">Salva bozza</span> se devi finire dopo).</li>
+    </ol>
+    <img class="schermata" src="/img/guide/rapportino-intervento.png" alt="Rapportino: cliente, intervento, fatturazione e attività svolta" loading="lazy" />
+</details>
+
+<details class="situazione">
+    <summary>Compare la casella gialla «Ho verificato che…»</summary>
+    <p>Appare quando tra i documenti c'è un documento che richiama il <strong>Laboratorio MARE.A</strong> (es. manuale HACCP, piano di autocontrollo).
+        Prima di inviare devi controllare che il documento non attribuisca al laboratorio cose escluse dalle sue Condizioni (campionamento, comunicazione degli esiti
+        alle Autorità, giudizio di conformità automatico, conservazione dei residui, invio dei rapporti via e-mail) e che usi «prelievo» e non «campionamento». Poi spunta la casella.</p>
+</details>
+
+<details class="situazione">
+    <summary>Delega operativa: SÌ o NO</summary>
+    <ul class="passi">
+        <li><span class="etichetta" style="background:#e7f5e7;color:#256029">SÌ</span>: c'è una delega firmata per te su quel cliente; viene citata nel rapportino.</li>
+        <li><span class="etichetta" style="background:#fdecea;color:#a12622">NO</span>: nel rapportino risulta «nessuna delega operativa in essere». Se intervieni direttamente sui documenti
+            del cliente, premi <span class="tasto">Genera delega</span>, scegli le sedi e il legale rappresentante e premi <span class="tasto">Genera (Word e PDF)</span>:
+            va fatta firmare al cliente. Finché non è firmata non vale.</li>
+    </ul>
+</details>
+
+<details class="situazione">
+    <summary>Contratto prepagato (pacchetto di ore già pagato)</summary>
+    <p>Spunta <em>prestazione scalata da un contratto prepagato</em>, indica la data dell'ultimo scalo e le ore residue: il programma calcola le ore che restano.
+        Il rapportino non va in fattura.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ritrovare i miei rapportini</summary>
+    <p>In alto metti il periodo, lo <em>Stato</em> (bozza, inviato, contestato, confermato…) e premi <span class="tasto">Carica</span>.
+        <span class="tasto">Cerca</span> filtra per numero, cliente, consulente o descrizione. Un rapportino <em>contestato</em> si corregge e si <strong>reinvia</strong>.
+        Uno sbagliato si toglie con <span class="tasto">Annulla rapportino</span> (resta in archivio).</p>
+</details>
+
+@if (gestore)
+{
+    <h2>Per chi gestisce i rapportini</h2>
+    <details class="situazione">
+        <summary>Confermare, contestare, correggere</summary>
+        <ul class="passi">
+            <li>Passati i 3 giorni senza osservazioni, spunta i rapportini e premi <span class="tasto">Conferma selezionati</span>: quelli in convenzione o prepagati diventano
+                <em>Rendicontato</em> e non vanno in fattura, gli altri passano al prefatturato.</li>
+            <li>Se il cliente fa osservazioni: apri il rapportino e premi <span class="tasto">Segna contestato</span>; il consulente lo corregge e lo reinvia.
+                <span class="tasto">Correggi importo</span> per cambiare solo l'importo.</li>
+            <li><em>solo i miei</em> nei filtri mostra solo i rapportini che hai fatto tu.</li>
+            <li>In fondo, il <strong>Registro di controllo degli invii (Palomar)</strong> mostra se ogni PDF è arrivato a Palomar; spunta <em>solo problemi</em>.</li>
+        </ul>
+    </details>
+}
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

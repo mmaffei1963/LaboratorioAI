@@ -1,0 +1,320 @@
+@using System.Globalization
+@using LaboratorioAI.Core.Provvigioni
+@model LaboratorioAI.Web.Controllers.ModelloProvvigioni
+@{
+    ViewData["Titolo"] = "Provvigioni";
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string Euro(decimal v) => v.ToString("N2", it) + " €";
+    var imp = Model.UltimaImportazione;
+    var r = Model.Risultato;
+    var segnalatiDa = ViewData["SegnalatiDa"] as IReadOnlyDictionary<string, string> ?? new Dictionary<string, string>();
+    var eccezioni = ViewData["Eccezioni"] as IReadOnlyList<LaboratorioAI.Core.Entita.EccezioneAreaCommerciale> ?? new List<LaboratorioAI.Core.Entita.EccezioneAreaCommerciale>();
+    var basiElenco = ViewData["Basi"] as IReadOnlyList<LaboratorioAI.Core.Entita.BaseCalcolo> ?? new List<LaboratorioAI.Core.Entita.BaseCalcolo>();
+    var clientiElenco = ViewData["Clienti"] as IReadOnlyList<LaboratorioAI.Web.Controllers.ClienteElenco> ?? new List<LaboratorioAI.Web.Controllers.ClienteElenco>();
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Provvigioni</h1>
+        <p class="sottotitolo">Anteprima del calcolo dai dati contabili AZW (sola lettura). I trimestri non sono ancora chiusi: nulla è definitivo.</p>
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Dati AZW</h2></div>
+    @if (imp is null)
+    {
+        <p class="sottotesto">Nessuna importazione eseguita.</p>
+    }
+    else
+    {
+        <p class="sottotesto">
+            Ultima importazione: @imp.DataOra.ToLocalTime().ToString("dd/MM/yyyy HH:mm") —
+            @(imp.Riuscita ? "riuscita" : "FALLITA").
+            File AZW aggiornato al @(imp.DataModificaFile?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "n/d").
+            @if (imp.Riuscita) { <text>Fatture di laboratorio: @imp.Fatture · incassi: @imp.Incassi · note di credito: @imp.NoteCredito.</text> }
+            else { <text>@imp.Messaggio</text> }
+        </p>
+    }
+    <form method="post" asp-action="Importa" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Importazione in corso…';">
+        <button type="submit" class="pulsante">Importa AZW ora</button>
+        <span class="sottotesto">Può richiedere alcuni minuti (copia del file e lettura).</span>
+    </form>
+</section>
+
+@if (Model.Scelto is not null)
+{
+    <section class="riquadro">
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+            <span class="sottotesto">Commerciale:</span>
+            @foreach (var c in Model.Commerciali)
+            {
+                var attivo = c.IdCommerciale == Model.Scelto.IdCommerciale;
+                <a class="pulsante @(attivo ? "" : "pulsante-tenue")" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = c.IdCommerciale })">@c.Nome</a>
+            }
+        </div>
+        <p style="margin-top:0.6rem">
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Sviluppo", "Provvigioni", new { idCommerciale = Model.Scelto.IdCommerciale })">Elenco «in sviluppo»</a>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Convenzioni", "Provvigioni", new { idCommerciale = Model.Scelto.IdCommerciale })">Convenzioni</a>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "AccordiProvvigioni", new { idCommerciale = Model.Scelto.IdCommerciale })">Accordi e regole</a>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Index", "Segnalatori")">Segnalatori</a>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Compensi", "Segnalatori")">Compensi segnalatori</a>
+        </p>
+        <form method="post" asp-action="CollegaUtente" class="griglia-filtri" style="margin-top:0.6rem">
+            <input type="hidden" name="idCommerciale" value="@Model.Scelto.IdCommerciale" />
+            <label>Utente collegato (vede «Le mie provvigioni»)
+                <select name="idUtente">
+                    <option value="">— nessuno —</option>
+                    @foreach (var u in Model.Utenti)
+                    {
+                        <option value="@u.IdUtente" selected="@(u.IdUtente == Model.Scelto.IdUtente)">@u.Nome (@u.Email)</option>
+                    }
+                </select>
+            </label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Salva collegamento</button></div>
+        </form>
+        <form method="post" asp-action="ImpostaRiferimentoArcLab" class="griglia-filtri" style="margin-top:0.6rem">
+            <input type="hidden" name="idCommerciale" value="@Model.Scelto.IdCommerciale" />
+            <label>Codice riferimento ArcLab («rif. del cliente» delle commesse, mansione.IdMansione)
+                <input type="number" name="idMansioneArcLab" value="@Model.Scelto.IdMansioneArcLab" />
+            </label>
+            <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Salva codice</button></div>
+        </form>
+        <p class="sottotesto" style="margin-top:0.6rem">Calcolo per: <strong>@Model.Scelto.Nome</strong> (id @Model.Scelto.IdCommerciale)</p>
+    </section>
+}
+
+@if (r is not null && !Model.CalcoloAttivo)
+{
+    <section class="riquadro"><strong>Nessun accordo attivo per questo commerciale.</strong><p class="sottotesto">Il calcolo parte quando il commerciale ha un accordo attivo. Crealo o attivalo in <a href="@Url.Action("Index", "AccordiProvvigioni", new { idCommerciale = Model.Scelto?.IdCommerciale })">Accordi provvigioni</a> (per Carloni: dopo aver registrato le convenzioni).</p></section>
+}
+else if (r is not null)
+{
+    var totale = Model.Trimestri.Sum(t => t.Provvigione);
+    var dvx = Model.Dettaglio;
+    var filtroVoci = dvx is not null && dvx.Mostrate.Count < dvx.Colonne.Count
+        ? "&" + string.Join("&", dvx.Mostrate.Select(v => "voci=" + Uri.EscapeDataString(v))) : "";
+    var hrefEsporta = Url.Action("Esporta", "Provvigioni", new { idCommerciale = Model.Scelto!.IdCommerciale, annoDett = dvx?.Anno, baseDett = dvx?.IdBase }) + filtroVoci;
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Per trimestre di incasso</h2><span class="sottotesto">Totale: <strong>@Euro(totale)</strong> <a class="pulsante pulsante-tenue" href="@hrefEsporta">Esporta Excel</a></span></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Trimestre</th><th class="numerico">Incassato in perimetro</th><th class="numerico">Note di credito</th><th class="numerico">Provvigione</th><th>Stato</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var t in Model.Trimestri)
+                {
+                    <tr>
+                        <td>@t.Etichetta</td>
+                        <td class="numerico">@Euro(t.Incassato)</td>
+                        <td class="numerico">@Euro(t.NoteCredito)</td>
+                        <td class="numerico">@Euro(t.Provvigione)</td>
+                        <td>@(t.Chiuso ? "chiuso" : t.Chiudibile ? "da chiudere" : "in corso")</td>
+                        <td>
+                            @if (t.Chiudibile)
+                            {
+                                <form method="post" asp-action="ChiudiTrimestre" style="display:inline">
+                                    <input type="hidden" name="anno" value="@t.Anno" /><input type="hidden" name="numero" value="@t.Numero" />
+                                    <input type="hidden" name="idCommerciale" value="@Model.Scelto?.IdCommerciale" />
+                                    <label class="sottotesto"><input type="checkbox" required /> confermo: i movimenti di tutti i commerciali si congelano</label>
+                                    <button type="submit" class="pulsante pulsante-tenue">Chiudi trimestre</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <p class="sottotesto">I trimestri chiusi mostrano i valori congelati; gli altri sono calcolati al momento. Si chiude un trimestre solo dopo la sua fine e dopo aver importato AZW aggiornato.</p>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Premio annuale</h2></div>
+        @if (r.Premi.Count == 0)
+        {
+            <p class="sottotesto">Nessun incasso da clienti nuovi.</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Anno</th><th class="numerico">Incassato clienti nuovi</th><th class="numerico">Premio</th><th class="numerico">Prossima soglia</th></tr></thead>
+                    <tbody>
+                    @foreach (var p in r.Premi)
+                    {
+                        <tr>
+                            <td>@p.Anno</td>
+                            <td class="numerico">@Euro(p.BaseIncassata)</td>
+                            <td class="numerico">@Euro(p.Premio)</td>
+                            <td class="numerico">@(p.ProssimaSoglia is { } s ? Euro(s) : "—")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    string EtVoce(LaboratorioAI.Core.Provvigioni.VoceProvvigione v) => LaboratorioAI.Core.Provvigioni.EtichetteProvvigioni.Voce(v);
+    var perCliente = r.Movimenti.GroupBy(m => m.Cliente)
+        .Select(g => new { Cliente = g.Key, Voce = g.Last().Voce, Base = g.Sum(m => m.Base), Importo = g.Sum(m => m.Importo) })
+        .OrderByDescending(x => x.Importo).ToList();
+    <section class="riquadro">
+        <details>
+            <summary style="cursor:pointer;font-weight:600">Per cliente (@perCliente.Count)</summary>
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Cliente</th><th>Voce</th><th>Segnalato da</th><th class="numerico">Base</th><th class="numerico">Provvigione</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in perCliente)
+                    {
+                        <tr><td>@(Model.NomiClienti.TryGetValue(x.Cliente, out var nomeCli) && nomeCli.Length > 0 ? nomeCli : "—") <span class="sottotesto">(@x.Cliente)</span></td><td>@EtVoce(x.Voce)</td><td>@(segnalatiDa.TryGetValue(x.Cliente, out var sgn) ? sgn : "")</td><td class="numerico">@Euro(x.Base)</td><td class="numerico">@Euro(x.Importo)</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </section>
+
+    <section class="riquadro">
+        <details @(eccezioni.Count > 0 ? "open" : "")>
+            <summary style="cursor:pointer;font-weight:600">Calcolo sull'intera area per alcuni clienti (@eccezioni.Count)</summary>
+            <p class="sottotesto">Di norma consulenza e formazione contano solo sulle voci di fattura delle commesse del commerciale. Qui si indicano le eccezioni: per quel cliente, dalla data indicata, conta tutto il fatturato dell'area scelta (es. «Area formazione»). Le eccezioni non toccano i trimestri già chiusi.</p>
+            @if (eccezioni.Count > 0)
+            {
+                var nomiBasi = basiElenco.ToDictionary(b => b.IdBaseCalcolo, b => b.Nome);
+                <div class="tabella-scorrevole">
+                    <table class="tabella">
+                        <thead><tr><th>Cliente</th><th>Area</th><th>Dal</th><th>Al</th><th>Motivo</th><th>Chiudi dal</th></tr></thead>
+                        <tbody>
+                        @foreach (var e in eccezioni)
+                        {
+                            <tr>
+                                <td>@(Model.NomiClienti.TryGetValue(e.CodiceCliente, out var nEcc) && nEcc.Length > 0 ? nEcc : "—") <span class="sottotesto">(@e.CodiceCliente)</span></td>
+                                <td>@(nomiBasi.TryGetValue(e.IdBaseCalcolo, out var nb) ? nb : e.IdBaseCalcolo.ToString())</td>
+                                <td>@e.DataInizio.ToString("dd/MM/yyyy")</td>
+                                <td>@(e.DataFine?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                <td>@e.Motivo<div class="sottotesto">@e.CreataDa</div></td>
+                                <td>
+                                    <form method="post" asp-action="EccezioneChiudi" style="display:flex;gap:0.4rem;align-items:center">
+                                        <input type="hidden" name="idEccezione" value="@e.IdEccezioneArea" />
+                                        <input type="date" name="dataFine" required />
+                                        <button type="submit" class="pulsante pulsante-tenue">Chiudi</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            <form method="post" asp-action="EccezioneAggiungi" class="griglia-filtri" style="margin-top:0.6rem">
+                <input type="hidden" name="idCommerciale" value="@Model.Scelto!.IdCommerciale" />
+                <label>Cliente<input type="text" name="codiceCliente" list="elenco-clienti-ecc" required maxlength="20" autocomplete="off" /></label>
+                <datalist id="elenco-clienti-ecc">@foreach (var cl in clientiElenco) { <option value="@cl.Codice" label="@cl.Nome">@cl.Nome</option> }</datalist>
+                <label>Area
+                    <select name="idBaseCalcolo" required>
+                        @foreach (var b in basiElenco.OrderBy(b => b.Nome.StartsWith("Area") ? 0 : 1).ThenBy(b => b.Nome)) { <option value="@b.IdBaseCalcolo">@b.Nome</option> }
+                    </select>
+                </label>
+                <label>Dal<input type="date" name="dataInizio" required /></label>
+                <label>Motivo<input type="text" name="motivo" maxlength="500" required placeholder="es. accordo con il cliente su tutta la formazione" /></label>
+                <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante pulsante-tenue">Aggiungi eccezione</button></div>
+            </form>
+        </details>
+    </section>
+
+    @if (dvx is not null && dvx.Basi.Count > 0)
+    {
+        var colonne = dvx.Mostrate;
+        var tuttiSelezionati = dvx.Mostrate.Count == dvx.Colonne.Count;
+        <section class="riquadro" id="dettaglio-voci">
+            <div class="barra-risultati">
+                <h2>Dettaglio per voce di fattura</h2>
+                <a class="pulsante pulsante-tenue" href="@hrefEsporta">Esporta Excel</a>
+            </div>
+            <p class="sottotesto">Base e provvigione dell'anno, per cliente, ripartite sulle voci di fattura AZW (ANA, ANE, AMB…) della base di calcolo, in proporzione al netto delle righe. Scegli la base (laboratorio, fuori laboratorio…) e, se vuoi, solo alcune voci.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.5rem">
+                <span class="sottotesto">Base:</span>
+                @foreach (var b in dvx.Basi)
+                {
+                    <a class="pulsante @(b.IdBaseCalcolo == dvx.IdBase ? "" : "pulsante-tenue")" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = Model.Scelto!.IdCommerciale, annoDett = dvx.Anno, baseDett = b.IdBaseCalcolo })#dettaglio-voci">@b.Nome</a>
+                }
+                <span class="sottotesto" style="margin-left:1rem">Anno:</span>
+                @foreach (var y in dvx.Anni)
+                {
+                    <a class="pulsante @(y == dvx.Anno ? "" : "pulsante-tenue")" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = Model.Scelto!.IdCommerciale, annoDett = y, baseDett = dvx.IdBase })#dettaglio-voci">@y</a>
+                }
+            </div>
+            @if (dvx.Colonne.Count > 0)
+            {
+                <form method="get" action="@Url.Action("Index", "Provvigioni")#dettaglio-voci" style="display:flex;flex-wrap:wrap;gap:0.4rem 1rem;align-items:center;margin-bottom:0.6rem">
+                    <input type="hidden" name="idCommerciale" value="@Model.Scelto!.IdCommerciale" />
+                    <input type="hidden" name="annoDett" value="@dvx.Anno" />
+                    <input type="hidden" name="baseDett" value="@dvx.IdBase" />
+                    <span class="sottotesto">Voci:</span>
+                    @foreach (var c in dvx.Colonne)
+                    {
+                        <label style="font-weight:normal"><input type="checkbox" name="voci" value="@c" @(dvx.Mostrate.Contains(c) ? "checked" : "") /> @c</label>
+                    }
+                    <button type="submit" class="pulsante pulsante-tenue">Filtra</button>
+                    @if (!tuttiSelezionati)
+                    {
+                        <a class="sottotesto" href="@Url.Action("Index", "Provvigioni", new { idCommerciale = Model.Scelto!.IdCommerciale, annoDett = dvx.Anno, baseDett = dvx.IdBase })#dettaglio-voci">tutte le voci</a>
+                    }
+                </form>
+            }
+            @if (dvx.Righe.Count == 0)
+            {
+                <p class="sottotesto">Nessun movimento per questa base e questo anno.</p>
+            }
+            else
+            {
+                <div class="tabella-scorrevole">
+                    <table class="tabella">
+                        <thead><tr><th>Cliente</th>@foreach (var c in colonne) { <th class="numerico">@c</th> }<th class="numerico">Totale base</th><th class="numerico">Provvigione</th></tr></thead>
+                        <tbody>
+                        @foreach (var x in dvx.Righe)
+                        {
+                            <tr>
+                                <td>@(Model.NomiClienti.TryGetValue(x.Cliente, out var nd) && nd.Length > 0 ? nd : "—") <span class="sottotesto">(@x.Cliente)</span></td>
+                                @foreach (var c in colonne)
+                                {
+                                    <td class="numerico">@(x.PerVoce.TryGetValue(c, out var val) && val != 0m ? Euro(val) : "")</td>
+                                }
+                                <td class="numerico"><strong>@Euro(x.Base)</strong></td>
+                                <td class="numerico">@Euro(x.Provvigione)</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td><strong>Totale</strong></td>
+                            @foreach (var c in colonne)
+                            {
+                                <td class="numerico"><strong>@Euro(dvx.Righe.Sum(x => x.PerVoce.TryGetValue(c, out var val) ? val : 0m))</strong></td>
+                            }
+                            <td class="numerico"><strong>@Euro(dvx.Righe.Sum(x => x.Base))</strong></td>
+                            <td class="numerico"><strong>@Euro(dvx.Righe.Sum(x => x.Provvigione))</strong></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    }
+
+    @if (r.Avvisi.Count > 0)
+    {
+        <section class="riquadro">
+            <details>
+                <summary style="cursor:pointer;font-weight:600">Avvisi (@r.Avvisi.Count)</summary>
+                <ul>@foreach (var a in r.Avvisi.Take(100)) { <li>@a</li> }</ul>
+            </details>
+        </section>
+    }
+}

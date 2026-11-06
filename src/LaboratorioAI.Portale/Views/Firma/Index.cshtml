@@ -1,0 +1,148 @@
+@model LaboratorioAI.Portale.Controllers.ModelloPaginaFirma
+@{
+    Layout = null;
+    var qualifiche = new[] { "Legale rappresentante", "Amministratore", "Procuratore", "Responsabile qualità delegato" };
+    var qualificaNota = Model.Qualifica is not null && qualifiche.Contains(Model.Qualifica);
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>MARE.A srl — Approvazione Condizioni Generali</title>
+    <link rel="stylesheet" href="~/css/portale.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/firma.css" asp-append-version="true" />
+</head>
+<body class="pagina-firma">
+<header class="testata-firma">
+    <span class="marchio-sigla">M·A</span>
+    <div>
+        <div class="marchio-nome">MARE.A srl</div>
+        <div class="marchio-sotto">Laboratorio accreditato ACCREDIA n° 00729 · Cattolica (RN)</div>
+    </div>
+</header>
+
+<main class="contenuto-firma" id="pagina" data-codice="@Model.Codice" data-offerta="@(Model.ConOfferta ? "true" : "false")"
+      data-ragione-sociale="@Model.RagioneSociale" data-partita-iva="@Model.PartitaIva" data-email="@Model.Email">
+
+    <h1>@Model.Titolo</h1>
+    <p class="sottotitolo-firma">@LaboratorioAI.Core.Servizi.TestiApprovazione.Sottotitolo</p>
+    <p class="cliente-firma"><strong>@Model.RagioneSociale</strong>@(string.IsNullOrWhiteSpace(Model.PartitaIva) ? "" : " · P. IVA " + Model.PartitaIva)</p>
+
+    @if (Model.Approvata)
+    {
+        <section class="blocco-firma esito-ok">
+            <h2>Approvazione registrata</h2>
+            <p>L'approvazione è stata registrata il @(Model.DataApprovazione?.ToString("dd/MM/yyyy 'alle' HH:mm")). Grazie.</p>
+            @if (Model.RicevutaPronta)
+            {
+                <p><a class="pulsante-firma" href="/Firma/@Model.Codice/ricevuta">Scarica la Ricevuta @Model.NumeroRicevuta (PDF)</a></p>
+            }
+            else
+            {
+                <p>La Ricevuta è in preparazione e ti arriverà per e-mail entro pochi minuti.</p>
+            }
+        </section>
+    }
+    else
+    {
+        <!-- Documenti: aprirli è obbligatorio -->
+        <section class="blocco-firma">
+            <h2>1. Leggi i documenti</h2>
+            <p class="nota-firma">Apri i documenti: le caselle si attivano dopo l'apertura.</p>
+            <div class="documenti-firma">
+                <a class="documento-firma" id="doc-condizioni" data-documento="condizioni" href="/Firma/@Model.Codice/condizioni" target="_blank" rel="noopener">
+                    Apri le Condizioni Generali di Fornitura @Model.Revisione (PDF)<span class="aperto-il"></span></a>
+                @if (Model.ConOfferta)
+                {
+                    <a class="documento-firma" id="doc-offerta" data-documento="offerta" href="/Firma/@Model.Codice/offerta" target="_blank" rel="noopener">
+                        Apri l'Offerta n. @Model.Offerta (PDF)<span class="aperto-il"></span></a>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.CosaCambia))
+            {
+                <details class="cosa-cambia"><summary>Cosa cambia rispetto alla revisione precedente</summary><p>@Model.CosaCambia</p></details>
+            }
+        </section>
+
+        <!-- Casella 1 -->
+        <section class="blocco-firma">
+            <h2>2. Accettazione</h2>
+            <label class="casella-firma"><input type="checkbox" id="casella1" disabled /> <span>@Model.Casella1</span></label>
+        </section>
+
+        <!-- Casella 2: riquadro separato -->
+        <section class="blocco-firma riquadro-vessatorie">
+            <h2>3. Approvazione specifica delle clausole</h2>
+            <label class="casella-firma"><input type="checkbox" id="casella2" disabled /> <span>@Model.Casella2Introduzione</span></label>
+            <ul class="elenco-clausole">
+                @foreach (var c in Model.Clausole)
+                {
+                    <li>
+                        <strong>Art. @c.Articolo</strong> – @c.ContenutoBreve
+                        @if (!string.IsNullOrWhiteSpace(c.TestoIntegrale))
+                        {
+                            <details class="leggi"><summary>leggi</summary><p>@c.TestoIntegrale</p></details>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <!-- Casella 3 -->
+        <section class="blocco-firma">
+            <h2>4. Chi approva</h2>
+            <div class="campi-firma">
+                <div class="campo"><label for="f-nome">Nome</label><input type="text" id="f-nome" value="@Model.Nome" maxlength="100" autocomplete="given-name" /></div>
+                <div class="campo"><label for="f-cognome">Cognome</label><input type="text" id="f-cognome" value="@Model.Cognome" maxlength="100" autocomplete="family-name" /></div>
+                <div class="campo"><label for="f-qualifica">Qualifica</label>
+                    <select id="f-qualifica">
+                        @foreach (var q in qualifiche)
+                        {
+                            <option value="@q" selected="@(Model.Qualifica == q)">@q</option>
+                        }
+                        <option value="altro" selected="@(!qualificaNota && Model.Qualifica is not null)">Altro</option>
+                    </select>
+                </div>
+                <div class="campo @(qualificaNota || Model.Qualifica is null ? "nascosto" : "")" id="campo-qualifica-altro"><label for="f-qualifica-altro">Specifica la qualifica</label>
+                    <input type="text" id="f-qualifica-altro" maxlength="150" value="@(qualificaNota ? "" : Model.Qualifica)" /></div>
+            </div>
+            <label class="casella-firma"><input type="checkbox" id="casella3" disabled /> <span id="testo-casella3"></span></label>
+        </section>
+
+        <!-- Firma con codice OTP (15/10/2026) -->
+        <section class="blocco-firma riquadro-vessatorie">
+            <h2>5. Firma con il codice</h2>
+            <p>@LaboratorioAI.Core.Servizi.TestiApprovazione.FirmaConCodice(Model.EmailMascherata)</p>
+            <button type="button" class="pulsante-firma" id="btn-codice" disabled>Inviami il codice</button>
+            <p class="nota-firma" id="nota-codice">Si attiva dopo aver aperto i documenti, spuntato le tre caselle e compilato i dati.</p>
+            <div id="area-codice" class="nascosto">
+                <div class="campi-firma">
+                    <div class="campo"><label for="f-codice">Codice ricevuto per e-mail</label>
+                        <input type="text" id="f-codice" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="6 cifre" /></div>
+                </div>
+                <button type="button" class="pulsante-firma" id="btn-conferma" disabled>Confermo e firmo con il codice</button>
+                <p class="nota-firma">Non è arrivato? Controlla la posta indesiderata; dopo un minuto puoi <a href="#" id="link-reinvia">chiedere un nuovo codice</a>.</p>
+            </div>
+            <p class="errore-firma nascosto" id="errore-firma"></p>
+        </section>
+
+        <section class="blocco-firma esito-ok nascosto" id="esito-ok">
+            <h2>Approvazione registrata</h2>
+            <p>Grazie. Riceverai la Ricevuta per e-mail entro pochi minuti; puoi anche scaricarla da questa pagina quando è pronta.</p>
+            <p><a class="pulsante-firma" href="/Firma/@Model.Codice">Aggiorna la pagina</a></p>
+        </section>
+    }
+
+    <p class="piede-firma">MARE.A s.r.l. · Via E. Toti, 2 · 47841 Cattolica (RN) · Tel 0541 830442 · info@@mare-a.com<br />
+        Di ogni passo di questa pagina viene conservata evidenza (data, ora, indirizzo IP) a prova dell'approvazione.</p>
+</main>
+
+@if (!Model.Approvata)
+{
+    <script type="module" src="~/js/firma.js" asp-append-version="true"></script>
+}
+</body>
+</html>

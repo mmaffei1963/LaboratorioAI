@@ -10,6 +10,8 @@ public record DatiRapportoTaratura
     public string? RiferimentoIstruzione { get; init; }
     public string? RedattoDa { get; init; }
     public string? Committente { get; init; }
+    /// <summary>Insediamento del cliente (03/11/2026): stampato in testata solo se indicato.</summary>
+    public string? Insediamento { get; init; }
 
     // ── Strumento in taratura (UUT) ─────────────────────────────────
     public string StrumentoIdentificazione { get; init; } = "";

@@ -52,7 +52,11 @@ public record DatiNomeCertificatoEsterno
     public string? Cliente { get; init; }
     public string? Prodotto { get; init; }
     public string? Matrice { get; init; }
+    /// <summary>Id matrice ArcLab (Campione.IdMatrice): serve a Palomar per il portale.</summary>
+    public string? IdMatrice { get; init; }
     public string LabAcronimo { get; init; } = "";
+    /// <summary>Id laboratorio esterno ArcLab (LabEsterno.IdLabEsterno): serve a Palomar per il portale.</summary>
+    public string? IdLabEsterno { get; init; }
     public string RdPEsterno { get; init; } = "";
     /// <summary>True → suffisso "-AVV" (lettera di avviso al cliente); False → "-STD".</summary>
     public bool ConAvviso { get; init; }
@@ -70,7 +74,15 @@ public record CampioneArcLab
     public string? NomeInsediamento { get; init; }
     public string? DenominazioneProdotto { get; init; }
     public string? Matrice { get; init; }
+    public int? IdMatrice { get; init; }
     public DateTime DataRicezione { get; init; }
+}
+
+/// <summary>Laboratorio esterno a cui sono affidate prove di un campione (ArcLab, sola lettura).</summary>
+public record LabEsternoArcLab
+{
+    public int IdLabEsterno { get; init; }
+    public string? Nome { get; init; }
 }
 
 /// <summary>
@@ -102,6 +114,36 @@ public record AnteprimaCertificatoEsterno
     /// <summary>True se l'estrazione è stata riusata dalla cache (nessuna nuova chiamata AI).</summary>
     public bool DaCache { get; init; }
 
-    /// <summary>Data usata nel nome file (yyyy-MM-dd): emissione del certificato o, in mancanza, ricezione.</summary>
+    /// <summary>Data usata nel nome file e nello smistamento (yyyy-MM-dd): ricezione del campione (Lotto.DataRic).</summary>
     public string? DataNome { get; init; }
+
+    /// <summary>Data di emissione del certificato esterno (yyyy-MM-dd), se individuata: va in certificato.DataCertificato.</summary>
+    public string? DataEmissione { get; init; }
+
+    /// <summary>Laboratorio esterno ArcLab agganciato (null se non determinabile: va completato a mano).</summary>
+    public int? IdLabEsterno { get; init; }
+
+    /// <summary>Tipo proposto dalle prove del campione in ArcLab: "SoloEsterni", "Misto" o null (non determinabile).</summary>
+    public string? TipoProposto { get; init; }
+
+    /// <summary>Parametri delle prove fatte da noi (presenti solo se il certificato è misto).</summary>
+    public IReadOnlyList<string> ParametriInterni { get; init; } = new List<string>();
+
+    /// <summary>Parametri delle prove affidate a laboratori esterni.</summary>
+    public IReadOnlyList<string> ParametriEsterni { get; init; } = new List<string>();
+}
+
+/// <summary>Prova di un campione ArcLab (sola lettura), per distinguere certificati solo esterni e misti.</summary>
+public record ProvaCampioneArcLab
+{
+    public int IdProva { get; init; }
+    public int IdCampione { get; init; }
+    public string? Parametro { get; init; }
+    /// <summary>Laboratorio esterno della riga di metodo (null o 0 = prova fatta da noi).</summary>
+    public int? IdLabEsterno { get; init; }
+    public string? LabEsterno { get; init; }
+    /// <summary>True se in ArcLab il risultato è stato inserito (valore presente o prova verificata).</summary>
+    public bool ValoreInserito { get; init; }
+
+    public bool Esterna => IdLabEsterno is int id && id != 0;
 }

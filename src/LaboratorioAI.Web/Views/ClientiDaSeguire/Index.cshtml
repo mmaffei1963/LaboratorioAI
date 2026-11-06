@@ -1,0 +1,329 @@
+@using System.Globalization
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@using LaboratorioAI.Core.Andamento
+@using LaboratorioAI.Documenti
+@model LaboratorioAI.Web.Controllers.ModelloClientiDaSeguire
+@{
+    var it = CultureInfo.GetCultureInfo("it-IT");
+    string E(decimal v) => v.ToString("#,##0", it) + " €";
+    string P(decimal? v) => v is decimal x ? (x > 0 ? "+" : "") + (x * 100m).ToString("0", it) + "%" : "—";
+    var r = Model.Riepilogo.Risultato;
+    var imp = Model.Riepilogo.Impostazioni;
+    var ultimo = new DateTime(r.UltimoMese / 100, r.UltimoMese % 100, 1);
+    var gestisci = Utente.HaPermesso(Permessi.ClientiGestisci);
+    string ClasseSemaforo(Semaforo s) => s switch { Semaforo.Rosso => "etichetta-non-conforme", Semaforo.Giallo => "etichetta-borderline", Semaforo.Verde => "etichetta-conforme", _ => "etichetta-neutro" };
+    string ClasseLeg(StatoLegionella s) => s switch
+    {
+        StatoLegionella.Perso => "etichetta-non-conforme", StatoLegionella.InRitardo => "etichetta-non-conforme",
+        StatoLegionella.InCalo => "etichetta-borderline", StatoLegionella.DaRicordare => "etichetta-attesa",
+        StatoLegionella.Nuovo => "etichetta-outsourcing", _ => "etichetta-conforme"
+    };
+    object Rotta(string vista) => new { vista, filtro = Model.Filtro, commerciale = Model.Commerciale, responsabile = Model.Responsabile, periodo = Model.Periodo, confronto = Model.Confronto };
+    object Cliente(string codice) => new { id = codice, periodo = Model.Periodo, confronto = Model.Confronto };
+    var attuale = DescrizionePeriodi.Attuale(r);
+    var confrontoTxt = DescrizionePeriodi.Confronto(r);
+    string Azione(LaboratorioAI.Dati.Clienti.InfoCliente i) => i.UltimaAzione is { } a ? $"{a.DataAzione:dd/MM/yy} · {a.Tipo} · {a.Esito}" : "";
+    // Avvisi sui clienti tolti e rientrati o che hanno acquisito altri clienti (14/10/2026).
+    string Segni(LaboratorioAI.Dati.Clienti.InfoCliente i) =>
+        (i.Rientrato && i.Uscita is { } u ? $" <span class=\"etichetta etichetta-attesa\" title=\"Tolto il {u.Data:dd/MM/yyyy} ({u.Descrizione}), poi di nuovo attivo\">tornato attivo</span>" : "")
+        + (i.Assorbiti.Count > 0 ? $" <span class=\"etichetta etichetta-outsourcing\" title=\"Storico sommato: {System.Net.WebUtility.HtmlEncode(string.Join(", ", i.Assorbiti.Select(x => x.Nome)))}\">+{i.Assorbiti.Count} acquisit{(i.Assorbiti.Count == 1 ? "o" : "i")}</span>" : "");
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Clienti da seguire</h1>
+        <p class="sottotitolo">
+            <strong>@attuale</strong> contro <strong>@confrontoTxt</strong> (mesi interi, stessi mesi dell'anno). Fatturato da AZW, campioni da ArcLab
+            @(Model.Riepilogo.UltimaImportazione is DateTime u ? $"(importati il {u.ToLocalTime():dd/MM/yyyy HH:mm})" : "(nessuna importazione)").
+            Semaforo per i clienti con almeno @E(r.MinimoApplicato) di analisi nel periodo di confronto@(r.MinimoApplicato != imp.MinimoFatturato ? $" ({E(imp.MinimoFatturato)} l'anno in proporzione)" : "").
+        </p>
+    </div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <a class="pulsante pulsante-tenue" href="@Url.Action("Esporta", new { periodo = Model.Periodo, confronto = Model.Confronto })">Esporta Excel</a>
+        @if (gestisci)
+        {
+            <form method="post" asp-action="Importa" style="display:inline" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Importazione in corso…';">
+                <input type="hidden" name="vista" value="@Model.Vista" /><input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" />
+                <button type="submit" class="pulsante pulsante-tenue" title="Fatture, incassi e note da AZW; commesse e campioni da ArcLab (sola lettura). Qualche minuto.">Importa AZW ora</button>
+            </form>
+            <a class="pulsante pulsante-tenue" href="@Url.Action("Assegnazioni")">Assegnazioni e soglie</a>
+        }
+    </div>
+</div>
+
+@if (TempData["Messaggio"] is string msg)
+{
+    <section class="riquadro"><strong>@msg</strong></section>
+}
+@if (Model.Riepilogo.RigheCampioni == 0)
+{
+    <section class="riquadro riquadro-errore"><strong>Mancano i campioni ArcLab:</strong> la sezione Legionella e i segnali sui campioni sono vuoti.
+        @(gestisci ? "Premi «Importa AZW ora»." : "Serve un'importazione AZW (Amministrazione → Provvigioni).")</section>
+}
+
+<div class="semaforo">
+    <a class="semaforo-voce non-conforme" href="@Url.Action("Index", new { vista = "clienti", semaforo = "rosso", periodo = Model.Periodo, confronto = Model.Confronto })" style="text-decoration:none"><strong>@Model.Conteggi["rosso"]</strong><span>Rossi · @E(Model.PerditaRossi) persi</span></a>
+    <a class="semaforo-voce borderline" href="@Url.Action("Index", new { vista = "clienti", semaforo = "giallo", periodo = Model.Periodo, confronto = Model.Confronto })" style="text-decoration:none"><strong>@Model.Conteggi["giallo"]</strong><span>Gialli</span></a>
+    <a class="semaforo-voce non-conforme" href="@Url.Action("Index", new { vista = "legionella", stato = "perso", periodo = Model.Periodo, confronto = Model.Confronto })" style="text-decoration:none"><strong>@Model.Conteggi["perso"]</strong><span>Legionella persi</span></a>
+    <a class="semaforo-voce neutro" href="@Url.Action("Index", new { vista = "promemoria", periodo = Model.Periodo, confronto = Model.Confronto })" style="text-decoration:none"><strong>@(Model.Conteggi["ricordare"] + Model.Conteggi["promemoria"])</strong><span>Da chiamare</span></a>
+    <a class="semaforo-voce conforme" href="@Url.Action("Index", new { vista = "consulenza", periodo = Model.Periodo, confronto = Model.Confronto })" style="text-decoration:none"><strong>@Model.Conteggi["consulenza"]</strong><span>Solo consulenza</span></a>
+</div>
+
+<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.8rem">
+    @foreach (var (v, nome) in new[] { ("clienti", "Clienti in calo"), ("legionella", "Legionella"), ("consulenza", "Solo consulenza"), ("promemoria", "Da chiamare"), ("tolti", $"Tolti dalla lista ({Model.Conteggi["tolti"]})") })
+    {
+        <a class="pulsante @(Model.Vista == v ? "" : "pulsante-tenue")" href="@Url.Action("Index", Rotta(v))">@nome</a>
+    }
+</div>
+
+<section class="riquadro">
+    <form method="get" asp-action="Index" class="griglia-filtri">
+        <input type="hidden" name="vista" value="@Model.Vista" />
+        @if (Model.Vista is "clienti" or "consulenza")
+        {
+            <label>Periodo
+                <select name="periodo">
+                    @foreach (var (v, n) in new[] { ("12", "Ultimi 12 mesi"), ("6", "Ultimi 6 mesi"), ("3", "Ultimi 3 mesi"), ("anno", "Da inizio anno") })
+                    { <option value="@v" selected="@(Model.Periodo == v)">@n</option> }
+                </select>
+            </label>
+            <label>Confrontato con
+                <select name="confronto">
+                    <option value="1" selected="@(Model.Confronto == 1)">Stesso periodo, anno prima</option>
+                    <option value="2" selected="@(Model.Confronto == 2)">Stesso periodo, due anni prima</option>
+                </select>
+            </label>
+        }
+        else
+        {
+            <input type="hidden" name="periodo" value="@Model.Periodo" /><input type="hidden" name="confronto" value="@Model.Confronto" />
+        }
+        <label>Cerca<input type="text" name="filtro" value="@Model.Filtro" placeholder="nome, codice o città" /></label>
+        <label>Commerciale
+            <select name="commerciale">
+                <option value="">Tutti</option>
+                @if (Model.MioCommerciale is not null) { <option value="miei" selected="@(Model.Commerciale == "miei")">I miei (@Model.MioCommerciale)</option> }
+                <option value="nessuno" selected="@(Model.Commerciale == "nessuno")">Senza commerciale</option>
+                @foreach (var c in Model.Commerciali) { <option value="@c" selected="@(Model.Commerciale == c)">@c</option> }
+            </select>
+        </label>
+        <label>Responsabile cliente
+            <select name="responsabile">
+                <option value="">Tutti</option>
+                @foreach (var (sigla, nome) in Model.Responsabili) { <option value="@sigla" selected="@(string.Equals(Model.Responsabile, sigla, StringComparison.OrdinalIgnoreCase))">@sigla – @nome</option> }
+            </select>
+        </label>
+        @if (Model.Vista == "clienti")
+        {
+            <label>Semaforo
+                <select name="semaforo">
+                    @foreach (var (v, n) in new[] { ("da-seguire", "Rossi e gialli"), ("rosso", "Rossi"), ("giallo", "Gialli"), ("verde", "Verdi"), ("tutti", "Tutti") })
+                    { <option value="@v" selected="@(Model.Semaforo == v)">@n</option> }
+                </select>
+            </label>
+        }
+        @if (Model.Vista == "legionella")
+        {
+            <label>Stato
+                <select name="stato">
+                    @foreach (var (v, n) in new[] { ("da-seguire", "Da seguire (persi, in ritardo, in calo, da ricordare)"), ("perso", "Persi"), ("ritardo", "In ritardo"), ("calo", "In calo"), ("ricordare", "Da ricordare"), ("nuovo", "Nuovi"), ("regolare", "Regolari"), ("tutti", "Tutti") })
+                    { <option value="@v" selected="@(Model.Stato == v)">@n</option> }
+                </select>
+            </label>
+            <label>Intermediari
+                <select name="intermediari">
+                    <option value="">Compresi</option>
+                    <option value="esclusi" selected="@(Model.Intermediari == "esclusi")">Esclusi</option>
+                    <option value="solo" selected="@(Model.Intermediari == "solo")">Solo intermediari</option>
+                </select>
+            </label>
+        }
+        <div class="azioni-filtri"><div style="flex:1"></div><button type="submit" class="pulsante">Filtra</button></div>
+    </form>
+</section>
+
+@if (Model.Vista == "clienti")
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@Model.Clienti.Count clienti</h2><span class="sottotesto">Ordinati per fatturato di analisi perso (clic su un'intestazione per riordinare). Clic sul nome per la scheda.
+            «In corso»: campioni ricevuti dal @ultimo.ToString("dd/MM/yyyy") in poi, che si fattureranno il mese dopo (valore a listino, fuori dal semaforo).</span></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th></th><th>Cliente</th><th>Commerciale</th><th>Resp.</th><th class="numerico">@confrontoTxt</th><th class="numerico">@attuale</th><th class="numerico">Var.</th><th class="numerico">Perdita</th><th class="numerico" title="Campioni ricevuti dal @ultimo.ToString("dd/MM/yyyy") in poi, non ancora fatturati (le analisi si fatturano il mese dopo). Valore a listino: non entra nel semaforo.">In corso</th><th class="numerico">Campioni</th><th>Ultimo campione</th><th>Motivi</th><th>Ultima azione</th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.Clienti)
+                {
+                    var i = Model.Info(c.Cliente);
+                    <tr>
+                        <td data-ordina="@((int)c.Semaforo)"><span class="etichetta @ClasseSemaforo(c.Semaforo)">@EsportatoreClientiDaSeguire.Etichetta(c.Semaforo)</span></td>
+                        <td><a href="@Url.Action("Scheda", Cliente(c.Cliente))"><strong>@i.RagioneSociale</strong></a>@Html.Raw(Segni(i))<br /><span class="sottotesto">@c.Cliente · @i.Citta</span></td>
+                        <td>@(i.Assegnato ?? i.CommercialeAzw ?? "")@if (i.PropostaInAttesa) { <br /><span class="etichetta etichetta-attesa">proposta</span> }</td>
+                        <td>@i.Zona</td>
+                        <td class="numerico" data-ordina="@c.LabPrecedenti.ToString(System.Globalization.CultureInfo.InvariantCulture)">@E(c.LabPrecedenti)</td>
+                        <td class="numerico" data-ordina="@c.LabUltimi.ToString(System.Globalization.CultureInfo.InvariantCulture)">@E(c.LabUltimi)</td>
+                        <td class="numerico" data-ordina="@(c.Variazione?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "")">@P(c.Variazione)</td>
+                        <td class="numerico" data-ordina="@c.Perdita.ToString(System.Globalization.CultureInfo.InvariantCulture)"><strong>@E(c.Perdita)</strong></td>
+                        <td class="numerico" data-ordina="@c.ValoreInCorso.ToString(System.Globalization.CultureInfo.InvariantCulture)">@if (c.CampioniInCorso > 0) { <span>@E(c.ValoreInCorso)</span><br /><span class="sottotesto">@c.CampioniInCorso camp.</span> } else { <span class="sottotesto">—</span> }</td>
+                        <td class="numerico" data-ordina="@c.CampioniUltimi">@c.CampioniPrecedenti → @c.CampioniUltimi</td>
+                        <td data-ordina="@(c.UltimoCampione?.ToString("dd/MM/yyyy") ?? "")">@(c.UltimoCampione?.ToString("dd/MM/yy") ?? "—")@if (c.GiorniDallUltimo is int g) { <br /><span class="sottotesto">@g giorni</span> }</td>
+                        <td class="sottotesto">@string.Join(". ", c.Motivi)</td>
+                        <td class="sottotesto">@Azione(i)@if (i.ProssimoContatto is DateTime p) { <br /><text>richiamare il @p.ToString("dd/MM")</text> }</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@if (Model.Vista == "legionella")
+{
+    <section class="riquadro">
+        @if (Model.Subentri is { } sub && sub.Sedi > 0)
+        {
+            <p class="avviso-subentri">Cambi di gestione: delle <strong>@sub.Sedi</strong> sedi Legionella senza campioni nel periodo scelto, <strong>@sub.NonPerse</strong> non sono perse
+                (nuovo gestore che lavora con noi, oppure cliente attivo da un'altra sede); <strong>@sub.NuoviDaChiamare</strong> hanno un nuovo gestore da chiamare
+                @if (sub.DaVerificare > 0) { <text>e @sub.DaVerificare abbinamenti sono da verificare</text> }.
+                <a href="/ClientiDaSeguire/Subentri?periodo=@Model.Periodo&confronto=@Model.Confronto">Apri «Cambi di gestione» →</a></p>
+        }
+        <div class="barra-risultati"><h2>@Model.Legionella.Count clienti</h2><span class="sottotesto">Ritmo ricavato dai mesi con campionamenti negli ultimi 24 mesi (al massimo annuale); persi e in calo: ultimi 12 mesi contro i 12 precedenti; «in calo» se i campioni scendono di @(Math.Abs(Model.Riepilogo.Impostazioni.LegionellaSogliaCalo).ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("it-IT")))% o più (soglia propria, in Soglie). Nessuna soglia di fatturato.</span></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Stato</th><th>Cliente</th><th>Resp.</th><th class="numerico">Campioni</th><th class="numerico">Fatturato Legionella</th><th>Mesi abituali</th><th>Ultimo</th><th>Prossimo atteso</th><th>Telefono</th><th>Ultima azione</th></tr></thead>
+                <tbody>
+                @foreach (var l in Model.Legionella)
+                {
+                    var i = Model.Info(l.Cliente);
+                    <tr>
+                        <td><span class="etichetta @ClasseLeg(l.Stato)">@EsportatoreClientiDaSeguire.Etichetta(l.Stato)</span>
+                            @if (Model.Subentri is { } sb && sb.PerCliente.TryGetValue(l.Cliente, out var es))
+                            {
+                                <br /><a href="/ClientiDaSeguire/Subentri?filtro=@Uri.EscapeDataString(l.Cliente)&periodo=@Model.Periodo&confronto=@Model.Confronto" class="etichetta @es.Classe" style="text-decoration:none;white-space:normal" title="Cambi di gestione">@es.Testo</a>
+                            }
+                        </td>
+                        <td><a href="@Url.Action("Scheda", Cliente(l.Cliente))"><strong>@i.RagioneSociale</strong></a>@if (i.Intermediario) { <text> </text><span class="etichetta etichetta-outsourcing">intermediario</span> }@Html.Raw(Segni(i))<br /><span class="sottotesto">@l.Cliente · @i.Citta</span></td>
+                        <td>@i.Zona</td>
+                        <td class="numerico">@l.CampioniPrecedenti → @l.CampioniUltimi</td>
+                        <td class="numerico">@E(l.FatturatoPrecedenti) → @E(l.FatturatoUltimi)</td>
+                        <td>@EsportatoreClientiDaSeguire.NomiMesi(l.MesiAbituali)</td>
+                        <td>@l.UltimoCampionamento.ToString("dd/MM/yy")</td>
+                        <td>@l.ProssimoAtteso.ToString("dd/MM/yy")<br /><span class="sottotesto">@(l.GiorniAlProssimo >= 0 ? $"fra {l.GiorniAlProssimo} giorni" : $"{-l.GiorniAlProssimo} giorni fa")</span></td>
+                        <td>@i.Telefono</td>
+                        <td class="sottotesto">@Azione(i)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@if (Model.Vista == "consulenza")
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>@Model.Consulenza.Count clienti</h2><span class="sottotesto">Almeno @E(imp.SoloConsulenzaMinimo) l'anno di altri servizi e meno di @E(imp.SoloConsulenzaLabMassimo) l'anno di analisi, in proporzione al periodo.</span></div>
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Cliente</th><th>Commerciale</th><th>Resp.</th><th class="numerico">Altri servizi @attuale</th><th class="numerico">Analisi @attuale</th><th class="numerico">Analisi @confrontoTxt</th><th>Ultima azione</th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.Consulenza)
+                {
+                    var i = Model.Info(c.Cliente);
+                    <tr>
+                        <td><a href="@Url.Action("Scheda", Cliente(c.Cliente))"><strong>@i.RagioneSociale</strong></a><br /><span class="sottotesto">@c.Cliente · @i.Citta</span></td>
+                        <td>@(i.Assegnato ?? i.CommercialeAzw ?? "")</td>
+                        <td>@i.Zona</td>
+                        <td class="numerico">@E(c.AltroUltimi)</td>
+                        <td class="numerico">@E(c.LabUltimi)</td>
+                        <td class="numerico">@E(c.LabPrecedenti)</td>
+                        <td class="sottotesto">@Azione(i)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+@if (Model.Vista == "promemoria")
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Clienti da richiamare</h2><span class="sottotesto">Prossimo contatto indicato nell'ultima azione, fino a 7 giorni da oggi.</span></div>
+        @if (Model.Promemoria.Count == 0)
+        {
+            <p class="sottotesto">Nessun contatto in programma. Il prossimo contatto si indica quando si registra un'azione nella scheda del cliente.</p>
+        }
+        else
+        {
+            <table class="tabella">
+                <thead><tr><th>Quando</th><th>Cliente</th><th>Ultima azione</th><th>Note</th></tr></thead>
+                <tbody>
+                @foreach (var a in Model.Promemoria)
+                {
+                    var i = Model.Info(a.CodiceCliente);
+                    var scaduto = a.ProssimoContatto < DateTime.Today;
+                    <tr class="@(scaduto ? "riga-attenzione" : "")">
+                        <td><strong>@a.ProssimoContatto?.ToString("ddd dd/MM", it)</strong>@if (scaduto) { <br /><span class="etichetta etichetta-non-conforme">in ritardo</span> }</td>
+                        <td><a href="@Url.Action("Scheda", Cliente(a.CodiceCliente))"><strong>@i.RagioneSociale</strong></a><br /><span class="sottotesto">@i.Telefono</span></td>
+                        <td>@a.DataAzione.ToString("dd/MM/yy") · @a.Tipo · @a.Esito<br /><span class="sottotesto">@a.NomeUtente</span></td>
+                        <td class="sottotesto">@a.Note</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Legionella da ricordare</h2><span class="sottotesto">Il prossimo campionamento atteso cade entro @imp.LegionellaPreavvisoGiorni giorni: chiamare prima che il cliente vada altrove.</span></div>
+        <table class="tabella">
+            <thead><tr><th>Prossimo atteso</th><th>Cliente</th><th>Mesi abituali</th><th>Ultimo</th><th>Telefono</th><th>Ultima azione</th></tr></thead>
+            <tbody>
+            @foreach (var l in Model.DaRicordare)
+            {
+                var i = Model.Info(l.Cliente);
+                <tr>
+                    <td><strong>@l.ProssimoAtteso.ToString("dd/MM/yy")</strong><br /><span class="sottotesto">@(l.GiorniAlProssimo >= 0 ? $"fra {l.GiorniAlProssimo} giorni" : $"{-l.GiorniAlProssimo} giorni fa")</span></td>
+                    <td><a href="@Url.Action("Scheda", Cliente(l.Cliente))"><strong>@i.RagioneSociale</strong></a>@if (i.Intermediario) { <text> </text><span class="etichetta etichetta-outsourcing">intermediario</span> }<br /><span class="sottotesto">@i.Citta · @i.Zona</span></td>
+                    <td>@EsportatoreClientiDaSeguire.NomiMesi(l.MesiAbituali)</td>
+                    <td>@l.UltimoCampionamento.ToString("dd/MM/yy")</td>
+                    <td>@i.Telefono</td>
+                    <td class="sottotesto">@Azione(i)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+}
+
+@if (Model.Vista == "tolti")
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Clienti tolti dalla lista</h2><span class="sottotesto">Non compaiono nelle altre sezioni. Chi è stato acquisito da un nostro cliente ha lo storico sommato a quel cliente. Chi torna a fatturare o a mandare campioni ricompare da solo, con l'etichetta «tornato attivo».</span></div>
+        @if (Model.Tolti.Count == 0)
+        {
+            <p class="sottotesto">Nessun cliente tolto. Si toglie dalla scheda del cliente, riquadro «Togli dalla lista».</p>
+        }
+        else
+        {
+            <div class="tabella-scorrevole">
+                <table class="tabella">
+                    <thead><tr><th>Cliente</th><th>Motivo</th><th>Tolto il</th><th>Da</th><th>Nota</th><th>Stato</th></tr></thead>
+                    <tbody>
+                    @foreach (var (it2, ut) in Model.Tolti)
+                    {
+                        <tr>
+                            <td><a href="@Url.Action("Scheda", Cliente(ut.CodiceCliente))"><strong>@it2.RagioneSociale</strong></a><br /><span class="sottotesto">@ut.CodiceCliente · @it2.Citta</span></td>
+                            <td>@(it2.Uscita?.Descrizione ?? ut.Motivo.ToString())
+                                @if (ut.CodiceClienteSuccessore is string succ) { <br /><a class="sottotesto" href="@Url.Action("Scheda", Cliente(succ))">apri il cliente che l'ha acquisito</a> }</td>
+                            <td>@ut.DataUscita.ToString("dd/MM/yyyy")</td>
+                            <td>@ut.NomeUtente</td>
+                            <td class="sottotesto">@ut.Note</td>
+                            <td>@if (it2.Rientrato) { <span class="etichetta etichetta-attesa">tornato attivo</span> } else { <span class="etichetta etichetta-neutro">tolto</span> }</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}

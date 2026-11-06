@@ -53,7 +53,20 @@ public enum AreaFunzionale
     Mappatura         = 20,
     RicercaErrori     = 21,
     CertificatiEsterni = 22,
-    Preventivi        = 23
+    Preventivi        = 23,
+    MonitorTemperature = 24,
+    Statistiche       = 25,
+    Provvigioni       = 26,
+    Consulenze        = 27,
+    Clienti           = 28,
+    /// <summary>Condizioni Generali di Fornitura e firme dei clienti (09/10/2026).</summary>
+    Contratti         = 29,
+    /// <summary>Cruscotto riservato a soci e direzione (13/10/2026).</summary>
+    Direzione         = 30,
+    /// <summary>Limiti normativi per la validazione dei Rapporti di Prova (17/10/2026).</summary>
+    LimitiNormativi   = 31,
+    /// <summary>Manualistica per i clienti: privacy e, a seguire, piscine, legionellosi, HACCP (01/11/2026).</summary>
+    Manualistica      = 32
 }
 
 /// <summary>Stato di un DVR piscina salvato nel database.</summary>
@@ -64,4 +77,37 @@ public enum StatoDvrPiscina
 
     /// <summary>Documento definitivo.</summary>
     Definitivo = 2
+}
+
+/// <summary>
+/// Classificazione di un metodo (LabEstMetodo di ArcLab) rispetto all'elenco prove ACCREDIA
+/// confermato per il laboratorio esterno. Vedi <see cref="Entita.VerificaMetodoAccreditamento"/>.
+/// </summary>
+public enum StatoVerificaMetodo
+{
+    /// <summary>Non ancora classificato, o classificato su una revisione dell'elenco ormai superata.</summary>
+    DaVerificare = 0,
+
+    /// <summary>Un operatore ha verificato sul PDF che il metodo è nello scope di accreditamento.</summary>
+    Accreditato = 1,
+
+    /// <summary>Un operatore ha verificato sul PDF che il metodo NON è nello scope di accreditamento.</summary>
+    NonAccreditato = 2
+}
+
+/// <summary>
+/// Stato dell'accreditamento di un laboratorio esterno secondo la banca dati ACCREDIA dei laboratori di prova
+/// (08/10/2026): letto ogni giorno dall'Agente ACCREDIA con due ricerche (tutti i laboratori; solo quelli con
+/// «Sospensione Attiva: Sì»). Vedi <see cref="Entita.AccreditamentoLabEsterno.StatoAccredia"/>.
+/// </summary>
+public enum StatoAccreditamentoAccredia
+{
+    /// <summary>Presente nell'elenco dei laboratori accreditati, senza sospensione.</summary>
+    Accreditato = 1,
+
+    /// <summary>Presente fra i laboratori con sospensione temporanea attiva (asterisco sul numero).</summary>
+    Sospeso = 2,
+
+    /// <summary>Numero e sede non presenti nell'elenco: accreditamento revocato, ritirato, rinunciato o scaduto.</summary>
+    NonTrovato = 3
 }

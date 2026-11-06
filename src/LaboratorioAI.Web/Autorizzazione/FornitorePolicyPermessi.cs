@@ -21,6 +21,13 @@ public class FornitorePolicyPermessi : DefaultAuthorizationPolicyProvider
         var esistente = await base.GetPolicyAsync(nomePolicy);
         if (esistente is not null) return esistente;
 
+        // «uno:a|b»: basta uno dei permessi (RichiedeUnoDeiPermessiAttribute, 11/10/2026)
+        if (nomePolicy.StartsWith(RichiedeUnoDeiPermessiAttribute.Prefisso, StringComparison.Ordinal))
+            return new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddRequirements(new RequisitoUnoDeiPermessi(nomePolicy[RichiedeUnoDeiPermessiAttribute.Prefisso.Length..].Split('|')))
+                .Build();
+
         // I codici permesso hanno forma "area.funzione"
         if (!nomePolicy.Contains('.')) return null;
 

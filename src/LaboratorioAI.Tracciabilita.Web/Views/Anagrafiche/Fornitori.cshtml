@@ -1,0 +1,25 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloElencoFornitori
+@{ ViewData["Titolo"] = "Fornitori"; }
+<div class="testa-pagina"><h1>Agenda fornitori</h1><span class="nota">@Model.Totale trovati</span></div>
+<p><a asp-action="Fornitori" class="pulsante">Fornitori</a> <a asp-action="Articoli">Prodotti</a>
+   <a asp-action="NuovoFornitore" class="pulsante">Nuovo fornitore</a></p>
+<form method="get" class="riga-modulo">
+    <label>Cerca (nome, città, partita IVA)<input type="text" name="cerca" value="@Model.Cerca" /></label>
+    <label style="flex-direction:row;align-items:center;gap:.4rem">
+        <input type="checkbox" name="conNonAttivi" value="true" checked="@Model.ConNonAttivi" /> Anche quelli non più in uso</label>
+    <button type="submit" class="piccolo">Cerca</button>
+</form>
+<table class="elenco">
+    <thead><tr><th>Fornitore</th><th>Città</th><th>Telefono</th><th>E-mail</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var f in Model.Righe)
+    {
+        <tr>
+            <td><a asp-action="ModificaFornitore" asp-route-id="@f.IdFornitore">@f.RagioneSociale</a></td>
+            <td>@f.Citta</td><td>@f.Telefono</td><td>@f.Email</td>
+            <td>@if (!f.Attivo) { <span class="tag spento">non in uso</span> }</td>
+        </tr>
+    }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="5">Nessun fornitore trovato.</td></tr> }
+    </tbody>
+</table>

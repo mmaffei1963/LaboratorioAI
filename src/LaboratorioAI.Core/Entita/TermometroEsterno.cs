@@ -25,6 +25,18 @@ public class TermometroEsterno
     /// <summary>Se true, il termometro non viene considerato nei filtri/valutazioni per scadenza.</summary>
     public bool EscludiScadenze { get; set; }
 
+    /// <summary>
+    /// 03/11/2026: taratura rinnovata (sostituita da una più recente), come la colonna «Rinnovato» del vecchio foglio:
+    /// data del rinnovo e, se il rinnovo è in archivio, la taratura che la sostituisce. Le rinnovate non vanno in scadenza.
+    /// <see cref="EscludiScadenze"/> vale come «Dismessa».
+    /// </summary>
+    public DateTime? DataRinnovo { get; set; }
+    public int? IdTermometroRinnovo { get; set; }
+
+    /// <summary>03/11/2026: tipo di termometro (a sonda, a gabbia, pirometro, datalogger, altro) e servizio reso.</summary>
+    public Tarature.TipoTermometro TipoTermometro { get; set; }
+    public Tarature.ServizioTaraturaTermometro Servizio { get; set; } = Tarature.ServizioTaraturaTermometro.SoloTaratura;
+
     /// <summary>Se il termometro proviene da una taratura eseguita in app (modulo Taratura), il suo Id.</summary>
     public int? IdTaraturaOrigine { get; set; }
 

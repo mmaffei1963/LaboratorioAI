@@ -3,7 +3,7 @@
     ViewData["Titolo"] = "Da Validare";
 }
 
-<div class="barra-strumenti">
+<div class="barra-strumenti" id="dati-validazione" data-campione="@ViewData["CampioneIniziale"]">
     <div>
         <h1>Campioni da validare</h1>
         <p class="sottotitolo" id="riepilogo">Caricamento…</p>
@@ -22,11 +22,34 @@
     <section class="riquadro pannello-elenco">
         <input type="search" id="filtro-elenco" class="campo-ricerca"
                placeholder="Filtra per cliente, campione o matrice…" autocomplete="off" />
+        <div class="filtri-limiti">
+            <label>Limiti
+                <select id="filtro-colore" autocomplete="off">
+                    <option value="">tutti i colori</option>
+                    <option value="viola">viola — da correggere</option>
+                    <option value="rosso">rosso — limite di legge superato</option>
+                    <option value="arancione">arancione — da segnalare</option>
+                    <option value="grigio">grigio — non confrontabile</option>
+                    <option value="verde">verde — nessun rilievo</option>
+                    <option value="azzurro">azzurro — nessun limite di legge</option>
+                </select>
+            </label>
+            <label>Ordina
+                <select id="ordina-elenco" autocomplete="off">
+                    <option value="gravita">per gravità dei limiti</option>
+                    <option value="giacenza">per giacenza</option>
+                </select>
+            </label>
+        </div>
+        <p class="sottotesto" id="stato-limiti"></p>
         <div id="elenco-campioni" class="elenco"></div>
     </section>
 
     <section id="pannello-dettaglio" class="riquadro nascosto">
         <div id="intestazione-campione"></div>
+
+        <div id="segnalazioni-limiti" class="nascosto"></div>
+        <div id="riquadro-validazione" class="riquadro-validazione nascosto"></div>
 
         <table class="tabella" id="tabella-prove">
             <thead>

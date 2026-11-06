@@ -24,11 +24,16 @@ public class ConfigurazionePreventivo : IEntityTypeConfiguration<Preventivo>
         e.Property(x => x.ClienteCitta).HasMaxLength(120);
         e.Property(x => x.ClienteProvincia).HasMaxLength(5);
         e.Property(x => x.ClienteEmail).HasMaxLength(255);
+        e.Property(x => x.ClienteTelefono).HasMaxLength(50);
+        e.Property(x => x.ClienteNome).HasMaxLength(255);
 
         // Offerta
         e.Property(x => x.Oggetto).HasMaxLength(500);
         e.Property(x => x.DataOfferta).HasColumnType("date");
-        e.Property(x => x.CondizioniPagamento).HasMaxLength(500);
+        // 1000 (non più 500): scelto per ospitare una condizione di pagamento completa di IBAN,
+        // banca e intestatario (v. MetodoPagamento), copiata qui come testo libero e poi restando
+        // comunque modificabile per la singola offerta.
+        e.Property(x => x.CondizioniPagamento).HasMaxLength(1000);
         e.Property(x => x.RevisioneCondizioni).HasMaxLength(120);
 
         // Importi
@@ -36,6 +41,8 @@ public class ConfigurazionePreventivo : IEntityTypeConfiguration<Preventivo>
         e.Property(x => x.AliquotaIva).HasColumnType("decimal(5,2)");
 
         e.Property(x => x.Note).HasMaxLength(2000);
+        e.Property(x => x.RiepilogoPromozionale).HasDefaultValue(false);
+        e.Property(x => x.MostraInsediamenti).HasDefaultValue(false);
 
         e.Property(x => x.DataCreazione).HasDefaultValueSql("SYSUTCDATETIME()");
         e.Property(x => x.DataUltimaModifica).HasDefaultValueSql("SYSUTCDATETIME()");
@@ -61,7 +68,11 @@ public class ConfigurazioneRigaPreventivo : IEntityTypeConfiguration<RigaPrevent
         e.Property(x => x.Tipo).HasConversion<int>();
         e.Property(x => x.OriginePrezzo).HasConversion<int>();
         e.Property(x => x.Descrizione).HasMaxLength(500);
-        e.Property(x => x.Note).HasMaxLength(1000);
+        e.Property(x => x.IdControlliOrigine).HasMaxLength(200);
+        e.Property(x => x.RifLocale).HasMaxLength(20);
+        e.Property(x => x.Insediamento).HasMaxLength(255);   // 05/11/2026
+        // 4000 (12/10/2026): per le voci accessorie è il testo descrittivo stampato in offerta sotto la voce.
+        e.Property(x => x.Note).HasMaxLength(4000);
 
         e.Property(x => x.PrezzoBase).HasColumnType("money");
         e.Property(x => x.PrezzoFinale).HasColumnType("money");
@@ -114,7 +125,25 @@ public class ConfigurazioneVoceListinoAccessorio : IEntityTypeConfiguration<Voce
             new VoceListinoAccessorio { IdVoceAccessorio = 1, Codice = "GIUDIZIO_CONF", Descrizione = "Giudizio di conformità sul rapporto di prova", Prezzo = 10m, UnitaMisura = "cad", Attivo = true },
             new VoceListinoAccessorio { IdVoceAccessorio = 2, Codice = "RIEMISSIONE_RDP", Descrizione = "Riemissione rapporto di prova su richiesta del cliente", Prezzo = 20m, UnitaMisura = "cad", Attivo = true },
             new VoceListinoAccessorio { IdVoceAccessorio = 3, Codice = "CONSERVAZIONE", Descrizione = "Conservazione campione oltre 20 giorni per cause del cliente", Prezzo = 0.50m, UnitaMisura = "giorno", Attivo = true },
-            new VoceListinoAccessorio { IdVoceAccessorio = 4, Codice = "CAMPIONAMENTO", Descrizione = "Campionamento eseguito da operatore MARE.A", Prezzo = 0m, UnitaMisura = "cad", Attivo = true }
+            new VoceListinoAccessorio { IdVoceAccessorio = 4, Codice = "CAMPIONAMENTO", Descrizione = "Prelievo eseguito da operatore MARE.A", Prezzo = 0m, UnitaMisura = "cad", Attivo = true }
+        );
+    }
+}
+
+public class ConfigurazioneMetodoPagamento : IEntityTypeConfiguration<MetodoPagamento>
+{
+    public void Configure(EntityTypeBuilder<MetodoPagamento> e)
+    {
+        e.ToTable("MetodiPagamento", "preventivi");
+        e.HasKey(x => x.IdMetodoPagamento);
+
+        // 1000 (non più 255): la descrizione può includere per esteso IBAN, banca e intestatario
+        // (sempre i nostri dati, mai quelli del cliente — nessuna tabella dedicata necessaria).
+        e.Property(x => x.Descrizione).HasMaxLength(1000).IsRequired();
+
+        // Seed: l'unica condizione finora usata come testo libero nelle offerte.
+        e.HasData(
+            new MetodoPagamento { IdMetodoPagamento = 1, Descrizione = "Bonifico bancario vista fattura", Ordine = 1, Attivo = true }
         );
     }
 }
