@@ -26,6 +26,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# --- Protezione aggiunta il 06/11/2026 ---
+# Script superato da Pubblica-Produzione.bat (che fa anche backup, verifica e ripristino automatico).
+# In produzione si pubblica solo dal PC dell'ufficio.
+. (Join-Path $PSScriptRoot 'scripts\PostazioneComune.ps1')
+if (-not (Test-PostazioneUfficio)) { throw "Si pubblica solo dal PC dell'ufficio (questo e' il $(Get-NomePostazione))." }
+Write-Host "NOTA: questo script e' superato: meglio Pubblica-Produzione.bat (backup, verifica e ripristino automatico)." -ForegroundColor Yellow
 $root   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $outDir = Join-Path $root 'publish\Web'
 

@@ -37,6 +37,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# --- Protezione aggiunta il 06/11/2026 ---
+# La produzione e' IN USO dal 10/10/2026: con -Conferma questo script la SVUOTA e la riempie con i dati di test.
+if ($Conferma) {
+    Write-Host "ATTENZIONE: la produzione ($Destinazione / $DbDestinazione) e' in uso: verra' svuotata e riempita con i dati di test." -ForegroundColor Red
+    $frase = Read-Host 'Per continuare scrivi esattamente SVUOTA LA PRODUZIONE'
+    if ($frase -ne 'SVUOTA LA PRODUZIONE') { throw "Annullato: la produzione non e' stata toccata." }
+}
+
 function Esegui-Sql([string]$server, [string]$db, [string]$query) {
     $r = sqlcmd -S $server -d $db -h -1 -W -b -Q "SET NOCOUNT ON; $query"
     if ($LASTEXITCODE -ne 0) { throw "sqlcmd fallito su $server/${db}: $r" }

@@ -11,7 +11,17 @@ REM  ATTENZIONE: non tocca il database. Se ci sono nuove migrazioni
 REM  eseguire PRIMA Script-Database-Tracciato.bat e far applicare lo script.
 REM ============================================================
 
-cd /d C:\Sviluppo\LaboratorioAI
+cd /d "%~dp0"
+
+echo Controlli (postazione e sincronizzazione con GitHub)...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\Controlla-Pubblicazione.ps1" -Nome "Tracciato"
+if errorlevel 1 (
+    echo.
+    echo   Pubblicazione interrotta: la produzione NON e' stata toccata.
+    echo.
+    pause
+    exit /b 1
+)
 
 set PRODUZIONE=\\SRVMAREA\marea\LaboratorioAI\Produzione\Tracciato
 set PRODUZIONE_WEB=\\SRVMAREA\marea\LaboratorioAI\Produzione\Web
@@ -70,7 +80,7 @@ echo   Passo 2: pubblicazione in produzione
 echo ============================================================
 echo.
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Sviluppo\LaboratorioAI\Pubblica-Produzione.ps1" -Staging "%STAGING%" -Produzione "%PRODUZIONE%" -CartellaBackup "%BACKUP%" -UrlVerifica "%VERIFICA%"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Pubblica-Produzione.ps1" -Staging "%STAGING%" -Produzione "%PRODUZIONE%" -CartellaBackup "%BACKUP%" -UrlVerifica "%VERIFICA%"
 
 echo.
 echo ============================================================

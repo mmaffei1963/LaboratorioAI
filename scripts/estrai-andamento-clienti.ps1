@@ -9,9 +9,9 @@ $ErrorActionPreference = 'Stop'
 $dest = Join-Path $PSScriptRoot '..\docs\AndamentoClienti'
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 
-$csLabAI   = 'Server=PCMAREA01\SQLEXPRESS;Database=LaboratorioAI_Test;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;'
+$csLabAI   = 'Server=.\SQLEXPRESS;Database=LaboratorioAI_Test;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;'
 $csArcProd = 'Server=192.168.23.1;Database=LabAnalisiDati;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;ApplicationIntent=ReadOnly;'
-$csArcLoc  = 'Server=PCMAREA01\SQLEXPRESS;Database=LabAnalisiDati;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;'
+$csArcLoc  = 'Server=.\SQLEXPRESS;Database=LabAnalisiDati;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;'
 
 function Esporta($cs, $sql, $file) {
     $cn = New-Object System.Data.SqlClient.SqlConnection $cs

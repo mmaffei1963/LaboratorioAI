@@ -2,7 +2,8 @@
 #   Tracciato (sviluppo)     -> avvia il sito locale su http://localhost:5082 e apre il browser
 #   Tracciato (produzione)   -> apre https://tracciato.mare-a.com
 #   Pubblica Tracciato       -> pubblica in produzione (doppio click, come per il Portale)
-$cartella = 'C:\Sviluppo\LaboratorioAI'
+$cartella = $PSScriptRoot
+. (Join-Path $PSScriptRoot 'scripts\PostazioneComune.ps1')
 $desktop  = [Environment]::GetFolderPath('Desktop')
 $shell    = New-Object -ComObject WScript.Shell
 
@@ -17,4 +18,10 @@ function Collegamento($nome, $destinazione, $descrizione) {
 
 Collegamento 'Tracciato (sviluppo)'   (Join-Path $cartella 'Avvia_Tracciato.bat')             'Avvia Tracciato in sviluppo (localhost:5082)'
 Collegamento 'Tracciato (produzione)' (Join-Path $cartella 'Avvia_Tracciato_Produzione.bat')  'Apre Tracciato in produzione'
-Collegamento 'Pubblica Tracciato'     (Join-Path $cartella 'Pubblica-Tracciato.bat')           'Pubblica Tracciato in produzione'
+# Si pubblica solo dal PC dell'ufficio: sul portatile il collegamento non si crea.
+if (Test-PostazioneUfficio) {
+    Collegamento 'Pubblica Tracciato'     (Join-Path $cartella 'Pubblica-Tracciato.bat')           'Pubblica Tracciato in produzione'
+}
+else {
+    Write-Host "Pubblica Tracciato: non creato (si pubblica solo dal PC dell'ufficio)."
+}

@@ -11,9 +11,15 @@ REM  Modelli_Studio_Manuali e i database Access .accdb, circa 1 GB):
 REM  di quello resta la copia completa del 10/10/2026 su D:\BACKUP.
 REM  Ogni copia pesa cosi' poche decine di MB.
 REM  La vecchia cartella D:\BACKUP\LaboratorioAI non viene toccata.
+REM  Dal 06/11/2026 il codice e' anche su GitHub: questa copia serve soprattutto per
+REM  i file che in git NON ci sono (appsettings.Development.json, modelli Word, ecc.).
+REM  Il progetto e' la cartella in cui si trova questo file (vale su entrambe le postazioni).
 REM ============================================================
 
 set COPIE_DA_TENERE=10
+
+set "SRC=%~dp0"
+if "%SRC:~-1%"=="\" set "SRC=%SRC:~0,-1%"
 
 if not exist "D:\BACKUP" mkdir "D:\BACKUP"
 
@@ -24,7 +30,7 @@ echo.
 echo Copio il progetto in %DEST% ...
 echo.
 
-robocopy "C:\Sviluppo\LaboratorioAI" "%DEST%" /E /XD bin obj .vs publish "C:\Sviluppo\LaboratorioAI\docs\Validazione\Modelli_Studio_Manuali" /XF *.accdb /NFL /NDL /NP /R:1 /W:1
+robocopy "%SRC%" "%DEST%" /E /XD bin obj .vs publish "%SRC%\docs\Validazione\Modelli_Studio_Manuali" /XF *.accdb /NFL /NDL /NP /R:1 /W:1
 
 if errorlevel 8 (
     echo.

@@ -7,7 +7,17 @@ REM    2) Pubblica-Produzione.ps1 (stop, backup, copia, riavvio,
 REM       verifica automatica e ripristino se qualcosa va storto)
 REM ============================================================
 
-cd /d C:\Sviluppo\LaboratorioAI
+cd /d "%~dp0"
+
+echo Controlli (postazione e sincronizzazione con GitHub)...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\Controlla-Pubblicazione.ps1" -Nome "LaboratorioAI.Web"
+if errorlevel 1 (
+    echo.
+    echo   Pubblicazione interrotta: la produzione NON e' stata toccata.
+    echo.
+    pause
+    exit /b 1
+)
 
 echo ============================================================
 echo   Pubblicazione LaboratorioAI.Web in produzione
@@ -35,7 +45,7 @@ echo   Passo 2: pubblicazione in produzione
 echo ============================================================
 echo.
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Sviluppo\LaboratorioAI\Pubblica-Produzione.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Pubblica-Produzione.ps1"
 
 echo.
 echo ============================================================

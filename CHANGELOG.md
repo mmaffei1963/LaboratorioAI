@@ -2,6 +2,15 @@
 
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## Script per due postazioni, ufficio e portatile (06/11/2026)
+- Il codice e' su GitHub (repository privato): si lavora con `git pull` / `git push`; vedi `LAVORARE_DA_DUE_POSTAZIONI.md`.
+- Nuovi `scripts\PostazioneComune.ps1` (riconosce il PC dell'ufficio `PCMAREA01`), `scripts\Controlla-Ambiente.ps1` e `scripts\Controlla-Pubblicazione.ps1`.
+- `Avvia_LaboratorioAI`, `Avvia_Portale`, `Avvia_Tracciato` (.ps1): usano la cartella in cui si trovano, impostano `ASPNETCORE_ENVIRONMENT=Development` e **non partono** se manca `appsettings.Development.json` o se `LaboratorioAI`, `ArcLab` o `Tracciabilita` puntano alla produzione. Sul portatile preimpostano la cartella Econorma locale e spengono il controllo ACCREDIA notturno.
+- `Pubblica-Produzione`, `Pubblica-Portale`, `Pubblica-Tracciato` (.bat): si pubblica solo dal PC dell'ufficio e dopo aver controllato che il codice sia allineato a GitHub (altrimenti conferma scritta).
+- `Ripristina-Produzione-13-10.bat` e `datapump_dati_locale_to_prod.ps1`: aggiunta una conferma scritta (possono rovinare la produzione); `pubblica_web.ps1` solo dal PC dell'ufficio.
+- `Backup_Su_D.bat`, `Script-Database-Tracciato.bat`, `Crea-Collegamenti-Desktop-Tracciato.ps1`: percorso del progetto preso dalla posizione dello script; sul portatile non si crea il collegamento di pubblicazione.
+- `scripts\estrai-andamento-clienti.ps1`: istanza locale `.\SQLEXPRESS` (vale su entrambi i PC).
+
 ## Manualistica - dizionario della check list dai modelli (05/11/2026)
 - Nuovi `TendineModello` e `ServizioVociChecklist`: le voci delle tendine si leggono dalle revisioni approvate e popolano `man.VociChecklist` e `man.OpzioniVoce`. Pagina «Manualistica → Voci della check list»: si guarda l'anteprima, poi si scrive. Le voci scritte a mano dai consulenti non si toccano; quelle sparite dai modelli si spengono senza cancellarsi.
 - **L'identita' di un campo segue il modo in cui il motore lo riempie.** Nelle lettere e negli archivi riempie per posizione (`fillPos`, chiave «TAG#n») e li' lo stesso tag ripetuto e' un campo diverso: nella scheda dell'archivio informatico «LUOGO DI CONSERVAZIONE» compare due volte, una per i dati sul PC — con «Cloud» — e una per quelli del gestionale — con «Server farm del gestionale». Dappertutto altrove riempie per tag (`fill`) e le occorrenze sono lo stesso campo, anche dentro le sedi del trattamento e gli elenchi delle misure di sicurezza, dove le righe del modello sono un prototipo che il motore duplica.

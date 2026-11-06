@@ -9,7 +9,7 @@ REM  (da Gen o da un amministratore SQL) PRIMA di pubblicare una versione
 REM  che contiene nuove migrazioni.
 REM ============================================================
 
-cd /d C:\Sviluppo\LaboratorioAI
+cd /d "%~dp0"
 if not exist "C:\Sviluppo\Publish\" mkdir "C:\Sviluppo\Publish"
 
 dotnet ef migrations script --idempotent --context ContestoTracciabilita --project src\LaboratorioAI.Tracciabilita.Dati --startup-project src\LaboratorioAI.Tracciabilita.Web --output "C:\Sviluppo\Publish\Tracciato_database.sql"

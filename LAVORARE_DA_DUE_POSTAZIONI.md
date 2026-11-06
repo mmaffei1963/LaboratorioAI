@@ -27,6 +27,20 @@ Il repository GitHub e' la fonte di verita' del codice.
 - File contabile AZW_07.accdb
 - Database di test (si copiano con backup e ripristino)
 
+## Script (.bat / .ps1): cosa fanno su ciascuna postazione
+- Avvia_LaboratorioAI.bat, Avvia_Portale.bat, Avvia_Tracciato.bat: funzionano su entrambe le postazioni.
+  Prima di partire controllano (scripts\Controlla-Ambiente.ps1): se manca appsettings.Development.json
+  o se i database principali puntano alla produzione (192.168.23.1 / SRVMAREA), NON partono.
+  Sul portatile impostano da soli la cartella Econorma locale (D:\LaboratorioAI\TempLogScarico),
+  spengono il controllo ACCREDIA notturno e avvisano se c'e' una password SMTP.
+- Pubblica-Produzione.bat, Pubblica-Portale.bat, Pubblica-Tracciato.bat: partono SOLO dal PC dell'ufficio
+  (PCMAREA01). Prima controllano che il codice sia su GitHub (nessuna modifica non salvata, nessun commit
+  da spedire o da scaricare); se non e' cosi' chiedono una conferma scritta.
+- Backup_Su_D.bat: serve soprattutto per i file che in git non ci sono (appsettings.Development.json, ecc.).
+- Ripristina-Produzione-13-10.bat e datapump_dati_locale_to_prod.ps1: script una tantum, ora con conferma
+  scritta, perche' in produzione possono fare danni. pubblica_web.ps1 e' superato: usare Pubblica-Produzione.bat.
+- Tutti gli script usano la cartella in cui si trovano: non dipendono piu' da C:\Sviluppo\LaboratorioAI.
+
 ## Sul portatile
 - Nessuna password SMTP: il database di test ha indirizzi veri.
 - Database solo locali (.\SQLEXPRESS), mai il server di produzione 192.168.23.1.
