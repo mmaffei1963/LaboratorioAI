@@ -72,6 +72,7 @@ public static class MenuApplicazione
         new("Impostazioni", "Impostazioni", "Come l'azienda lavora", Icone.Impostazioni, new List<VoceMenu>
         {
             new("Kg consumati per ingrediente", "/Impostazioni", "Scegli se e come registrare i kg usati in ogni produzione."),
+            new("Scarica tutti i miei dati", "/Dati", "Una copia di tutti i dati in file CSV (Excel), da conservare da parte."),
         }),
     };
 

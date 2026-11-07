@@ -16,23 +16,27 @@ using Microsoft.EntityFrameworkCore;
 //   ricette <idAzienda> [cartella]                        crea nel database di PROVA le ricette scelte nel foglio ricette_da_confermare.csv (cartella RicetteAccess).
 //   azzera  <idAzienda>                                   cancella i dati importati di quell'azienda dal database di PROVA (non utenti, sedi, azienda).
 
+var produzione = args.Contains("--produzione", StringComparer.OrdinalIgnoreCase);
+args = args.Where(a => !string.Equals(a, "--produzione", StringComparison.OrdinalIgnoreCase)).ToArray();
+
 if (args.Length < 2 || args[0] is not ("prova" or "importa" or "azzera" or "controlli" or "struttura" or "valori" or "ricette") || (args[0] == "importa" && args.Length < 4))
 {
     Console.WriteLine("Uso:");
     Console.WriteLine("  struttura <file Access>   (sola lettura, nessun dato)");
     Console.WriteLine("  valori <file Access>   (sola lettura)");
     Console.WriteLine("  controlli <idAzienda> [cartella]   (sola lettura)");
-    Console.WriteLine("  ricette <idAzienda> [cartella RicetteAccess]   (solo database di prova)");
+    Console.WriteLine("  ricette <idAzienda> [cartella RicetteAccess] [--produzione]");
     Console.WriteLine("  azzera  <idAzienda>   (solo database di prova)");
     Console.WriteLine("  prova   <file Access> [cartella]");
-    Console.WriteLine("  importa <file Access> <idAzienda> <siglaSede> [cartella]");
+    Console.WriteLine("  importa <file Access> <idAzienda> <siglaSede> [cartella] [--produzione]");
+    Console.WriteLine("Con --produzione si scrive nel database indicato dalla variabile d'ambiente TRACCIATO_CONNESSIONE (vedi DEPLOY_Tracciato.md).");
     Console.WriteLine("La cartella predefinita è Documenti\\ImportazioneTracciato (fuori dal repository: contiene dati reali).");
     return 1;
 }
 var comando = args[0];
 if (comando == "azzera") return await Azzera(args);
 if (comando == "controlli") return await Controlli(args);
-if (comando == "ricette") return await Ricette(args);
+if (comando == "ricette") return await Ricette(args, produzione);
 var file = Path.GetFullPath(args[1]);
 if (!File.Exists(file))
 {
@@ -107,7 +111,7 @@ catch (Exception e)
 }
 
 if (comando == "importa")
-    return await Importa(dati, args, cartella);
+    return await Importa(dati, args, cartella, produzione);
 
 var piano = Prova.Prepara(dati, DateTime.Today);
 var rapporto = RapportoProva.Scrivi(piano, DateTime.Now);
@@ -123,7 +127,7 @@ Console.WriteLine($"File scritti in: {cartella}");
 return 0;
 
 
-static async Task<int> Importa(DatiAccess dati, string[] args, string cartella)
+static async Task<int> Importa(DatiAccess dati, string[] args, string cartella, bool produzione)
 {
     if (!int.TryParse(args[2], out var idAzienda)) { Console.WriteLine("idAzienda deve essere un numero (lo vedi nell'indirizzo della scheda azienda)."); return 1; }
     var sigla = args[3].Trim();
@@ -150,14 +154,10 @@ static async Task<int> Importa(DatiAccess dati, string[] args, string cartella)
         return 3;
     }
 
-    var connessione = LeggiConnessione();
+    var connessione = LeggiConnessione(produzione);
     if (connessione is null) return 1;
     var nomeDb = new SqlConnectionStringBuilder(connessione).InitialCatalog;
-    if (!nomeDb.EndsWith("_Test", StringComparison.OrdinalIgnoreCase))
-    {
-        Console.WriteLine($"Per sicurezza questo importatore scrive solo in database di prova (nome che finisce per _Test). Trovato: «{nomeDb}».");
-        return 1;
-    }
+    if (!VerificaDatabase(nomeDb, produzione, "importa")) return 1;
 
     Console.WriteLine();
     Console.WriteLine($"Database: {nomeDb}  ·  azienda {idAzienda}  ·  sede {sigla}");
@@ -213,8 +213,47 @@ Da controllare:
     }
 }
 
-static string? LeggiConnessione()
+// Database di prova: via libera. Produzione: serve --produzione e bisogna riscrivere il nome esatto del database.
+static bool VerificaDatabase(string nomeDb, bool produzione, string comando)
 {
+    var èProva = nomeDb.EndsWith("_Test", StringComparison.OrdinalIgnoreCase);
+    if (!produzione)
+    {
+        if (èProva) return true;
+        Console.WriteLine($"Per sicurezza «{comando}» scrive solo in database di prova (nome che finisce per _Test). Trovato: «{nomeDb}».");
+        Console.WriteLine("Per scrivere in produzione aggiungi --produzione.");
+        return false;
+    }
+    if (èProva)
+    {
+        Console.WriteLine($"Con --produzione ci si aspetta un database di produzione, ma «{nomeDb}» è di prova. Tolgo il --produzione o correggi TRACCIATO_CONNESSIONE.");
+        return false;
+    }
+    Console.WriteLine();
+    Console.WriteLine($"ATTENZIONE: stai per scrivere nel database di PRODUZIONE «{nomeDb}».");
+    Console.WriteLine($"Per confermare riscrivi il nome del database ({nomeDb}):");
+    if (!string.Equals(Console.ReadLine()?.Trim(), nomeDb, StringComparison.Ordinal))
+    {
+        Console.WriteLine("Nome diverso. Annullato, non è stato scritto nulla.");
+        return false;
+    }
+    return true;
+}
+
+static string? LeggiConnessione(bool produzione = false)
+{
+    if (produzione)
+    {
+        var daAmbiente = Environment.GetEnvironmentVariable("TRACCIATO_CONNESSIONE");
+        if (string.IsNullOrWhiteSpace(daAmbiente))
+        {
+            Console.WriteLine("Con --produzione serve la variabile d'ambiente TRACCIATO_CONNESSIONE (stringa di connessione al database di produzione).");
+            Console.WriteLine("Esempio in PowerShell (solo per questa finestra):");
+            Console.WriteLine("  $env:TRACCIATO_CONNESSIONE = \"Server=192.168.23.1;Database=Tracciabilita;Trusted_Connection=True;TrustServerCertificate=True\"");
+            return null;
+        }
+        return daAmbiente;
+    }
     var percorso = Path.Combine("src", "LaboratorioAI.Tracciabilita.Web", "appsettings.Development.json");
     if (!File.Exists(percorso))
     {
@@ -242,7 +281,7 @@ static async Task<int> Azzera(string[] args)
     }
 
     Console.WriteLine($"Database: {nomeDb}  ·  azienda {idAzienda}");
-    Console.WriteLine("Cancello i dati importati: movimenti, accettazioni, lotti, articoli, categorie, profili di controllo e fornitori.");
+    Console.WriteLine("Cancello i dati importati e quelli creati nei test: movimenti, produzioni, spedizioni, richiami, accettazioni, lotti, ricette, articoli, categorie, profili di controllo e fornitori.");
     Console.WriteLine("Restano l'azienda, le sedi, gli utenti e il registro attività. Digita AZZERA per continuare:");
     if (!string.Equals(Console.ReadLine()?.Trim(), "AZZERA", StringComparison.Ordinal))
     {
@@ -261,8 +300,12 @@ static async Task<int> Azzera(string[] args)
     // Dai dati che dipendono dagli altri a quelli da cui dipendono.
     var tabelle = new[]
     {
+        // Prima i dati creati usando il programma (richiami, produzioni, spedizioni, trasferimenti, ordini), che puntano a lotti e ricette.
+        "Richiami", "ProduzioniConsumi", "SpedizioniRighe", "TrasferimentiRighe", "Allegati",
+        "MovimentiLotto", "LottiInUso", "ValoriCampi", "ContatoriLotti",
+        "Produzioni", "Spedizioni", "Trasferimenti",
         "RicetteRigheCategorie", "RicetteRighe", "RicetteVersioni", "Ricette",
-        "MovimentiLotto", "AccettazioniControlli", "Allegati", "Accettazioni", "LottiInUso", "Lotti",
+        "AccettazioniControlli", "Accettazioni", "OrdiniRighe", "Ordini", "Lotti",
         "ArticoliFornitori", "ArticoliAllergeni", "Articoli", "CategorieMateriaPrima",
         "ProfiliControlloRighe", "ProfiliControllo", "Fornitori"
     };
@@ -318,17 +361,13 @@ static async Task<int> Controlli(string[] args)
 }
 
 
-static async Task<int> Ricette(string[] args)
+static async Task<int> Ricette(string[] args, bool produzione)
 {
     if (!int.TryParse(args[1], out var idAzienda)) { Console.WriteLine("idAzienda deve essere un numero."); return 1; }
-    var connessione = LeggiConnessione();
+    var connessione = LeggiConnessione(produzione);
     if (connessione is null) return 1;
     var nomeDb = new SqlConnectionStringBuilder(connessione).InitialCatalog;
-    if (!nomeDb.EndsWith("_Test", StringComparison.OrdinalIgnoreCase))
-    {
-        Console.WriteLine($"Per sicurezza «ricette» scrive solo in database di prova (nome che finisce per _Test). Trovato: «{nomeDb}».");
-        return 1;
-    }
+    if (!VerificaDatabase(nomeDb, produzione, "ricette")) return 1;
     var cartella = args.Length > 2
         ? Path.GetFullPath(args[2])
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ImportazioneTracciato", "RicetteAccess");

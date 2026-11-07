@@ -27,7 +27,16 @@ Dal sito (login gestore) creare l'azienda «Riccione srl», la sede e l'amminist
 ## Collegamenti sul desktop
 Doppio click una volta su `Crea-Collegamenti-Desktop-Tracciato.bat`: crea «Tracciato (sviluppo)» (avvia il sito locale su `localhost:5082`), «Tracciato (produzione)» (apre `https://tracciato.mare-a.com`) e «Pubblica Tracciato».
 
+## Importare i dati di Riccione in produzione (lo fa Mirko, dopo che il sito risponde)
+Prima: creare dal sito l'azienda, la sede e l'amministratore (login gestore) e annotare idAzienda e sigla sede.
+Poi, da `C:\Sviluppo\LaboratorioAI`, in PowerShell (la variabile vale solo per quella finestra):
+1. `$env:TRACCIATO_CONNESSIONE = "Server=192.168.23.1;Database=Tracciabilita;Trusted_Connection=True;TrustServerCertificate=True"`
+2. `dotnet run --project src\LaboratorioAI.Tracciabilita.Importazione -- importa <file Access> <idAzienda> <sigla> --produzione`
+3. `dotnet run --project src\LaboratorioAI.Tracciabilita.Importazione -- ricette <idAzienda> --produzione`
+Il programma chiede di riscrivere il nome del database (`Tracciabilita`) e poi SI. Senza `--produzione` scrive solo nei database `_Test`. Serve che il tuo utente Windows abbia i diritti di scrittura sul database (altrimenti lo fa Gen).
+
 ## Da sapere
 - `appsettings.Production.json` contiene la stringa di connessione, l'indirizzo pubblico (`UrlPubblico`, usato per i QR delle etichette e per i link degli inviti) e `ApplicaVincoliSql`/`AttivaSicurezzaRiga` **spenti**: si accendono solo dopo il collaudo su `Tracciabilita_Test`.
 - L'indirizzo `tracciato.mare-a.com` è provvisorio: il dominio col marchio si sceglie dopo e si cambia senza toccare i dati (basta cambiare `UrlPubblico` e il binding IIS).
 - Periodo di prova senza corrispettivo: prima di caricare dati reali di Riccione serve almeno un accordo scritto breve (anche una mail) su prova, durata, trattamento dei dati e restituzione/cancellazione a fine prova. Il contratto GDPR art. 28 completo è ancora da fare.
+- Tracciato è un sito indipendente dal Portale clienti (che sarà dismesso): nessuna parte del Portale è condivisa, né database né account.

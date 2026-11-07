@@ -3,6 +3,7 @@
 @{ ViewData["Titolo"] = "Lotti da usare - " + Model.Nome; }
 <div class="testa-pagina"><h1>Lotti da usare: @Model.Nome</h1></div>
 <p><a asp-action="Scheda" asp-route-id="@Model.IdRicetta">« Ricetta</a></p>
+<p><a asp-action="SchedaRintracciabilita" asp-route-id="@Model.IdRicetta" asp-route-data="@Model.Giorno.ToString("yyyy-MM-dd")" target="_blank">Stampa la scheda di rintracciabilità di questo giorno</a></p>
 <form method="get" class="riga-modulo">
     <label>Giorno di produzione
         <input type="date" name="data" value="@Model.Giorno.ToString("yyyy-MM-dd")" /></label>

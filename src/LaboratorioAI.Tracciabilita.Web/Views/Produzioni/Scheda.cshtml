@@ -3,6 +3,7 @@
 @{ ViewData["Titolo"] = "Produzione " + Model.Prodotto; }
 <div class="testa-pagina"><h1>@Model.Prodotto del @Model.Giorno.ToString("dd/MM/yyyy")</h1>
     @if (Model.Annullata) { <span class="tag spento">annullata</span> }</div>
+<p><a asp-action="Stampa" asp-route-id="@Model.IdProduzione" target="_blank">Stampa la scheda di rintracciabilità</a></p>
 <p><a asp-action="Index" asp-route-cerca="@Model.Cerca" asp-route-dal="@Model.Dal?.ToString("yyyy-MM-dd")" asp-route-al="@Model.Al?.ToString("yyyy-MM-dd")" asp-route-pagina="@Model.Pagina">« Tutte le produzioni</a></p>
 <dl>
     <dt>Lotto prodotto</dt>

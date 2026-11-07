@@ -162,6 +162,48 @@ public class GestioneController : Controller
         return RedirectToAction(nameof(Azienda), new { id });
     }
 
+    [HttpPost("Azienda/{id:int}/Sede/{idSede:int}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ModificaSede(int id, int idSede, [Bind(Prefix = "Sede")] ModelloNuovoInsediamento m, CancellationToken ct)
+    {
+        var sede = await _db.Insediamenti.FirstOrDefaultAsync(i => i.IdInsediamento == idSede && i.IdAzienda == id, ct);
+        if (sede is null) return NotFound();
+
+        var sigla = GeneratoreCodiceLotto.NormalizzaSigla(m.Sigla);
+        if (!ModelState.IsValid || sigla is null) return Errore(id, PrimoErrore() ?? "Controlla nome e sigla della sede.");
+        if (await _db.Insediamenti.AnyAsync(i => i.IdAzienda == id && i.IdInsediamento != idSede && i.Sigla == sigla, ct))
+            return Errore(id, $"La sigla «{sigla}» è già usata da un'altra sede.");
+
+        var prima = $"{sede.Nome} ({sede.Sigla}) {sede.Indirizzo}";
+        sede.Nome = m.Nome!.Trim();
+        sede.Sigla = sigla;
+        sede.Indirizzo = Pulisci(m.Indirizzo);
+        Registra(id, "SedeModificata", "Insediamento", sede.IdInsediamento, $"{prima} → {sede.Nome} ({sede.Sigla}) {sede.Indirizzo}");
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Messaggio"] = $"Sede «{sede.Nome}» aggiornata. I lotti già creati mantengono la sigla di allora.";
+        return RedirectToAction(nameof(Azienda), new { id });
+    }
+
+    [HttpPost("Azienda/{id:int}/Dati")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ModificaAzienda(int id, string? ragioneSociale, string? partitaIva, string? email, CancellationToken ct)
+    {
+        var azienda = await _db.Aziende.FirstOrDefaultAsync(a => a.IdAzienda == id, ct);
+        if (azienda is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(ragioneSociale)) return Errore(id, "La ragione sociale non può essere vuota.");
+
+        var prima = $"{azienda.RagioneSociale}; P.IVA {azienda.PartitaIva}; {azienda.Email}";
+        azienda.RagioneSociale = ragioneSociale.Trim();
+        azienda.PartitaIva = Pulisci(partitaIva);
+        azienda.Email = Pulisci(email);
+        Registra(id, "AziendaModificata", "Azienda", id, $"{prima} → {azienda.RagioneSociale}; P.IVA {azienda.PartitaIva}; {azienda.Email}");
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Messaggio"] = "Dati dell'azienda aggiornati.";
+        return RedirectToAction(nameof(Azienda), new { id });
+    }
+
     // ── Utenti ─────────────────────────────────────────────────────
     [HttpPost("Azienda/{id:int}/Utente")]
     [ValidateAntiForgeryToken]

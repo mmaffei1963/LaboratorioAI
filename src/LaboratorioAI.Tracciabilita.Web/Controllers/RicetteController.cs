@@ -354,6 +354,41 @@ public class RicetteController : Controller
     }
 
     /// <summary>
+    /// Scheda di rintracciabilità stampabile per un prodotto e un giorno, con gli stessi lotti di «Lotti da usare in un giorno».
+    /// Come la «Scheda Rintracciabilità M. P.» del vecchio programma; non registra nulla.
+    /// </summary>
+    [HttpGet("{id:int}/SchedaRintracciabilita")]
+    public async Task<IActionResult> SchedaRintracciabilita(int id, DateOnly? data, int[]? escludi, CancellationToken ct)
+    {
+        var esito = await Proposta(id, data, escludi, ct);
+        if (esito is not ViewResult { Model: ModelloProposta p }) return esito;
+
+        var idLotti = p.Ingredienti.SelectMany(i => i.Fornitori).SelectMany(f => f.Lotti).Select(l => l.IdLotto).Distinct().ToList();
+        var documenti = await _db.DocumentiPerLottoAsync(idLotti, ct);
+        var azienda = await _db.Aziende.AsNoTracking().FirstOrDefaultAsync(ct);
+        var sede = await _db.Insediamenti.AsNoTracking().Where(i => i.Attivo).OrderBy(i => i.IdInsediamento).Select(i => i.Nome).FirstOrDefaultAsync(ct);
+
+        var m = new ModelloSchedaRintracciabilita
+        {
+            Azienda = azienda?.RagioneSociale ?? "", Sede = sede ?? "", Prodotto = p.Nome, Giorno = p.Giorno,
+            LottoProduzione = p.LottoInterno, Stampata = DateTime.Now
+        };
+        foreach (var i in p.Ingredienti)
+        {
+            var g = new GruppoSchedaRintracciabilita { Ingrediente = i.Nome };
+            foreach (var f in i.Fornitori)
+                foreach (var l in f.Lotti)
+                    g.Righe.Add(new RigaSchedaRintracciabilita
+                    {
+                        Articolo = l.Articolo, Fornitore = f.Fornitore, Lotto = l.Codice, Scadenza = l.DataScadenza,
+                        Documento = documenti.GetValueOrDefault(l.IdLotto), ImpiegatoDal = l.DataImpegno
+                    });
+            m.Gruppi.Add(g);
+        }
+        return View("~/Views/Shared/SchedaRintracciabilita.cshtml", m);
+    }
+
+    /// <summary>
     /// Il lotto interno del giorno secondo le impostazioni dell'azienda (giorno dell'anno, sigla sede, progressivo).
     /// Se questo prodotto è già stato prodotto quel giorno si riusa il suo lotto; altrimenti è il prossimo libero.
     /// </summary>

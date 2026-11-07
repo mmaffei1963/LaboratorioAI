@@ -1,0 +1,59 @@
+@model LaboratorioAI.Tracciabilita.Web.Models.ModelloSchedaRintracciabilita
+@{ Layout = null; var it = new System.Globalization.CultureInfo("it-IT"); }
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<title>Scheda di rintracciabilità – @Model.Prodotto @Model.Giorno.ToString("dd/MM/yyyy")</title>
+<style>
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2933; margin: 1.5cm; font-size: 12px; }
+    h1 { font-size: 1.3rem; margin: 0; color: #8a1c14; }
+    .testa { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #8a1c14; padding-bottom: .4rem; }
+    .dati { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem 1rem; margin: .8rem 0; }
+    .dati div span { display: block; color: #52606d; font-size: 11px; }
+    .dati div strong { display: block; border-bottom: 1px solid #b6c2cc; min-height: 1.3em; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: .6rem; }
+    th, td { border: 1px solid #9aa5b1; padding: 3px 6px; text-align: left; vertical-align: top; }
+    th { background: #eef1f5; font-size: 11px; }
+    tr.ingrediente td { background: #f6e9e8; font-weight: 700; color: #8a1c14; }
+    .annullata { color: #b42318; font-weight: 700; }
+    .piede { margin-top: 1.5rem; display: flex; justify-content: space-between; color: #52606d; font-size: 11px; }
+    @@media print { .nascondi { display: none; } body { margin: 1cm; } tr { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<p class="nascondi"><button onclick="window.print()">Stampa</button> <button onclick="if (window.opener) { window.close(); } else { history.back(); }">Chiudi</button></p>
+<div class="testa">
+    <h1>Scheda di rintracciabilità materie prime</h1>
+    <div>@Model.Azienda@(string.IsNullOrWhiteSpace(Model.Sede) ? "" : " – " + Model.Sede)</div>
+</div>
+@if (Model.Annullata) { <p class="annullata">PRODUZIONE ANNULLATA</p> }
+<div class="dati">
+    <div><span>Prodotto</span><strong>@Model.Prodotto</strong></div>
+    <div><span>Data di produzione</span><strong>@Model.Giorno.ToString("dd/MM/yyyy")</strong></div>
+    <div><span>Lotto di produzione</span><strong>@Model.LottoProduzione</strong></div>
+    @if (!string.IsNullOrWhiteSpace(Model.Quantita)) { <div><span>Quantità</span><strong>@Model.Quantita</strong></div> }
+</div>
+<table>
+    <thead><tr><th>Fornitore</th><th>Articolo</th><th>Lotto</th><th>Scadenza</th><th>Documento di arrivo</th><th>Impiegato dal</th></tr></thead>
+    <tbody>
+    @foreach (var g in Model.Gruppi)
+    {
+        <tr class="ingrediente"><td colspan="6">@g.Ingrediente</td></tr>
+        @if (g.Righe.Count == 0) { <tr><td colspan="6"><em>Nessun lotto trovato</em></td></tr> }
+        @foreach (var r in g.Righe)
+        {
+            <tr>
+                <td>@r.Fornitore</td><td>@r.Articolo</td><td>@r.Lotto</td>
+                <td>@(r.Scadenza?.ToString("dd/MM/yyyy") ?? "")</td>
+                <td>@r.Documento</td>
+                <td>@(r.ImpiegatoDal?.ToString("dd/MM/yyyy") ?? "")</td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+@if (!string.IsNullOrWhiteSpace(Model.Note)) { <p><strong>Note:</strong> @Model.Note</p> }
+<div class="piede"><span>Stampata il @Model.Stampata.ToString("dd/MM/yyyy HH:mm")</span><span>Firma del responsabile: ______________________</span></div>
+</body>
+</html>

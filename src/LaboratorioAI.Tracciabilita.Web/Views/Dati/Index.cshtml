@@ -1,0 +1,13 @@
+@{ ViewData["Titolo"] = "Scarica i tuoi dati"; var puo = ViewBag.PuoScaricare == true; }
+<div class="testa-pagina"><h1>Scarica tutti i miei dati</h1></div>
+<p>Ottieni un file ZIP con tutti i dati della tua azienda: fornitori, clienti, articoli, ricette, lotti, arrivi merce con i controlli, produzioni con i lotti usati, spedizioni e richiami. Sono file <strong>CSV</strong>, che si aprono con Excel.</p>
+<p class="avviso ko"><strong>Attenzione:</strong> in questa fase di prova MARE.A <strong>non garantisce il backup dei dati</strong>. Scarica una copia a intervalli regolari (per esempio una volta alla settimana) e conservala in un posto sicuro.</p>
+@if (puo)
+{
+    <form method="post" asp-action="Scarica"><button type="submit">Scarica tutti i dati (ZIP)</button></form>
+    <p class="nota">Ogni scarico viene annotato nel registro delle attività. I file allegati (per esempio i certificati) non sono compresi.</p>
+}
+else
+{
+    <p class="avviso ko">Lo scarico è riservato agli utenti con il ruolo <strong>Qualità</strong> o <strong>Amministratore azienda</strong>.</p>
+}

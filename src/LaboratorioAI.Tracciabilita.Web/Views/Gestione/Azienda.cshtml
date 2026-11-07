@@ -25,6 +25,16 @@
 }
 
 <div class="scheda">
+    <h2>Dati dell'azienda</h2>
+    <form method="post" asp-action="ModificaAzienda" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo">
+        <label>Ragione sociale <input name="ragioneSociale" value="@Model.Azienda.RagioneSociale" required maxlength="200" /></label>
+        <label>Partita IVA <input name="partitaIva" value="@Model.Azienda.PartitaIva" maxlength="20" /></label>
+        <label>E-mail <input name="email" type="email" value="@Model.Azienda.Email" maxlength="200" /></label>
+        <button type="submit" class="piccolo">Salva</button>
+    </form>
+</div>
+
+<div class="scheda">
     <h2>Servizio</h2>
     <form method="post" asp-action="CambiaStato" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo">
         <label>Stato
@@ -43,14 +53,24 @@
 <div class="scheda">
     <h2>Sedi</h2>
     <table class="elenco">
-        <thead><tr><th>Nome</th><th>Sigla</th><th>Indirizzo</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Sigla</th><th>Indirizzo</th><th></th></tr></thead>
         <tbody>
         @foreach (var s in Model.Insediamenti)
         {
-            <tr><td>@s.Nome</td><td>@s.Sigla</td><td>@s.Indirizzo</td></tr>
+            <tr>
+                <td><input form="sede-@s.IdInsediamento" name="Sede.Nome" value="@s.Nome" required maxlength="100" /></td>
+                <td><input form="sede-@s.IdInsediamento" name="Sede.Sigla" value="@s.Sigla" required maxlength="12" size="8" /></td>
+                <td><input form="sede-@s.IdInsediamento" name="Sede.Indirizzo" value="@s.Indirizzo" maxlength="300" /></td>
+                <td><button type="submit" form="sede-@s.IdInsediamento" class="piccolo">Salva</button></td>
+            </tr>
         }
         </tbody>
     </table>
+    @foreach (var s in Model.Insediamenti)
+    {
+        <form id="sede-@s.IdInsediamento" method="post" asp-action="ModificaSede" asp-route-id="@Model.Azienda.IdAzienda" asp-route-idSede="@s.IdInsediamento"></form>
+    }
+    <p class="nota">Cambiando la sigla, i lotti già creati mantengono quella di allora; vale per i lotti nuovi.</p>
     <form method="post" asp-action="NuovaSede" asp-route-id="@Model.Azienda.IdAzienda" class="riga-modulo" style="margin-top:1rem">
         <label>Nome <input name="NuovaSede.Nome" required maxlength="100" /></label>
         <label>Sigla <input name="NuovaSede.Sigla" required maxlength="12" size="8" /></label>
