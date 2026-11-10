@@ -182,6 +182,8 @@ public class ContestoLaboratorioAI : DbContext
     // Cruscotto Direzione (13/10/2026)
     public DbSet<MovimentoAnaliticoMensile> MovimentiAnalitici => Set<MovimentoAnaliticoMensile>();
     public DbSet<RegistrazioneAnalitica> RegistrazioniAnalitiche => Set<RegistrazioneAnalitica>();
+    // 10/11/2026: voci dei documenti di vendita AZW (ricerca fatture per descrizione)
+    public DbSet<VoceDocumentoVenditaAzw> VociDocumentiVenditaAzw => Set<VoceDocumentoVenditaAzw>();
     public DbSet<ClassificazioneVoce> ClassificazioniVoci => Set<ClassificazioneVoce>();
     public DbSet<CentroCostoAzw> CentriCostoAzw => Set<CentroCostoAzw>();
     public DbSet<CommessaAzw> CommesseAzw => Set<CommessaAzw>();

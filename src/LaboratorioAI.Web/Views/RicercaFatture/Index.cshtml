@@ -1,0 +1,42 @@
+@{
+    ViewData["Titolo"] = "Ricerca fatture per descrizione";
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Ricerca fatture per descrizione</h1>
+        <p class="sottotitolo">Fatture di vendita AZW dal 2019 cercate nel testo scritto in fattura (es. «e-learning»). Le note di credito sono in negativo.
+            Importi = imponibile della voce. Dati dell'ultima importazione da AZW <span id="aggiornato"></span>.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Dal<input type="date" id="f-dal" /></label>
+        <label>Al<input type="date" id="f-al" /></label>
+        <label style="grid-column:span 2">Testo da cercare (più parole separate da «;»)<input type="search" id="f-testo" placeholder="es. e-learning; elearning; FAD" /></label>
+        <label>Cliente (nome o codice, facoltativo)<input type="search" id="f-cliente" /></label>
+        <label>Documenti<select id="f-tipo"><option value="">Fatture e note di credito</option><option value="fatture">Solo fatture</option><option value="note">Solo note di credito</option></select></label>
+        <div style="display:flex;align-items:flex-end;gap:0.4rem">
+            <button type="button" class="pulsante" id="btn-cerca">Cerca</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Excel</button>
+        </div>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="pannello">
+    <div class="barra-risultati">
+        <h2 id="riepilogo"></h2>
+    </div>
+    <div class="tabella-scorrevole" style="max-height:36rem">
+        <table class="tabella" id="tabella">
+            <thead><tr><th data-ordina>Data</th><th data-ordina>Documento</th><th data-ordina>Cliente</th><th>Descrizione</th>
+                <th class="numerico">Q.tà</th><th class="numerico">Prezzo</th><th>Sconto</th><th class="numerico" data-ordina>Imponibile</th><th>Centro/voce</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/ricerca-fatture.js" asp-append-version="true"></script>
+}

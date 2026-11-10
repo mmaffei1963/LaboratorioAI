@@ -1,0 +1,21 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Ricerca fatture per descrizione» (10/11/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Trovare le fatture di vendita di un periodo in base al testo scritto in fattura, per esempio
+        per sapere quanto abbiamo fatturato di corsi <em>e-learning</em>. I dati vengono da AZW (fatture elettroniche dal 2019) e si aggiornano
+        con l'importazione da AZW. Le note di credito sono contate in negativo.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<details class="situazione">
+    <summary>Voglio il totale di un tipo di servizio in un periodo</summary>
+    <ol class="passi">
+        <li>Scegli le date e scrivi il testo da cercare. Per prendere le diverse grafie scrivi più parole separate da punto e virgola,
+            per esempio <code>e-learning; elearning; FAD</code>: basta che la voce ne contenga una. Maiuscole e accenti non contano.</li>
+        <li>Premi <span class="tasto">Cerca</span>: in alto vedi il totale imponibile, il numero di fatture, note di credito e clienti.</li>
+        <li>Con <span class="tasto">Excel</span> scarichi l'elenco completo.</li>
+    </ol>
+    <p class="nota">In AZW il testo di una voce può essere su più righe (per esempio «Corso di formazione addetti sicurezza – solo lezione generale –
+        modalità e-learning»): qui le righe sono riunite, così la parola viene trovata anche se non è sulla riga con il prezzo.</p>
+</details>

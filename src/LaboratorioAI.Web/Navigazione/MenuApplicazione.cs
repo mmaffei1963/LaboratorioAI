@@ -125,6 +125,7 @@ public static class MenuApplicazione
             new("Segnalatori", "/Segnalatori", Permessi.ProvvigioniGestisci + "|" + Permessi.ProvvigioniConsulta, "Chi ci porta clienti (enti, studi, consulenti, MARE.A), con le condizioni e i clienti segnalati."),
             new("Compensi segnalatori", "/Segnalatori/Compensi", Permessi.ProvvigioniGestisci + "|" + Permessi.ProvvigioniConsulta, "Compensi dovuti ai segnalatori, calcolati sugli incassi, per trimestre e per cliente."),
             new("Spettanze consulenti", "/SpettanzeConsulenti", Permessi.ProvvigioniGestisci + "|" + Permessi.ProvvigioniConsulta, "Compensi dei consulenti a percentuale (De Angelis, Bacchiani, Remedia): maturato sugli incassi, acconti e conguaglio annuale."),
+            new("Ricerca fatture per descrizione", "/RicercaFatture", Permessi.RicercaFattureConsulta, "Fatture di vendita AZW cercate per testo della fattura (es. corsi e-learning) in un periodo, con totali ed Excel."),
             new("Consuntivo per area", "/Consuntivi", Permessi.ConsuntiviConsulta, "Costi e ricavi per area da AZW, con contributo dell'amministrazione, confronto con l'anno prima e andamento mensile (riservato ai soci)."),
         }),
         // 13/10/2026: riservato al ruolo Direzione (soci e direzione di laboratorio).

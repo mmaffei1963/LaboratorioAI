@@ -119,6 +119,7 @@ public sealed class ImportatoreAzw
                 await _db.PrestazioniInsediamentiArcLab.ExecuteDeleteAsync(ct);
                 await _db.AzwClienti.ExecuteDeleteAsync(ct);
                 if (dati.Trasferte is not null) await _db.TrasferteAzw.ExecuteDeleteAsync(ct);
+                if (dati.VociVendita is not null) await _db.VociDocumentiVenditaAzw.ExecuteDeleteAsync(ct);
                 // Cruscotto Direzione (13/10/2026): si riscrive solo se la contabilità analitica è stata letta.
                 if (direzione is not null)
                 {
@@ -143,6 +144,7 @@ public sealed class ImportatoreAzw
                 _db.PrestazioniInsediamentiArcLab.AddRange(prestazioniIns);
                 _db.AzwClienti.AddRange(dati.Anagrafiche);
                 if (dati.Trasferte is not null) _db.TrasferteAzw.AddRange(dati.Trasferte);
+                if (dati.VociVendita is not null) _db.VociDocumentiVenditaAzw.AddRange(dati.VociVendita);
                 if (direzione is not null)
                 {
                     _db.MovimentiAnalitici.AddRange(direzione.Movimenti);
@@ -165,6 +167,8 @@ public sealed class ImportatoreAzw
                     esito.Messaggio = "Importazione riuscita, ma contabilità analitica NON aggiornata (restano i dati già importati): " + motivoDirezione;
                 if (dati.ErroreTrasferte is not null)
                     esito.Messaggio = ((esito.Messaggio ?? "Importazione riuscita") + "; trasferte non lette: " + dati.ErroreTrasferte) is var m && m.Length > 1900 ? m[..1900] : m;
+                if (dati.ErroreVociVendita is not null)
+                    esito.Messaggio = ((esito.Messaggio ?? "Importazione riuscita") + "; righe delle fatture (ricerca per descrizione) non lette: " + dati.ErroreVociVendita) is var m2 && m2.Length > 1900 ? m2[..1900] : m2;
                 _db.ImportazioniAzw.Add(esito);
                 await _db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
@@ -344,6 +348,9 @@ public sealed class ImportatoreAzw
         /// <summary>22/10/2026: trasferte (Viaggi); null se la tabella non si legge (l'importazione prosegue).</summary>
         public List<TrasfertaAzw>? Trasferte { get; init; }
         public string? ErroreTrasferte { get; init; }
+        /// <summary>10/11/2026: voci dei documenti di vendita (ricerca fatture per descrizione); null se non lette.</summary>
+        public List<VoceDocumentoVenditaAzw>? VociVendita { get; init; }
+        public string? ErroreVociVendita { get; init; }
     }
 
     private sealed record DatiDirezione(List<MovimentoAnaliticoMensile> Movimenti, List<(string Codice, string? Descrizione, bool Ricavo)> Voci,
@@ -643,13 +650,20 @@ public sealed class ImportatoreAzw
         try { trasferte = LeggiTrasferte(conn); }
         catch (Exception ex) when (ex is OleDbException or InvalidOperationException or FormatException or InvalidCastException) { erroreTrasferte = ex.Message; }
 
+        // Voci dei documenti di vendita (10/11/2026): come per le trasferte, un errore qui non blocca il resto.
+        List<VoceDocumentoVenditaAzw>? vociVendita = null; string? erroreVociVendita = null;
+        try { vociVendita = LeggiVociVendita(conn); }
+        catch (Exception ex) when (ex is OleDbException or InvalidOperationException or FormatException or InvalidCastException) { erroreVociVendita = ex.Message; }
+
         return new DatiAzw(fatture.Values.ToList(), incassi, note, righeFattura, righeNote, anagrafiche)
         {
             FattureConsulenti = fattureConsulenti,
             Direzione = direzione,
             ErroreDirezione = erroreDirezione,
             Trasferte = trasferte,
-            ErroreTrasferte = erroreTrasferte
+            ErroreTrasferte = erroreTrasferte,
+            VociVendita = vociVendita,
+            ErroreVociVendita = erroreVociVendita
         };
     }
 
@@ -681,6 +695,34 @@ public sealed class ImportatoreAzw
             });
         }
         return r;
+    }
+
+    /// <summary>
+    /// 10/11/2026: righe dei documenti di vendita dal 2019 (TABFST01 testata, TABFST02 righe; FE fatture, CE note di
+    /// credito), ricomposte in voci con il testo completo della fattura. Sola lettura.
+    /// </summary>
+    private static List<VoceDocumentoVenditaAzw> LeggiVociVendita(OleDbConnection conn)
+    {
+        var sql =
+            "SELECT t.TIPDOC, t.ANNDOC, t.NUMDOC, t.DATDOC, t.CODCF, t.RAGSOC, r.NUMRIG, r.TIPRIG, r.CODART, " +
+            "r.DESART, r.DESART2, r.[NOTE], r.QUANTI, r.PREZZO, r.SCONTO, r.SCONTO2, r.SCONTO3, r.CENTRO, r.VOCE, r.COMMESSA " +
+            "FROM TABFST01 AS t INNER JOIN TABFST02 AS r ON (t.TIPDOC = r.TIPDOC AND t.ANNDOC = r.ANNDOC AND t.NUMDOC = r.NUMDOC) " +
+            $"WHERE t.TIPDOC IN ('{VociDocumentiVendita.Fattura}', '{VociDocumentiVendita.NotaCredito}') " +
+            $"AND t.DATDOC >= #{VociDocumentiVendita.Dal:yyyy-MM-dd}#";
+        var righe = new List<RigaDocumentoAzw>();
+        foreach (var x in Leggi(conn, sql))
+        {
+            if (Data(x[3]) is not DateTime d) continue;
+            int.TryParse(Numero(x[1]), NumberStyles.Integer, CultureInfo.InvariantCulture, out var anno);
+            int.TryParse(Numero(x[6]), NumberStyles.Integer, CultureInfo.InvariantCulture, out var numRiga);
+            int.TryParse(Numero(x[7]), NumberStyles.Integer, CultureInfo.InvariantCulture, out var tipoRiga);
+            righe.Add(new RigaDocumentoAzw(
+                Taglia(Testo(x[0]), 5)!, anno, Taglia(Numero(x[2]), 20)!, d, Taglia(Testo(x[4]), 20)!, Taglia(NullSeVuoto(x[5]), 200),
+                numRiga, tipoRiga, Taglia(NullSeVuoto(x[8]), 50), NullSeVuoto(x[9]), NullSeVuoto(x[10]), NullSeVuoto(x[11]),
+                Decimale(x[12]), Decimale(x[13]), Decimale(x[14]), Decimale(x[15]), Decimale(x[16]),
+                Taglia(NullSeVuoto(x[17]), 10), Taglia(NullSeVuoto(x[18]), 10), Taglia(NullSeVuoto(x[19]), 20)));
+        }
+        return VociDocumentiVendita.Componi(righe);
     }
 
     private static IEnumerable<object[]> Leggi(OleDbConnection conn, string sql)

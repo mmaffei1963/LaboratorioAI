@@ -165,6 +165,8 @@ public static class Permessi
     public const string DirezioneGestisci = "direzione.gestisci";
     /// <summary>20/10/2026: consuntivo dei costi e dei ricavi per area (con gli stipendi voce per voce): solo i soci.</summary>
     public const string ConsuntiviConsulta = "consuntivi.consulta";
+    /// <summary>10/11/2026: ricerca delle fatture di vendita AZW per testo della fattura (soci e amministrazione contabile).</summary>
+    public const string RicercaFattureConsulta = "ricercafatture.consulta";
     /// <summary>21/10/2026: compensi dei soci e rimborsi spese (riservato ai soci; serve anche essere un socio attivo).</summary>
     public const string CompensiSociConsulta = "compensisoci.consulta";
     /// <summary>21/10/2026: modificare parametri, dati dei soci, premi area laboratorio, chiudere l'anno (solo il socio «gestore»).</summary>
@@ -234,7 +236,7 @@ public static class Permessi
         ProvvigioniGestisci, ProvvigioniProprie, ProvvigioniChiudi, ProvvigioniConsulta, SpettanzeProprie,
         RapportiniCompila, RapportiniGestione,
         ClientiSeguire, ClientiGestisci, ClientiSubentri,
-        DirezioneConsulta, DirezioneGestisci, ConsuntiviConsulta, CompensiSociConsulta, CompensiSociGestisci,
+        DirezioneConsulta, DirezioneGestisci, ConsuntiviConsulta, RicercaFattureConsulta, CompensiSociConsulta, CompensiSociGestisci,
         LimitiConsulta, LimitiValida,
         CondizioniGestione, CondizioniFirmatari,
         AmministrazioneUtenti, AmministrazioneConfigurazioni, AmministrazioneAudit,

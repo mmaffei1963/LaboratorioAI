@@ -1271,3 +1271,8 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - Dalla query Access di MARE.A: campioni non certificati, data analisi (DataRic + RitardoAnalisi) nel periodo, prove del laboratorio non esitate (nessun valore, non verificate) e non escluse/annullate. Laboratorio preselezionato: Centro Ricerche Marine (-867474552).
 - Excel (ClosedXML) con le colonne della query, una riga per campione e prova; e-mail ai destinatari del laboratorio, Cc e Reply-To refertazione@mare-a.com. IServizioEmail.InviaConAllegatiAsync: nuovo parametro opzionale «copia» (Cc).
 - Nuove tabelle accettazione.ContattiLaboratoriEsterni, InviiLaboratoriEsterni (con l'Excel inviato), RigheInvioLaboratorioEsterno («già inviato») → MIGRAZIONE DA CREARE (InviiLaboratoriEsterni).
+
+## 10/11/2026 — Ricerca fatture per descrizione (Amministrazione)
+- L'importazione da AZW legge anche le righe dei documenti di vendita dal 2019 (TABFST01 testata, TABFST02 righe; FE fatture, CE note di credito) e le ricompone in voci con il testo completo della fattura (riga con prezzo + righe di solo testo TIPRIG=1). Tabella di lavoro dir.VociDocumentiVenditaAzw → MIGRAZIONE DA CREARE (VociDocumentiVenditaAzw). Un errore di lettura non blocca il resto dell'importazione.
+- Nuova pagina Amministrazione → «Ricerca fatture per descrizione» (/RicercaFatture): periodo, più parole separate da «;» (senza maiuscole/accenti), cliente, tipo documento; totale imponibile (note di credito in negativo), n. fatture/note/clienti, Excel.
+- Permesso `ricercafatture.consulta`, assegnato una volta ai ruoli Socio e Amministrazione contabile (Migani, Volponi); Amministratori come sempre.

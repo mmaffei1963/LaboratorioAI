@@ -28,6 +28,7 @@ public static class Popolamento
         var nuovaContabile = !await ctx.Ruoli.AnyAsync(r => r.Codice == Ruoli.AmministrazioneContabile, ct);
         var nuovoConsuntivo = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.ConsuntiviConsulta, ct);
         var nuoviCompensiSoci = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.CompensiSociConsulta, ct);
+        var nuovaRicercaFatture = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.RicercaFattureConsulta, ct);
         await PopolaPermessiAsync(ctx, ct);
         await PopolaRuoliAsync(ctx, primaVolta, ct);
         await AssegnaPermessiAmministratoreAsync(ctx, ct);
@@ -59,6 +60,20 @@ public static class Popolamento
                 ctx.RuoliPermessi.Add(new RuoloPermesso { IdRuolo = socio.IdRuolo, IdPermesso = permesso.IdPermesso });
                 await ctx.SaveChangesAsync(ct);
             }
+        }
+        if (nuovaRicercaFatture && !primaVolta)
+        {
+            // 10/11/2026: la ricerca fatture va una volta sola, quando nasce il permesso, ai ruoli Socio e Amministrazione
+            // contabile (Migani, Volponi); poi si gestisce da «Utenti e ruoli». Gli Amministratori la ricevono come tutti i permessi.
+            var permesso = await ctx.Permessi.FirstOrDefaultAsync(p => p.Codice == Permessi.RicercaFattureConsulta, ct);
+            foreach (var codice in new[] { Ruoli.Socio, Ruoli.AmministrazioneContabile })
+            {
+                var ruolo = await ctx.Ruoli.FirstOrDefaultAsync(r => r.Codice == codice, ct);
+                if (ruolo is not null && permesso is not null
+                    && !await ctx.RuoliPermessi.AnyAsync(rp => rp.IdRuolo == ruolo.IdRuolo && rp.IdPermesso == permesso.IdPermesso, ct))
+                    ctx.RuoliPermessi.Add(new RuoloPermesso { IdRuolo = ruolo.IdRuolo, IdPermesso = permesso.IdPermesso });
+            }
+            await ctx.SaveChangesAsync(ct);
         }
         if (primaVolta)
         {
@@ -210,6 +225,7 @@ public static class Popolamento
         (Permessi.DirezioneConsulta, "Direzione: indicatori economici, rendimento commerciali e territorio (riservato)", AreaFunzionale.Direzione),
         (Permessi.DirezioneGestisci, "Direzione: modificare la classificazione delle voci AZW",                       AreaFunzionale.Direzione),
         (Permessi.ConsuntiviConsulta, "Consuntivo costi e ricavi per area, con gli stipendi (riservato ai soci)",     AreaFunzionale.Direzione),
+        (Permessi.RicercaFattureConsulta, "Ricerca delle fatture di vendita per testo della fattura (AZW)",            AreaFunzionale.Amministrazione),
         (Permessi.CompensiSociConsulta, "Compensi soci e rimborsi spese (riservato ai soci: serve anche essere un socio attivo)", AreaFunzionale.Direzione),
         (Permessi.CompensiSociGestisci, "Compensi soci: parametri, dati dei soci, premi area laboratorio, chiusura dell'anno (solo il socio gestore)", AreaFunzionale.Direzione),
         (Permessi.LimitiConsulta, "Limiti normativi: consultare schede limite e fonti", AreaFunzionale.LimitiNormativi),
