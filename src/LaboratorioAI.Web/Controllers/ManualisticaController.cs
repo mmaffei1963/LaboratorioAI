@@ -1,4 +1,5 @@
 ﻿using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Documenti.Manualistica;
@@ -27,14 +28,16 @@ public class ManualisticaController : Controller
 
     private readonly ServizioModelliManualistica _modelli;
     private readonly ServizioVociChecklist _voci;
+    private readonly ServizioCompilazioni _compilazioni;
     private readonly IContestoUtente _utente;
     private readonly IServizioAudit _audit;
 
     public ManualisticaController(ServizioModelliManualistica modelli, ServizioVociChecklist voci,
-        IContestoUtente utente, IServizioAudit audit)
+        ServizioCompilazioni compilazioni, IContestoUtente utente, IServizioAudit audit)
     {
         _modelli = modelli;
         _voci = voci;
+        _compilazioni = compilazioni;
         _utente = utente;
         _audit = audit;
     }
@@ -195,6 +198,132 @@ public class ManualisticaController : Controller
         return ok ? Json(new { Ok = true }) : BadRequest(errore);
     }
 
+    // ── Compilazioni ───────────────────────────────────────────────
+
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public IActionResult Compilazioni()
+    {
+        ViewData["Titolo"] = "Manualistica: check list dei clienti";
+        return View();
+    }
+
+    [HttpGet("api/manualistica/compilazioni")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> ElencoCompilazioni(string? tipo, CancellationToken ct)
+    {
+        var scelto = await TipoSceltoAsync(tipo, ct);
+        if (scelto is null) return BadRequest("Nessun tipo di manuale configurato.");
+
+        var righe = await _compilazioni.ElencoAsync(scelto.Codice, ct);
+
+        return Json(new
+        {
+            Tipo = scelto.Codice,
+            scelto.Nome,
+            PuoCompilare = _utente.HaPermesso(Permessi.ManualisticaGenera),
+            Compilazioni = righe.Select(c => new
+            {
+                c.IdCompilazione, c.RagioneSociale, c.Risposte,
+                Data = c.DataDocumenti.ToString("dd/MM/yyyy"),
+                Revisione = "Rev. " + c.Revisione.ToString("00"),
+                Stato = c.Stato.ToString(),
+                c.CreatoDa,
+                Tocco = (c.ModificatoIlUtc ?? c.CreatoIlUtc).ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+            })
+        });
+    }
+
+    /// <summary>I clienti di ArcLab fra cui scegliere. Sola lettura.</summary>
+    [HttpGet("api/manualistica/compilazioni/clienti")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> ClientiArcLab(CancellationToken ct)
+    {
+        var clienti = await _compilazioni.ClientiAsync(ct);
+        return Json(clienti.Select(c => new { c.Id, c.Nome }));
+    }
+
+    [HttpPost("api/manualistica/compilazioni")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> CreaCompilazione([FromBody] NuovaCompilazione dati, CancellationToken ct)
+    {
+        var scelto = await TipoSceltoAsync(dati.Tipo, ct);
+        if (scelto is null) return BadRequest("Nessun tipo di manuale configurato.");
+
+        var esito = await _compilazioni.CreaAsync(
+            scelto.Codice, dati.IdClienteArcLab, dati.RagioneSociale,
+            dati.DataDocumenti ?? DateTime.Today, dati.Revisione ?? 0, Upn, ct);
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "compilazione.crea",
+            esito.IdCompilazione is null ? EsitoOperazione.Errore : EsitoOperazione.Successo,
+            idEntita: esito.IdCompilazione?.ToString(),
+            dettaglio: new { Tipo = scelto.Codice, dati.IdClienteArcLab, esito.Errore }, ct: ct);
+
+        return esito.Errore is null
+            ? Json(new { esito.IdCompilazione })
+            : BadRequest(esito.Errore);
+    }
+
+    /// <summary>La schermata in cui si compila la check list di un cliente.</summary>
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Compila(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        ViewData["Titolo"] = $"Check list: {aperta.RagioneSociale}";
+        ViewData["IdCompilazione"] = id;
+        return View();
+    }
+
+    [HttpGet("api/manualistica/compilazioni/{id:int}")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> ApriCompilazione(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        return Json(new
+        {
+            aperta.IdCompilazione, aperta.RagioneSociale,
+            Data = aperta.DataDocumenti.ToString("dd/MM/yyyy"),
+            Revisione = "Rev. " + aperta.Revisione.ToString("00"),
+            Stato = aperta.Stato.ToString(),
+            PuoCompilare = _utente.HaPermesso(Permessi.ManualisticaGenera)
+                           && aperta.Stato == StatoCompilazione.Bozza,
+            Passi = ServizioVociChecklist.Passi.Select(p => new { p.Codice, p.Nome }),
+            Risposte = aperta.Risposte
+        });
+    }
+
+    [HttpGet("api/manualistica/compilazioni/{id:int}/passo/{passo}")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> DomandeDelPasso(int id, string passo, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var domande = await _compilazioni.DomandeAsync(aperta.CodiceTipo, passo, ct);
+
+        return Json(domande.Select(d => new
+        {
+            d.Codice, d.Etichetta, Tipo = d.Tipo.ToString(), d.Obbligatoria,
+            Opzioni = d.Opzioni.Select(o => new { o.Valore, o.Testo, o.Predefinita })
+        }));
+    }
+
+    [HttpPost("api/manualistica/compilazioni/{id:int}/valore")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaValore(int id, [FromBody] RispostaChecklist risposta, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(risposta.Codice)) return BadRequest("Manca la domanda.");
+
+        var ok = await _compilazioni.SalvaValoreAsync(
+            id, risposta.Codice, risposta.Valore, risposta.ScrittoAMano, Upn, ct);
+
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
     // ── Voci della check list ──────────────────────────────────────
 
     [RichiedePermesso(Permessi.ManualisticaImpostazioni)]
@@ -257,7 +386,8 @@ public class ManualisticaController : Controller
             Passi = ServizioVociChecklist.Passi.Select(p => new { p.Codice, p.Nome }),
             Voci = voci.Select(v => new
             {
-                v.IdVoceChecklist, v.Codice, v.Etichetta, v.Gruppo, v.PassoProposto,
+                v.IdVoceChecklist, v.Codice, v.Etichetta, v.Gruppo,
+                v.PassoProposto, v.SpegnimentoProposto,
                 v.Opzioni, v.OpzioniLegateAlModello, v.Attivo
             })
         });
@@ -280,6 +410,19 @@ public class ManualisticaController : Controller
         await _audit.RegistraAsync(
             AreaFunzionale.Manualistica, "voci.passo", EsitoOperazione.Successo,
             dettaglio: new { scelta.Passo, Domande = quante }, ct: ct);
+
+        return Json(new { Quante = quante });
+    }
+
+    [HttpPost("api/manualistica/voci/attivo")]
+    [RichiedePermesso(Permessi.ManualisticaImpostazioni)]
+    public async Task<IActionResult> ImpostaAttivo([FromBody] AccensioneVoci scelta, CancellationToken ct)
+    {
+        var quante = await _voci.ImpostaAttivoAsync(scelta.IdVoci ?? [], scelta.Attivo, ct);
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, scelta.Attivo ? "voci.accendi" : "voci.spegni",
+            EsitoOperazione.Successo, dettaglio: new { Domande = quante }, ct: ct);
 
         return Json(new { Quante = quante });
     }
@@ -360,3 +503,13 @@ public record SceltaApprovatore(int IdTipoManuale, int IdUtente, bool Abilitato)
 
 /// <summary>Il passo da assegnare a una o piu' domande; null lo toglie.</summary>
 public record AssegnazionePasso(int[]? IdVoci, string? Passo);
+
+/// <summary>Spegne o riaccende una o piu' domande.</summary>
+public record AccensioneVoci(int[]? IdVoci, bool Attivo);
+
+/// <summary>Una risposta della check list.</summary>
+public record RispostaChecklist(string Codice, string? Valore, bool ScrittoAMano);
+
+/// <summary>Una check list nuova: da un cliente di ArcLab, o a mano per un cliente nuovo.</summary>
+public record NuovaCompilazione(
+    string? Tipo, int? IdClienteArcLab, string? RagioneSociale, DateTime? DataDocumenti, int? Revisione);

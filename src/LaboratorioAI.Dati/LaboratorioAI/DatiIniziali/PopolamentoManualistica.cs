@@ -38,6 +38,7 @@ public static class PopolamentoManualistica
 
         await PopolaFunzioniAsync(ctx, tipo.IdTipoManuale, ct);
         await PopolaModelliAsync(ctx, tipo.IdTipoManuale, ct);
+        await PopolaVociGovernantiAsync(ctx, tipo.IdTipoManuale, tipo.Codice, ct);
         await ctx.SaveChangesAsync(ct);
     }
 
@@ -108,6 +109,77 @@ public static class PopolamentoManualistica
                 });
             }
             ordine++;
+        }
+    }
+
+    // ── Domande che governano i documenti ──────────────────────────
+
+    /// <summary>
+    /// Crea le voci della check list che non vengono dai modelli: quelle
+    /// da cui dipende quali documenti escono.
+    ///
+    /// Chi comanda su cosa, per le voci gia' presenti: il codice possiede
+    /// il **testo della domanda**, il **tipo** e le **opzioni**, perche'
+    /// vengono dal motore e nella pagina non si possono cambiare; la
+    /// persona possiede il **passo** e l'**essere accesa o spenta**, e
+    /// quelli il popolamento non li tocca mai.
+    ///
+    /// Le opzioni si aggiungono, non si tolgono: una voce sparita dal
+    /// codice potrebbe essere gia' stata scelta in una compilazione, e
+    /// i documenti prodotti devono restare spiegabili.
+    /// </summary>
+    private static async Task PopolaVociGovernantiAsync(
+        ContestoLaboratorioAI ctx, int idTipo, string codiceTipo, CancellationToken ct)
+    {
+        var governanti = VociGovernanti.Per(codiceTipo);
+        if (governanti.Count == 0) return;
+
+        var esistenti = await ctx.VociChecklist
+            .Include(v => v.Opzioni)
+            .Where(v => v.IdTipoManuale == idTipo)
+            .ToDictionaryAsync(v => v.Codice, StringComparer.Ordinal, ct);
+
+        var ordine = 0;
+        foreach (var g in governanti)
+        {
+            if (!esistenti.TryGetValue(g.Codice, out var voce))
+            {
+                voce = new VoceChecklist
+                {
+                    IdTipoManuale = idTipo,
+                    Codice = g.Codice,
+                    Gruppo = g.Passo,
+                    Ordine = ordine
+                };
+                ctx.VociChecklist.Add(voce);
+            }
+            ordine++;
+
+            voce.Etichetta = g.Etichetta;
+            voce.TipoCampo = g.Tipo;
+
+            for (var i = 0; i < g.Opzioni.Length; i++)
+            {
+                var (valore, testo) = g.Opzioni[i];
+                var opzione = voce.Opzioni.FirstOrDefault(
+                    o => string.Equals(o.Valore, valore, StringComparison.Ordinal));
+
+                if (opzione is null)
+                {
+                    voce.Opzioni.Add(new OpzioneVoce
+                    {
+                        Valore = valore,
+                        Etichetta = testo,
+                        Predefinita = valore == g.Predefinito,
+                        Ordine = i
+                    });
+                    continue;
+                }
+
+                opzione.Etichetta = testo;
+                opzione.Predefinita = valore == g.Predefinito;
+                opzione.Ordine = i;
+            }
         }
     }
 

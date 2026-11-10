@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════
    Laboratorio AI — MARE.A srl
    Foglio di stile principale
    ═══════════════════════════════════════════════════════════ */
@@ -1048,6 +1048,7 @@ a.pulsante:hover { text-decoration: none; }
     background: var(--grigio-100, #f3f4f6); border-radius: var(--raggio);
     font-size: .85rem; font-weight: 600;
 }
+.barra-selezione[hidden] { display: none; }
 
 #dlg-conferma ul, #dlg-controllo ul { margin: .4rem 0 .4rem 1.1rem; font-size: .85rem; }
 #dlg-conferma, #dlg-controllo { max-width: 46rem; }
@@ -1064,3 +1065,19 @@ a.pulsante:hover { text-decoration: none; }
 table:not([data-non-ordinabile]) thead th:not([data-non-ordinabile]):not(:empty) { cursor: pointer; user-select: none; }
 table thead th[aria-sort="ascending"]::after { content: " ▲"; font-size: 0.75em; }
 table thead th[aria-sort="descending"]::after { content: " ▼"; font-size: 0.75em; }
+
+/* Check list: una domanda per riga, etichetta a sinistra e campo a destra (10/11/2026). */
+.riga-domanda {
+    display: grid; grid-template-columns: minmax(220px, 2fr) minmax(200px, 3fr) auto;
+    gap: 12px; align-items: start;
+    padding: 10px 0; border-bottom: 1px solid var(--grigio-100, #f3f4f6);
+}
+.riga-domanda > label { font-size: .9rem; font-weight: 600; }
+.riga-domanda select, .riga-domanda input[type="text"],
+.riga-domanda input[type="number"], .riga-domanda input[type="date"] { width: 100%; }
+.riga-domanda .scelte { display: flex; flex-wrap: wrap; gap: 10px; }
+.riga-domanda .scelta { display: flex; align-items: center; gap: 5px; font-size: .88rem; font-weight: 400; }
+
+@media (max-width: 760px) {
+    .riga-domanda { grid-template-columns: 1fr; gap: 5px; }
+}

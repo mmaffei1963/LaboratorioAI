@@ -1,0 +1,96 @@
+@inject LaboratorioAI.Core.Servizi.IContestoUtente Utente
+@{
+    ViewData["Titolo"] = "Manualistica: check list dei clienti";
+    var puoCompilare = Utente.HaPermesso(LaboratorioAI.Core.Costanti.Permessi.ManualisticaGenera);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Manualistica: check list dei clienti</h1>
+        <p class="sottotitolo">Una check list per cliente e per revisione. Raccoglie quello che serve a produrre il pacchetto di documenti, e porta con sé una copia dei dati del cliente: i documenti restano validi anni e devono dire cosa il cliente era il giorno in cui sono stati fatti.</p>
+    </div>
+    @if (puoCompilare)
+    {
+        <div class="azioni">
+            <button class="pulsante" id="btn-nuova">Nuova check list</button>
+        </div>
+    }
+</div>
+
+@if (puoCompilare)
+{
+    <section class="riquadro" id="pannello-nuova" hidden>
+        <h2>Nuova check list</h2>
+        <p class="sottotitolo">Scegli il cliente fra quelli del laboratorio: ragione sociale, partita IVA e sede legale si copiano da lì. Se il cliente non c'è ancora, scrivi la ragione sociale e il resto lo completi nel primo passo.</p>
+
+        <div class="griglia-filtri">
+            <label>Cliente
+                <select id="f-cliente">
+                    <option value="">— cliente nuovo, non ancora nei gestionali —</option>
+                </select>
+            </label>
+            <label>Ragione sociale <span class="nota-riga">solo per un cliente nuovo</span>
+                <input type="text" id="f-ragione" maxlength="300" disabled />
+            </label>
+            <label>Data dei documenti
+                <input type="date" id="f-data" />
+            </label>
+            <label>Revisione
+                <input type="number" id="f-revisione" min="0" max="99" value="0" />
+            </label>
+            <div class="azioni-riga" style="align-items:flex-end">
+                <button class="pulsante" id="btn-crea">Apri la check list</button>
+                <button class="pulsante pulsante-secondario" id="btn-annulla">Chiudi</button>
+            </div>
+        </div>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Mostra
+            <select id="f-stato">
+                <option value="">tutte</option>
+                <option value="Bozza">in lavorazione</option>
+                <option value="Generata">documenti generati</option>
+                <option value="InAttesaFirma">in attesa di firma</option>
+                <option value="Inviata">consegnate</option>
+            </select>
+        </label>
+        <label>Cerca<input type="search" id="f-testo" placeholder="ragione sociale…" /></label>
+        <div class="azioni-riga" style="align-items:flex-end">
+            <button class="pulsante pulsante-secondario" id="btn-ricarica">Aggiorna</button>
+        </div>
+    </div>
+
+    <p class="sottotitolo" id="riepilogo"></p>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-compilazioni">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Documenti</th>
+                    <th>Risposte</th>
+                    <th>Stato</th>
+                    <th>Ultima modifica</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<dialog id="dlg-avviso">
+    <form method="dialog">
+        <h2>Attenzione</h2>
+        <div id="avviso-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+@section Script {
+    <script type="module" src="~/js/moduli/manualistica-compilazioni.js" asp-append-version="true"></script>
+}

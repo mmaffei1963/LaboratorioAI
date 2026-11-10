@@ -1,0 +1,40 @@
+@{
+    var id = (int)ViewData["IdCompilazione"]!;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1 id="titolo">Check list</h1>
+        <p class="sottotitolo" id="sottotitolo"></p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante pulsante-secondario" href="/Manualistica/Compilazioni">Torna all'elenco</a>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="azioni-riga" id="passi"></div>
+</section>
+
+<section class="riquadro">
+    <h2 id="nome-passo"></h2>
+    <p class="sottotitolo" id="stato-passo"></p>
+    <div id="domande"></div>
+</section>
+
+<dialog id="dlg-avviso">
+    <form method="dialog">
+        <h2>Attenzione</h2>
+        <div id="avviso-corpo"></div>
+        <menu class="azioni-riga" style="justify-content:flex-end;margin-top:1rem">
+            <button class="pulsante pulsante-secondario" value="chiudi">Chiudi</button>
+        </menu>
+    </form>
+</dialog>
+
+@section Script {
+    <script type="module">
+        window.ID_COMPILAZIONE = @id;
+    </script>
+    <script type="module" src="~/js/moduli/manualistica-compila.js" asp-append-version="true"></script>
+}

@@ -68,7 +68,7 @@ function mostraEsito(d) {
   $('#riepilogo').textContent = d.scritto
     ? `Scritte le voci di ${d.nome}.`
     : `${d.modelliLetti} ${plurale(d.modelliLetti, 'modello approvato letto', 'modelli approvati letti')}: `
-      + `${d.vociTrovate} ${plurale(d.vociTrovate, 'domanda con tendina', 'domande con tendina')} `
+      + `${d.vociTrovate} ${plurale(d.vociTrovate, 'domanda', 'domande')} `
       + `e ${d.opzioniTrovate} ${plurale(d.opzioniTrovate, 'voce', 'voci')}${legate}. Niente è stato ancora scritto.`;
 
   $('#esito').innerHTML = d.scritto
@@ -112,7 +112,8 @@ function riempiTendinePassi() {
 
   const filtro = $('#f-passo');
   const sceltoFiltro = filtro.value;
-  filtro.innerHTML = '<option value="">tutte le domande</option><option value="-">senza passo</option>' + opzioni;
+  filtro.innerHTML = '<option value="">tutte le domande</option>'
+    + '<option value="-">senza passo</option><option value="spente">spente</option>' + opzioni;
   filtro.value = sceltoFiltro;
 
   const massa = $('#f-passo-massa');
@@ -124,6 +125,9 @@ function filtra() {
   const p = $('#f-passo').value;
   const t = $('#f-testo').value.trim().toLowerCase();
   return voci.filter((v) => {
+    // Le spente stanno in fondo a tutto: si vedono solo chiedendole.
+    if (p !== 'spente' && !v.attivo) return false;
+    if (p === 'spente') return !t || (v.codice + ' ' + v.etichetta).toLowerCase().includes(t);
     if (p === '-' && v.gruppo) return false;
     if (p && p !== '-' && v.gruppo !== p) return false;
     if (t && !(v.codice + ' ' + v.etichetta).toLowerCase().includes(t)) return false;
@@ -133,11 +137,14 @@ function filtra() {
 
 function disegnaVoci() {
   const righe = filtra();
-  const senzaPasso = voci.filter((v) => !v.gruppo).length;
+  const accese = voci.filter((v) => v.attivo);
+  const senzaPasso = accese.filter((v) => !v.gruppo).length;
+  const spente = voci.length - accese.length;
+  const coda = spente ? ` ${spente} spente, che la check list non chiede.` : '';
 
-  $('#riepilogo-voci').textContent = senzaPasso
-    ? `${voci.length} domande · ${senzaPasso} ancora senza passo, e finché è così non compaiono nella check list.`
-    : `${voci.length} domande, tutte assegnate a un passo.`;
+  $('#riepilogo-voci').textContent = (senzaPasso
+    ? `${accese.length} domande · ${senzaPasso} ancora senza passo, e finché è così non compaiono nella check list.`
+    : `${accese.length} domande, tutte assegnate a un passo.`) + coda;
 
   const corpo = $('#tabella-voci tbody');
   if (!righe.length) {
@@ -150,13 +157,16 @@ function disegnaVoci() {
     const proposta = !v.gruppo && v.passoProposto
       ? `<div class="nota-riga">proposto: ${esc(nomePasso(v.passoProposto))}</div>`
       : '';
+    const automatica = v.attivo && v.spegnimentoProposto
+      ? `<div class="nota-riga">da spegnere: ${esc(v.spegnimentoProposto)}</div>`
+      : '';
     const legate = v.opzioniLegateAlModello
       ? `<div class="nota-riga">${v.opzioniLegateAlModello} legate a un documento</div>`
       : '';
     return `<tr>
       <td class="col-spunta"><input type="checkbox" data-spunta="${v.idVoceChecklist}"
             ${selezione.has(v.idVoceChecklist) ? 'checked' : ''} /></td>
-      <td><strong>${esc(v.etichetta)}</strong><div class="nota-riga">${esc(v.codice)}</div></td>
+      <td><strong>${esc(v.etichetta)}</strong><div class="nota-riga">${esc(v.codice)}</div>${automatica}</td>
       <td>
         <select data-passo="${v.idVoceChecklist}">
           <option value="">— nessuno —</option>
@@ -164,8 +174,12 @@ function disegnaVoci() {
         </select>
         ${proposta}
       </td>
-      <td>${v.opzioni}${legate}</td>
-      <td><button class="pulsante pulsante-secondario pulsante-piccolo" data-vedi="${v.idVoceChecklist}">Vedi le voci</button></td>
+      <td>${v.opzioni || '<span class="nota-riga">risposta scritta</span>'}${legate}</td>
+      <td class="azioni-riga">
+        ${v.opzioni ? `<button class="pulsante pulsante-secondario pulsante-piccolo" data-vedi="${v.idVoceChecklist}">Vedi le voci</button>` : ''}
+        <button class="pulsante pulsante-secondario pulsante-piccolo"
+                data-accendi="${v.idVoceChecklist}" data-stato="${v.attivo ? 'on' : 'off'}">${v.attivo ? 'Spegni' : 'Riaccendi'}</button>
+      </td>
     </tr>`;
   }).join('');
 
@@ -179,6 +193,9 @@ function disegnaVoci() {
     assegna([Number(s.dataset.passo)], s.value || null)));
 
   $$('[data-vedi]').forEach((b) => b.addEventListener('click', () => vediOpzioni(Number(b.dataset.vedi))));
+
+  $$('[data-accendi]').forEach((b) => b.addEventListener('click', () =>
+    accendi([Number(b.dataset.accendi)], b.dataset.stato === 'off')));
 
   aggiornaBarra();
 }
@@ -194,6 +211,16 @@ async function assegna(idVoci, passo) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idVoci, passo })
+  });
+  if (!r.ok) { avviso(await r.text()); return; }
+  await caricaVoci();
+}
+
+async function accendi(idVoci, attivo) {
+  const r = await fetch('/api/manualistica/voci/attivo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idVoci, attivo })
   });
   if (!r.ok) { avviso(await r.text()); return; }
   await caricaVoci();
@@ -272,11 +299,30 @@ $('#spunta-tutte').addEventListener('change', (e) => {
   disegnaVoci();
 });
 
+$('#btn-massa-spegni').addEventListener('click', () => {
+  if (!selezione.size) { avviso('Seleziona almeno una domanda.'); return; }
+  accendi([...selezione], false);
+});
+
+$('#btn-massa-accendi').addEventListener('click', () => {
+  if (!selezione.size) { avviso('Seleziona almeno una domanda.'); return; }
+  accendi([...selezione], true);
+});
+
 $('#btn-massa-passo').addEventListener('click', () => {
   const scelto = $('#f-passo-massa').value;
   if (!scelto) { avviso('Scegli prima un passo.'); return; }
   if (!selezione.size) { avviso('Seleziona almeno una domanda.'); return; }
   assegna([...selezione], scelto === '-' ? null : scelto);
+});
+
+// Spegne in blocco le domande che sembrano arrivare da sole. Il motivo di
+// ciascuna si legge sotto il suo nome prima di premere, e ognuna si riaccende
+// da sola con il filtro «spente».
+$('#btn-proponi-spente').addEventListener('click', async () => {
+  const da = filtra().filter((v) => v.attivo && v.spegnimentoProposto);
+  if (!da.length) { avviso('Fra le domande mostrate non ce n\'è nessuna che sembri arrivare da sola.'); return; }
+  await accendi(da.map((v) => v.idVoceChecklist), false);
 });
 
 // La proposta si vede nella tendina prima di salvare: qui si accetta in blocco

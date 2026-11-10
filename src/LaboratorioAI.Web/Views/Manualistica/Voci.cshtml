@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Titolo"] = "Manualistica: voci della check list";
 }
 
@@ -42,10 +42,11 @@
     <div class="barra-strumenti">
         <div>
             <h2>Le domande</h2>
-            <p class="sottotitolo">Il passo dice in quale schermata della check list il consulente si vede questa domanda. Finché è vuoto la domanda esiste ma non compare da nessuna parte.</p>
+            <p class="sottotitolo">Il passo dice in quale schermata della check list il consulente si vede questa domanda. Finché è vuoto la domanda esiste ma non compare da nessuna parte. Le domande il cui valore arriva da un'altra parte — il nome di un autorizzato, l'indirizzo di una sede, il prezzo nel contratto — si spengono: restano in archivio ma non si chiedono.</p>
         </div>
         <div class="azioni">
             <button class="pulsante pulsante-secondario" id="btn-proponi">Proponi i passi mancanti</button>
+            <button class="pulsante pulsante-secondario" id="btn-proponi-spente">Proponi quali spegnere</button>
         </div>
     </div>
 
@@ -54,6 +55,7 @@
             <select id="f-passo">
                 <option value="">tutte le domande</option>
                 <option value="-">senza passo</option>
+                <option value="spente">spente</option>
             </select>
         </label>
         <label>Cerca<input type="search" id="f-testo" placeholder="codice o nome della domanda…" /></label>
@@ -71,6 +73,8 @@
                 <option value="">assegna il passo…</option>
             </select>
             <button class="pulsante pulsante-piccolo" id="btn-massa-passo">Assegna</button>
+            <button class="pulsante pulsante-secondario pulsante-piccolo" id="btn-massa-spegni">Spegni</button>
+            <button class="pulsante pulsante-secondario pulsante-piccolo" id="btn-massa-accendi">Riaccendi</button>
             <button class="pulsante pulsante-secondario pulsante-piccolo" id="btn-deseleziona">Togli la selezione</button>
         </div>
     </div>

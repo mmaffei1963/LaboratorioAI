@@ -242,6 +242,20 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<ApprovazioneRevisione> ApprovazioniRevisione => Set<ApprovazioneRevisione>();
     public DbSet<ApprovatoreTipoManuale> ApprovatoriTipoManuale => Set<ApprovatoreTipoManuale>();
     public DbSet<VoceChecklist> VociChecklist => Set<VoceChecklist>();
+
+    /// <summary>Gli archivi del cliente, cartacei e informatici, e cosa contengono.</summary>
+    public DbSet<ArchivioCompilazione> ArchiviCompilazione => Set<ArchivioCompilazione>();
+    public DbSet<ArchivioAccesso> ArchiviAccessi => Set<ArchivioAccesso>();
+    public DbSet<ArchivioInteressati> ArchiviInteressati => Set<ArchivioInteressati>();
+    public DbSet<ArchivioCategoriaDati> ArchiviCategorieDati => Set<ArchivioCategoriaDati>();
+
+    /// <summary>I gestionali del cliente, scritti una volta e installati dove serve.</summary>
+    public DbSet<GestionaleCompilazione> GestionaliCompilazione => Set<GestionaleCompilazione>();
+    public DbSet<ArchivioGestionale> ArchiviGestionali => Set<ArchivioGestionale>();
+
+    /// <summary>Le caselle di posta del cliente e le funzioni che vi accedono.</summary>
+    public DbSet<CasellaEmailCompilazione> CaselleEmailCompilazione => Set<CasellaEmailCompilazione>();
+    public DbSet<CasellaEmailFunzione> CaselleEmailFunzioni => Set<CasellaEmailFunzione>();
     public DbSet<OpzioneVoce> OpzioniVoce => Set<OpzioneVoce>();
     public DbSet<FunzioneAziendale> FunzioniAziendali => Set<FunzioneAziendale>();
     public DbSet<QualificaAutorizzato> Qualifiche => Set<QualificaAutorizzato>();

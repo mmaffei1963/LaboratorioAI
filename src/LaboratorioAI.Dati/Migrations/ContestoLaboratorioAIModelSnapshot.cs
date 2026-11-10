@@ -1177,6 +1177,171 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("ApprovazioniRevisione", "man");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioAccesso", b =>
+                {
+                    b.Property<int>("IdArchivioAccesso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivioAccesso"));
+
+                    b.Property<int>("IdArchivioCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Valore")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.HasKey("IdArchivioAccesso");
+
+                    b.HasIndex("IdArchivioCompilazione", "Ordine");
+
+                    b.ToTable("ArchiviAccessi", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioCategoriaDati", b =>
+                {
+                    b.Property<int>("IdArchivioCategoriaDati")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivioCategoriaDati"));
+
+                    b.Property<int>("IdArchivioCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Valore")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.HasKey("IdArchivioCategoriaDati");
+
+                    b.HasIndex("IdArchivioCompilazione", "Ordine");
+
+                    b.ToTable("ArchiviCategorieDati", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioCompilazione", b =>
+                {
+                    b.Property<int>("IdArchivioCompilazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivioCompilazione"));
+
+                    b.Property<string>("Antivirus")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Backup")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("CreatoDa")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatoIlUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("FrequenzaBackup")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("IdCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Luogo")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("LuogoConservazione")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SistemaOperativo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdArchivioCompilazione");
+
+                    b.HasIndex("IdCompilazione", "Tipo", "Ordine");
+
+                    b.ToTable("ArchiviCompilazione", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioGestionale", b =>
+                {
+                    b.Property<int>("IdArchivioGestionale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivioGestionale"));
+
+                    b.Property<int>("IdArchivioCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdGestionaleCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdArchivioGestionale");
+
+                    b.HasIndex("IdGestionaleCompilazione");
+
+                    b.HasIndex("IdArchivioCompilazione", "IdGestionaleCompilazione")
+                        .IsUnique();
+
+                    b.ToTable("ArchiviGestionali", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioInteressati", b =>
+                {
+                    b.Property<int>("IdArchivioInteressati")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdArchivioInteressati"));
+
+                    b.Property<int>("IdArchivioCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Valore")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.HasKey("IdArchivioInteressati");
+
+                    b.HasIndex("IdArchivioCompilazione", "Ordine");
+
+                    b.ToTable("ArchiviInteressati", "man");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AssegnazioneCliente", b =>
                 {
                     b.Property<int>("IdAssegnazioneCliente")
@@ -2129,6 +2294,68 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("DataCreazione");
 
                     b.ToTable("Caricamenti", "templog");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CasellaEmailCompilazione", b =>
+                {
+                    b.Property<int>("IdCasellaEmailCompilazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCasellaEmailCompilazione"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CreatoDa")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatoIlUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Indirizzo")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdCasellaEmailCompilazione");
+
+                    b.HasIndex("IdCompilazione", "Ordine");
+
+                    b.ToTable("CaselleEmailCompilazione", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CasellaEmailFunzione", b =>
+                {
+                    b.Property<int>("IdCasellaEmailFunzione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCasellaEmailFunzione"));
+
+                    b.Property<int>("IdCasellaEmailCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdFunzioneAziendale")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdCasellaEmailFunzione");
+
+                    b.HasIndex("IdFunzioneAziendale");
+
+                    b.HasIndex("IdCasellaEmailCompilazione", "IdFunzioneAziendale")
+                        .IsUnique();
+
+                    b.ToTable("CaselleEmailFunzioni", "man");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.CategoriaNormativa", b =>
@@ -4745,6 +4972,65 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsUnique();
 
                     b.ToTable("FunzioniAziendali", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.GestionaleCompilazione", b =>
+                {
+                    b.Property<int>("IdGestionaleCompilazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGestionaleCompilazione"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Backup")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("CreatoDa")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatoIlUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Frequenza")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("IdCompilazione")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LuogoConservazione")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("Manutenzione")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("MisureSicurezza")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Prodotto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("IdGestionaleCompilazione");
+
+                    b.HasIndex("IdCompilazione", "Prodotto")
+                        .IsUnique();
+
+                    b.ToTable("GestionaliCompilazione", "man");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.GiroVerificaLimiti", b =>
@@ -11479,6 +11765,69 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("RevisioneModello");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioAccesso", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.ArchivioCompilazione", "Archivio")
+                        .WithMany("Accessi")
+                        .HasForeignKey("IdArchivioCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Archivio");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioCategoriaDati", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.ArchivioCompilazione", "Archivio")
+                        .WithMany("CategorieDati")
+                        .HasForeignKey("IdArchivioCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Archivio");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioCompilazione", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Compilazione", "Compilazione")
+                        .WithMany()
+                        .HasForeignKey("IdCompilazione")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Compilazione");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioGestionale", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.ArchivioCompilazione", "Archivio")
+                        .WithMany("Gestionali")
+                        .HasForeignKey("IdArchivioCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LaboratorioAI.Core.Entita.GestionaleCompilazione", "Gestionale")
+                        .WithMany("Installazioni")
+                        .HasForeignKey("IdGestionaleCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Archivio");
+
+                    b.Navigation("Gestionale");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioInteressati", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.ArchivioCompilazione", "Archivio")
+                        .WithMany("Interessati")
+                        .HasForeignKey("IdArchivioCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Archivio");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AssegnazioneCliente", b =>
                 {
                     b.HasOne("LaboratorioAI.Core.Entita.Commerciale", null)
@@ -11533,6 +11882,36 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasForeignKey("IdPreventivoConsulenza")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CasellaEmailCompilazione", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Compilazione", "Compilazione")
+                        .WithMany()
+                        .HasForeignKey("IdCompilazione")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Compilazione");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CasellaEmailFunzione", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.CasellaEmailCompilazione", "Casella")
+                        .WithMany("Funzioni")
+                        .HasForeignKey("IdCasellaEmailCompilazione")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LaboratorioAI.Core.Entita.FunzioneAziendale", "Funzione")
+                        .WithMany()
+                        .HasForeignKey("IdFunzioneAziendale")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Casella");
+
+                    b.Navigation("Funzione");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.ClausolaCondizioni", b =>
@@ -11741,6 +12120,17 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsRequired();
 
                     b.Navigation("TipoManuale");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.GestionaleCompilazione", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Compilazione", "Compilazione")
+                        .WithMany()
+                        .HasForeignKey("IdCompilazione")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Compilazione");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.GiroVerificaLimiti", b =>
@@ -12459,6 +12849,17 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("Metodi");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ArchivioCompilazione", b =>
+                {
+                    b.Navigation("Accessi");
+
+                    b.Navigation("CategorieDati");
+
+                    b.Navigation("Gestionali");
+
+                    b.Navigation("Interessati");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AttivitaConsulenza", b =>
                 {
                     b.Navigation("Contenuti");
@@ -12472,6 +12873,11 @@ namespace LaboratorioAI.Dati.Migrations
             modelBuilder.Entity("LaboratorioAI.Core.Entita.CampioneRiferimento", b =>
                 {
                     b.Navigation("Punti");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CasellaEmailCompilazione", b =>
+                {
+                    b.Navigation("Funzioni");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Compilazione", b =>
@@ -12504,6 +12910,11 @@ namespace LaboratorioAI.Dati.Migrations
             modelBuilder.Entity("LaboratorioAI.Core.Entita.Fonte", b =>
                 {
                     b.Navigation("Valori");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.GestionaleCompilazione", b =>
+                {
+                    b.Navigation("Installazioni");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.InvioLaboratorioEsterno", b =>

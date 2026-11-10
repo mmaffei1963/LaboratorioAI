@@ -314,6 +314,7 @@ builder.Services.AddScoped<IServizioCertificatiEsterni, ServizioCertificatiEster
 builder.Services.AddScoped<IServizioPreventivi, ServizioPreventivi>();
 builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioModelliManualistica>();
 builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioVociChecklist>();
+builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioCompilazioni>();
 
 // ── Accreditamento ACCREDIA laboratori esterni ─────────────────────────────
 // Timeout esplicito (invece del default di 100s): con più laboratori controllati in sequenza,

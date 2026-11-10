@@ -15,7 +15,8 @@ namespace LaboratorioAI.Documenti.Manualistica;
 /// <param name="Blocco">Il blocco ripetuto che lo contiene (RIPETI:ARCHIVIO_INFORMATICO), oppure null.</param>
 /// <param name="Etichetta">Come il campo si chiama a schermo: la prima cella della riga, o l'etichetta del controllo.</param>
 /// <param name="Chiusa">Elenco a discesa (si sceglie e basta) invece di casella combinata.</param>
-/// <param name="Opzioni">Le voci, nell'ordine del modello.</param>
+/// <param name="Data">Il controllo e' un selettore di data.</param>
+/// <param name="Opzioni">Le voci, nell'ordine del modello; vuote per i campi di testo.</param>
 public sealed record TendinaTrovata(
     string Tag,
     int Occorrenza,
@@ -23,10 +24,13 @@ public sealed record TendinaTrovata(
     string? Blocco,
     string? Etichetta,
     bool Chiusa,
+    bool Data,
     IReadOnlyList<string> Opzioni);
 
 /// <summary>
-/// Legge le tendine da un modello Word (05/11/2026).
+/// Legge i campi compilabili di un modello Word (05/11/2026, esteso ai
+/// campi di testo il 10/11/2026 — «tendina» nel nome e' rimasto per
+/// storia, qui passano tutti i <c>CAMPO:</c>, con elenco o senza).
 ///
 /// Le voci delle tendine stanno dentro i controlli contenuto dei modelli
 /// approvati, ed e' da li' che si costruisce il dizionario della check
@@ -94,9 +98,10 @@ public static class TendineModello
             var tag = ControlliContenuto.Tag(sdt);
             if (string.IsNullOrEmpty(tag) || !tag.StartsWith(Prefisso, StringComparison.Ordinal)) continue;
 
+            // Anche i campi senza elenco: sono le domande a cui il
+            // consulente risponde scrivendo, e senza di loro la check
+            // list avrebbe dei buchi.
             var opzioni = Opzioni(sdt);
-            if (opzioni.Count == 0) continue;
-
             var nome = tag[Prefisso.Length..];
             var contenitore = BloccoPerPosizione(sdt);
 
@@ -117,6 +122,7 @@ public static class TendineModello
                 contenitore is null ? null : ControlliContenuto.Tag(contenitore),
                 Etichetta(sdt),
                 sdt.SdtProperties?.GetFirstChild<SdtContentDropDownList>() is not null,
+                sdt.SdtProperties?.GetFirstChild<SdtContentDate>() is not null,
                 opzioni));
         }
 
@@ -151,11 +157,24 @@ public static class TendineModello
             .ToList();
     }
 
+    /// <summary>Oltre questa lunghezza la prima cella non e' un'etichetta, e' un paragrafo.</summary>
+    private const int EtichettaMassima = 120;
+
+    /// <summary>Quanto ci sta nella colonna del database.</summary>
+    private const int EtichettaLimite = 200;
+
+    private static readonly Regex Spazi = new(@"\s+", RegexOptions.Compiled);
+
     /// <summary>
     /// Come il campo si chiama a schermo. Il motore usa il testo della
     /// prima cella della riga — «LUOGO DI CONSERVAZIONE» — perche' e'
     /// quello che il consulente legge nel documento; l'etichetta del
     /// controllo e' il ripiego.
+    ///
+    /// Ma in qualche tabella la prima cella non e' un'etichetta: e' un
+    /// capoverso intero, «Verifica dell'attivita' in base al Reg. UE
+    /// 679/2016...». Oltre i 120 caratteri si prende l'etichetta del
+    /// controllo, che una lunghezza da etichetta ce l'ha.
     /// </summary>
     private static string? Etichetta(SdtElement sdt)
     {
@@ -165,18 +184,26 @@ public static class TendineModello
             var prima = riga.Elements<TableCell>().FirstOrDefault();
             if (prima is not null && !prima.Descendants<SdtElement>().Contains(sdt))
             {
-                var testo = string.Concat(prima.Descendants<Text>().Select(t => t.Text)).Trim();
-                if (testo.Length > 0) return testo;
+                // I capoversi si uniscono con uno spazio, altrimenti
+                // l'ultima parola dell'uno si attacca alla prima dell'altro.
+                var testo = Pulisci(string.Join(' ', prima.Descendants<Paragraph>()
+                    .Select(par => string.Concat(par.Descendants<Text>().Select(t => t.Text)))));
+
+                if (testo.Length > 0 && testo.Length <= EtichettaMassima) return testo;
             }
         }
 
         var etichetta = ControlliContenuto.Etichetta(sdt);
         if (string.IsNullOrWhiteSpace(etichetta)) return null;
 
-        etichetta = Colonna.Replace(etichetta.Trim(), "");
+        etichetta = Colonna.Replace(Pulisci(etichetta), "");
         if (etichetta.StartsWith("Dato:", StringComparison.OrdinalIgnoreCase))
             etichetta = etichetta[5..].TrimStart();
 
-        return etichetta.Length == 0 ? null : etichetta;
+        if (etichetta.Length == 0) return null;
+        return etichetta.Length <= EtichettaLimite ? etichetta : etichetta[..EtichettaLimite];
     }
+
+    /// <summary>Spazi, tabulazioni e a capo diventano un solo spazio.</summary>
+    private static string Pulisci(string testo) => Spazi.Replace(testo, " ").Trim();
 }

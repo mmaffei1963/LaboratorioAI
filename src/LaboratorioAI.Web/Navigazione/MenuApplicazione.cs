@@ -85,6 +85,7 @@ public static class MenuApplicazione
         }),
         new("Manualistica", "Manualistica", "Documenti per i clienti", Icone.Clip, new List<VoceMenu>
         {
+            new("Check list dei clienti", "/Manualistica/Compilazioni", Permessi.ManualisticaConsulta, "Le check list compilate per i clienti, da cui si generano i documenti."),
             new("Modelli", "/Manualistica/Modelli", Permessi.ManualisticaConsulta, "I modelli Word da cui si generano i documenti per i clienti: caricamento, controllo dei marcatori e approvazione."),
             new("Chi approva", "/Manualistica/Approvatori", Permessi.ManualisticaApprovatori, "Per ogni tipo di manuale, chi può approvarne i modelli."),
             new("Voci della check list", "/Manualistica/Voci", Permessi.ManualisticaImpostazioni, "Le domande della check list e le voci delle tendine, lette dai modelli approvati."),

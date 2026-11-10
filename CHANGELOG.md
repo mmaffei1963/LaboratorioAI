@@ -13,6 +13,40 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - Nuovi `INIZIO-LAVORO.bat` e `FINE-LAVORO.bat` (script in `scripts\Inizio-Lavoro.ps1` e `Fine-Lavoro.ps1`): pull con controlli e proposta di aggiornare il database locale quando arrivano migrazioni; commit e push con blocco se ci sono password in chiaro, file di configurazione locali, database o file oltre 50 MB.
 - `.gitignore`: ignorate le copie di backup delle configurazioni (`appsettings*.json.*`, come `appsettings.Development.json.prima-di-D`).
 
+## Manualistica - si compila la check list (10/11/2026)
+- Schermata `Manualistica/Compila/{id}`: i sei passi, le domande di ciascuno rese secondo il tipo (tendina, si'/no, numero, data, testo, scelta multipla) e **il salvataggio a ogni risposta** — in sopralluogo non si preme «salva», e quello che si e' scritto non deve dipendere dal ricordarsene.
+- Una riga per domanda in `man.ValoriCompilazione`: la risposta e' una sola e la seconda volta si sovrascrive. Risposta vuota = riga tolta: «non risposto» e «risposto con niente» sono la stessa cosa.
+- Nei passi compaiono solo le voci che valgono per tutti i documenti. Quelle legate a un modello appartengono alla scheda di quel documento — la lettera al Responsabile, la scheda dell'archivio — e li' si compilano, con il contesto che dice quale modello e'.
+- **Mancano gli editor dei blocchi ripetuti**: sedi, autorizzati, responsabili, archivi e caselle e-mail non si compilano ancora, e nei passi che li riguardano la schermata lo dice.
+
+## Manualistica - le check list dei clienti, primo pezzo (10/11/2026)
+- Nuovo `ServizioCompilazioni` e pagina «Manualistica → Check list dei clienti»: elenco delle check list e apertura di una nuova, da un cliente di ArcLab o a mano per un cliente che nei gestionali non c'e' ancora.
+- I dati del cliente si **copiano** nella compilazione, non si rimandano ad ArcLab: i documenti si firmano e restano validi anni, e devono dire cosa il cliente era il giorno in cui sono stati fatti. Si riusa `DettaglioClienteAsync`, gia' scritto per i preventivi: nessuna query nuova su ArcLab, che resta in sola lettura.
+- Restano da fare le sei schermate dei passi: questa pagina apre la compilazione, non la compila ancora.
+
+## Manualistica - anche i campi di testo diventano domande (10/11/2026)
+- L'estrazione legge ora tutti i `CAMPO:` dei modelli, non solo quelli con una tendina: i 71 campi di testo diventano domande, di tipo testo o data secondo il controllo contenuto.
+- Nella pagina si **spengono** le domande il cui valore arriva da un'altra parte — il nome di un autorizzato, l'indirizzo di una sede, il prezzo nel contratto. Si fa una volta, una per una o in blocco, e resta: si spegne, non si cancella, perche' il campo nel modello c'e' ancora.
+- **`Attivo` non si sovrascrive piu' alla rilettura dei modelli.** Prima ogni estrazione lo rimetteva a vero: la rassegna si sarebbe persa al primo ricaricamento di un modello, senza che nessuno se ne accorgesse.
+- Le tre domande che governano e che compaiono anche nei modelli come testo — ore di conservazione, di formazione, di ripristino — non si leggono piu' dai modelli: le possiede `VociGovernanti` con il loro tipo e il valore predefinito.
+
+## Manualistica - le domande che governano i documenti (10/11/2026)
+- Nuovo `VociGovernanti`: le 22 domande che non stanno nei modelli perche' non scrivono niente — videosorveglianza, telecamera piscina, sala, piani, guardiano, capo chef, cinque finalita', tipi di backup, contratto — e che il motore legge per decidere quali documenti escono. Le crea `PopolamentoManualistica` al primo avvio, solo quelle che mancano: una voce gia' presente non si tocca, perche' potrebbe essere stata spostata o spenta a mano.
+- I valori non sono scelti: sono quelli che `contesto()` confronta in motore.js. L'unico nostro e' `SOLO_VISIONE`, la quarta modalita' della videosorveglianza, che il motore riconosce per esclusione e non nomina mai — da concordare con Vaccarini.
+- Le voci lette dai modelli passano a `Ordine` sopra il mille, cosi' dentro un passo si chiede «c'e' la videosorveglianza?» prima di «dov'e' il DVR?».
+- Il quadro completo di cosa una compilazione deve contenere e' in `docs\Privacy\SPECIFICA_Checklist_Dati.md`.
+
+## Manualistica - archivi, gestionali e caselle e-mail (10/11/2026)
+- Otto tabelle nuove (migrazione `ArchiviGestionaliCaselle`): `man.ArchiviCompilazione` con `ArchiviAccessi`, `ArchiviInteressati`, `ArchiviCategorieDati`; `man.GestionaliCompilazione` con `man.ArchiviGestionali`; `man.CaselleEmailCompilazione` con `man.CaselleEmailFunzioni`. Completano i blocchi ripetuti: sedi, autorizzati e responsabili c'erano gia' dal 01/11.
+- Una tabella sola per archivi cartacei e informatici, con il tipo come colonna: le domande che ci si fa sopra non distinguono fra carta e computer, e con due tabelle ogni ricerca andrebbe scritta due volte.
+- Chi accede, categorie e gestionali sono righe, non caselle fisse. Il modello Word ne ha tre, tre, sei e due, ma e' lo spazio nella tabella, non una regola: un albergo con quattro gestionali li ha davvero. **Il generatore dovra' avvisare quando il documento ne stampa meno di quanti ce ne sono** — senza quell'avviso la scelta perderebbe dati in silenzio.
+- I gestionali sono un'anagrafica del cliente, non un dato del PC: nessuno dei loro sei campi dipende dalla postazione, e lo stesso software sta spesso su piu' PC. Il consulente scrive PASSEPARTOUT una volta e lo spunta dove serve.
+- Decisioni e motivi in `docs\Privacy\PROPOSTA_Blocchi_Ripetuti.md`.
+
+## Manualistica - i passi della check list viaggiano con il codice (10/11/2026)
+- Nuovo `PassiDecisi`: il passo di ciascuna delle 85 domande, dalla rassegna fatta sui 32 modelli approvati. Lo applica `ServizioVociChecklist` quando la domanda nasce, cosi' in produzione le domande nascono gia' al posto giusto e la rassegna non si rifa'.
+- Si applica solo alla nascita: chi sposta un passo dalla pagina non se lo vede tornare indietro. Una domanda che nella tabella non c'e' nasce senza passo e compare nel filtro «senza passo» — voluto, perche' un campo nuovo va guardato da una persona.
+
 ## Manualistica - dizionario della check list dai modelli (05/11/2026)
 - Nuovi `TendineModello` e `ServizioVociChecklist`: le voci delle tendine si leggono dalle revisioni approvate e popolano `man.VociChecklist` e `man.OpzioniVoce`. Pagina «Manualistica → Voci della check list»: si guarda l'anteprima, poi si scrive. Le voci scritte a mano dai consulenti non si toccano; quelle sparite dai modelli si spengono senza cancellarsi.
 - **L'identita' di un campo segue il modo in cui il motore lo riempie.** Nelle lettere e negli archivi riempie per posizione (`fillPos`, chiave «TAG#n») e li' lo stesso tag ripetuto e' un campo diverso: nella scheda dell'archivio informatico «LUOGO DI CONSERVAZIONE» compare due volte, una per i dati sul PC — con «Cloud» — e una per quelli del gestionale — con «Server farm del gestionale». Dappertutto altrove riempie per tag (`fill`) e le occorrenze sono lo stesso campo, anche dentro le sedi del trattamento e gli elenchi delle misure di sicurezza, dove le righe del modello sono un prototipo che il motore duplica.
