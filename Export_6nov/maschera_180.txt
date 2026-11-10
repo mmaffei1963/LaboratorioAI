@@ -1,0 +1,392 @@
+Version =19
+VersionRequired =19
+Checksum =234827538
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    BorderStyle =3
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6347
+    DatasheetFontHeight =10
+    ItemSuffix =19
+    Left =4275
+    Top =1755
+    Right =11970
+    Bottom =6375
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x3d6ee5ea1880e240
+    End
+    Caption ="ricerche"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1190
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x7a62dd662b7d024a8a6ceafb8b2c9a8f
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =56
+                    Top =56
+                    Width =4230
+                    Height =1080
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0x3109cff682715e4a8e17c2b7b26b0dcc
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4382
+                    Top =113
+                    Width =1795
+                    Height =962
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16711680
+                    Name ="Etichetta18"
+                    Caption ="RICERCA PER LOTTO MATERIA PRIMA"
+                    GUID = Begin
+                        0x4dfd916344928d428d129d826585d95e
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =1417
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xb0c163206c41d945a1bd1846f70429bd
+            End
+            Begin
+                Begin ComboBox
+                    OverlapFlags =93
+                    ListWidth =4335
+                    Left =1700
+                    Top =113
+                    Width =3118
+                    Height =272
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xdeed84ba428f674a893f3c365ec11d7e
+                    End
+                    Name ="CasellaCombinata6"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT MAGAZZINO.Fornitore FROM MAGAZZINO GROUP BY MAGAZZINO.Fornitore;"
+                    ColumnWidths ="4335"
+                    OnChange ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =113
+                            Width =1470
+                            Height =240
+                            Name ="CasellaCombinata6_Etichetta"
+                            Caption ="Fornitore"
+                            GUID = Begin
+                                0x181f97340864b74d8bd6cec7d1698713
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =93
+                    ListWidth =4230
+                    Left =1700
+                    Top =566
+                    Width =3121
+                    Height =281
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xb92074130e9c7c40b8282ef5c709ff2e
+                    End
+                    Name ="CasellaCombinata8"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT MAGAZZINO.Materiale FROM MAGAZZINO GROUP BY MAGAZZINO.Materiale, MAGAZZIN"
+                        "O.Fornitore HAVING (((MAGAZZINO.Fornitore)=[Forms]![ricerchep]![CasellaCombinata"
+                        "6]));"
+                    ColumnWidths ="4230"
+                    OnChange ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =622
+                            Width =1470
+                            Height =240
+                            Name ="CasellaCombinata8_Etichetta"
+                            Caption ="Materiale"
+                            GUID = Begin
+                                0xde05e3b216675544ab39019fe1180c2b
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =93
+                    ListWidth =3495
+                    Left =1700
+                    Top =963
+                    Width =3121
+                    Height =290
+                    TabIndex =2
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x0b2c21f861b5764db32f36892348bdfe
+                    End
+                    Name ="CasellaCombinata10"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT MAGAZZINO.Lotto FROM MAGAZZINO WHERE (((MAGAZZINO.Fornitore)=[Forms]![ric"
+                        "erchep]![CasellaCombinata6]) AND ((MAGAZZINO.Materiale)=[Forms]![ricerchep]![Cas"
+                        "ellaCombinata8]));"
+                    ColumnWidths ="3495"
+                    OnChange ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =964
+                            Width =1560
+                            Height =240
+                            Name ="CasellaCombinata10_Etichetta"
+                            Caption ="Lotto"
+                            GUID = Begin
+                                0x155b8b206d21484893651f8c4221afe2
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    Left =5327
+                    Top =228
+                    Width =1020
+                    Height =735
+                    FontSize =10
+                    FontWeight =600
+                    TabIndex =3
+                    ForeColor =8388863
+                    Name ="Comando12"
+                    Caption ="Esegui ricerca"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x657bea062a8faf43a3f6ff7400ca3ede
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =-4
+                    Top =53
+                    Width =4984
+                    Height =1310
+                    Name ="Casella17"
+                    GUID = Begin
+                        0x49ec8dfec4812c4cbaa2a39f9f3a57e9
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =623
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x91137436313105468f5acea2f2eb06f2
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =1927
+                    Top =56
+                    Width =3660
+                    Height =255
+                    Name ="OperatoreAttualeSM"
+                    SourceObject ="Form.OperatoreAttualeSM"
+                    GUID = Begin
+                        0x16356f368a0cd4438ec5bec79a8f147e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =283
+                            Width =1515
+                            Height =240
+                            Name ="OperatoreAttualeSM Etichetta"
+                            Caption ="Operatore Attuale"
+                            EventProcPrefix ="OperatoreAttualeSM_Etichetta"
+                            GUID = Begin
+                                0x719e6ecf48c4de4dabbb6b8c498b1331
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub CasellaCombinata10_Change()
+     Me!Comando12.Enabled = True
+
+End Sub
+
+Private Sub CasellaCombinata6_Change()
+     Me!CasellaCombinata8 = ""
+     Me!CasellaCombinata8.Requery
+
+     Me!CasellaCombinata10 = ""
+     Me!CasellaCombinata10.RowSource = ""
+     
+     Me!Comando12.Enabled = False
+     
+     
+End Sub
+
+Private Sub CasellaCombinata8_Change()
+     Me!CasellaCombinata10 = ""
+     Me!CasellaCombinata10.RowSource = "SELECT MAGAZZINO.Lotto " & _
+                                        "FROM MAGAZZINO " & _
+                                        "WHERE (((MAGAZZINO.Fornitore)=[Forms]![ricerchep]![CasellaCombinata6]) AND ((MAGAZZINO.Materiale)=[Forms]![ricerchep]![CasellaCombinata8]));"
+
+     Me!CasellaCombinata10.Requery
+     Me!Comando12.Enabled = False
+End Sub
+
+Private Sub Comando12_Click()
+On Error GoTo Err_Comando12_Click
+
+    Dim stDocName As String
+
+    stDocName = "rintra fornitore"
+    DoCmd.RunMacro stDocName
+
+Exit_Comando12_Click:
+    Exit Sub
+
+Err_Comando12_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando12_Click
+    
+End Sub

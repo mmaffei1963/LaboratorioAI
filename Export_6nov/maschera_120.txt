@@ -1,0 +1,242 @@
+Version =19
+VersionRequired =19
+Checksum =-234827592
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10941
+    DatasheetFontHeight =10
+    ItemSuffix =6
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x5a33952f5274e240
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin Tab
+            Width =5103
+            Height =3402
+            FontName ="Tahoma"
+        End
+        Begin Page
+            Width =1701
+            Height =1701
+        End
+        Begin Section
+            Height =6633
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xb61ba6bdb3a4d711acfa8caec38ebb72
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2608
+                    Top =5329
+                    Width =2841
+                    Height =786
+                    Name ="C"
+                    Caption ="Comando0"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadad0dadadadadaadad00adadadadaddad030dadadadada ,
+                        0xad0330adadadadad0033300000000adaa03330ff0dadadadd03300ff0adad4da ,
+                        0xa03330ff0dad44add03330ff0ad44444a03330ff0d444444d03330ff0ad44444 ,
+                        0xa0330fff0dad44add030ffff0adad4daa00fffff0dadadadd00000000adadada ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Chiudi maschera"
+                    GUID = Begin
+                        0xb71ba6bdb3a4d711acfa8caec38ebb72
+                    End
+                End
+                Begin Tab
+                    OverlapFlags =85
+                    Left =1140
+                    Top =795
+                    Width =6960
+                    Height =3735
+                    TabIndex =1
+                    Name ="TabCtl1"
+                    GUID = Begin
+                        0xc31ba6bdb3a4d711acfa8caec38ebb72
+                    End
+                    Begin
+                        Begin Page
+                            OverlapFlags =215
+                            Left =1275
+                            Top =1200
+                            Width =6690
+                            Height =3195
+                            Name ="Elenco prodotti finiti"
+                            EventProcPrefix ="Elenco_prodotti_finiti"
+                            GUID = Begin
+                                0xc41ba6bdb3a4d711acfa8caec38ebb72
+                            End
+                            Begin
+                                Begin CommandButton
+                                    OverlapFlags =215
+                                    Left =2888
+                                    Top =2437
+                                    Width =1146
+                                    Height =1146
+                                    Name ="ant"
+                                    Caption ="Comando4"
+                                    OnClick ="[Event Procedure]"
+                                    PictureData = Begin
+                                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                                        0xffff0000ffffff00dadadadadadadada000000000000ad000ffffffffff0d000 ,
+                                        0x0fffffff0000700d0ffffff0788707da0fffff0788e770ad0fffff08888780da ,
+                                        0x0fffff08e88780ad0fffff07ee8770da0ffffff078870dad0fffffff0000dada ,
+                                        0x0ffffffffff0adad0fffffff0000dada0fffffff080dadad0fffffff00dadada ,
+                                        0x000000000dadadad000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000
+                                    End
+                                    ObjectPalette = Begin
+                                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                                        0xffffff0000000000
+                                    End
+                                    ControlTipText ="Anteprima report"
+                                    GUID = Begin
+                                        0xc61ba6bdb3a4d711acfa8caec38ebb72
+                                    End
+                                End
+                                Begin CommandButton
+                                    OverlapFlags =215
+                                    Left =4478
+                                    Top =2494
+                                    Width =1131
+                                    Height =1026
+                                    TabIndex =1
+                                    Name ="Sta"
+                                    Caption ="Comando5"
+                                    OnClick ="[Event Procedure]"
+                                    PictureData = Begin
+                                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                                        0xffff0000ffffff00dadadadadadadadaad00000000000dadd0888888888080da ,
+                                        0x000000000000080d0888888bbb88000a088888877788080d0000000000000880 ,
+                                        0x0888888888808080d000000000080800ad0ffffffff08080dad0f00000f0000a ,
+                                        0xada0ffffffff0daddada0f00000f0adaadad0ffffffff0addadad000000000da ,
+                                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                                        0x0000000000000000
+                                    End
+                                    ObjectPalette = Begin
+                                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                                        0xffffff0000000000
+                                    End
+                                    ControlTipText ="Stampa report"
+                                    GUID = Begin
+                                        0xc81ba6bdb3a4d711acfa8caec38ebb72
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub C_Click()
+On Error GoTo Err_C_Click
+
+
+    DoCmd.Close
+
+Exit_C_Click:
+    Exit Sub
+
+Err_C_Click:
+    MsgBox Err.Description
+    Resume Exit_C_Click
+    
+End Sub
+Private Sub ant_Click()
+On Error GoTo Err_ant_Click
+
+    Dim stDocName As String
+
+    stDocName = "Elenco prodotti finiti"
+    DoCmd.OpenReport stDocName, acPreview
+
+Exit_ant_Click:
+    Exit Sub
+
+Err_ant_Click:
+    MsgBox Err.Description
+    Resume Exit_ant_Click
+    
+End Sub
+Private Sub sta_Click()
+On Error GoTo Err_sta_Click
+
+    Dim stDocName As String
+
+    stDocName = "Elenco prodotti finiti"
+    DoCmd.OpenReport stDocName, acNormal
+
+Exit_sta_Click:
+    Exit Sub
+
+Err_sta_Click:
+    MsgBox Err.Description
+    Resume Exit_sta_Click
+    
+End Sub

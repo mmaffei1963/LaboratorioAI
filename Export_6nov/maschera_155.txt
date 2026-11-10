@@ -1,0 +1,394 @@
+Version =19
+VersionRequired =19
+Checksum =-234827538
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =15874
+    DatasheetFontHeight =10
+    ItemSuffix =21
+    Top =390
+    Right =16410
+    Bottom =4635
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xbfc5ffec50e7e140
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin Subform
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =4261
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xc9a891c28baed411b5a0cf600c8b833e
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4025
+                    Top =396
+                    Width =2100
+                    Height =1875
+                    Name ="Comando5"
+                    Caption ="RICEZIONE APPROVVIGIONAMENTI"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xcea891c28baed411b5a0cf600c8b833e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6746
+                    Top =396
+                    Width =2100
+                    Height =1875
+                    TabIndex =1
+                    Name ="IMP"
+                    Caption ="IMPEGNI DI MATERIE PRIME PER LA PRODUZIONE"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x1a3a2fcbefa3d711acfae0f081468a72
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =1147
+                    Top =396
+                    Width =2205
+                    Height =1875
+                    TabIndex =2
+                    Name ="ORDINI DI PPROVVIGIONAMENTO"
+                    Caption ="ORDINI DI APPROVVIGIONAMENTO"
+                    OnClick ="[Event Procedure]"
+                    EventProcPrefix ="ORDINI_DI_PPROVVIGIONAMENTO"
+                    GUID = Begin
+                        0xdfcd58d2f1a3d711acfae0f081468a72
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9467
+                    Top =396
+                    Width =2040
+                    Height =1875
+                    TabIndex =3
+                    Name ="PROD REALIZZ"
+                    Caption ="PRODUZIONE REALIZZATA"
+                    OnClick ="[Event Procedure]"
+                    EventProcPrefix ="PROD_REALIZZ"
+                    GUID = Begin
+                        0xe0ef888772a6d711acfaff787878ad72
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =8333
+                    Top =2833
+                    Width =4230
+                    Height =1080
+                    TabIndex =4
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0xcebc52df98688544b42372d0f362b98b
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =56
+                    Top =3641
+                    Width =3660
+                    Height =255
+                    TabIndex =5
+                    Name ="OperatoreAttualeSM"
+                    SourceObject ="Form.OperatoreAttualeSM"
+                    GUID = Begin
+                        0x69fb3a951800c14d8a4fdd6eee87fd82
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3401
+                            Width =1560
+                            Height =240
+                            Name ="OperatoreAttualeSM Etichetta"
+                            Caption ="Operatore Attuale"
+                            EventProcPrefix ="OperatoreAttualeSM_Etichetta"
+                            GUID = Begin
+                                0x2201d602362a804cb83ec6afc1db698e
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6406
+                    Top =2607
+                    Width =1125
+                    Height =675
+                    FontSize =12
+                    FontWeight =700
+                    TabIndex =6
+                    ForeColor =16711680
+                    Name ="Comando19"
+                    Caption ="CHUIDI"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x861660a9929fe14a8fe2fa24a8c05337
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12472
+                    Top =396
+                    Width =2100
+                    Height =1815
+                    TabIndex =7
+                    Name ="Comando20"
+                    Caption ="ELENCO MATERI PRIME IN MAGAZZINO"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x6aee15e9d229cd479720f00d15f95c64
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+Option Compare Database
+
+Private Sub Comando0_Click()
+On Error GoTo Err_Comando0_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Procedure di Impegni"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando0_Click:
+    Exit Sub
+
+Err_Comando0_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando0_Click
+    
+End Sub
+
+Private Sub aggiorna_Click()
+  DoCmd.SetWarnings False
+  DoCmd.OpenQuery "Query Correzione1", acNormal, acEdit
+  DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+  DoCmd.OpenQuery "Query Correzione3", acNormal, acEdit
+
+DoCmd.SetWarnings False
+    DoCmd.OpenTable "Magazzino", acNormal, acEdit
+    DoCmd.RunCommand acCmdSelectAllRecords
+    DoCmd.RunCommand acCmdDeleteRecord
+    DoCmd.Close acTable, "Magazzino"
+DoCmd.OpenQuery "Query Magazzino", acNormal, acEdit
+
+End Sub
+
+
+Private Sub Comando2_Click()
+On Error GoTo Err_Comando2_Click
+
+
+    DoCmd.Close
+
+Exit_Comando2_Click:
+    Exit Sub
+
+Err_Comando2_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando2_Click
+    
+End Sub
+
+Private Sub Comando12_Click()
+ DoCmd.SetWarnings False
+  DoCmd.OpenQuery "Query Correzione1", acNormal, acEdit
+  DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+  DoCmd.OpenQuery "Query Correzione3", acNormal, acEdit
+
+DoCmd.SetWarnings False
+    DoCmd.OpenTable "Magazzinoxx", acNormal, acEdit
+    DoCmd.RunCommand acCmdSelectAllRecords
+    DoCmd.RunCommand acCmdDeleteRecord
+    DoCmd.Close acTable, "Magazzinoxx"
+DoCmd.OpenQuery "Query Magazzinoxx", acNormal, acEdit
+
+End Sub
+
+Private Sub Comando3_Click()
+On Error GoTo Err_Comando3_Click
+
+
+    DoCmd.Quit
+
+Exit_Comando3_Click:
+    Exit Sub
+
+Err_Comando3_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando3_Click
+    
+End Sub
+Private Sub Comando5_Click()
+On Error GoTo Err_Comando5_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Accettazione in entrata"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando5_Click:
+    Exit Sub
+
+Err_Comando5_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando5_Click
+    
+   
+End Sub
+Private Sub Comando7_Click()
+On Error GoTo Err_Comando7_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Anteprime e stampe Ricezione Approvv"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando7_Click:
+    Exit Sub
+
+Err_Comando7_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando7_Click
+    
+End Sub
+
+
+
+
+
+
+
+Private Sub IMP_Click()
+On Error GoTo Err_IMP_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Impegni di materie prime per la produzione"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_IMP_Click:
+    Exit Sub
+
+Err_IMP_Click:
+    MsgBox Err.Description
+    Resume Exit_IMP_Click
+    
+End Sub
+Private Sub ORDINI_DI_PPROVVIGIONAMENTO_Click()
+On Error GoTo Err_ORDINI_DI_PPROVVIGIONAMENTO_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Procedure di Ordine a fornitori"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_ORDINI_DI_PPROVVIGIONAMENTO_Click:
+    Exit Sub
+
+Err_ORDINI_DI_PPROVVIGIONAMENTO_Click:
+    MsgBox Err.Description
+    Resume Exit_ORDINI_DI_PPROVVIGIONAMENTO_Click
+    
+End Sub
+Private Sub PROD_REALIZZ_Click()
+On Error GoTo Err_PROD_REALIZZ_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Menu Vendite"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_PROD_REALIZZ_Click:
+    Exit Sub
+
+Err_PROD_REALIZZ_Click:
+    MsgBox Err.Description
+    Resume Exit_PROD_REALIZZ_Click
+    
+End Sub
+Private Sub Comando19_Click()
+On Error GoTo Err_Comando19_Click
+
+
+    DoCmd.Close
+
+Exit_Comando19_Click:
+    Exit Sub
+
+Err_Comando19_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando19_Click
+    
+End Sub
+Private Sub Comando20_Click()
+On Error GoTo Err_Comando20_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Ricerca_Magazzino"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando20_Click:
+    Exit Sub
+
+Err_Comando20_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando20_Click
+    
+End Sub

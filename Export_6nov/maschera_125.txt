@@ -1,0 +1,373 @@
+Version =19
+VersionRequired =19
+Checksum =-234827585
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    PictureTiling = NotDefault
+    ScrollBars =2
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10771
+    DatasheetFontHeight =10
+    ItemSuffix =27
+    Left =120
+    Top =648
+    Right =10608
+    Bottom =5712
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x3fad2c3d383ae240
+    End
+    RecordSource ="SELECT AttivitaFormazioneAggiornamento.DataInizio, AttivitaFormazioneAggiornamen"
+        "to.DataFine, AttivitaFormazioneAggiornamento.Organizzatore, AttivitaFormazioneAg"
+        "giornamento.DurataOre, AttivitaFormazioneAggiornamento.DescrizioneAttivitaFormat"
+        "iva, AttivitaFormazioneAggiornamento.ValutazioneFinale, AttivitaFormazioneAggior"
+        "namento.NoteFormazione, AttivitaFormazioneAggiornamento.PunteggioOttenuto, Attiv"
+        "itaFormazioneAggiornamento.ResponsabileInterno, AttivitaFormazioneAggiornamento."
+        "IdOrganico FROM AttivitaFormazioneAggiornamento ORDER BY AttivitaFormazioneAggio"
+        "rnamento.DataInizio, AttivitaFormazioneAggiornamento.Organizzatore;"
+    Caption ="SMAttivitaFormazione"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =340
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =62
+                    Top =56
+                    Width =2310
+                    Height =240
+                    Name ="Organizzatore Etichetta"
+                    Caption ="Organizzatore"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Organizzatore_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2443
+                    Top =57
+                    Width =810
+                    Height =240
+                    Name ="DataInizio Etichetta"
+                    Caption ="Inizio"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataInizio_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =3240
+                    Top =60
+                    Width =972
+                    Height =240
+                    Name ="DataFine Etichetta"
+                    Caption ="Fine prevista"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataFine_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =3
+                    Left =4170
+                    Top =60
+                    Width =915
+                    Height =240
+                    Name ="DurataOre Etichetta"
+                    Caption ="Durata (ore)"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DurataOre_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =5164
+                    Top =57
+                    Width =4545
+                    Height =240
+                    Name ="DescrizioneAttivitaFormativa Etichetta"
+                    Caption ="Descrizione"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DescrizioneAttivitaFormativa_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =1303
+                    Top =56
+                    Width =1632
+                    Height =240
+                    Name ="ResponsabileInterno Etichetta"
+                    Caption ="Resp. Interno"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="ResponsabileInterno_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =8674
+                    Top =56
+                    Width =1296
+                    Height =228
+                    Name ="Etichetta26"
+                    Caption ="Note"
+                End
+            End
+        End
+        Begin Section
+            Height =850
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =56
+                    Top =57
+                    Width =2310
+                    Height =255
+                    ColumnWidth =2310
+                    Name ="Organizzatore"
+                    ControlSource ="Organizzatore"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =2443
+                    Top =57
+                    Width =810
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =1
+                    Name ="DataInizio"
+                    ControlSource ="DataInizio"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3325
+                    Top =57
+                    Width =810
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =2
+                    Name ="DataFine"
+                    ControlSource ="DataFine"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =4207
+                    Top =57
+                    Width =885
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =3
+                    Name ="DurataOre"
+                    ControlSource ="DurataOre"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =85
+                    Left =5164
+                    Top =57
+                    Width =3399
+                    Height =735
+                    ColumnWidth =3000
+                    TabIndex =4
+                    Name ="DescrizioneAttivitaFormativa"
+                    ControlSource ="DescrizioneAttivitaFormativa"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3685
+                    Top =566
+                    Width =1410
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =5
+                    Name ="PunteggioOttenuto"
+                    ControlSource ="PunteggioOttenuto"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =2834
+                    Top =566
+                    Width =795
+                    Height =240
+                    Name ="PunteggioOttenuto Etichetta"
+                    Caption ="Punteggio"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="PunteggioOttenuto_Etichetta"
+                End
+                Begin CheckBox
+                    OverlapFlags =247
+                    Left =4648
+                    Top =396
+                    TabIndex =7
+                    Name ="CasellaControllo24"
+                    ControlSource ="ValutazioneFinale"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =2834
+                            Top =345
+                            Width =1785
+                            Height =240
+                            Name ="Etichetta25"
+                            Caption ="Valutazione finale (si-no)"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =3
+                    ListWidth =5670
+                    Left =397
+                    Top =340
+                    Width =1926
+                    ColumnWidth =900
+                    TabIndex =6
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="ResponsabileInterno"
+                    ControlSource ="ResponsabileInterno"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT mansione.IdMansione, [NomeOrg] & \"\" & [CognomeOrg] AS Espr1, Attività.A"
+                        "ttività, Attività.IdAttività, mansione.DataFineMansione, Organico.FineProf FROM "
+                        "Organico INNER JOIN (Attività INNER JOIN mansione ON Attività.IdAttività = mansi"
+                        "one.IdAttività) ON Organico.IdOrganico = mansione.IdOrganico WHERE (((Attività.I"
+                        "dAttività)=11 Or (Attività.IdAttività)=16 Or (Attività.IdAttività)=18 Or (Attivi"
+                        "tà.IdAttività)=23 Or (Attività.IdAttività)=28) AND ((mansione.DataFineMansione) "
+                        "Is Null) AND ((Organico.FineProf) Is Null)) ORDER BY [NomeOrg] & \"\" & [Cognome"
+                        "Org], Attività.Attività;"
+                    ColumnWidths ="0;2268;3402"
+                    BaseInfo ="\"SELECT mansione.IdMansione, [NomeOrg] & \"\"\"\" & [CognomeOrg] AS Espr1, Atti"
+                        "vità.Attività, Attività.IdAttività, mansione.DataFineMansione, Organico.FineProf"
+                        " FROM Organico INNER JOIN (Attività INNER JOIN mansione ON Attività.IdAttività ="
+                        " mansione.IdAttività) ON\";\"Organico\";\"Attività\";\"mansione\";\"\""
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =8618
+                    Top =56
+                    Width =2097
+                    Height =732
+                    TabIndex =8
+                    Name ="NoteFormazione"
+                    ControlSource ="NoteFormazione"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End

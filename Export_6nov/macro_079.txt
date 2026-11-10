@@ -1,0 +1,7 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenReport"
+    Argument ="Rintracciabilita1"
+    Argument ="2"
+End

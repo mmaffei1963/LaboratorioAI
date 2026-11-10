@@ -1,0 +1,246 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="SetWarnings"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Strutto"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Strutto"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Baking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Baking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Crusca"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Crusca"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="5cereali_integrale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="5cereali_integrale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaCrusca"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaCrusca"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accoda5cereali"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accoda5cereali"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaBaking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaBaking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaStrutto"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaStrutto"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="Tracciabilit‡Data5Cereali"
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End
+Begin
+    Action ="SetWarnings"
+    Argument ="-1"
+End

@@ -1,0 +1,9 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenReport"
+    Argument ="Controllo Sanif"
+    Argument ="2"
+    Argument =""
+    Argument ="[contr sanificazione]![N ordine]=[Forms]![Controllo Sanificazione]![N ordine]"
+End

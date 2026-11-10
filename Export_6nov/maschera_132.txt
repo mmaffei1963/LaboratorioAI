@@ -1,0 +1,69 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =4041
+    DatasheetFontHeight =10
+    ItemSuffix =2
+    Left =3615
+    Top =2295
+    Right =7740
+    Bottom =2835
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x2b8716497911e240
+    End
+    RecordSource ="Marchi"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =523
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    CanGrow = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =3
+                    Width =4031
+                    BackColor =12632256
+                    Name ="PercorsoFileDati"
+                    ControlSource ="PercorsoSnapshot"
+                End
+                Begin TextBox
+                    CanGrow = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =3
+                    Top =283
+                    Width =4041
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="ApplicazioneSnapshot"
+                    ControlSource ="ApplicazioneSnapshot"
+                End
+            End
+        End
+    End
+End

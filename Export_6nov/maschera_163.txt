@@ -1,0 +1,248 @@
+Version =19
+VersionRequired =19
+Checksum =234828014
+Begin Form
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10601
+    DatasheetFontHeight =10
+    ItemSuffix =9
+    Left =1260
+    Top =990
+    Right =12150
+    Bottom =5340
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x64cc5d5b17e7e140
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =4365
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xefa891c28baed411b5a0cf600c8b833e
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4365
+                    Top =1927
+                    Width =4245
+                    Height =570
+                    Name ="Comando1"
+                    Caption ="Chiudi maschera"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xf0a891c28baed411b5a0cf600c8b833e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6973
+                    Top =170
+                    Width =2100
+                    Height =1470
+                    TabIndex =1
+                    Name ="Comando3"
+                    Caption ="Anteprime e stampe ordini a fornitori"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xf1a891c28baed411b5a0cf600c8b833e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4365
+                    Top =113
+                    Width =2160
+                    Height =1515
+                    TabIndex =2
+                    Name ="Comando4"
+                    Caption ="ORDINI DI APPROVVIGIONAMENTO"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xf2a891c28baed411b5a0cf600c8b833e
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    Top =56
+                    Width =4230
+                    Height =1080
+                    TabIndex =3
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0xe53b10dd6c705742a645c9e00abf0dbc
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Width =645
+                            Height =240
+                            BackColor =-2147483633
+                            ForeColor =-2147483630
+                            Name ="Marchio Etichetta"
+                            Caption ="Marchio"
+                            FontName ="MS Sans Serif"
+                            EventProcPrefix ="Marchio_Etichetta"
+                            GUID = Begin
+                                0x8abd7d2fddf11d4687e7a48929762860
+                            End
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =113
+                    Top =1657
+                    Width =3660
+                    Height =255
+                    TabIndex =4
+                    Name ="OperatoreAttualeSM"
+                    SourceObject ="Form.OperatoreAttualeSM"
+                    GUID = Begin
+                        0xe0ba90a980d0eb469c62b3b63a7d7c82
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =113
+                            Top =1417
+                            Width =1560
+                            Height =240
+                            FontWeight =700
+                            Name ="OperatoreAttualeSM Etichetta"
+                            Caption ="è al lavoro:"
+                            EventProcPrefix ="OperatoreAttualeSM_Etichetta"
+                            GUID = Begin
+                                0x84ac97a135339b47b973d00ba2183379
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+Option Compare Database
+Option Explicit
+
+Private Sub Impegni_Click()
+On Error GoTo Err_Impegni_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Impegni di magazzino"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Impegni_Click:
+    Exit Sub
+
+Err_Impegni_Click:
+    MsgBox Err.Description
+    Resume Exit_Impegni_Click
+    
+End Sub
+Private Sub Comando1_Click()
+On Error GoTo Err_Comando1_Click
+
+
+    DoCmd.Close
+
+Exit_Comando1_Click:
+    Exit Sub
+
+Err_Comando1_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando1_Click
+ 
+ DoCmd.SetWarnings False
+  DoCmd.OpenQuery "Query Correzione1", acNormal, acEdit
+
+End Sub
+Private Sub Comando2_Click()
+On Error GoTo Err_Comando2_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Stampe e anteprime ufficio acqusti"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando2_Click:
+    Exit Sub
+
+Err_Comando2_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando2_Click
+    
+End Sub
+Private Sub Comando3_Click()
+On Error GoTo Err_Comando3_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Stampa e anteprime ordini fornitori"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando3_Click:
+    Exit Sub
+
+Err_Comando3_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando3_Click
+    
+End Sub
+Private Sub Comando4_Click()
+On Error GoTo Err_Comando4_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Ordine"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando4_Click:
+    Exit Sub
+
+Err_Comando4_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando4_Click
+  
+ End Sub

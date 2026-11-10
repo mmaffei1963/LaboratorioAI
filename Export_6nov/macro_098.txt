@@ -1,0 +1,352 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale Marino Integrale di Cervia"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale Marino Integrale di Cervia"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale iodato"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale iodato"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioGirasole"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioGirasole"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Farina tipo 1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Farina tipo 1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Sodio bicarbonato"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sodio bicarbonato"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Miele"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Miele"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lievito Madre"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lievito Madre"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lievito"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lievito"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaSale Marino Integrale di Cervia"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaSale Marino Integrale di Cervia"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaSale iodato"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaSale iodato"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodaoliosemi"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodaoliosemi"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarina tipo 1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarina tipo 1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaSodio bicarbonato"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaSodio bicarbonato"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaMiele"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaMiele"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaLievitoMadre"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaLievitoMadre"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accoda_lievito"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accoda_lievito"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="TraccabilitàdaData"
+    Argument ="2"
+    Argument =""
+    Argument =""
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End
+Begin
+    Comment ="_AXL:<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>\015\012<UserI"
+        "nterfaceMacro MinimumClientDesignVersion=\"14.0.0000.0000\" xmlns=\"http://schem"
+        "as.microsoft.com/office/accessservices/2009/11/application\"><Statements><Action"
+        " Name=\"OpenQuery\"><Argument N"
+End
+Begin
+    Comment ="_AXL:ame=\"QueryName\">Sale Marino Integrale di Cervia</Argument></Action><Actio"
+        "n Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument N"
+        "ame=\"ObjectName\">Sale Marino Integrale di Cervia</Argument><Argument Name=\"Sa"
+        "ve\">Yes</Argument></Ac"
+End
+Begin
+    Comment ="_AXL:tion><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Sale iodato</A"
+        "rgument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Quer"
+        "y</Argument><Argument Name=\"ObjectName\">Sale iodato</Argument><Argument Name=\""
+        "Save\">Yes</Argument></A"
+End
+Begin
+    Comment ="_AXL:ction><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">OlioGirasole<"
+        "/Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Qu"
+        "ery</Argument><Argument Name=\"ObjectName\">OlioGirasole</Argument><Argument Nam"
+        "e=\"Save\">Yes</Argument>"
+End
+Begin
+    Comment ="_AXL:</Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Farina tip"
+        "o 1</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\""
+        ">Query</Argument><Argument Name=\"ObjectName\">Farina tipo 1</Argument><Argument"
+        " Name=\"Save\">Yes</Argu"
+End
+Begin
+    Comment ="_AXL:ment></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Sodio"
+        " bicarbonato</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"Ob"
+        "jectType\">Query</Argument><Argument Name=\"ObjectName\">Sodio bicarbonato</Argu"
+        "ment><Argument Name=\"Sa"
+End
+Begin
+    Comment ="_AXL:ve\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Que"
+        "ryName\">Miele</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\""
+        "ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Miele</Argument><Argu"
+        "ment Name=\"Save\">Yes</Ar"
+End
+Begin
+    Comment ="_AXL:gument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Lie"
+        "vito Madre</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"Obje"
+        "ctType\">Query</Argument><Argument Name=\"ObjectName\">Lievito Madre</Argument><"
+        "Argument Name=\"Save\">Ye"
+End
+Begin
+    Comment ="_AXL:s</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\""
+        ">Lievito</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"Object"
+        "Type\">Query</Argument><Argument Name=\"ObjectName\">Lievito</Argument><Argument"
+        " Name=\"Save\">Yes</Argu"
+End
+Begin
+    Comment ="_AXL:ment></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Accod"
+        "aSale Marino Integrale di Cervia</Argument></Action><Action Name=\"CloseWindow\""
+        "><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Acc"
+        "odaSale Marino Integral"
+End
+Begin
+    Comment ="_AXL:e di Cervia</Argument><Argument Name=\"Save\">Yes</Argument></Action><Actio"
+        "n Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaSale iodato</Argument></"
+        "Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argumen"
+        "t><Argument Name=\"Objec"
+End
+Begin
+    Comment ="_AXL:tName\">AccodaSale iodato</Argument><Argument Name=\"Save\">Yes</Argument><"
+        "/Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Accodaoliosemi</"
+        "Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Que"
+        "ry</Argument><Argument N"
+End
+Begin
+    Comment ="_AXL:ame=\"ObjectName\">Accodaoliosemi</Argument><Argument Name=\"Save\">Yes</Ar"
+        "gument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaFa"
+        "rina tipo 1</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"Obj"
+        "ectType\">Query</Argument"
+End
+Begin
+    Comment ="_AXL:><Argument Name=\"ObjectName\">AccodaFarina tipo 1</Argument><Argument Name"
+        "=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Que"
+        "ryName\">AccodaSodio bicarbonato</Argument></Action><Action Name=\"CloseWindow\""
+        "><Argument Name=\"Object"
+End
+Begin
+    Comment ="_AXL:Type\">Query</Argument><Argument Name=\"ObjectName\">AccodaSodio bicarbonat"
+        "o</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQu"
+        "ery\"><Argument Name=\"QueryName\">AccodaMiele</Argument></Action><Action Name=\""
+        "CloseWindow\"><Argument"
+End
+Begin
+    Comment ="_AXL: Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">AccodaMi"
+        "ele</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"Open"
+        "Query\"><Argument Name=\"QueryName\">AccodaLievitoMadre</Argument></Action><Acti"
+        "on Name=\"CloseWindow\"><"
+End
+Begin
+    Comment ="_AXL:Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">"
+        "AccodaLievitoMadre</Argument><Argument Name=\"Save\">Yes</Argument></Action><Act"
+        "ion Name=\"OpenQuery\"><Argument Name=\"QueryName\">Accoda_lievito</Argument></A"
+        "ction><Action Name=\"Clo"
+End
+Begin
+    Comment ="_AXL:seWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"O"
+        "bjectName\">Accoda_lievito</Argument><Argument Name=\"Save\">Yes</Argument></Act"
+        "ion><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Lotto-Date</Argument"
+        "></Action><Action Name=\""
+End
+Begin
+    Comment ="_AXL:CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name="
+        "\"ObjectName\">Lotto-Date</Argument><Argument Name=\"Save\">Yes</Argument></Acti"
+        "on><Action Name=\"OpenForm\"><Argument Name=\"FormName\">Lotto-Date</Argument></"
+        "Action><Action Name=\"Ope"
+End
+Begin
+    Comment ="_AXL:nReport\"><Argument Name=\"ReportName\">TraccabilitàdaData</Argument><Argum"
+        "ent Name=\"View\">Print Preview</Argument></Action><Action Name=\"CloseWindow\">"
+        "<Argument Name=\"ObjectType\">Form</Argument><Argument Name=\"ObjectName\">Lotto"
+        "-Date</Argument></Action"
+End
+Begin
+    Comment ="_AXL:></Statements></UserInterfaceMacro>"
+End

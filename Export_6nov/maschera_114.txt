@@ -1,0 +1,439 @@
+Version =19
+VersionRequired =19
+Checksum =234827967
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    OrderByOn = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =2
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10941
+    DatasheetFontHeight =10
+    ItemSuffix =21
+    Left =765
+    Top =3000
+    Right =14085
+    Bottom =6915
+    DatasheetGridlinesColor =12632256
+    OrderBy ="[Impegno Materie prime].[Data Doc]"
+    RecSrcDt = Begin
+        0x05d86e15379ee640
+    End
+    RecordSource ="Impegno Materie prime"
+    Caption ="Sottomaschera Impegno Materie prime"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderLineStyle =0
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BorderLineStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =354
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x3b86353f20a4d711acfade8a17599272
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =57
+                    Top =57
+                    Width =513
+                    Height =240
+                    Name ="Data Impegno_Etichetta"
+                    Caption ="Data Impegno"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Data_Impegno_Etichetta"
+                    GUID = Begin
+                        0x3e86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =8447
+                    Top =57
+                    Width =1083
+                    Height =240
+                    Name ="Fornitore_Etichetta"
+                    Caption ="Fornitore"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x4086353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3174
+                    Top =57
+                    Width =1083
+                    Height =240
+                    Name ="Tipo Documento_Etichetta"
+                    Caption ="Tipo Documento"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Tipo_Documento_Etichetta"
+                    GUID = Begin
+                        0x4286353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =4468
+                    Top =56
+                    Width =399
+                    Height =240
+                    Name ="Data Doc_Etichetta"
+                    Caption ="Data Doc"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Data_Doc_Etichetta"
+                    GUID = Begin
+                        0x4486353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =5148
+                    Top =113
+                    Width =1083
+                    Height =240
+                    Name ="N Doc_Etichetta"
+                    Caption ="N Doc"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="N_Doc_Etichetta"
+                    GUID = Begin
+                        0x4686353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6509
+                    Top =56
+                    Width =1083
+                    Height =240
+                    Name ="Lotto_Etichetta"
+                    Caption ="Lotto"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x4886353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =7926
+                    Top =56
+                    Width =1083
+                    Height =240
+                    Name ="Prodotto_Etichetta"
+                    Caption ="Prodotto"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x4a86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =623
+                    Top =56
+                    Width =1080
+                    Height =240
+                    Name ="Impegno_Etichetta"
+                    Caption ="Impegno"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x4c86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =1814
+                    Top =56
+                    Width =1080
+                    Height =240
+                    Name ="Etichetta16"
+                    Caption ="Rif."
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x8321433888add711b25a0000b45d77af
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =410
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x3786353f20a4d711acfade8a17599272
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =57
+                    Top =57
+                    Width =513
+                    Height =255
+                    ColumnWidth =1410
+                    Name ="Data Impegno"
+                    ControlSource ="Data Impegno"
+                    Format ="Short Date"
+                    InputMask ="00/00/00;0;_"
+                    EventProcPrefix ="Data_Impegno"
+                    GUID = Begin
+                        0x3d86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =8447
+                    Top =57
+                    Width =1083
+                    Height =255
+                    ColumnWidth =2595
+                    TabIndex =1
+                    Name ="Fornitore"
+                    ControlSource ="Fornitore"
+                    GUID = Begin
+                        0x3f86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3174
+                    Top =57
+                    Width =1083
+                    Height =255
+                    ColumnWidth =945
+                    TabIndex =2
+                    Name ="Tipo Documento"
+                    ControlSource ="Tipo Documento"
+                    EventProcPrefix ="Tipo_Documento"
+                    GUID = Begin
+                        0x4186353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =4411
+                    Top =56
+                    Width =399
+                    Height =255
+                    ColumnWidth =1410
+                    TabIndex =3
+                    Name ="Data Doc"
+                    ControlSource ="Data Doc"
+                    EventProcPrefix ="Data_Doc"
+                    GUID = Begin
+                        0x4386353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =5205
+                    Width =1083
+                    Height =255
+                    ColumnWidth =1425
+                    TabIndex =4
+                    Name ="N Doc"
+                    ControlSource ="N Doc"
+                    EventProcPrefix ="N_Doc"
+                    GUID = Begin
+                        0x4586353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =6622
+                    Top =56
+                    Width =1083
+                    Height =255
+                    ColumnWidth =2325
+                    TabIndex =5
+                    Name ="Lotto"
+                    ControlSource ="Lotto"
+                    GUID = Begin
+                        0x4786353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    Left =7926
+                    Top =56
+                    Width =1083
+                    Height =255
+                    ColumnWidth =1905
+                    TabIndex =6
+                    Name ="Prodotto"
+                    ControlSource ="Articolo"
+                    GUID = Begin
+                        0x4986353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    Left =680
+                    Top =56
+                    Width =1080
+                    ColumnWidth =1260
+                    TabIndex =7
+                    GUID = Begin
+                        0x5386353f20a4d711acfade8a17599272
+                    End
+                    Name ="Impegno"
+                    ControlSource ="Impegno"
+                    RowSourceType ="Value List"
+                    RowSource ="Impegno"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =2880
+                    Left =1870
+                    Top =56
+                    Width =1191
+                    ColumnWidth =4665
+                    TabIndex =8
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"510\""
+                    GUID = Begin
+                        0xa621433888add711b25a0000b45d77af
+                    End
+                    Name ="Rif"
+                    ControlSource ="Riferimenti specifici"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Elenco prodotti finiti].[DESCRIZIONE], [Elenco prodotti finiti].[CODICE]"
+                        " FROM [Elenco prodotti finiti]"
+                    ColumnWidths ="1440;1440"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x3c86353f20a4d711acfade8a17599272
+            End
+        End
+    End
+End

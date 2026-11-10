@@ -1,0 +1,573 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11225
+    DatasheetFontHeight =10
+    ItemSuffix =32
+    Left =1572
+    Top =312
+    Right =13080
+    Bottom =7560
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xfdb9546d0e42e240
+    End
+    RecordSource ="SELECT Apparecchiature.*, AreaLab.AreaLab FROM AreaLab INNER JOIN (Strumenti INN"
+        "ER JOIN Apparecchiature ON Strumenti.IdStrumento = Apparecchiature.IdStrumento) "
+        "ON AreaLab.IdCollocazione = Strumenti.IdCollocazione;"
+    Caption ="Apparecchiature"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            BackStyle =0
+            Width =850
+            Height =850
+            BorderColor =128
+        End
+        Begin Line
+            BorderWidth =2
+            Width =1701
+            BorderColor =128
+        End
+        Begin Image
+            SpecialEffect =3
+            BackStyle =0
+            OldBorderStyle =0
+            BorderWidth =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =128
+            FontName ="Arial"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =3
+            OldBorderStyle =0
+            BorderWidth =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =3
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =15269887
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+            FontName ="Arial"
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7256
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    Enabled = NotDefault
+                    OverlapFlags =93
+                    Left =56
+                    Top =113
+                    Width =636
+                    Height =227
+                    ColumnWidth =1701
+                    Name ="IdApparecchio"
+                    ControlSource ="IdApparecchio"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    ListWidth =6804
+                    Left =7099
+                    Top =56
+                    Width =3963
+                    Height =227
+                    ColumnWidth =2208
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="IdStrumento"
+                    ControlSource ="IdStrumento"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Strumenti.IdStrumento, [NomeStrum] & \" - \" & [AreaLab] AS Espr1 FROM Ar"
+                        "eaLab INNER JOIN Strumenti ON AreaLab.IdCollocazione = Strumenti.IdCollocazione "
+                        "ORDER BY [NomeStrum] & \" - \" & [AreaLab];"
+                    ColumnWidths ="0;2268"
+                    BaseInfo ="\"SELECT Strumenti.IdStrumento, [NomeStrum] & \"\" - \"\" & [AreaLab] AS Espr1 F"
+                        "ROM AreaLab INNER JOIN Strumenti ON AreaLab.IdCollocazione = Strumenti.IdColloca"
+                        "zione ORDER BY [NomeStrum] & \"\" - \"\" & [AreaLab];\";\"AreaLab\";\"Strumenti\""
+                        ";\"\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =5555
+                            Top =56
+                            Width =915
+                            Height =227
+                            Name ="IdStrumento Etichetta"
+                            Caption ="strumento"
+                            EventProcPrefix ="IdStrumento_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =7099
+                    Top =283
+                    Width =3963
+                    Height =227
+                    ColumnWidth =2568
+                    TabIndex =2
+                    Name ="DenApp"
+                    ControlSource ="DenApp"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =5555
+                            Top =288
+                            Width =1470
+                            Height =227
+                            Name ="DenApp Etichetta"
+                            Caption ="apparecchiatura"
+                            EventProcPrefix ="DenApp_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    Left =9409
+                    Top =737
+                    Width =1653
+                    Height =227
+                    ColumnWidth =2208
+                    TabIndex =3
+                    ColumnInfo ="\"N° Cliente\";\"\";\"ragione sociale\";\"\";\"10\";\"300\""
+                    Name ="IdFornitore"
+                    ControlSource ="IdFornitore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitori ORDER BY F"
+                        "ornitori.RagSocialeForn;"
+                    ColumnWidths ="0;2835"
+                    BaseInfo ="\"SELECT Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitori ORDER BY"
+                        " Fornitori.RagSocialeForn;\";\"Fornitori\";\"\";\"IdFornitore\";\"RagSocialeForn"
+                        "\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =8277
+                            Top =737
+                            Width =795
+                            Height =227
+                            Name ="IdFornitore Etichetta"
+                            Caption ="fornitore"
+                            EventProcPrefix ="IdFornitore_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =87
+                    ColumnCount =2
+                    Left =9409
+                    Top =510
+                    Width =1653
+                    Height =227
+                    ColumnWidth =2208
+                    TabIndex =4
+                    ColumnInfo ="\"\";\"\";\"costruttore\";\"\";\"10\";\"50\""
+                    Name ="IdCostruttore"
+                    ControlSource ="IdCostruttore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Costruttore.IdCostruttore, Costruttore.NomeCos FROM Costruttore ORDER BY "
+                        "Costruttore.NomeCos;"
+                    ColumnWidths ="0;2268"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =8277
+                            Top =510
+                            Width =1050
+                            Height =227
+                            Name ="IdCostruttore Etichetta"
+                            Caption ="costruttore"
+                            EventProcPrefix ="IdCostruttore_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =6575
+                    Top =510
+                    Width =1578
+                    Height =227
+                    ColumnWidth =2568
+                    TabIndex =5
+                    Name ="ModelloApp"
+                    ControlSource ="ModelloApp"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =5555
+                            Top =510
+                            Width =780
+                            Height =227
+                            Name ="ModelloApp Etichetta"
+                            Caption ="modello"
+                            EventProcPrefix ="ModelloApp_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =6563
+                    Top =737
+                    Width =1593
+                    Height =227
+                    ColumnWidth =2568
+                    TabIndex =6
+                    Name ="NSerieApp"
+                    ControlSource ="NSerieApp"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =5555
+                            Top =737
+                            Width =945
+                            Height =227
+                            Name ="NSerieApp Etichetta"
+                            Caption ="n° di serie"
+                            EventProcPrefix ="NSerieApp_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1862
+                    Top =283
+                    Width =1083
+                    Height =227
+                    ColumnWidth =888
+                    TabIndex =7
+                    Name ="DataRicApp"
+                    ControlSource ="DataRicApp"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =60
+                            Top =285
+                            Width =1290
+                            Height =225
+                            Name ="DataRicApp Etichetta"
+                            Caption ="data ricezione"
+                            EventProcPrefix ="DataRicApp_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1862
+                    Top =510
+                    Width =1083
+                    Height =227
+                    ColumnWidth =888
+                    TabIndex =8
+                    Name ="DataCollApp"
+                    ControlSource ="DataCollApp"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =127
+                            Left =56
+                            Top =510
+                            Width =1425
+                            Height =227
+                            Name ="DataCollApp Etichetta"
+                            Caption ="data collaudo"
+                            EventProcPrefix ="DataCollApp_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =1862
+                    Top =737
+                    Width =1083
+                    Height =227
+                    ColumnWidth =888
+                    TabIndex =9
+                    Name ="DataEsercizio"
+                    ControlSource ="DataEsercizio"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =119
+                            Left =56
+                            Top =737
+                            Width =1635
+                            Height =227
+                            Name ="DataEsercizio Etichetta"
+                            Caption ="messa in esercizio"
+                            EventProcPrefix ="DataEsercizio_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =87
+                    ColumnCount =2
+                    Left =7361
+                    Top =963
+                    Width =2073
+                    Height =227
+                    ColumnWidth =2208
+                    TabIndex =10
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdStatoAcquisto"
+                    ControlSource ="IdStatoAcquisto"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT StatoAcquisto.IdStatoAcquisto, StatoAcquisto.StatoAcquisto FROM StatoAcqu"
+                        "isto;"
+                    ColumnWidths ="0;2268"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =5555
+                            Top =963
+                            Width =1530
+                            Height =227
+                            Name ="IdStatoAcquisto Etichetta"
+                            Caption ="stato all'acquisto"
+                            EventProcPrefix ="IdStatoAcquisto_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =87
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =1862
+                    Top =56
+                    Width =3546
+                    Height =227
+                    TabIndex =11
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="CasellaCombinata22"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW Apparecchiature.IdApparecchio, [DenApp] & \" - \" & [ModelloA"
+                        "pp] AS Espr1 FROM Apparecchiature ORDER BY [DenApp] & \" - \" & [ModelloApp];"
+                    ColumnWidths ="0;1440"
+                    AfterUpdate ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =56
+                            Top =56
+                            Width =1320
+                            Height =227
+                            Name ="Etichetta23"
+                            Caption ="trova appar."
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =56
+                    Top =1265
+                    Width =11115
+                    Height =5910
+                    TabIndex =12
+                    Name ="PianoControlli"
+                    SourceObject ="Form.PianoControlli"
+                    LinkChildFields ="IdApparecchio"
+                    LinkMasterFields ="IdApparecchio"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =60
+                            Top =1020
+                            Width =1890
+                            Height =240
+                            ForeColor =255
+                            Name ="PianoControlli Etichetta"
+                            Caption ="Piano degli interventi"
+                            EventProcPrefix ="PianoControlli_Etichetta"
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =3344
+                    Top =880
+                    TabIndex =13
+                    Name ="NonInUso"
+                    ControlSource ="NonInUso"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =3574
+                            Top =850
+                            Width =930
+                            Height =240
+                            Name ="Etichetta28"
+                            Caption ="NonInUso"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =87
+                    Left =3011
+                    Top =566
+                    Width =2325
+                    ColumnWidth =1920
+                    TabIndex =14
+                    Name ="AreaLab"
+                    ControlSource ="AreaLab"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3004
+                            Top =340
+                            Width =1176
+                            Height =228
+                            Name ="Etichetta29"
+                            Caption ="collocazione:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =87
+                    Left =9865
+                    Top =963
+                    Width =1185
+                    ColumnWidth =720
+                    FontWeight =700
+                    TabIndex =15
+                    Name ="Testo30"
+                    ControlSource ="IdApparecchio"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =9467
+                            Top =963
+                            Width =300
+                            Height =228
+                            Name ="Etichetta31"
+                            Caption ="ID:"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Sub CasellaCombinata22_AfterUpdate()
+    ' Trova il record corrispondente al controllo
+    Me.RecordsetClone.FindFirst "[IdApparecchio] = " & Me![CasellaCombinata22]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+End Sub

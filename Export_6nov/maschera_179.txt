@@ -1,0 +1,130 @@
+Version =19
+VersionRequired =19
+Checksum =234827967
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =5669
+    DatasheetFontHeight =10
+    ItemSuffix =3
+    Left =6855
+    Top =540
+    Right =14310
+    Bottom =4290
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x675360743b81e240
+    End
+    RecordSource ="SELECT MAGAZZINO.[Data documento], [Accettazione in entrata].[N ordine], MAGAZZI"
+        "NO.Fornitore, MAGAZZINO.Materiale, MAGAZZINO.Quantita, MAGAZZINO.Lotto, MAGAZZIN"
+        "O.[Data impegno], MAGAZZINO.Impegnato, [Accettazione in entrata].Fornitore\015\012"
+        "FROM MAGAZZINO INNER JOIN [Accettazione in entrata] ON MAGAZZINO.Lotto = [Accett"
+        "azione in entrata].Lotto\015\012WHERE (((MAGAZZINO.Fornitore)=[Forms]![ricerche]"
+        "![CasellaCombinata6]) AND ((MAGAZZINO.Materiale)=[Forms]![ricerche]![CasellaComb"
+        "inata8]) AND ((MAGAZZINO.Lotto)=[Forms]![ricerche]![CasellaCombinata10]) AND ((M"
+        "AGAZZINO.Impegnato)=\"Impegno\"))\015\012ORDER BY MAGAZZINO.[Data impegno];\015\012"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =1701
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x56bdabe5f8dec44dba4cc4ae4ffa6a89
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =223
+                    Left =226
+                    Top =340
+                    ColumnWidth =2100
+                    Name ="Materiale"
+                    ControlSource ="Materiale"
+                    GUID = Begin
+                        0x50bc93f1ef8f174ba474e449e9d6f099
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =340
+                            Width =795
+                            Height =240
+                            Name ="Etichetta0"
+                            Caption ="Materiale:"
+                            GUID = Begin
+                                0xa7ec81086c99b242a0063142ca39bb42
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    Left =907
+                    Top =113
+                    TabIndex =1
+                    Name ="N ordine"
+                    ControlSource ="N ordine"
+                    EventProcPrefix ="N_ordine"
+                    GUID = Begin
+                        0x3ca92cd56037ec40b99c1b5c1cc26eea
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Top =113
+                            Width =735
+                            Height =240
+                            Name ="Etichetta1"
+                            Caption ="N ordine:"
+                            GUID = Begin
+                                0x5c0182cc395e244483ac25705966a16f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3458
+                    Top =453
+                    TabIndex =2
+                    Name ="Lotto"
+                    ControlSource ="Lotto"
+                    GUID = Begin
+                        0xfa40724d2b14d14ca57ade825b0c60a5
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =2721
+                            Top =453
+                            Width =510
+                            Height =240
+                            Name ="Etichetta2"
+                            Caption ="Lotto:"
+                            GUID = Begin
+                                0xa15341199d33a545ac93a55f38692f46
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

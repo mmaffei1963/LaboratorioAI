@@ -1,0 +1,969 @@
+Version =19
+VersionRequired =19
+Checksum =-234827587
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12812
+    DatasheetFontHeight =10
+    ItemSuffix =145
+    Left =615
+    Top =1005
+    Right =13710
+    Bottom =5385
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x5e2aac089682e240
+    End
+    RecordSource ="Ordine"
+    Caption ="Accettazione in entrata"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000ac2b00005c1a000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5345525645525c485031323030414d4d0000000000000000000000000000 ,
+        0x010418009c00b803033f00020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742031323030205365726965732050434c2036000000 ,
+        0x0000000000000400320025018603789c6550cb2e0340143d676edba15abaa015 ,
+        0x21c49b457fa192b2f001a8bd8520f736ba21e2d1a5486a632962e717b0e77b58 ,
+        0x79ab99966edcc539f79c393777666ab5ffe5884d5e31d00e1bd0295a13baeca4 ,
+        0x2179d82c759e3a4d9ba34d5027a9232471c01caa47d443fae32001ed62ddd127 ,
+        0xa3a87bfa546cf4018166588cb4c234b4425d6754ab6d656db51694b5cfe0f7e2 ,
+        0x68759f0837322610798bcf90040bb033d16eda0bf40bfa091da5bdc23ea0dfb0 ,
+        0x016a9e5aa08dd10629596e407b69395a1fe59ecda6dd51c769de498927197f1b ,
+        0x17f9a1160eb7f00901538438fc56a3f8d7053bd1b16f3ab63e3a3d152d395d70 ,
+        0x56767229d7d87d8fe964277dd149872d6fe887945971b218a0ba443d97e82f33 ,
+        0x0b4b537ba819b61ebd4d1f3e20f43fe21048c500000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080011002400010077696e73706f6f6c005c5c5345525645525c485031323030 ,
+        0x414d4d0048504c617365724a6574313230305f636f70795f3200000000000000 ,
+        0x00000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1136
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0xdce04884e87ed711acfad75dbf2d8772
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =223
+                    Top =56
+                    Width =4230
+                    Height =1080
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0x514bdd266618e845a73e727be7ee295a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Width =645
+                            Height =240
+                            Name ="Marchio Etichetta"
+                            Caption ="Marchio"
+                            EventProcPrefix ="Marchio_Etichetta"
+                            GUID = Begin
+                                0x32079c40c6ddfc439376b931205c4967
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8220
+                    Top =396
+                    Width =4470
+                    Height =705
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =16777215
+                    ForeColor =0
+                    Name ="Etichetta6"
+                    Caption ="A) CONTROLLO IN ACCETTAZIONE B) CARICO MAGAZZINO "
+                    FontName ="Tahoma"
+                    GUID = Begin
+                        0xbbcd638caca4d711acfa8caec38ebb72
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =4251
+                    Top =850
+                    Width =3660
+                    Height =255
+                    TabIndex =1
+                    Name ="Figlio137"
+                    SourceObject ="Form.OperatoreAttualeSM"
+                    GUID = Begin
+                        0xa036bf10cfef1043a756aa21e690d8b8
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =4251
+                            Top =510
+                            Width =1515
+                            Height =240
+                            Name ="Etichetta138"
+                            Caption ="Operatore Attuale"
+                            GUID = Begin
+                                0x3c3b20ff927792408032e95d0affd4ce
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =5896
+                    Top =510
+                    TabIndex =2
+                    Name ="Testo139"
+                    ControlSource ="IDorganico"
+                    DefaultValue ="=[Figlio137].[Form]![IdOrganico]"
+                    GUID = Begin
+                        0xec83bec6c2a69440a9cffad1901a8d15
+                    End
+                End
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =3288
+            BackColor =12632256
+            Name ="Corpo"
+            GUID = Begin
+                0xd8e04884e87ed711acfad75dbf2d8772
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1247
+                    Top =1190
+                    Width =1239
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =2
+                    Name ="N Bolla"
+                    ControlSource ="N Doc"
+                    EventProcPrefix ="N_Bolla"
+                    GUID = Begin
+                        0xeae04884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =283
+                            Top =1187
+                            Width =792
+                            Height =255
+                            Name ="N Bolla_Etichetta"
+                            Caption ="N Doc"
+                            EventProcPrefix ="N_Bolla_Etichetta"
+                            GUID = Begin
+                                0xebe04884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3798
+                    Top =793
+                    Width =1590
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =3
+                    Name ="Data Bolla"
+                    ControlSource ="Data Doc"
+                    Format ="Short Date"
+                    InputMask ="00/00/00;0;_"
+                    EventProcPrefix ="Data_Bolla"
+                    GUID = Begin
+                        0xece04884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =2834
+                            Top =793
+                            Width =792
+                            Height =255
+                            Name ="Data Bolla_Etichetta"
+                            Caption ="Data Doc"
+                            EventProcPrefix ="Data_Bolla_Etichetta"
+                            GUID = Begin
+                                0xede04884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3798
+                    Top =1133
+                    Width =1584
+                    Height =255
+                    ColumnWidth =2310
+                    FontWeight =600
+                    TabIndex =4
+                    Name ="Lotto"
+                    ControlSource ="Lotto"
+                    GUID = Begin
+                        0xeee04884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =2834
+                            Top =1133
+                            Width =792
+                            Height =255
+                            FontWeight =600
+                            Name ="Lotto_Etichetta"
+                            Caption ="Lotto"
+                            GUID = Begin
+                                0xefe04884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1350
+                    Top =2267
+                    Width =804
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =5
+                    Name ="Stato d'igiene"
+                    ControlSource ="Stato d'igiene"
+                    DefaultValue ="\"SI\""
+                    EventProcPrefix ="Stato_d_igiene"
+                    GUID = Begin
+                        0xf4e04884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =102
+                            Top =2267
+                            Width =1197
+                            Height =255
+                            Name ="Stato d'igiene_Etichetta"
+                            Caption ="Stato d'igiene"
+                            EventProcPrefix ="Stato_d_igiene_Etichetta"
+                            GUID = Begin
+                                0xf5e04884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1349
+                    Top =2551
+                    Width =789
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =6
+                    Name ="Temperatura"
+                    ControlSource ="Temperatura"
+                    DefaultValue ="\"SI\""
+                    ControlTipText ="prova"
+                    GUID = Begin
+                        0xf6e04884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =102
+                            Top =2551
+                            Width =1197
+                            Height =255
+                            Name ="Temperatura_Etichetta"
+                            Caption ="Temperatura"
+                            GUID = Begin
+                                0xf7e04884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    BorderWidth =1
+                    OverlapFlags =85
+                    Left =1142
+                    Top =113
+                    Width =1194
+                    Height =330
+                    FontSize =12
+                    Name ="Data"
+                    ControlSource ="Data"
+                    DefaultValue ="=Date()"
+                    GUID = Begin
+                        0xc8e14884e87ed711acfad75dbf2d8772
+                    End
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            BorderWidth =1
+                            OverlapFlags =85
+                            Left =170
+                            Top =113
+                            Width =912
+                            Height =330
+                            FontSize =12
+                            Name ="e"
+                            Caption ="Data:"
+                            GUID = Begin
+                                0xcae14884e87ed711acfad75dbf2d8772
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Left =102
+                    Top =1927
+                    Width =2130
+                    Height =210
+                    Name ="Etichetta56"
+                    Caption ="CONTROLLO AUTOMEZZO"
+                    GUID = Begin
+                        0xcbe14884e87ed711acfad75dbf2d8772
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    OverlapFlags =247
+                    Left =45
+                    Top =1757
+                    Width =2490
+                    Height =1197
+                    BorderColor =255
+                    Name ="Casella62"
+                    GUID = Begin
+                        0xd1e14884e87ed711acfad75dbf2d8772
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6349
+                    Top =2211
+                    Width =2616
+                    Height =846
+                    TabIndex =7
+                    Name ="chiudi"
+                    Caption ="Comando67"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadad0dadadadadaadad00adadadadaddad030dadadadada ,
+                        0xad0330adadadadad0033300000000adaa03330ff0dadadadd03300ff0adad4da ,
+                        0xa03330ff0dad44add03330ff0ad44444a03330ff0d444444d03330ff0ad44444 ,
+                        0xa0330fff0dad44add030ffff0adad4daa00fffff0dadadadd00000000adadada ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Chiudi maschera"
+                    GUID = Begin
+                        0x17f91d4c217fd711acfaf915a5b7a572
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    BorderWidth =1
+                    OverlapFlags =85
+                    Left =3628
+                    Top =113
+                    Width =636
+                    Height =330
+                    FontSize =12
+                    TabIndex =1
+                    Name ="N Ordine"
+                    ControlSource ="Numero"
+                    EventProcPrefix ="N_Ordine"
+                    GUID = Begin
+                        0x4d25efcac280d711acfaa1ff72748272
+                    End
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            BorderWidth =1
+                            OverlapFlags =85
+                            Left =2494
+                            Top =120
+                            Width =1095
+                            Height =330
+                            FontSize =12
+                            Name ="Etichetta81"
+                            Caption ="N. Ordine:"
+                            GUID = Begin
+                                0x4e25efcac280d711acfaa1ff72748272
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    OverlapFlags =255
+                    Left =165
+                    Top =623
+                    Width =5279
+                    Height =969
+                    BorderColor =16711680
+                    Name ="Casella82"
+                    GUID = Begin
+                        0x5a25efcac280d711acfaa1ff72748272
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9354
+                    Top =2211
+                    Width =1071
+                    Height =846
+                    TabIndex =8
+                    Name ="Salva"
+                    Caption ="Comando97"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad000000000000add0330880000330da ,
+                        0xa0330880000330add0330880000330daa0330000000330add0333333333330da ,
+                        0xa0330000000330add030fffffff030daa030fccccff030add030ffcccff030da ,
+                        0xa03dfccccff000add0dacccfcff070daadacccadad0000addacccadadadadada ,
+                        0xadacadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    GUID = Begin
+                        0x1886353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10714
+                    Top =2154
+                    Width =1131
+                    Height =861
+                    TabIndex =9
+                    Name ="sta"
+                    Caption ="Comando98"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad00000000000dadd0888888888080da ,
+                        0x000000000000080d0888888bbb88000a088888877788080d0000000000000880 ,
+                        0x0888888888808080d000000000080800ad0ffffffff08080dad0f00000f0000a ,
+                        0xada0ffffffff0daddada0f00000f0adaadad0ffffffff0addadad000000000da ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Stampa report"
+                    GUID = Begin
+                        0x365deb71e2aad711b25a0000b45d77af
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10204
+                    Top =793
+                    Width =1485
+                    Height =405
+                    FontWeight =600
+                    BackColor =65535
+                    ForeColor =255
+                    Name ="Etichetta105"
+                    Caption ="ISTRUZIONE CORRELATA"
+                    GUID = Begin
+                        0xc9af229ce4d31141b1e6a17e40dcf0b0
+                    End
+                End
+                Begin Label
+                    FontUnderline = NotDefault
+                    OverlapFlags =85
+                    Left =10204
+                    Top =1247
+                    Width =1560
+                    Height =255
+                    ForeColor =1279872587
+                    Name ="Etichetta106"
+                    Caption ="Accetazione MP.doc"
+                    HyperlinkAddress ="Accetazione MP.doc"
+                    GUID = Begin
+                        0x85ca0faf8ac85749a3b77568b2fd3fa3
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8163
+                    Top =1417
+                    Width =576
+                    Height =576
+                    TabIndex =10
+                    Name ="Comando110"
+                    Caption ="Comando110"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada00adadadadadadad000adadadadadada ,
+                        0xa000adadadadadadda000a700007dadaada0000888800daddada07ee888870da ,
+                        0xada708e88888807ddad08e888888880aada088888888880ddad088888888e80a ,
+                        0xada088888888e80ddad70888888ee07aadad07888eee70addadad00888800ada ,
+                        0xadadad700007adad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Anteprima report"
+                    GUID = Begin
+                        0xeb8be324aaa52547bb179d59485201e0
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1590
+                    Left =4365
+                    Top =113
+                    Width =2949
+                    Height =323
+                    FontSize =12
+                    TabIndex =11
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x0b53858eefa77e4eaaf5dc0b54e24285
+                    End
+                    Name ="CasellaCombinata112"
+                    ControlSource ="Numero"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Ordine.Numero, Ordine.[Data ord], Ordine.Lotto FROM Ordine GROUP BY Ordin"
+                        "e.Numero, Ordine.[Data ord], Ordine.Lotto HAVING (((Ordine.Lotto) Is Null)) ORDE"
+                        "R BY Ordine.[Data ord] DESC;"
+                    ColumnWidths ="705;885"
+                    OnChange ="[Event Procedure]"
+                    ControlTipText ="numero ordine"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =11451
+                    Top =1757
+                    Width =456
+                    TabIndex =12
+                    Name ="ID"
+                    ControlSource ="=[selezioneid]"
+                    GUID = Begin
+                        0x13faa33b4b62dd40aabafd6179b71ea4
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =11111
+                            Top =1757
+                            Width =285
+                            Height =240
+                            Name ="Etichetta128"
+                            Caption ="ID:"
+                            GUID = Begin
+                                0x33e6b6603eadb94992484618ea638c52
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =4395
+                    Left =9241
+                    Top =170
+                    Width =3456
+                    Height =340
+                    TabIndex =13
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x761e40062b10f943974adff46afe54b9
+                    End
+                    Name ="selezioneid"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Ordine.Articolo, Ordine.ID, Ordine.[Controllo in accettazione] FROM Ordin"
+                        "e WHERE (((Ordine.[Controllo in accettazione])=No) AND ((Ordine.Numero)=[Forms]!"
+                        "[Accettazione in entrata]![N Ordine]) AND ((Ordine.Lotto) Is Null));"
+                    ColumnWidths ="3420;975"
+                    OnChange ="SMElencomerce"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =7540
+                            Top =170
+                            Width =1650
+                            Height =240
+                            Name ="Articolo_Etichetta"
+                            Caption ="Articolo"
+                            GUID = Begin
+                                0x33acf2f995bf084782b0176dde3bc28f
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =247
+                    Left =1247
+                    Top =793
+                    Width =1245
+                    TabIndex =14
+                    GUID = Begin
+                        0xcc8c371fa23b8c42879eeeab2c388bb1
+                    End
+                    Name ="CasellaCombinata144"
+                    ControlSource ="Tipo Documento"
+                    RowSourceType ="Value List"
+                    RowSource ="Fattura;Bolla"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =247
+                            Left =283
+                            Top =793
+                            Width =852
+                            Height =255
+                            Name ="Data Fatt_Etichetta"
+                            Caption ="Tipo Doc"
+                            EventProcPrefix ="Data_Fatt_Etichetta"
+                            GUID = Begin
+                                0x803c546ed95fa1478cb64ff7bb8a5ded
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0xdde04884e87ed711acfad75dbf2d8772
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+
+
+Private Sub CasellaCombinata112_Change()
+     Me!selezioneid = ""
+          Me!selezioneid.Requery
+     
+     End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+DoCmd.RunCommand acCmdRecordsGoToNew
+DoCmd.SetWarnings False
+    DoCmd.OpenQuery "Query Correzione1", acNormal, acEdit
+    DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+End Sub
+Private Sub Chiudi_Click()
+On Error GoTo Err_Chiudi_Click
+
+
+    DoCmd.Close
+
+Exit_Chiudi_Click:
+    Exit Sub
+
+Err_Chiudi_Click:
+    MsgBox Err.Description
+    Resume Exit_Chiudi_Click
+    
+    DoCmd.SetWarnings False
+  DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+End Sub
+
+Private Sub Valore_Exit(Cancel As Integer)
+[Valore] = [Quantita] * [Prezzo]
+End Sub
+
+
+
+Private Sub Materia_Prima_GotFocus()
+'Me!Materia Prima.Requery
+End Sub
+
+Private Sub Salva_Click()
+DoCmd.OpenQuery "Query Magazzino", acNormal, acEdit
+DoCmd.Close acForm, "Accettazione in entrata"
+DoCmd.OpenForm "Accettazione in entrata", acNormal, "", "", , acNormal
+DoCmd.GoToRecord , "", acNewRec
+DoCmd.GoToControl "Data"
+
+  DoCmd.SetWarnings False
+DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+End Sub
+
+Private Sub selezioneid_Change()
+'Me!SMElencomerce = ""
+          Me!SMElencomerce.Requery
+End Sub
+
+Private Sub Tipo_documento_Exit(Cancel As Integer)
+[Fornitore] = Forms![Accettazione in entrata]![Sottomaschera Variazione quant-qualitativa]![Fornitore]
+
+End Sub
+Private Sub sta_Click()
+On Error GoTo Err_sta_Click
+
+    Dim stDocName As String
+
+    stDocName = "Accettazione in entrata"
+    DoCmd.OpenReport stDocName, acNormal
+
+Exit_sta_Click:
+    Exit Sub
+
+Err_sta_Click:
+    MsgBox Err.Description
+    Resume Exit_sta_Click
+    
+End Sub
+Private Sub Comando110_Click()
+On Error GoTo Err_Comando110_Click
+
+    Dim stDocName As String
+
+    stDocName = "Accettazione in entrata"
+    DoCmd.OpenReport stDocName, acPreview
+
+Exit_Comando110_Click:
+    Exit Sub
+
+Err_Comando110_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando110_Click
+    
+End Sub
+Private Sub Comando111_Click()
+On Error GoTo Err_Comando111_Click
+
+    Dim stDocName As String
+
+    stDocName = "anteprima accettazione"
+    DoCmd.RunMacro stDocName
+
+Exit_Comando111_Click:
+    Exit Sub
+
+Err_Comando111_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando111_Click
+    
+End Sub

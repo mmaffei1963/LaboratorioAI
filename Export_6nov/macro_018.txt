@@ -1,0 +1,190 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioGirasole"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioGirasole"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioOliva"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioOliva"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Latte"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Latte"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Farina"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Farina"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Baking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Baking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaBaking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaBaking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodafarina"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodafarina"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaOlioextra"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaOlioextra"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodaoliosemi"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodaoliosemi"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodalatte"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodalatte"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="TracciabilitàdaDataoliolatte"
+    Argument ="2"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End

@@ -1,0 +1,119 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6994
+    DatasheetFontHeight =11
+    ItemSuffix =8
+    Left =2340
+    Top =570
+    Right =9615
+    Bottom =6510
+    DatasheetGridlinesColor =15062992
+    RecSrcDt = Begin
+        0x10148da2965ee440
+    End
+    GUID = Begin
+        0x699de83b731184419551aa109aedc4a8
+    End
+    DatasheetFontName ="Calibri"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin ComboBox
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin Section
+            Height =5952
+            Name ="Corpo"
+            GUID = Begin
+                0x0abed326352f5e43aa395c980e662dd6
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1644
+                    Top =680
+                    Width =3118
+                    Height =585
+                    BorderColor =12835293
+                    ForeColor =4138256
+                    Name ="Data1"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0xa45e23b8d4f8af47a6b007b1328af351
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =680
+                            Width =750
+                            Height =315
+                            BorderColor =16777215
+                            ForeColor =13995605
+                            Name ="Etichetta1"
+                            Caption ="Testo0:"
+                            GUID = Begin
+                                0x28853abe4ce6ad499a0486ec7e524ab2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1644
+                    Top =1644
+                    Width =3118
+                    Height =585
+                    TabIndex =1
+                    BorderColor =12835293
+                    ForeColor =4138256
+                    Name ="Data2"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x5336590edc69534fadbcfb2b0b914c7b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =1644
+                            Width =750
+                            Height =315
+                            BorderColor =16777215
+                            ForeColor =13995605
+                            Name ="Etichetta3"
+                            Caption ="Testo2:"
+                            GUID = Begin
+                                0x4c625ea9d917f645937b01d49d60148c
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

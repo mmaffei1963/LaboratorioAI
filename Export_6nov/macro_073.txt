@@ -1,0 +1,19 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenQuery"
+    Argument ="SMElencomerce"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="SMElencomerce"
+    Argument ="1"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="Accettazione in entrata"
+    Argument ="2"
+End

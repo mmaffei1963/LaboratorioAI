@@ -1,0 +1,301 @@
+Version =19
+VersionRequired =19
+Checksum =234827538
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11102
+    DatasheetFontHeight =10
+    ItemSuffix =17
+    Left =2028
+    Top =1356
+    Right =12888
+    Bottom =6024
+    DatasheetGridlinesColor =12632256
+    Filter ="[IdOrganico]=957554408"
+    RecSrcDt = Begin
+        0xa11d5d72d9e6e140
+    End
+    RecordSource ="Organico"
+    Caption ="AttivitaFormazione"
+    OnCurrent ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            Height =4923
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    Left =8820
+                    Top =113
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdOrganico"
+                    ControlSource ="IdOrganico"
+                    Begin
+                        Begin Label
+                            Visible = NotDefault
+                            OverlapFlags =93
+                            Left =7200
+                            Top =113
+                            Width =1560
+                            Height =255
+                            Name ="IdOrganico Etichetta"
+                            Caption ="IdOrganico"
+                            EventProcPrefix ="IdOrganico_Etichetta"
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =56
+                    Top =696
+                    Width =11046
+                    Height =4227
+                    TabIndex =1
+                    Name ="SMAttivitaFormazione"
+                    SourceObject ="Form.SMAttivitaFormazione"
+                    LinkChildFields ="IdOrganico"
+                    LinkMasterFields ="IdOrganico"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =59
+                            Top =453
+                            Width =3630
+                            Height =240
+                            FontWeight =700
+                            Name ="SMAttivitaFormazione Etichetta"
+                            Caption ="Attività formative a cui ha partecipato"
+                            EventProcPrefix ="SMAttivitaFormazione_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =5
+                    ListWidth =2880
+                    Left =1979
+                    Top =113
+                    Width =5163
+                    Height =283
+                    TabIndex =2
+                    ColumnInfo ="\"\";\"\";\"nome\";\"\";\"fine\";\"ddddd\";\"cognome\";\"\";\"\";\"\";\"10\";\"0"
+                        "\""
+                    Name ="CasellaCombinata14"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW Organico.IdOrganico, Organico.NomeOrg, Organico.FineProf, Org"
+                        "anico.CognomeOrg, [CognomeOrg] & \" \" & [NomeOrg] AS Espr1 FROM Organico WHERE "
+                        "(((Organico.FineProf)>=Date() Or (Organico.FineProf) Is Null) AND ((Organico.Cog"
+                        "nomeOrg)<>\"Cliente\" And (Organico.CognomeOrg)<>\"terza parte\")) ORDER BY Orga"
+                        "nico.IdOrganico, [CognomeOrg] & \" \" & [NomeOrg];"
+                    ColumnWidths ="0;0;0;0;1701"
+                    AfterUpdate ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =113
+                            Width =1560
+                            Height =240
+                            FontWeight =700
+                            Name ="Cognome e Nome_Etichetta"
+                            Caption ="Cognome e Nome"
+                            EventProcPrefix ="Cognome_e_Nome_Etichetta"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8107
+                    Top =113
+                    Width =396
+                    Height =456
+                    TabIndex =3
+                    Name ="Anteprima"
+                    Caption ="Comando16"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada000000000000ad000ffffffffff0d000 ,
+                        0x0fffffff0000700d0ffffff0788707da0fffff0788e770ad0fffff08888780da ,
+                        0x0fffff08e88780ad0fffff07ee8770da0ffffff078870dad0fffffff0000dada ,
+                        0x0ffffffffff0adad0fffffff0000dada0fffffff080dadad0fffffff00dadada ,
+                        0x000000000dadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Stampa curriculum personale"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Sub CasellaCombinata14_AfterUpdate()
+    Me.FilterOn = False
+    ' Trova il record corrispondente al controllo
+    Me.RecordsetClone.FindFirst "[IdOrganico] = " & Me![CasellaCombinata14]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+End Sub
+
+Private Sub Form_Current()
+CasellaCombinata14 = IdOrganico
+End Sub
+
+Private Sub anteprima_Click()
+On Error GoTo Err_anteprima_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Curricula"
+    stLinkCriteria = "IdOrganico =" & Me.IdOrganico
+    DoCmd.OpenReport stDocName, acPreview, , stLinkCriteria
+
+Exit_anteprima_Click:
+    Exit Sub
+
+Err_anteprima_Click:
+    MsgBox Err.Description
+    Resume Exit_anteprima_Click
+    
+End Sub

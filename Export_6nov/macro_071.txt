@@ -1,0 +1,424 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn1B"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn1B"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioOliva"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioOliva"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="grassovegetale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="grassovegetale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="grassovegetale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="grassovegetale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Baking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Baking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Khorasan"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Khorasan"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn1B"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn1B"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaBaking"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaBaking"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaGrassiVegetali"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaGrassiVegetali"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaOlioextra"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaOlioextra"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodakhorasan"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodakhorasan"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="Tracciabilit‡DataKhorasan"
+    Argument ="2"
+    Argument =""
+    Argument =""
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End
+Begin
+    Comment ="_AXL:<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>\015\012<UserI"
+        "nterfaceMacro MinimumClientDesignVersion=\"14.0.0000.0000\" xmlns=\"http://schem"
+        "as.microsoft.com/office/accessservices/2009/11/application\" xmlns:a=\"http://sc"
+        "hemas.microsoft.com/office/acc"
+End
+Begin
+    Comment ="_AXL:essservices/2009/11/forms\"><Statements><Action Name=\"OpenQuery\"><Argumen"
+        "t Name=\"QueryName\">Sale</Argument></Action><Action Name=\"CloseWindow\"><Argum"
+        "ent Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Sale</Argu"
+        "ment><Argument Name=\"Sav"
+End
+Begin
+    Comment ="_AXL:e\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Quer"
+        "yName\">FarinaForn1B</Argument></Action><Action Name=\"CloseWindow\"><Argument N"
+        "ame=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">FarinaForn1B</A"
+        "rgument><Argument Name=\""
+End
+Begin
+    Comment ="_AXL:Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Q"
+        "ueryName\">OlioOliva</Argument></Action><Action Name=\"CloseWindow\"><Argument N"
+        "ame=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">OlioOliva</Argu"
+        "ment><Argument Name=\"Sav"
+End
+Begin
+    Comment ="_AXL:e\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Quer"
+        "yName\">grassovegetale</Argument></Action><Action Name=\"CloseWindow\"><Argument"
+        " Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">grassovegetal"
+        "e</Argument><Argument Na"
+End
+Begin
+    Comment ="_AXL:me=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Nam"
+        "e=\"QueryName\">grassovegetale</Argument></Action><Action Name=\"CloseWindow\"><"
+        "Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">grass"
+        "ovegetale</Argument><Argu"
+End
+Begin
+    Comment ="_AXL:ment Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argum"
+        "ent Name=\"QueryName\">FarinaForn1</Argument></Action><Action Name=\"CloseWindow"
+        "\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">F"
+        "arinaForn1</Argument><Arg"
+End
+Begin
+    Comment ="_AXL:ument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argu"
+        "ment Name=\"QueryName\">FarinaForn2</Argument></Action><Action Name=\"CloseWindo"
+        "w\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">"
+        "FarinaForn2</Argument><Ar"
+End
+Begin
+    Comment ="_AXL:gument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Arg"
+        "ument Name=\"QueryName\">FarinaForn3</Argument></Action><Action Name=\"CloseWind"
+        "ow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\""
+        ">FarinaForn3</Argument><A"
+End
+Begin
+    Comment ="_AXL:rgument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Ar"
+        "gument Name=\"QueryName\">Baking</Argument></Action><Action Name=\"CloseWindow\""
+        "><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Bak"
+        "ing</Argument><Argument N"
+End
+Begin
+    Comment ="_AXL:ame=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Na"
+        "me=\"QueryName\">Khorasan</Argument></Action><Action Name=\"CloseWindow\"><Argum"
+        "ent Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Khorasan</"
+        "Argument><Argument Name=\""
+End
+Begin
+    Comment ="_AXL:Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Q"
+        "ueryName\">FarinaForn4</Argument></Action><Action Name=\"CloseWindow\"><Argument"
+        " Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">FarinaForn4</"
+        "Argument><Argument Name="
+End
+Begin
+    Comment ="_AXL:\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\""
+        "QueryName\">AccodaFarinaForn4</Argument></Action><Action Name=\"CloseWindow\"><A"
+        "rgument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Accoda"
+        "FarinaForn4</Argument><A"
+End
+Begin
+    Comment ="_AXL:rgument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Ar"
+        "gument Name=\"QueryName\">AccodaFarinaForn1B</Argument></Action><Action Name=\"C"
+        "loseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"Obje"
+        "ctName\">AccodaFarinaForn"
+End
+Begin
+    Comment ="_AXL:1B</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\""
+        "OpenQuery\"><Argument Name=\"QueryName\">AccodaBaking</Argument></Action><Action"
+        " Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Na"
+        "me=\"ObjectName\">AccodaB"
+End
+Begin
+    Comment ="_AXL:aking</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name"
+        "=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaFarinaForn1</Argument></Action"
+        "><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Arg"
+        "ument Name=\"ObjectName\""
+End
+Begin
+    Comment ="_AXL:>AccodaFarinaForn1</Argument><Argument Name=\"Save\">Yes</Argument></Action"
+        "><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaFarinaForn2</Argu"
+        "ment></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</"
+        "Argument><Argument Name"
+End
+Begin
+    Comment ="_AXL:=\"ObjectName\">AccodaFarinaForn2</Argument><Argument Name=\"Save\">Yes</Ar"
+        "gument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaFa"
+        "rinaForn3</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"Objec"
+        "tType\">Query</Argument><"
+End
+Begin
+    Comment ="_AXL:Argument Name=\"ObjectName\">AccodaFarinaForn3</Argument><Argument Name=\"S"
+        "ave\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryNa"
+        "me\">AccodaGrassiVegetali</Argument></Action><Action Name=\"CloseWindow\"><Argum"
+        "ent Name=\"ObjectType\">Q"
+End
+Begin
+    Comment ="_AXL:uery</Argument><Argument Name=\"ObjectName\">AccodaGrassiVegetali</Argument"
+        "><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argu"
+        "ment Name=\"QueryName\">AccodaOlioextra</Argument></Action><Action Name=\"CloseW"
+        "indow\"><Argument Name="
+End
+Begin
+    Comment ="_AXL:\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">AccodaOlioextr"
+        "a</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQu"
+        "ery\"><Argument Name=\"QueryName\">Accodakhorasan</Argument></Action><Action Nam"
+        "e=\"CloseWindow\"><Argume"
+End
+Begin
+    Comment ="_AXL:nt Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Accoda"
+        "khorasan</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\""
+        "OpenQuery\"><Argument Name=\"QueryName\">Lotto-Date</Argument></Action><Action N"
+        "ame=\"CloseWindow\"><Arg"
+End
+Begin
+    Comment ="_AXL:ument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Lot"
+        "to-Date</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\""
+        "OpenForm\"><Argument Name=\"FormName\">Lotto-Date</Argument></Action><Action Nam"
+        "e=\"OpenReport\"><Argumen"
+End
+Begin
+    Comment ="_AXL:t Name=\"ReportName\">Tracciabilit‡DataKhorasan</Argument><Argument Name=\""
+        "View\">Print Preview</Argument></Action><Action Name=\"CloseWindow\"><Argument N"
+        "ame=\"ObjectType\">Form</Argument><Argument Name=\"ObjectName\">Lotto-Date</Argu"
+        "ment></Action></Stateme"
+End
+Begin
+    Comment ="_AXL:nts></UserInterfaceMacro>"
+End

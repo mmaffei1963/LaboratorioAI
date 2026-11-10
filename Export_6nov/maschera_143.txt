@@ -1,0 +1,264 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10034
+    DatasheetFontHeight =10
+    ItemSuffix =10
+    Left =1425
+    Top =720
+    Right =10095
+    Bottom =5445
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xfffd8b9c5745e240
+    End
+    RecordSource ="SELECT Fornitori.* FROM Fornitori ORDER BY Fornitori.RagSocialeForn;"
+    Caption ="Sede"
+    OnCurrent ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5442
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =113
+                    Top =56
+                    Width =591
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdFornitore"
+                    ControlSource ="IdFornitore"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =85
+                    Left =1706
+                    Top =340
+                    Width =7530
+                    Height =255
+                    ColumnWidth =3000
+                    TabIndex =1
+                    Name ="RagSocialeForn"
+                    ControlSource ="RagSocialeForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =340
+                            Width =1380
+                            Height =240
+                            Name ="RagSocialeForn Etichetta"
+                            Caption ="ragione sociale"
+                            EventProcPrefix ="RagSocialeForn_Etichetta"
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =53
+                    Top =863
+                    Width =9870
+                    Height =4455
+                    TabIndex =2
+                    Name ="SedeFornitore"
+                    SourceObject ="Form.SedeFornitore"
+                    LinkChildFields ="IdFornitore"
+                    LinkMasterFields ="IdFornitore"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =623
+                            Width =525
+                            Height =240
+                            ForeColor =255
+                            Name ="SedeFornitore Etichetta"
+                            Caption ="Sede"
+                            EventProcPrefix ="SedeFornitore_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =1696
+                    Top =56
+                    Width =7551
+                    Height =255
+                    TabIndex =3
+                    ColumnInfo ="\"N° Cliente\";\"\";\"ragione sociale\";\"\";\"10\";\"300\""
+                    Name ="CasellaCombinata8"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitor"
+                        "i ORDER BY Fornitori.RagSocialeForn;"
+                    ColumnWidths ="0;1440"
+                    AfterUpdate ="[Event Procedure]"
+                    BaseInfo ="\"SELECT DISTINCTROW Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornit"
+                        "ori ORDER BY Fornitori.RagSocialeForn;\";\"Fornitori\";\"\";\"IdFornitore\";\"Ra"
+                        "gSocialeForn\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =56
+                            Top =56
+                            Width =1290
+                            Height =240
+                            Name ="Etichetta9"
+                            Caption ="trova fornitore"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Sub CasellaCombinata8_AfterUpdate()
+    ' Trova il record corrispondente al controllo
+    Me.RecordsetClone.FindFirst "[IdFornitore] = " & Me![CasellaCombinata8]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+End Sub
+
+Private Sub Form_Current()
+If IsOpen("Fornitori") Then
+    Me.CasellaCombinata8.Visible = False
+Else: Me.CasellaCombinata8.Visible = True
+End If
+CasellaCombinata8 = IdFornitore
+End Sub

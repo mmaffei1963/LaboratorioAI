@@ -1,0 +1,207 @@
+Version =19
+VersionRequired =19
+Checksum =-234827537
+Begin Form
+    AutoCenter = NotDefault
+    AllowDesignChanges = NotDefault
+    TabularFamily =124
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7143
+    DatasheetFontHeight =10
+    ItemSuffix =4
+    Left =6180
+    Top =420
+    Right =16425
+    Bottom =3810
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x49b576e530f4e340
+    End
+    RecordSource ="Costruttore"
+    Caption ="Costruttore"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x4ad7f0abf1ca284a8f04625f3706c8c5
+            End
+        End
+        Begin Section
+            Height =825
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xd29cbae95820f242be9d324b6fb16d40
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1677
+                    Top =114
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdCostruttore"
+                    ControlSource ="IdCostruttore"
+                    GUID = Begin
+                        0x673a9622fd09754fb37892cddae4432c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =114
+                            Width =1560
+                            Height =255
+                            Name ="IdCostruttore_Etichetta"
+                            Caption ="IdCostruttore"
+                            GUID = Begin
+                                0xf51e23a9421dbb4d8b6bd31055a10778
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1677
+                    Top =456
+                    Width =4950
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    Name ="NomeCos"
+                    ControlSource ="NomeCos"
+                    GUID = Begin
+                        0xaa933df8141ddd49a7780185b222ba9d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =456
+                            Width =1560
+                            Height =255
+                            Name ="NomeCos_Etichetta"
+                            Caption ="costruttore"
+                            GUID = Begin
+                                0xe8279a2fd1d4a04b986deb280f1ddc9e
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x3d460a3d3fb61941b029f79c3688b4d8
+            End
+        End
+    End
+End

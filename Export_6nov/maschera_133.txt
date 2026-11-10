@@ -1,0 +1,519 @@
+Version =19
+VersionRequired =19
+Checksum =-234827538
+Begin Form
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10305
+    DatasheetFontHeight =10
+    ItemSuffix =42
+    Left =2265
+    Top =2775
+    Right =12870
+    Bottom =6180
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x15d3721d16ace140
+    End
+    RecordSource ="Apparecchiature"
+    Caption ="Apparecchiature1"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            BackStyle =0
+            Width =850
+            Height =850
+            BorderColor =128
+        End
+        Begin Line
+            BorderWidth =2
+            Width =1701
+            BorderColor =128
+        End
+        Begin Image
+            SpecialEffect =3
+            BackStyle =0
+            OldBorderStyle =0
+            BorderWidth =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =128
+            FontName ="Arial"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =3
+            OldBorderStyle =0
+            BorderWidth =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =3
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =15269887
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+            FontName ="Arial"
+        End
+        Begin FormHeader
+            Height =552
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =53
+                    Top =57
+                    Width =1935
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="DenApp Etichetta"
+                    Caption ="denominazione"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DenApp_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2080
+                    Top =57
+                    Width =1200
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="IdFornitore Etichetta"
+                    Caption ="fornitore"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="IdFornitore_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3344
+                    Top =57
+                    Width =1305
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="IdCostruttore Etichetta"
+                    Caption ="costruttore"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="IdCostruttore_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =4775
+                    Top =56
+                    Width =750
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="ModelloApp Etichetta"
+                    Caption ="modello"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="ModelloApp_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =5518
+                    Top =57
+                    Width =780
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="NSerieApp Etichetta"
+                    Caption ="n° di serie"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="NSerieApp_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6746
+                    Top =56
+                    Width =750
+                    Height =495
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="DataRicApp Etichetta"
+                    Caption ="data di ricezione"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataRicApp_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =7483
+                    Top =56
+                    Width =705
+                    Height =495
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="DataCollApp Etichetta"
+                    Caption ="data collaudo"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataCollApp_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =8220
+                    Top =56
+                    Width =735
+                    Height =495
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="DataEsercizio Etichetta"
+                    Caption ="messa in esercizio"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataEsercizio_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =8910
+                    Top =60
+                    Width =1395
+                    Height =270
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="IdStatoAcquisto Etichetta"
+                    Caption ="tipo apparec."
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="IdStatoAcquisto_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6292
+                    Top =56
+                    Width =510
+                    Height =465
+                    FontWeight =400
+                    BackColor =16777215
+                    BorderColor =9868950
+                    ForeColor =0
+                    Name ="Etichetta23"
+                    Caption ="non in uso"
+                End
+            End
+        End
+        Begin Section
+            Height =340
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =57
+                    Top =57
+                    Width =450
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdApparecchio"
+                    ControlSource ="IdApparecchio"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    ListWidth =6804
+                    Left =1814
+                    Top =56
+                    Width =741
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="IdStrumento"
+                    ControlSource ="IdStrumento"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Strumenti.IdStrumento, [CodiceStrum] & \"-\" & [NomeStrum] AS Espr1 FROM "
+                        "Strumenti;"
+                    ColumnWidths ="0;2268"
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    Left =57
+                    Top =57
+                    Width =2046
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =2
+                    Name ="DenApp"
+                    ControlSource ="DenApp"
+                    DefaultValue ="=[Forms]![Strumenti]![NomeStrum]"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =247
+                    ColumnCount =2
+                    ListWidth =5670
+                    Left =2145
+                    Top =57
+                    Width =1161
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =3
+                    ColumnInfo ="\"N° Cliente\";\"\";\"ragione sociale\";\"\";\"10\";\"300\""
+                    Name ="IdFornitore"
+                    ControlSource ="IdFornitore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitori ORDER BY F"
+                        "ornitori.RagSocialeForn;"
+                    ColumnWidths ="0;2835"
+                    BaseInfo ="\"SELECT Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitori ORDER BY"
+                        " Fornitori.RagSocialeForn;\";\"Fornitori\";\"\";\"IdFornitore\";\"RagSocialeForn"
+                        "\";\"PrimaryKey\""
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =5670
+                    Left =3348
+                    Top =57
+                    Width =1296
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =4
+                    ColumnInfo ="\"\";\"\";\"costruttore\";\"\";\"10\";\"100\""
+                    Name ="IdCostruttore"
+                    ControlSource ="IdCostruttore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Costruttore.IdCostruttore, Costruttore.NomeCos FROM Costruttore ORDER BY "
+                        "Costruttore.NomeCos;"
+                    ColumnWidths ="0;2268"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =4705
+                    Top =57
+                    Width =711
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =5
+                    Name ="ModelloApp"
+                    ControlSource ="ModelloApp"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5455
+                    Top =57
+                    Width =1056
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =6
+                    Name ="NSerieApp"
+                    ControlSource ="NSerieApp"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =6803
+                    Top =56
+                    Width =723
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =7
+                    Name ="DataRicApp"
+                    ControlSource ="DataRicApp"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =7540
+                    Top =56
+                    Width =684
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =8
+                    Name ="DataCollApp"
+                    ControlSource ="DataCollApp"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =8220
+                    Top =56
+                    Width =705
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =9
+                    Name ="DataEsercizio"
+                    ControlSource ="DataEsercizio"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =85
+                    ColumnCount =2
+                    Left =8963
+                    Top =57
+                    Width =1293
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =10
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdStatoAcquisto"
+                    ControlSource ="IdStatoAcquisto"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT StatoAcquisto.IdStatoAcquisto, StatoAcquisto.StatoAcquisto FROM StatoAcqu"
+                        "isto;"
+                    ColumnWidths ="0;2268"
+                End
+                Begin CheckBox
+                    OverlapFlags =87
+                    Left =6519
+                    Top =56
+                    TabIndex =11
+                    Name ="NonInUso"
+                    ControlSource ="NonInUso"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =510
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2891
+                    Top =56
+                    Width =3300
+                    Height =420
+                    Name ="Comando22"
+                    Caption ="dettagli dell'apparecchiatura (componente)"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Private Sub Comando22_Click()
+On Error GoTo Err_Comando22_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Apparecchiature"
+    
+    stLinkCriteria = "[IdApparecchio]=" & Me![IdApparecchio]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando22_Click:
+    Exit Sub
+
+Err_Comando22_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando22_Click
+    
+End Sub

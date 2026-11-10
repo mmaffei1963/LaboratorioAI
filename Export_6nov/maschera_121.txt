@@ -1,0 +1,356 @@
+Version =19
+VersionRequired =19
+Checksum =-234827538
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =7
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =17602
+    DatasheetFontHeight =10
+    ItemSuffix =47
+    Left =210
+    Top =1110
+    Right =18345
+    Bottom =8745
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xc0e2978c3a74e240
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Subform
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7653
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xc5392fcbefa3d711acfae0f081468a72
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =226
+                    Top =6406
+                    Width =1761
+                    Height =696
+                    Name ="ch"
+                    Caption ="Comando0"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadad0dadadadadaadad00adadadadaddad030dadadadada ,
+                        0xad0330adadadadad0033300000000adaa03330ff0dadadadd03300ff0adad4da ,
+                        0xa03330ff0dad44add03330ff0ad44444a03330ff0d444444d03330ff0ad44444 ,
+                        0xa0330fff0dad44add030ffff0adad4daa00fffff0dadadadd00000000adadada ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    ControlTipText ="Chiudi maschera"
+                    GUID = Begin
+                        0xc6392fcbefa3d711acfae0f081468a72
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =4251
+                    Width =6915
+                    Height =870
+                    FontSize =12
+                    FontWeight =600
+                    Name ="Etichetta6"
+                    Caption ="A) SELEZIONARE LE MATERIE PRIME DA IMPEGNARE B) SCARICARE CONTESTUALEMENTE IL MA"
+                        "GAZZINO C) IDENTIFICARE L'INPUT INPIEGATO"
+                    GUID = Begin
+                        0xf0cd58d2f1a3d711acfae0f081468a72
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =1417
+                    Width =13605
+                    Height =4200
+                    TabIndex =1
+                    Name ="Sottomaschera Impegno Materie prime"
+                    SourceObject ="Form.Sottomaschera Impegno Materie prime"
+                    EventProcPrefix ="Sottomaschera_Impegno_Materie_prime"
+                    GUID = Begin
+                        0x2d86353f20a4d711acfade8a17599272
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =4025
+                    Top =6236
+                    Width =1191
+                    Height =1146
+                    TabIndex =2
+                    Name ="Ant Rim"
+                    Caption ="Comando42"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada000000000000ad000ffffffffff0d000 ,
+                        0x0fffffff0000700d0ffffff0788707da0fffff0788e770ad0fffff08888780da ,
+                        0x0fffff08e88780ad0fffff07ee8770da0ffffff078870dad0fffffff0000dada ,
+                        0x0ffffffffff0adad0fffffff0000dada0fffffff080dadad0fffffff00dadada ,
+                        0x000000000dadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    EventProcPrefix ="Ant_Rim"
+                    GUID = Begin
+                        0xa8cd638caca4d711acfa8caec38ebb72
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =5896
+                    Top =6236
+                    Width =1191
+                    Height =1146
+                    TabIndex =3
+                    Name ="Sta Rim"
+                    Caption ="Comando43"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad00000000000dadd0888888888080da ,
+                        0x000000000000080d0888888bbb88000a088888877788080d0000000000000880 ,
+                        0x0888888888808080d000000000080800ad0ffffffff08080dad0f00000f0000a ,
+                        0xada0ffffffff0daddada0f00000f0adaadad0ffffffff0addadad000000000da ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    EventProcPrefix ="Sta_Rim"
+                    GUID = Begin
+                        0xafcd638caca4d711acfa8caec38ebb72
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    Left =4081
+                    Top =5839
+                    Width =3315
+                    Height =210
+                    BackColor =65535
+                    Name ="Etichetta44"
+                    Caption ="RIMANENZE DI MAGAZZINO MATERIE PRIME"
+                    GUID = Begin
+                        0xb3cd638caca4d711acfa8caec38ebb72
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    Left =3685
+                    Top =5725
+                    Width =3855
+                    Height =1871
+                    BorderColor =255
+                    Name ="Casella45"
+                    GUID = Begin
+                        0xb4cd638caca4d711acfa8caec38ebb72
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2097
+                    Top =6406
+                    Width =1191
+                    Height =786
+                    TabIndex =4
+                    Name ="Salva"
+                    Caption ="Comando46"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad000000000000add0330880000330da ,
+                        0xa0330880000330add0330880000330daa0330000000330add0333333333330da ,
+                        0xa0330000000330add030fffffff030daa030fccccff030add030ffcccff030da ,
+                        0xa03dfccccff000add0dacccfcff070daadacccadad0000addacccadadadadada ,
+                        0xadacadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0xe37cbe4a47add711b25a0000b45d77af
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    Top =169
+                    Width =4230
+                    Height =1080
+                    TabIndex =5
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0xc4c9f9db4fbf0a4db26d1b5b72f9c306
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =113
+                            Width =645
+                            Height =240
+                            BackColor =-2147483633
+                            ForeColor =-2147483630
+                            Name ="Marchio Etichetta"
+                            Caption ="Marchio"
+                            FontName ="MS Sans Serif"
+                            EventProcPrefix ="Marchio_Etichetta"
+                            GUID = Begin
+                                0x5696b2f32c31ae4796b597579821de87
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+
+
+Private Sub Ant_Rim_Click()
+DoCmd.OpenQuery "Rimanenze Magazzino", acNormal, acEdit
+End Sub
+
+Private Sub ch_Click()
+ ' DoCmd.SetWarnings False
+' DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+ 
+    'DoCmd.SetWarnings False
+    'Cmd.OpenTable "MAGAZZINO", acNormal, acEdit
+    'DoCmd.RunCommand acCmdSelectAllRecords
+    'DoCmd.RunCommand acCmdDeleteRecord
+    'DoCmd.Close acTable, "MAGAZZINO"
+
+'DoCmd.OpenQuery "Query Magazzino", acNormal, acEdit
+
+    
+   
+
+DoCmd.Close
+
+End Sub
+
+Private Sub Salva_Click()
+ 'DoCmd.SetWarnings False
+' DoCmd.OpenQuery "Query Correzione2", acNormal, acEdit
+ 
+   ' DoCmd.SetWarnings False
+    'DoCmd.OpenTable "MAGAZZINO", acNormal, acEdit
+    'DoCmd.RunCommand acCmdSelectAllRecords
+    'DoCmd.RunCommand acCmdDeleteRecord
+    'DoCmd.Close acTable, "MAGAZZINO"
+
+DoCmd.OpenQuery "CreaMagazzino", acNormal, acEdit
+
+End Sub
+
+Private Sub Sta_Rim_Click()
+DoCmd.OpenQuery "Rimanenze Magazzino", acNormal, acEdit
+    DoCmd.PrintOut acPrintAll, , , acHigh, 1, True
+
+End Sub

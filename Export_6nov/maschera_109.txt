@@ -1,0 +1,1613 @@
+Version =19
+VersionRequired =19
+Checksum =-234827587
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    DataEntry = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =255
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11905
+    DatasheetFontHeight =10
+    ItemSuffix =79
+    Left =6240
+    Top =1230
+    Right =18435
+    Bottom =9090
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xba5313ca8f7ee240
+    End
+    RecordSource ="Controllo Sanificazione"
+    Caption ="Controllo Sanificazione1"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5345525645525c485031323030414d4d0000000000000000000000000000 ,
+        0x010418009c00b803033f00020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742031323030205365726965732050434c2036000000 ,
+        0x0000000000000400320025018603789c6550cb2e0340143d676edba15abaa015 ,
+        0x21c49b457fa192b2f001a8bd8520f736ba21e2d1a5486a632962e717b0e77b58 ,
+        0x79ab99966edcc539f79c393777666ab5ffe5884d5e31d00e1bd0295a13baeca4 ,
+        0x2179d82c759e3a4d9ba34d5027a9232471c01caa47d443fae32001ed62ddd127 ,
+        0xa3a87bfa546cf4018166588cb4c234b4425d6754ab6d656db51694b5cfe0f7e2 ,
+        0x68759f0837322610798bcf90040bb033d16eda0bf40bfa091da5bdc23ea0dfb0 ,
+        0x016a9e5aa08dd10629596e407b69395a1fe59ecda6dd51c769de498927197f1b ,
+        0x17f9a1160eb7f00901538438fc56a3f8d7053bd1b16f3ab63e3a3d152d395d70 ,
+        0x56767229d7d87d8fe964277dd149872d6fe887945971b218a0ba443d97e82f33 ,
+        0x0b4b537ba819b61ebd4d1f3e20f43fe21048c500000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080011002400010077696e73706f6f6c005c5c5345525645525c485031323030 ,
+        0x414d4d0048504c617365724a6574313230305f636f70795f3200000000000000 ,
+        0x00000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1136
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0xdc7291e5ddc2a540aef4a83050577e26
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =215
+                    Left =56
+                    Top =56
+                    Width =4230
+                    Height =1080
+                    Name ="Marchio"
+                    SourceObject ="Form.Marchio"
+                    GUID = Begin
+                        0x4a94154eebc41d4db6069e7685b90117
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Width =645
+                            Height =240
+                            Name ="Marchio Etichetta"
+                            Caption ="Marchio"
+                            EventProcPrefix ="Marchio_Etichetta"
+                            GUID = Begin
+                                0xa13ca54b668a5e45b7c4d2085438cd48
+                            End
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =4592
+                    Top =453
+                    Width =4065
+                    Height =540
+                    TabIndex =1
+                    Name ="SMPercorso"
+                    SourceObject ="Form.SMPercorso"
+                    GUID = Begin
+                        0xe7a84a1b9a210f459172033850e38d17
+                    End
+                End
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5839
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x197335589f601d4694fa3f35d1f61296
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1428
+                    Top =114
+                    Width =825
+                    Height =255
+                    ColumnWidth =825
+                    Name ="Data"
+                    ControlSource ="Data"
+                    Format ="Short Date"
+                    InputMask ="00/00/00;0;_"
+                    GUID = Begin
+                        0x6079b9ba1437ff478301c3834ca78941
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =114
+                            Width =1311
+                            Height =255
+                            Name ="Data_Etichetta"
+                            Caption ="Data"
+                            GUID = Begin
+                                0x4b999deb59673d4d95c0d919a5e1a52f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1428
+                    Top =456
+                    Width =1365
+                    Height =255
+                    ColumnWidth =1701
+                    TabIndex =1
+                    Name ="N ordine"
+                    ControlSource ="N ordine"
+                    EventProcPrefix ="N_ordine"
+                    GUID = Begin
+                        0xbf57f5deec145142a1e408c7148c51d1
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =456
+                            Width =1311
+                            Height =255
+                            Name ="N ordine_Etichetta"
+                            Caption ="N verifica"
+                            EventProcPrefix ="N_ordine_Etichetta"
+                            GUID = Begin
+                                0x956b89f3fa36ce4a82dede9fb959f314
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =1927
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Piani di Appoggio"
+                    ControlSource ="Piani di Appoggio"
+                    EventProcPrefix ="Piani_di_Appoggio"
+                    GUID = Begin
+                        0xc563ebfe8bb6a14ab36b3a7b0c099d7a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1870
+                            Width =1311
+                            Height =255
+                            Name ="Piani di Appoggio_Etichetta"
+                            Caption ="Piani di Appoggio"
+                            EventProcPrefix ="Piani_di_Appoggio_Etichetta"
+                            GUID = Begin
+                                0x91a069f68c8b7c4bb17315bb107dd925
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =2211
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =3
+                    Name ="Impastatrice"
+                    ControlSource ="Impastatrice"
+                    GUID = Begin
+                        0x00f36f7084f37f4a8714d1a88fd3510f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2212
+                            Width =1311
+                            Height =255
+                            Name ="Impastatrice_Etichetta"
+                            Caption ="Impastatrice"
+                            GUID = Begin
+                                0xc74399b707d1e1498b03ab0ec72095c6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =2494
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =4
+                    Name ="Spezzatrice"
+                    ControlSource ="Spezzatrice"
+                    GUID = Begin
+                        0xb93c1e6ee09ac34d8fd508a3e7d66b96
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2554
+                            Width =1311
+                            Height =255
+                            Name ="Spezzatrice_Etichetta"
+                            Caption ="Spezzatrice"
+                            GUID = Begin
+                                0xefa42af58938c442936b592887b680f4
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =2891
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =5
+                    Name ="Arrotondatrice"
+                    ControlSource ="Arrotondatrice"
+                    GUID = Begin
+                        0x6874e6303887ea4ab6f492388f8ec1f3
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =2896
+                            Width =1311
+                            Height =255
+                            Name ="Arrotondatrice_Etichetta"
+                            Caption ="Arrotondatrice"
+                            GUID = Begin
+                                0x0171155e80ad364ca2c91c2b75275149
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =3231
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =6
+                    Name ="Nastro trasportatore"
+                    ControlSource ="Nastro trasportatore"
+                    EventProcPrefix ="Nastro_trasportatore"
+                    GUID = Begin
+                        0x60e6fb2020c90e418d2d74e5e9db2db0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3231
+                            Width =1476
+                            Height =255
+                            Name ="Nastro trasportatore_Etichetta"
+                            Caption ="Nastro trasportatore"
+                            EventProcPrefix ="Nastro_trasportatore_Etichetta"
+                            GUID = Begin
+                                0xd247778d3615314b9a0693e1ba3ed050
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =3571
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =7
+                    Name ="Piastre cottura"
+                    ControlSource ="Piastre cottura"
+                    EventProcPrefix ="Piastre_cottura"
+                    GUID = Begin
+                        0x894935bb3582594b83597dd1e0ad2f94
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =3580
+                            Width =1311
+                            Height =255
+                            Name ="Piastre cottura_Etichetta"
+                            Caption ="Piastre cottura"
+                            EventProcPrefix ="Piastre_cottura_Etichetta"
+                            GUID = Begin
+                                0x31772a8e33c3bb41bc117bf889c0f644
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =3911
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =8
+                    Name ="Sfogliatrice"
+                    ControlSource ="Sfogliatrice"
+                    GUID = Begin
+                        0x1b542c1716c1fe40b565a01d09cdd870
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3922
+                            Width =1311
+                            Height =255
+                            Name ="Sfogliatrice_Etichetta"
+                            Caption ="Sfogliatrice"
+                            GUID = Begin
+                                0xe0dfe5eadc71b04cb82ea7430cf19b12
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =4251
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =9
+                    Name ="Anaconda"
+                    ControlSource ="Anaconda"
+                    GUID = Begin
+                        0x65020ca0b76a9a4798ad1066cd1a5944
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =4264
+                            Width =1311
+                            Height =255
+                            Name ="Anaconda_Etichetta"
+                            Caption ="Anaconda"
+                            GUID = Begin
+                                0x8b9cb1632aa67146ba61a735fff65f39
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =4592
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =10
+                    Name ="Pavimenti Lab"
+                    ControlSource ="Pavimenti Lab"
+                    EventProcPrefix ="Pavimenti_Lab"
+                    GUID = Begin
+                        0xc7e3d9961c5b294894eff6bd79cc1e1c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =4606
+                            Width =1311
+                            Height =255
+                            Name ="Pavimenti Lab_Etichetta"
+                            Caption ="Pavimenti Lab"
+                            EventProcPrefix ="Pavimenti_Lab_Etichetta"
+                            GUID = Begin
+                                0x66bc1e98c433ae41ba8520b13e3b86ee
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =4932
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =11
+                    Name ="Lavabi Lab"
+                    ControlSource ="Lavabi Lab"
+                    EventProcPrefix ="Lavabi_Lab"
+                    GUID = Begin
+                        0x27b677931c18714bbc416a82e4911337
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =4948
+                            Width =1311
+                            Height =255
+                            Name ="Lavabi Lab_Etichetta"
+                            Caption ="Lavabi Lab"
+                            EventProcPrefix ="Lavabi_Lab_Etichetta"
+                            GUID = Begin
+                                0xae0b02dfde40154a83237e7ae71c9a8a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1700
+                    Top =5272
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =12
+                    Name ="Bidoni spazzatura"
+                    ControlSource ="Bidoni spazzatura"
+                    EventProcPrefix ="Bidoni_spazzatura"
+                    GUID = Begin
+                        0x1335e6a91b7eea49b26e00ca3b43a16d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =5267
+                            Width =1311
+                            Height =255
+                            Name ="Bidoni spazzatura_Etichetta"
+                            Caption ="Bidoni spazzatura"
+                            EventProcPrefix ="Bidoni_spazzatura_Etichetta"
+                            GUID = Begin
+                                0x4769b4ffe88be545af947bc9283d762e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5669
+                    Top =1927
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =13
+                    Name ="Pavimenti dispensa"
+                    ControlSource ="Pavimenti dispensa"
+                    EventProcPrefix ="Pavimenti_dispensa"
+                    GUID = Begin
+                        0xd3f4977ed2e1d04f862ae2f5364c1928
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3968
+                            Top =1927
+                            Width =1476
+                            Height =255
+                            Name ="Pavimenti dispensa_Etichetta"
+                            Caption ="Pavimenti dispensa"
+                            EventProcPrefix ="Pavimenti_dispensa_Etichetta"
+                            GUID = Begin
+                                0xf5812a5ea785b24698a9444822ef001c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5669
+                    Top =2834
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =14
+                    Name ="Sanitari"
+                    ControlSource ="Sanitari"
+                    GUID = Begin
+                        0xa153d6952fcdda4eaea72bbe91dfeb71
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3968
+                            Top =2834
+                            Width =1311
+                            Height =255
+                            Name ="Sanitari_Etichetta"
+                            Caption ="Sanitari"
+                            GUID = Begin
+                                0x0ff5228cfc9dee4da087c668faa34c38
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5669
+                    Top =3174
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =15
+                    Name ="Pavimento Servizi"
+                    ControlSource ="Pavimento Servizi"
+                    EventProcPrefix ="Pavimento_Servizi"
+                    GUID = Begin
+                        0xa3d23162640640459e2f969924aebcae
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3968
+                            Top =3176
+                            Width =1476
+                            Height =255
+                            Name ="Pavimento Servizi_Etichetta"
+                            Caption ="Pavimento Servizi"
+                            EventProcPrefix ="Pavimento_Servizi_Etichetta"
+                            GUID = Begin
+                                0xdf3306f1d667a947b0e728109e6fae5b
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =87
+                    Left =4528
+                    Top =4705
+                    Width =6777
+                    Height =735
+                    ColumnWidth =3000
+                    TabIndex =16
+                    Name ="Note e raclami"
+                    ControlSource ="Note e raclami"
+                    EventProcPrefix ="Note_e_raclami"
+                    GUID = Begin
+                        0x02c761ab0f9c7644bd1655a4d3bdf562
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3911
+                            Top =4714
+                            Width =621
+                            Height =255
+                            Name ="Note e raclami_Etichetta"
+                            Caption ="Note "
+                            EventProcPrefix ="Note_e_raclami_Etichetta"
+                            GUID = Begin
+                                0xc7e328143a6ecf498bbb930e09f1a12d
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =9648
+                    Top =2437
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =17
+                    Name ="Segni rod"
+                    ControlSource ="Segni rod"
+                    EventProcPrefix ="Segni_rod"
+                    GUID = Begin
+                        0xeb1b5f9f719ff14eb8ae8e1738de2a7b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =7937
+                            Top =2437
+                            Width =1311
+                            Height =255
+                            Name ="Segni rod_Etichetta"
+                            Caption ="Segni Roditori"
+                            EventProcPrefix ="Segni_rod_Etichetta"
+                            GUID = Begin
+                                0xa6da28e747e8bb46932fa6cf230c5fd1
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =9650
+                    Top =2776
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =18
+                    Name ="Insetti stri"
+                    ControlSource ="Insetti stri"
+                    EventProcPrefix ="Insetti_stri"
+                    GUID = Begin
+                        0x956219aca093b346ac1a366be4566981
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =7937
+                            Top =2777
+                            Width =1311
+                            Height =255
+                            Name ="Insetti stri_Etichetta"
+                            Caption ="Insetti Striscianti"
+                            EventProcPrefix ="Insetti_stri_Etichetta"
+                            GUID = Begin
+                                0x49cc698038f11a418bb0bd43e7348e32
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =9650
+                    Top =3118
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =19
+                    Name ="Insetti Volanti"
+                    ControlSource ="Insetti Volanti"
+                    EventProcPrefix ="Insetti_Volanti"
+                    GUID = Begin
+                        0x97c1f32a1c423e4391b8ab047130d640
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =7937
+                            Top =3118
+                            Width =1311
+                            Height =255
+                            Name ="Insetti Volanti_Etichetta"
+                            Caption ="Insetti Volanti"
+                            EventProcPrefix ="Insetti_Volanti_Etichetta"
+                            GUID = Begin
+                                0xddafc9d5fcfc6245a37b549c69a012b9
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =-7
+                    Top =56
+                    Width =2958
+                    Height =851
+                    Name ="Casella46"
+                    GUID = Begin
+                        0x3b4ceba358942846b0d2f18f35a8d4a4
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2777
+                    Top =1133
+                    Width =1800
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16711680
+                    Name ="Etichetta47"
+                    Caption ="SANIFICAZIONE"
+                    GUID = Begin
+                        0x3d13b269cbd31c4caa4d1d3c016674ff
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Top =1587
+                    Width =1531
+                    Height =235
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta42"
+                    Caption ="LABORATORIO"
+                    GUID = Begin
+                        0x745c94c740d3144da215af7064bf1987
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =1700
+                    Top =1587
+                    Width =1935
+                    Height =285
+                    FontWeight =700
+                    Name ="Etichetta48"
+                    Caption ="N° di Non Conformità"
+                    GUID = Begin
+                        0x237795cb70c91f408a138d47a7c14383
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =3968
+                    Top =1587
+                    Width =1531
+                    Height =235
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta49"
+                    Caption ="DISPENSA"
+                    GUID = Begin
+                        0x4749d9bd928a5943a2cb341ba5b5092d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =5668
+                    Top =1587
+                    Width =1920
+                    Height =285
+                    FontWeight =700
+                    Name ="Etichetta50"
+                    Caption ="N° di Non Conformità"
+                    GUID = Begin
+                        0xa49e173e7af4c04d8190a320d1d1ac61
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =3972
+                    Top =2550
+                    Width =1635
+                    Height =240
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta51"
+                    Caption ="SERVIZI IGIENICI"
+                    GUID = Begin
+                        0x45b2b28362cfc547b5c5ea679bfe1ef0
+                    End
+                End
+                Begin Label
+                    OverlapFlags =223
+                    Left =5668
+                    Top =2551
+                    Width =1860
+                    Height =285
+                    FontWeight =700
+                    Name ="Etichetta52"
+                    Caption ="N° di Non Conformità"
+                    GUID = Begin
+                        0xd6cd780ca5710e4480c98d1bdc8f8447
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =-7
+                    Top =1474
+                    Width =3692
+                    Height =4308
+                    Name ="Casella53"
+                    GUID = Begin
+                        0xfbd8f8d0f5d8fd41860d0015406ca769
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =3855
+                    Top =1530
+                    Width =3911
+                    Height =2098
+                    Name ="Casella54"
+                    GUID = Begin
+                        0x0c752b714e87ae409f9bae59cacb8f3f
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =7927
+                    Top =1133
+                    Width =3360
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16711680
+                    Name ="Etichetta55"
+                    Caption ="DERATTIZAZ. E E DISINFEST."
+                    GUID = Begin
+                        0x73bb00ce8dac76468a3a17a30b31f495
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =7937
+                    Top =1587
+                    Width =3735
+                    Height =405
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta56"
+                    Caption ="LABORATORIO, DISPENSA; IMBALLAGGI"
+                    GUID = Begin
+                        0xec60269e2722e643af66aac4cff79365
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =9127
+                    Top =2040
+                    Width =1920
+                    Height =285
+                    FontWeight =700
+                    Name ="Etichetta57"
+                    Caption ="N° di Non Conformità"
+                    GUID = Begin
+                        0x511468aaaeae4742812e4c31c21ce23c
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =7817
+                    Top =1527
+                    Width =3918
+                    Height =2101
+                    Name ="Casella58"
+                    GUID = Begin
+                        0x7fb36d0f4c65aa499a3607f723410084
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =87
+                    ColumnCount =3
+                    ListWidth =4380
+                    Left =4478
+                    Top =4025
+                    Width =7247
+                    Height =565
+                    TabIndex =20
+                    BoundColumn =2
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"510\""
+                    GUID = Begin
+                        0x4687ceb09f60b3428dede135d514afee
+                    End
+                    Name ="CasellaCombinata54"
+                    ControlSource ="Giudizio"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Giudizi sanificazione].[Giudizio], [Giudizi sanificazione].[Guiudsint], "
+                        "[Giudizi sanificazione].[IDGiudizio] FROM [Giudizi sanificazione]"
+                    ColumnWidths ="4278;2585;360"
+                    BaseInfo ="\"SELECT [Giudizi sanificazione].[Giudizio], [Giudizi sanificazione].[Guiudsint]"
+                        ", [Giudizi sanificazione].[IDGiudizio] FROM [Giudizi sanificazione]\";\"Giudizi "
+                        "sanificazione\";\"\";\"IDGiudizio\";\"Giudizio\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3798
+                            Top =4025
+                            Width =675
+                            Height =240
+                            Name ="CasellaCombinata54_Etichetta"
+                            Caption ="Giudizio"
+                            GUID = Begin
+                                0x54a04ef0045eef46802af35927224eb2
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8503
+                    Width =576
+                    Height =576
+                    TabIndex =21
+                    Name ="Comando60"
+                    Caption ="Comando60"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadaddadadadadadadada ,
+                        0xadadadadadadadaddadadadad1dadadaadadadad11adadaddadadad111dadada ,
+                        0xadadad1111adadaddadad11111dadadaadadad1111adadaddadadad111dadada ,
+                        0xadadadad11adadaddadadadad1dadadaadadadadadadadaddadadadadadadada ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Record precedente"
+                    GUID = Begin
+                        0x76df1f3254e49149a203cdd6a9ad4403
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9070
+                    Width =576
+                    Height =576
+                    TabIndex =22
+                    Name ="Comando61"
+                    Caption ="Comando61"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadaddadadadadadadada ,
+                        0xadadadadadadadaddadada1adadadadaadadad11adadadaddadada111adadada ,
+                        0xadadad1111adadaddadada11111adadaadadad1111adadaddadada111adadada ,
+                        0xadadad11adadadaddadada1adadadadaadadadadadadadaddadadadadadadada ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Record successivo"
+                    GUID = Begin
+                        0x66fc6cf907612745a55527301c461c9d
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10204
+                    Top =-4
+                    Width =1380
+                    Height =570
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =23
+                    ForeColor =255
+                    Name ="Comando62"
+                    Caption ="Nuovo Controllo"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x57bc1e06b437674cae7a1c28c312052b
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =247
+                    Left =3288
+                    Top =353
+                    Width =3660
+                    Height =255
+                    TabIndex =24
+                    Name ="OperatoreAttualeSM"
+                    SourceObject ="Form.OperatoreAttualeSM"
+                    GUID = Begin
+                        0x5ccbada00326f44e828d9d02259929bb
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3288
+                            Top =113
+                            Width =1515
+                            Height =240
+                            Name ="OperatoreAttualeSM Etichetta"
+                            Caption ="Operatore Attuale"
+                            EventProcPrefix ="OperatoreAttualeSM_Etichetta"
+                            GUID = Begin
+                                0xd59d4939518dc9438ed9524648b33d44
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =4875
+                    Top =113
+                    Width =1146
+                    TabIndex =25
+                    Name ="IDorganico"
+                    ControlSource ="IDorganico"
+                    DefaultValue ="=[OperatoreAttualeSM].[Form]![IdOrganico]"
+                    GUID = Begin
+                        0x3a879f59c252794eaf28d3c55d348c10
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    OverlapFlags =255
+                    Left =3174
+                    Top =56
+                    Width =3912
+                    Height =794
+                    Name ="Casella76"
+                    GUID = Begin
+                        0x9eb756f6af53134f8a6e9e3e4d31994a
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =907
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x3d7cea4842887f4e8a547c5c203af5c1
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2891
+                    Top =-4
+                    Width =636
+                    Height =636
+                    Name ="Comando63"
+                    Caption ="Comando63"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad000000000000add0330880000330da ,
+                        0xa0330880000330add0330880000330daa0330000000330add0333333333330da ,
+                        0xa0330000000330add030fffffff030daa030fccccff030add030ffcccff030da ,
+                        0xa03dfccccff000add0dacccfcff070daadacccadad0000addacccadadadadada ,
+                        0xadacadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Salva record"
+                    GUID = Begin
+                        0x95a91de06d74ef4084a304b43e12822e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6803
+                    Width =576
+                    Height =576
+                    TabIndex =1
+                    Name ="Comando64"
+                    Caption ="Comando64"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000020000000200000000100080000000000000400000000000000000000 ,
+                        0x0000000000000000000000000000bf0000bf000000bfbf00bf000000bf00bf00 ,
+                        0xbfbf0000c0c0c000c0dcc000f0c8a40000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0xf0fbff00a4a0a000808080000000ff0000ff000000ffff00ff000000ff00ff00 ,
+                        0xffff0000ffffff00070707070707070707070707070707070707070707070707 ,
+                        0x0707070707070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f907 ,
+                        0x07070707070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0x070707070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf907070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f90707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f907070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f90707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f9f9070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f9f9f90707f9f9f9f9fffffffff9f9f9fffff9f9f9fffffffff9f9ff ,
+                        0xfff9f9f9f9f9f90707f9f9f9fffff9f9fffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9f9f9f9f90707f9f9f9fffff9f9fffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9f9f9f9f90707f9f9f9f9f9f9f9fffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9f9f9f9f90707f9f9f9f9f9f9fffffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9f9f9f9f90707f9f9f9f9f9fffffff9f9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfffffffff9f9f90707f9f9f9f9fffffff9f9f9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9fffff9f90707f9f9f9fffffff9f9f9f9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9fffff9f90707f9f9f9fffff9f9f9f9f9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9fffff9f90707f9f9f9fffff9f9fffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9fffff9f90707f9f9f9fffff9f9fffff9f9fffff9f9fffff9f9fffff9ff ,
+                        0xfff9f9fffff9f90707f9f9f9f9fffffffff9fffffffffffff9fffffffff9f9ff ,
+                        0xfffffffff9f9f90707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f9f9f9070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f9f90707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9f907070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f9f9070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f9f90707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9f907070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0xf9070707070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9 ,
+                        0x0707070707070707070707070707070707f9f9f9f9f9f9f9f9f9f9f9f9f9f907 ,
+                        0x0707070707070707070707070707070707070707070707070707070707070707 ,
+                        0x0707070707070707000000000000000000000000000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003000100000000bf00000000bf0000bfbf00000000bf00bf00bf0000bfbf00 ,
+                        0xc0c0c000c0dcc000a4c8f0000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000000000000000000000000000000000000000fffbf000 ,
+                        0xa0a0a40080808000ff00000000ff0000ffff00000000ff00ff00ff0000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Chiudi maschera"
+                    GUID = Begin
+                        0x91937c686ae6b44aabd452f393e860ee
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =5385
+                    Top =170
+                    Width =0
+                    TabIndex =2
+                    Name ="Comando77"
+                    Caption ="Comando77"
+                    GUID = Begin
+                        0x56d76a0423c991439ed02acb1f499f63
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4025
+                    Width =576
+                    Height =576
+                    TabIndex =3
+                    Name ="Comando78"
+                    Caption ="Comando78"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaad00000000000dadd0888888888080da ,
+                        0x000000000000080d0888888bbb88000a088888877788080d0000000000000880 ,
+                        0x0888888888808080d000000000080800ad0ffffffff08080dad0f00000f0000a ,
+                        0xada0ffffffff0daddada0f00000f0adaadad0ffffffff0addadad000000000da ,
+                        0xadadadadadadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Esegui macro"
+                    GUID = Begin
+                        0x59fb9c92ab5f82418f55ba876f111a14
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =5102
+                    Width =576
+                    Height =576
+                    TabIndex =4
+                    Name ="Comando59"
+                    Caption ="Comando59"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada00adadadadadadad000adadadadadada ,
+                        0xa000adadadadadadda000a700007dadaada0000888800daddada07ee888870da ,
+                        0xada708e88888807ddad08e888888880aada088888888880ddad088888888e80a ,
+                        0xada088888888e80ddad70888888ee07aadad07888eee70addadad00888800ada ,
+                        0xadadad700007adad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Esegui macro"
+                    GUID = Begin
+                        0x2eacfba59c25fa4291f1a6c4dd495480
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Comando59_Click()
+On Error GoTo Err_Comando59_Click
+
+    Dim stDocName As String
+
+    stDocName = "Stampa controllo sanif"
+    DoCmd.RunMacro stDocName
+
+Exit_Comando59_Click:
+    Exit Sub
+
+Err_Comando59_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando59_Click
+    
+End Sub
+Private Sub Comando60_Click()
+On Error GoTo Err_Comando60_Click
+
+
+    DoCmd.GoToRecord , , acPrevious
+
+Exit_Comando60_Click:
+    Exit Sub
+
+Err_Comando60_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando60_Click
+    
+End Sub
+Private Sub Comando61_Click()
+On Error GoTo Err_Comando61_Click
+
+
+    DoCmd.GoToRecord , , acNext
+
+Exit_Comando61_Click:
+    Exit Sub
+
+Err_Comando61_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando61_Click
+    
+End Sub
+Private Sub Comando62_Click()
+On Error GoTo Err_Comando62_Click
+
+
+    DoCmd.GoToRecord , , acNewRec
+
+Exit_Comando62_Click:
+    Exit Sub
+
+Err_Comando62_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando62_Click
+    
+End Sub
+Private Sub Comando63_Click()
+On Error GoTo Err_Comando63_Click
+
+
+    DoCmd.DoMenuItem acFormBar, acRecordsMenu, acSaveRecord, , acMenuVer70
+
+Exit_Comando63_Click:
+    Exit Sub
+
+Err_Comando63_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando63_Click
+    
+End Sub
+Private Sub Comando64_Click()
+On Error GoTo Err_Comando64_Click
+
+
+    DoCmd.Close
+
+Exit_Comando64_Click:
+    Exit Sub
+
+Err_Comando64_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando64_Click
+    
+End Sub
+Private Sub Comando71_Click()
+
+
+
+
+Dim NomeReport As String
+Dim NomeFile As String
+Dim strpercorso As String
+Dim stDocName As String
+
+    stDocName = "Snapshot controllo sanif"
+    
+    NomeReport = "Controllo Sanif"
+    NomeFile = "San" & (Me.Data)
+    strpercorso = Me!SMPercorso!PercorsoSnapshot & "\sanificazione\" & NomeFile & ".snp"
+    DoCmd.RunMacro stDocName
+
+    'NomeReport = "Controllo Sanif"
+    'NomeFile = "San" & (Me.Data)
+    'strpercorso = Me!SMPercorso!PercorsoSnapshot & "\sanificazione\" & NomeFile & ".snp"
+    'DoCmd.OutputTo acOutputReport, NomeReport, "SnapshotFormat", strpercorso, False
+    'DoCmd.OutputTo acReport, "Ordini", "SnapshotFormat", "\\hl\i di hl\archiviosrl\dati\ordini\prova.snp", False, ""
+
+
+   ' Dim strOutputFormat As String
+
+    'strOutputFormat = "SnapshotFormat"
+
+'DoCmd.OutputTo acOutputReport, NomeReport, strOutputFormat, strpercorso
+
+
+
+End Sub
+
+
+    'Dim stDocName As String
+
+   ' stDocName = "Controllo Sanif"
+    'DoCmd.OpenReport stDocName, acNormal
+
+'Exit_Comando71_Click:
+    'Exit Sub
+
+'Err_Comando71_Click:
+    'MsgBox Err.Description
+    'Resume Exit_Comando71_Click
+    
+'End Sub '
+Private Sub Comando72_Click()
+On Error GoTo Err_Comando72_Click
+
+    Dim stDocName As String
+
+    stDocName = "Snapshot controllo sanif"
+    DoCmd.RunMacro stDocName
+
+Exit_Comando72_Click:
+    Exit Sub
+
+Err_Comando72_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando72_Click
+    
+End Sub
+Private Sub Comando78_Click()
+On Error GoTo Err_Comando78_Click
+
+    Dim stDocName As String
+
+    stDocName = "Stampa1 controllo sanif"
+    DoCmd.RunMacro stDocName
+
+Exit_Comando78_Click:
+    Exit Sub
+
+Err_Comando78_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando78_Click
+    
+End Sub

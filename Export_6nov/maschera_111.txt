@@ -1,0 +1,80 @@
+Version =19
+VersionRequired =19
+Checksum =-234827537
+Begin Form
+    OrderByOn = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =255
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =2267
+    DatasheetFontHeight =10
+    ItemSuffix =1
+    Left =930
+    Top =660
+    Right =8385
+    Bottom =4410
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xd7f941c1fa81e240
+    End
+    RecordSource ="Ordine"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =340
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x8a17cc44da07ce4896b01a2776a7e9ae
+            End
+            Begin
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =56
+                    Top =86
+                    Name ="Controllo in accettazione"
+                    ControlSource ="Controllo in accettazione"
+                    EventProcPrefix ="Controllo_in_accettazione"
+                    GUID = Begin
+                        0x27c4a3758d2ea6479086603e33922c23
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =286
+                            Top =56
+                            Width =1845
+                            Height =240
+                            Name ="Etichetta0"
+                            Caption ="Controllo in accettazione"
+                            GUID = Begin
+                                0x166d06d59f38e641b93d7dda28a2c76f
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

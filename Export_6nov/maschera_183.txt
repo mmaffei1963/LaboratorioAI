@@ -1,0 +1,1257 @@
+Version =19
+VersionRequired =19
+Checksum =234827621
+Begin Form
+    NavigationButtons = NotDefault
+    DefaultView =0
+    AllowUpdating =1
+    ScrollBars =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9528
+    DatasheetFontHeight =10
+    ItemSuffix =50
+    Left =3540
+    Top =1920
+    Right =13380
+    Bottom =8328
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x076b13b03739e240
+    End
+    RecordSource ="SELECT Campione.IdCertificato, Clienti.IDCliente, Campione.IdCampione, Insediame"
+        "nto.FaxInsed, Insediamento.Email, Campione.IdMatrice, Lotto.DataPrelievo, certif"
+        "icato.StampaCertificato, TipoCertificato.TipoReport, Clienti.CodiceCliente, cert"
+        "ificato.NCertificato, certificato.DataSped, ModalitàSpedizione.Modalità, certifi"
+        "cato.IdModSped, Clienti.RagioneSociale, IIf(IsNull([IdVariazioneCertificato]),\""
+        "NO\",\"SI\") AS Varia FROM TipoCertificato INNER JOIN (((Clienti INNER JOIN Inse"
+        "diamento ON Clienti.IDCliente = Insediamento.IDCliente) INNER JOIN (ContattoClie"
+        "nte INNER JOIN (commessa INNER JOIN Lotto ON commessa.IdCommessa = Lotto.IdComme"
+        "ssa) ON ContattoCliente.IDContatto = commessa.IDContatto) ON Insediamento.IDInse"
+        "diamento = ContattoCliente.IDInsediamento) INNER JOIN (((certificato LEFT JOIN M"
+        "odalitàSpedizione ON certificato.IdModSped = ModalitàSpedizione.IdModSped) LEFT "
+        "JOIN VariazioniCertificati ON certificato.IdCertificato = VariazioniCertificati."
+        "IdCertificato) INNER JOIN Campione ON certificato.IdCertificato = Campione.IdCer"
+        "tificato) ON Lotto.IdLotto = Campione.IdLotto) ON TipoCertificato.IdTipoCertific"
+        "ato = certificato.IdTipoCertificato;"
+    Caption ="Stampe e invio certificati e creazione snapshot"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =6646
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =907
+                    Top =1020
+                    TabIndex =10
+                    Name ="TipoReport"
+                    ControlSource ="TipoReport"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =510
+                            Top =1020
+                            Width =375
+                            Height =240
+                            Name ="Etichetta15"
+                            Caption ="tipo:"
+                        End
+                    End
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    OverlapFlags =247
+                    MultiSelect =2
+                    ColumnCount =8
+                    Left =233
+                    Top =1407
+                    Width =6345
+                    Height =4695
+                    Name ="Elenco0"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCT certificato.IdCertificato, certificato.NCertificato, certificato"
+                        ".DataCertificato, certificato.StampaCertificato, certificato.DataSped, ModalitàS"
+                        "pedizione.Modalità, [CodLotto] & \"/\" & [CodCampione] AS Campione, Clienti.Codi"
+                        "ceCliente FROM (((Clienti INNER JOIN Insediamento ON Clienti.IDCliente = Insedia"
+                        "mento.IDCliente) INNER JOIN (ContattoCliente INNER JOIN (commessa INNER JOIN Lot"
+                        "to ON commessa.IdCommessa = Lotto.IdCommessa) ON ContattoCliente.IDContatto = co"
+                        "mmessa.IDContatto) ON Insediamento.IDInsediamento = ContattoCliente.IDInsediamen"
+                        "to) INNER JOIN (certificato INNER JOIN Campione ON certificato.IdCertificato = C"
+                        "ampione.IdCertificato) ON Lotto.IdLotto = Campione.IdLotto) LEFT JOIN ModalitàSp"
+                        "edizione ON certificato.IdModSped = ModalitàSpedizione.IdModSped WHERE (((certif"
+                        "icato.DataCertificato)>[Forms]![StampaMultiplaCertificato]![Testo26]) AND ((cert"
+                        "ificato.StampaCertificato)=[Forms]![StampaMultiplaCertificato]![Cornice21]) AND "
+                        "((certificato.IdTipoCertificato)=[Forms]![StampaMultiplaCertificato]![CasellaCom"
+                        "binata5]) AND ((Campione.IdCampione) Is Not Null)) ORDER BY certificato.IdCertif"
+                        "icato;"
+                    ColumnWidths ="57;796;859;525;859;679;1134;680"
+                    OnClick ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =170
+                            Top =963
+                            Width =5115
+                            Height =450
+                            Name ="Certificati_Etichetta"
+                            Caption ="seleziona i certificati da stampare\015\012                  - fai doppio clic s"
+                                "ul certificato per l'anteprima -"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8163
+                    Top =680
+                    Width =1245
+                    Height =585
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =1
+                    ForeColor =255
+                    Name ="Comando2"
+                    Caption ="Stampa report"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =6803
+                    Top =5896
+                    Width =907
+                    Height =227
+                    TabIndex =2
+                    Name ="Testo3"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6803
+                            Top =5613
+                            Width =825
+                            Height =240
+                            Name ="Etichetta4"
+                            Caption ="NumIdCert"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =215
+                    ColumnCount =3
+                    ListWidth =2880
+                    Left =7806
+                    Top =5046
+                    Width =1661
+                    Height =283
+                    TabIndex =3
+                    ColumnInfo ="\"\";\"\";\"tipo\";\"\";\"report\";\"\";\"10\";\"50\""
+                    Name ="CasellaCombinata5"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW TipoCertificato.IdTipoCertificato, TipoCertificato.TipoCertif"
+                        "icato, TipoCertificato.TipoReport FROM TipoCertificato ORDER BY TipoCertificato."
+                        "TipoCertificato;"
+                    ColumnWidths ="0;1440;1440"
+                    AfterUpdate ="[Event Procedure]"
+                    DefaultValue ="1"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6689
+                            Top =5046
+                            Width =1470
+                            Height =240
+                            Name ="TipoCertificato_Etichetta"
+                            Caption ="TipoCertificato"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =4932
+                    Top =2097
+                    Width =741
+                    TabIndex =4
+                    Name ="IdCampione"
+                    ControlSource ="IdCampione"
+                    Begin
+                        Begin Label
+                            Visible = NotDefault
+                            OverlapFlags =93
+                            Left =3911
+                            Top =2097
+                            Width =960
+                            Height =240
+                            Name ="Etichetta7"
+                            Caption ="IdCampione:"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =223
+                    ColumnCount =2
+                    Left =7361
+                    Top =2041
+                    Width =1986
+                    ColumnWidth =2610
+                    TabIndex =5
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdMatrice"
+                    ControlSource ="IdMatrice"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT matrice.IdMatrice, matrice.Matrice FROM matrice ORDER BY matrice.Matrice;"
+                    ColumnWidths ="0;2268"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6745
+                            Top =2041
+                            Width =630
+                            Height =240
+                            Name ="Etichetta8"
+                            Caption ="matrice:"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    Visible = NotDefault
+                    OverlapFlags =255
+                    ColumnCount =3
+                    Left =3514
+                    Top =1020
+                    Width =1131
+                    TabIndex =6
+                    ColumnInfo ="\"\";\"\";\"data\";\"\";\"n° certificato\";\"\";\"10\";\"50\""
+                    Name ="IdCertificato"
+                    ControlSource ="IdCertificato"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT certificato.IdCertificato, certificato.DataCertificato, certificato.NCert"
+                        "ificato FROM certificato ORDER BY certificato.DataCertificato, certificato.NCert"
+                        "ificato;"
+                    ColumnWidths ="0;0;1701"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =2721
+                            Top =1020
+                            Width =810
+                            Height =240
+                            Name ="Etichetta9"
+                            Caption ="certificato:"
+                        End
+                    End
+                End
+                Begin CheckBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    Left =226
+                    Top =6152
+                    TabIndex =7
+                    Name ="StampaCertificato"
+                    ControlSource ="StampaCertificato"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =456
+                            Top =6122
+                            Width =720
+                            Height =240
+                            Name ="Etichetta10"
+                            Caption ="stampato"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    LimitToList = NotDefault
+                    Visible = NotDefault
+                    OverlapFlags =223
+                    ColumnCount =4
+                    Left =1020
+                    Top =680
+                    Width =2721
+                    TabIndex =8
+                    ColumnInfo ="\"\";\"\";\"n° certificato\";\"\";\"data\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="CasellaCombinata11"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT certificato.IdCertificato, certificato.NCertificato, certificato.DataCert"
+                        "ificato, [CodLotto] & \"/\" & [CodCampione] AS Campione FROM Lotto INNER JOIN (c"
+                        "ertificato INNER JOIN Campione ON certificato.IdCertificato = Campione.IdCertifi"
+                        "cato) ON Lotto.IdLotto = Campione.IdLotto ORDER BY [CodLotto] & \"/\" & [CodCamp"
+                        "ione] DESC;"
+                    ColumnWidths ="0;851;851;851"
+                    AfterUpdate ="[Event Procedure]"
+                    BaseInfo ="\"SELECT certificato.IdCertificato, certificato.NCertificato, certificato.DataCe"
+                        "rtificato, [CodLotto] & \"\"/\"\" & [CodCampione] AS Campione FROM Lotto INNER J"
+                        "OIN (certificato INNER JOIN Campione ON certificato.IdCertificato = Campione.IdC"
+                        "ertificato) ON Lotto.IdL\";\"Lotto\";\"certificato\";\"Campione\";\"\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =226
+                            Top =680
+                            Width =810
+                            Height =240
+                            Name ="Etichetta12"
+                            Caption ="certificato:"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =5329
+                    Top =680
+                    Width =1356
+                    Height =681
+                    TabIndex =9
+                    Name ="Comando13"
+                    Caption ="cerca fra i certificati già stampati"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Trova record"
+                End
+                Begin Rectangle
+                    BackStyle =1
+                    OverlapFlags =255
+                    Left =226
+                    Top =1417
+                    Width =6301
+                    Height =4697
+                    BackColor =12632256
+                    Name ="Casella14"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8163
+                    Top =56
+                    Width =1245
+                    Height =570
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =11
+                    ForeColor =255
+                    Name ="Comando17"
+                    Caption ="genera snapshot"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Subform
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =247
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =2834
+                    Top =103
+                    Width =4020
+                    Height =510
+                    TabIndex =12
+                    Name ="SMPercorso"
+                    SourceObject ="Form.SMPercorso"
+                End
+                Begin Label
+                    OverlapFlags =255
+                    Left =168
+                    Top =108
+                    Width =2496
+                    Height =588
+                    Name ="Etichetta18"
+                    Caption ="percorso di salvataggio snapshot e applicazione snapshot"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =7774
+                    Top =1701
+                    Width =1581
+                    TabIndex =13
+                    Name ="CodiceCliente"
+                    ControlSource ="CodiceCliente"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6745
+                            Top =1701
+                            Width =990
+                            Height =240
+                            Name ="Etichetta19"
+                            Caption ="Cod. Cliente:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =95
+                    Left =7766
+                    Top =2381
+                    Width =1581
+                    ColumnWidth =1440
+                    TabIndex =14
+                    Name ="NCertificato"
+                    ControlSource ="NCertificato"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6745
+                            Top =2381
+                            Width =1005
+                            Height =240
+                            Name ="Etichetta20"
+                            Caption ="n° certificato:"
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    OverlapFlags =93
+                    Left =6689
+                    Top =3576
+                    Width =2769
+                    Height =1421
+                    TabIndex =15
+                    Name ="Cornice21"
+                    AfterUpdate ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =223
+                            Left =6803
+                            Top =3458
+                            Width =1575
+                            Height =240
+                            BackColor =-2147483633
+                            Name ="Etichetta22"
+                            Caption ="Visualizza certificati..."
+                        End
+                        Begin ToggleButton
+                            OverlapFlags =87
+                            Left =6859
+                            Top =3741
+                            Width =2427
+                            Height =378
+                            OptionValue =0
+                            Name ="Interruttore24"
+                            Caption ="solo quelli da stampare"
+                        End
+                        Begin ToggleButton
+                            OverlapFlags =87
+                            Left =6859
+                            Top =4195
+                            Width =2427
+                            Height =378
+                            Name ="Interruttore25"
+                            Caption ="solo quelli già stampati"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =223
+                    Left =8046
+                    Top =4653
+                    Width =1026
+                    Height =284
+                    TabIndex =16
+                    Name ="Testo26"
+                    Format ="Short Date"
+                    AfterUpdate ="[Event Procedure]"
+                    DefaultValue ="Now()-30"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =6973
+                            Top =4648
+                            Width =870
+                            Height =240
+                            Name ="Etichetta27"
+                            Caption ="a partire da"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =6859
+                    Top =113
+                    Width =1077
+                    Height =227
+                    Name ="Etichetta28"
+                    Caption ="\\certificati\\..."
+                End
+                Begin Rectangle
+                    OverlapFlags =255
+                    Left =121
+                    Top =53
+                    Width =7870
+                    Height =583
+                    Name ="Casella29"
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =247
+                    Left =7426
+                    Top =4139
+                    Width =1365
+                    Height =675
+                    TabIndex =17
+                    Name ="ApriSnapshot"
+                    Caption ="visualizza snapshot"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="visualizza gli snapshot già prodotti"
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =247
+                    Left =3911
+                    Top =680
+                    Width =1320
+                    Height =690
+                    TabIndex =18
+                    Name ="Comando31"
+                    Caption ="torna a visualizzazione normale"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =255
+                    Left =7370
+                    Top =5896
+                    TabIndex =19
+                    Name ="IDCliente"
+                    ControlSource ="IDCliente"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =7370
+                            Top =5613
+                            Width =765
+                            Height =240
+                            Name ="Etichetta32"
+                            Caption ="IDCliente:"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =255
+                    Left =7937
+                    Top =5499
+                    Width =1416
+                    Height =672
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =20
+                    ForeColor =255
+                    Name ="Inviomail"
+                    Caption ="Invio E-mail + snapshot"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="invio mail e stampa snapshot automatica"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =7482
+                    Top =2721
+                    TabIndex =21
+                    Name ="FaxInsed"
+                    ControlSource ="FaxInsed"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =7029
+                            Top =2721
+                            Width =330
+                            Height =240
+                            Name ="Etichetta34"
+                            Caption ="fax:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =7483
+                    Top =3061
+                    TabIndex =22
+                    Name ="Email"
+                    ControlSource ="Email"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6859
+                            Top =3061
+                            Width =495
+                            Height =240
+                            Name ="Etichetta36"
+                            Caption ="Email:"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6746
+                    Top =680
+                    Width =1356
+                    Height =576
+                    FontWeight =700
+                    TabIndex =23
+                    Name ="Anteprima"
+                    Caption ="Anteprima"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Trova record"
+                End
+                Begin Rectangle
+                    OverlapFlags =255
+                    Left =6689
+                    Top =1356
+                    Width =2781
+                    Height =1989
+                    Name ="Casella38"
+                End
+                Begin CommandButton
+                    OverlapFlags =255
+                    Left =6803
+                    Top =5499
+                    Width =1080
+                    Height =672
+                    TabIndex =24
+                    Name ="Comando39"
+                    Caption ="elenco per consegna a mano"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =127
+                    Left =5556
+                    Top =6122
+                    Width =909
+                    TabIndex =25
+                    Name ="DataSped"
+                    ControlSource ="DataSped"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =127
+                            Left =4762
+                            Top =6122
+                            Width =792
+                            Height =228
+                            Name ="Etichetta40"
+                            Caption ="data invio:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    OverlapFlags =247
+                    Left =7823
+                    Top =6122
+                    ColumnWidth =3420
+                    TabIndex =26
+                    Name ="Modalità"
+                    ControlSource ="Modalità"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =6519
+                            Top =6122
+                            Width =1284
+                            Height =228
+                            Name ="Etichetta41"
+                            Caption ="tipo di consegna:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =127
+                    Left =2664
+                    Top =6122
+                    TabIndex =27
+                    Name ="IdModSped"
+                    ControlSource ="IdModSped"
+                    Begin
+                        Begin Label
+                            OverlapFlags =119
+                            Left =1644
+                            Top =6122
+                            Width =948
+                            Height =228
+                            Name ="Etichetta42"
+                            Caption ="IdModSped:"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =247
+                    Left =7540
+                    Top =3515
+                    Width =1080
+                    Height =576
+                    FontWeight =700
+                    TabIndex =28
+                    ForeColor =255
+                    Name ="Variazioni"
+                    Caption ="Variazioni"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003000100000000bf00000000bf0000bfbf00000000bf00bf00bf0000bfbf00 ,
+                        0xc0c0c000c0dcc000a4c8f0000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000000000000000000000000000000000000000fffbf000 ,
+                        0xa0a0a40080808000ff00000000ff0000ffff00000000ff00ff00ff0000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Trova record"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =247
+                    Left =6746
+                    Top =1417
+                    Width =2613
+                    ColumnWidth =3120
+                    TabIndex =29
+                    Name ="RagioneSociale"
+                    ControlSource ="RagioneSociale"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =4195
+                    Top =6406
+                    Width =1077
+                    Height =227
+                    TabIndex =30
+                    Name ="Testo46"
+                    ControlSource ="Varia"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =2494
+                    Top =6406
+                    Width =1704
+                    Height =228
+                    Name ="Etichetta48"
+                    Caption ="presenti variazioni:"
+                End
+                Begin TextBox
+                    OverlapFlags =255
+                    Left =3628
+                    Top =4535
+                    TabIndex =31
+                    Name ="DataPrelievo"
+                    ControlSource ="DataPrelievo"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =2551
+                            Top =4535
+                            Width =1044
+                            Height =228
+                            Name ="Etichetta49"
+                            Caption ="data prelievo:"
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub ApriSnapshot_Click()
+
+Comando31.Visible = True
+
+Dim ReturnValue
+Dim PercorsoSnpVwExe As String
+Dim CertificatoDaTrovare As String
+    Dim NumeroCertNoAnno As Long
+    Dim NumCifre As Long
+    
+NumCifre = Len(NCertificato)
+NumeroCertNoAnno = Left(NCertificato, NumCifre - 3)
+CertificatoDaTrovare = Me![SMPercorso].Form![PercorsoFileDati] & "\certificati\" & NumeroCertNoAnno & "-" & Right(NCertificato, 2) & "-" & CodiceCliente
+PercorsoSnpVwExe = Me![SMPercorso].Form![ApplicazioneSnapshot] & "\snapview"
+
+ReturnValue = Shell(PercorsoSnpVwExe, 1)  ' Esegue snapshot viewer
+AppActivate "Snapshot Viewer" 'ReturnValue     ' Attiva snapshot viewer
+
+'valida per lettore in italiano
+SendKeys "%(f)", True
+SendKeys "a", True 'per lettore inglese qui ci deve essere "o"
+DoCmd.Beep
+SendKeys CertificatoDaTrovare
+SendKeys "%(a)", True
+
+'Elenco0.Visible = True
+'CasellaCombinata5.Visible = True
+'CasellaCombinata11.Visible = False
+'Me.CasellaCombinata5.SetFocus
+'ApriSnapshot.Visible = False
+
+End Sub
+
+Private Sub CasellaCombinata11_AfterUpdate()
+    Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![CasellaCombinata11]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+    
+    ApriSnapshot.Visible = True
+    
+End Sub
+
+Private Sub CasellaCombinata5_AfterUpdate()
+Me.Elenco0.Requery
+End Sub
+
+Private Sub Comando17_Click()
+On Error GoTo Comando17_Click_Err
+
+    Dim stLinkCriteria As String
+    Dim vntElemento As Variant
+    Dim stDocName As String
+    Dim strpercorso As String
+    Dim NumeroCertNoAnno As Long
+    Dim NumCifre As Long
+
+If CasellaCombinata11.Visible = True Then
+    CasellaCombinata11.Visible = False
+    Elenco0.Visible = True
+    CasellaCombinata5.Visible = True
+    
+    NumCifre = Len(NCertificato)
+    NumeroCertNoAnno = Left(NCertificato, NumCifre - 3)
+    
+    stDocName = TipoReport
+    strpercorso = Me!SMPercorso!PercorsoSnapshot & "\certificati\" & NumeroCertNoAnno & "-" & Right(NCertificato, 2) & "-" & CodiceCliente & ".snp"
+    DoCmd.OutputTo acReport, stDocName, "SnapshotFormat", strpercorso, False, ""
+    Me.StampaCertificato = -1
+    ' --> modalità invio (modifica --> snapshot)
+    Exit Sub
+
+End If
+    
+    stDocName = TipoReport
+    
+    For Each vntElemento In Me!Elenco0.ItemsSelected
+    Testo3 = Me.Elenco0.ItemData(vntElemento)
+    Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![Testo3]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+
+
+    
+    NumCifre = Len(NCertificato)
+    NumeroCertNoAnno = Left(NCertificato, NumCifre - 3)
+
+    strpercorso = Me!SMPercorso!PercorsoSnapshot & "\certificati\" & NumeroCertNoAnno & "-" & Right(NCertificato, 2) & "-" & CodiceCliente & ".snp"
+    DoCmd.OutputTo acReport, stDocName, "SnapshotFormat", strpercorso, False, ""
+    ' --> modalità invio (modifica --> snapshot)
+    Me.StampaCertificato = -1
+    
+    Next
+    
+Me.Refresh
+  Exit Sub
+    
+Comando17_Click_Exit:
+    Exit Sub
+
+Comando17_Click_Err:
+    MsgBox Error$
+    Resume Comando17_Click_Exit
+
+End Sub
+
+Private Sub Comando2_Click()
+On Error GoTo Err_Comando2_Click
+
+    Dim stLinkCriteria As String
+    Dim vntElemento As Variant
+    Dim stDocName As String
+
+If CasellaCombinata11.Visible = True Then
+CasellaCombinata11.Visible = False
+Elenco0.Visible = True
+CasellaCombinata5.Visible = True
+    stLinkCriteria = "IdCertificato =" & Me.IdCertificato
+    stDocName = TipoReport
+    DoCmd.OpenReport stDocName, acNormal, , stLinkCriteria
+    Me.StampaCertificato = -1
+    Exit Sub
+End If
+    
+    For Each vntElemento In Me!Elenco0.ItemsSelected
+
+    stDocName = TipoReport
+    Testo3 = Me.Elenco0.ItemData(vntElemento)
+    Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![Testo3]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+    stLinkCriteria = "IdCertificato =" & Me.Elenco0.ItemData(vntElemento)
+    DoCmd.OpenReport stDocName, acNormal, , stLinkCriteria
+    Me.StampaCertificato = -1
+    
+    Next
+    
+Me.Refresh
+  Exit Sub
+
+
+Exit_Comando2_Click:
+    Exit Sub
+
+Err_Comando2_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando2_Click
+
+    
+End Sub
+
+Private Sub Comando13_Click()
+On Error GoTo Err_Comando13_Click
+
+CasellaCombinata11.Visible = True
+Comando31.Visible = True
+Variazioni.Visible = True
+
+Elenco0.Visible = False
+Cornice21.Visible = False
+CasellaCombinata5.Visible = False
+Testo26.Visible = False
+
+Exit_Comando13_Click:
+    Exit Sub
+
+Err_Comando13_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando13_Click
+    
+End Sub
+
+Private Sub Cornice21_AfterUpdate()
+Me.Elenco0.Requery
+End Sub
+
+Private Sub Elenco0_Click()
+    Dim vntElemento As Variant
+
+For Each vntElemento In Me!Elenco0.ItemsSelected
+
+    Testo3 = Me.Elenco0.ItemData(vntElemento)
+    Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![Testo3]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+    
+Next
+
+End Sub
+
+Private Sub Inviomail_Click()
+
+    Dim Oggetto As String
+    Dim stLinkCriteria As String
+    Dim vntElemento As Variant
+    Dim stDocName As String
+    Dim strpercorso As String
+    Dim NumeroCertNoAnno As Long
+    Dim NumCifre As Long
+
+'modalità invio singolo - invia il certificato e genera lo snapshot
+
+If CasellaCombinata11.Visible = True Then
+
+        If IsNull(Email) Then
+        MsgBox "manca l'indirizzo e-mail del cliente, certificato non inviato e non stampato, inserire in anagrafica e ripetere"
+        Exit Sub
+        End If
+
+        If Not IsNull(DataSped) Then
+        MsgBox "certificato già inviato"
+        Exit Sub
+        End If
+    CasellaCombinata11.Visible = False
+    Elenco0.Visible = True
+    CasellaCombinata5.Visible = True
+    
+    NumCifre = Len(NCertificato)
+    NumeroCertNoAnno = Left(NCertificato, NumCifre - 3)
+    'Oggetto = "invio certificato " & NCertificato & " del " & Date & IIf(IsNull(DataPrelievo), "", " - prelievo del " & DataPrelievo)
+    stDocName = TipoReport
+    strpercorso = Me!SMPercorso!PercorsoSnapshot & "\certificati\" & NumeroCertNoAnno & "-" & Right(NCertificato, 2) & "-" & CodiceCliente & ".snp"
+    
+    DoCmd.OutputTo acReport, stDocName, "SnapshotFormat", strpercorso, False, ""
+    SendMessage True, strpercorso, Email
+    'DoCmd.SendObject acSendReport, stDocName, "SnapshotFormat", Email, , , Oggetto, "Allegati certificati di analisi"
+    DataSped = Date
+    IdModSped = 6
+    Me.StampaCertificato = -1
+    Exit Sub
+End If
+    
+    
+'modalità invio multiplo - invia i certificati e genera lo snapshot
+stDocName = TipoReport
+
+
+For Each vntElemento In Me!Elenco0.ItemsSelected
+
+'DoCmd.GoToRecord acForm, "certificatost", acNewRec
+
+'Forms![certificatost]![certificato] = Elenco0.Column(0)
+'Oggetto = "invio certificato " & NCertificato & " del " & Date & IIf(IsNull(DataPrelievo), "", " - prelievo del " & DataPrelievo)
+
+       If IsNull(Email) Then
+           MsgBox "manca l'indirizzo e-mail del cliente"
+           Exit For
+       End If
+       
+Testo3 = Me.Elenco0.ItemData(vntElemento)
+Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![Testo3]
+Me.Bookmark = Me.RecordsetClone.Bookmark
+NumCifre = Len(NCertificato)
+NumeroCertNoAnno = Left(NCertificato, NumCifre - 3)
+
+strpercorso = Me!SMPercorso!PercorsoSnapshot & "\certificati\" & NumeroCertNoAnno & "-" & Right(NCertificato, 2) & "-" & CodiceCliente & ".snp"
+DoCmd.OutputTo acReport, stDocName, "SnapshotFormat", strpercorso, False, ""
+    SendMessage True, strpercorso, Email
+'DoCmd.SendObject acSendReport, stDocName, "SnapshotFormat", Email, , , Oggetto, "Allegato certificato di analisi " & NCertificato
+       
+
+Me.StampaCertificato = -1
+DataSped = Date
+IdModSped = 6
+
+Next
+ 
+
+    
+Me.Refresh
+  Exit Sub
+
+
+
+
+End Sub
+
+Private Sub Testo26_AfterUpdate()
+Me.Elenco0.Requery
+End Sub
+
+Private Sub Comando31_Click()
+On Error GoTo Err_Comando31_Click
+
+ApriSnapshot.Visible = False
+Elenco0.Visible = True
+CasellaCombinata11.Visible = False
+Cornice21.Visible = True
+CasellaCombinata5.Visible = True
+Testo26.Visible = True
+Testo26.SetFocus
+Comando31.Visible = False
+Variazioni.Visible = False
+
+Exit_Comando31_Click:
+    Exit Sub
+
+Err_Comando31_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando31_Click
+    
+End Sub
+Private Sub Comando33_Click()
+On Error GoTo Err_Comando33_Click
+
+
+    Screen.PreviousControl.SetFocus
+    DoCmd.DoMenuItem acFormBar, acEditMenu, 10, , acMenuVer70
+
+Exit_Comando33_Click:
+    Exit Sub
+
+Err_Comando33_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando33_Click
+    
+End Sub
+Private Sub anteprima_Click()
+On Error GoTo Err_anteprima_Click
+
+
+    Dim stLinkCriteria As String
+    Dim stDocName As String
+    Dim vntElemento As Variant
+
+If CasellaCombinata11.Visible = True Then
+
+    stLinkCriteria = "IdCertificato =" & Me.IdCertificato
+    stDocName = TipoReport
+    DoCmd.OpenReport stDocName, acPreview, , stLinkCriteria
+    Exit Sub
+End If
+
+For Each vntElemento In Me!Elenco0.ItemsSelected
+    stDocName = TipoReport
+    Testo3 = Me.Elenco0.ItemData(vntElemento)
+    Me.RecordsetClone.FindFirst "[IDCertificato] = " & Me![Testo3]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+    stLinkCriteria = "IdCertificato =" & Me.IdCertificato
+    DoCmd.OpenReport stDocName, acPreview, , stLinkCriteria
+
+Next
+
+Exit_anteprima_Click:
+    Exit Sub
+
+Err_anteprima_Click:
+    MsgBox Err.Description
+    Resume Exit_anteprima_Click
+    
+End Sub
+Private Sub Comando39_Click()
+On Error GoTo Err_Comando39_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "ConsegnaCertificati"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando39_Click:
+    Exit Sub
+
+Err_Comando39_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando39_Click
+    
+End Sub
+
+
+Private Sub Variazioni_Click()
+If IsNull(CasellaCombinata11) Then
+MsgBox "seleziona un certificato"
+Exit Sub
+End If
+
+Dim stLinkCriteria As String
+stLinkCriteria = "IdCertificato = " & Me.CasellaCombinata11
+DoCmd.OpenForm "VariazioniCertificato", , , stLinkCriteria
+
+End Sub

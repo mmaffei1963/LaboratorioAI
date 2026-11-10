@@ -1,0 +1,319 @@
+Version =196611
+ColumnsShown =12
+Begin
+    Action ="SetWarnings"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn1B"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn1B"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioOliva"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioOliva"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Preparato_proteico"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Preparato_proteico"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Baking-A"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Baking-A"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Latte"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Latte"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="FarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="FarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn4"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn4"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn1B"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn1B"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaBakingA"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaBakingA"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn1"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn1"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarinaForn3"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarinaForn3"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaPreparato_proteico"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaPreparato_proteico"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaOlioextra"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaOlioextra"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Accodalatte"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Accodalatte"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="Tracciabilit‡DataPreparatoproteico"
+    Argument ="2"
+    Argument =""
+    Argument =""
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End
+Begin
+    Action ="SetWarnings"
+    Comment ="_AXL:<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>\015\012<UserI"
+        "nterfaceMacro MinimumClientDesignVersion=\"14.0.0000.0000\" xmlns=\"http://schem"
+        "as.microsoft.com/office/accessservices/2009/11/application\" xmlns:a=\"http://sc"
+        "hemas.microsoft.com/office/acc"
+    Argument ="-1"
+End
+Begin
+    Comment ="_AXL:essservices/2009/11/forms\"><Statements><Action Name=\"OpenQuery\"><Argumen"
+        "t Name=\"QueryName\">FarinaForn1B</Argument></Action><Action Name=\"CloseWindow\""
+        "><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Far"
+        "inaForn1B</Argument><Ar"
+End
+Begin
+    Comment ="_AXL:gument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Arg"
+        "ument Name=\"QueryName\">Sale</Argument></Action><Action Name=\"CloseWindow\"><A"
+        "rgument Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">Sale</"
+        "Argument><Argument Name=\""
+End
+Begin
+    Comment ="_AXL:Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Q"
+        "ueryName\">OlioOliva</Argument></Action><Action Name=\"CloseWindow\"><Argument N"
+        "ame=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">OlioOliva</Argu"
+        "ment><Argument Name=\"Sav"
+End
+Begin
+    Comment ="_AXL:e\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Quer"
+        "yName\">grassovegetale</Argument></Action><Action Name=\"CloseWindow\"><Argument"
+        " Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">grassovegetal"
+        "e</Argument><Argument Na"
+End
+Begin
+    Comment ="_AXL:me=\"Save\">Yes</Argument></Action><Action Name=\"CloseWindow\"><Argument N"
+        "ame=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">grassovegetale<"
+        "/Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuer"
+        "y\"><Argument Name=\"Query"
+End
+Begin
+    Comment ="_AXL:Name\">FarinaForn1</Argument></Action><Action Name=\"CloseWindow\"><Argumen"
+        "t Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">FarinaForn1<"
+        "/Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQuer"
+        "y\"><Argument Name=\"Quer"
+End
+Begin
+    Comment ="_AXL:yName\">FarinaForn2</Argument></Action><Action Name=\"CloseWindow\"><Argume"
+        "nt Name=\"ObjectType\">Query</Argument><Argument Name=\"ObjectName\">FarinaForn2"
+        "</Argument><Argument Name=\"Save\">Yes</Argument></Action><Action Name=\"OpenQue"
+        "ry\"><Argument Name=\"Que"
+End

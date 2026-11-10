@@ -1,0 +1,898 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =255
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7920
+    DatasheetFontHeight =10
+    ItemSuffix =56
+    Left =3270
+    Top =15
+    Right =11475
+    Bottom =7770
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x9af7af255b7ee240
+    End
+    RecordSource ="Controllo Sanificazione"
+    Caption ="Controllo Sanificazione"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x3db5f4d0fded4343944e4c6b7b9324df
+            End
+        End
+        Begin Section
+            Height =6633
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xaa04171dd4759246915d74874f649505
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1428
+                    Top =114
+                    Width =825
+                    Height =255
+                    ColumnWidth =825
+                    Name ="Data"
+                    ControlSource ="Data"
+                    GUID = Begin
+                        0xbeb75aa921bfe342a65908ba5507546b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =114
+                            Width =1311
+                            Height =255
+                            Name ="Data_Etichetta"
+                            Caption ="Data"
+                            GUID = Begin
+                                0x1e17ea9dbe62ad478cae0ab0579e1b56
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1428
+                    Top =456
+                    Width =1365
+                    Height =255
+                    ColumnWidth =1701
+                    TabIndex =1
+                    Name ="N ordine"
+                    ControlSource ="N ordine"
+                    EventProcPrefix ="N_ordine"
+                    GUID = Begin
+                        0x7613b15848745a419891840ae08f0f4f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =57
+                            Top =456
+                            Width =1311
+                            Height =255
+                            Name ="N ordine_Etichetta"
+                            Caption ="N verifica"
+                            EventProcPrefix ="N_ordine_Etichetta"
+                            GUID = Begin
+                                0xbec3c143a944b740a33d27f5fc0ba0b6
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =1417
+                    ColumnWidth =2760
+                    TabIndex =2
+                    Name ="Piani di Appoggio"
+                    ControlSource ="Piani di Appoggio"
+                    EventProcPrefix ="Piani_di_Appoggio"
+                    GUID = Begin
+                        0xb8d81f22826e634599fc868d921a3004
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1417
+                            Width =1311
+                            Height =255
+                            Name ="Piani di Appoggio_Etichetta"
+                            Caption ="Piani di Appoggio"
+                            EventProcPrefix ="Piani_di_Appoggio_Etichetta"
+                            GUID = Begin
+                                0x60abf85824c4a646b646c75e96ca4eb0
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =1759
+                    ColumnWidth =1335
+                    TabIndex =3
+                    Name ="Impastatrice"
+                    ControlSource ="Impastatrice"
+                    GUID = Begin
+                        0x5091eaaa131364468abbbc2aee76c348
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1759
+                            Width =1311
+                            Height =255
+                            Name ="Impastatrice_Etichetta"
+                            Caption ="Impastatrice"
+                            GUID = Begin
+                                0xac4c9678251e454fa16baa8861a74384
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =2101
+                    ColumnWidth =2325
+                    TabIndex =4
+                    Name ="Spezzatrice"
+                    ControlSource ="Spezzatrice"
+                    GUID = Begin
+                        0xb77f963e4a55964f965d861a28c176f4
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2101
+                            Width =1311
+                            Height =255
+                            Name ="Spezzatrice_Etichetta"
+                            Caption ="Spezzatrice"
+                            GUID = Begin
+                                0x5bbdecebc10a4d4b829baa9f01b2887a
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =2443
+                    TabIndex =5
+                    Name ="Arrotondatrice"
+                    ControlSource ="Arrotondatrice"
+                    GUID = Begin
+                        0xffa324679bebc14986937c6e11e76ada
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2443
+                            Width =1311
+                            Height =255
+                            Name ="Arrotondatrice_Etichetta"
+                            Caption ="Arrotondatrice"
+                            GUID = Begin
+                                0xc5ed117cd4abb44f860aea3d68fd6ea9
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =2785
+                    TabIndex =6
+                    Name ="Nastro trasportatore"
+                    ControlSource ="Nastro trasportatore"
+                    EventProcPrefix ="Nastro_trasportatore"
+                    GUID = Begin
+                        0x803e6bb348a3a0468f400efe8c0d9073
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2785
+                            Width =1311
+                            Height =255
+                            Name ="Nastro trasportatore_Etichetta"
+                            Caption ="Nastro trasportatore"
+                            EventProcPrefix ="Nastro_trasportatore_Etichetta"
+                            GUID = Begin
+                                0x6f137fc2ae78c64eb596f0c324313764
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =3127
+                    TabIndex =7
+                    Name ="Piastre cottura"
+                    ControlSource ="Piastre cottura"
+                    EventProcPrefix ="Piastre_cottura"
+                    GUID = Begin
+                        0x6e6edacac9f86c41a9c7cac623578eab
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3127
+                            Width =1311
+                            Height =255
+                            Name ="Piastre cottura_Etichetta"
+                            Caption ="Piastre cottura"
+                            EventProcPrefix ="Piastre_cottura_Etichetta"
+                            GUID = Begin
+                                0x0414c2e362ca9b40a0a60429c9764586
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =3469
+                    ColumnWidth =1605
+                    TabIndex =8
+                    Name ="Sfogliatrice"
+                    ControlSource ="Sfogliatrice"
+                    GUID = Begin
+                        0x259f240f588bb94eb68d96c3930bcf8e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3469
+                            Width =1311
+                            Height =255
+                            Name ="Sfogliatrice_Etichetta"
+                            Caption ="Sfogliatrice"
+                            GUID = Begin
+                                0x5397f96c5dbb2b428f4fdf5d10db4764
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =3811
+                    TabIndex =9
+                    Name ="Anaconda"
+                    ControlSource ="Anaconda"
+                    GUID = Begin
+                        0x158cd839ad2c594394bc3fdab774e0c8
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =3811
+                            Width =1311
+                            Height =255
+                            Name ="Anaconda_Etichetta"
+                            Caption ="Anaconda"
+                            GUID = Begin
+                                0x8b31acfd6027524ea322dd989b476a1d
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =4153
+                    TabIndex =10
+                    Name ="Pavimenti Lab"
+                    ControlSource ="Pavimenti Lab"
+                    EventProcPrefix ="Pavimenti_Lab"
+                    GUID = Begin
+                        0x86be36b59fff804c9beb1db2f4b5433b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =4153
+                            Width =1311
+                            Height =255
+                            Name ="Pavimenti Lab_Etichetta"
+                            Caption ="Pavimenti Lab"
+                            EventProcPrefix ="Pavimenti_Lab_Etichetta"
+                            GUID = Begin
+                                0xf52ab89893425740b7c28a636ad223ca
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =4495
+                    TabIndex =11
+                    Name ="Lavabi Lab"
+                    ControlSource ="Lavabi Lab"
+                    EventProcPrefix ="Lavabi_Lab"
+                    GUID = Begin
+                        0x33ff4b03fa485443a946a0adf7ca0d4e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =4495
+                            Width =1311
+                            Height =255
+                            Name ="Lavabi Lab_Etichetta"
+                            Caption ="Lavabi Lab"
+                            EventProcPrefix ="Lavabi_Lab_Etichetta"
+                            GUID = Begin
+                                0x5fadea6fce16bf4f948bf566d7d52449
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =1427
+                    Top =4818
+                    TabIndex =12
+                    Name ="Bidoni spazzatura"
+                    ControlSource ="Bidoni spazzatura"
+                    EventProcPrefix ="Bidoni_spazzatura"
+                    GUID = Begin
+                        0xe34f56203f3a1346a11e055050de6258
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =4818
+                            Width =1311
+                            Height =255
+                            Name ="Bidoni spazzatura_Etichetta"
+                            Caption ="Bidoni spazzatura"
+                            EventProcPrefix ="Bidoni_spazzatura_Etichetta"
+                            GUID = Begin
+                                0x4b1a51be9b5ed04cbf78a9e53f428898
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =1360
+                    TabIndex =13
+                    Name ="Pavimenti dispensa"
+                    ControlSource ="Pavimenti dispensa"
+                    EventProcPrefix ="Pavimenti_dispensa"
+                    GUID = Begin
+                        0x6b16136a7249924f98735b5874e91022
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =1360
+                            Width =1311
+                            Height =255
+                            Name ="Pavimenti dispensa_Etichetta"
+                            Caption ="Pavimenti dispensa"
+                            EventProcPrefix ="Pavimenti_dispensa_Etichetta"
+                            GUID = Begin
+                                0x6c320f333700bd4aad34c23548b4200b
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =2211
+                    TabIndex =14
+                    Name ="Sanitari"
+                    ControlSource ="Sanitari"
+                    GUID = Begin
+                        0xe82466499a2fec4c88b9d77e48374ef9
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =2211
+                            Width =1311
+                            Height =255
+                            Name ="Sanitari_Etichetta"
+                            Caption ="Sanitari"
+                            GUID = Begin
+                                0x675ff3c15abc5946b8d5f33cb47f21f1
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =2553
+                    TabIndex =15
+                    Name ="Pavimento Servizi"
+                    ControlSource ="Pavimento Servizi"
+                    EventProcPrefix ="Pavimento_Servizi"
+                    GUID = Begin
+                        0x22d8b86ca13d5c429334ba59ffc43f57
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =2553
+                            Width =1311
+                            Height =255
+                            Name ="Pavimento Servizi_Etichetta"
+                            Caption ="Pavimento Servizi"
+                            EventProcPrefix ="Pavimento_Servizi_Etichetta"
+                            GUID = Begin
+                                0x79aad7c67b18f44cb351e9e036ec17ba
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =85
+                    Left =680
+                    Top =5272
+                    Width =7077
+                    Height =465
+                    ColumnWidth =3000
+                    TabIndex =16
+                    Name ="Note e raclami"
+                    ControlSource ="Note e raclami"
+                    EventProcPrefix ="Note_e_raclami"
+                    GUID = Begin
+                        0xfe3c57e1d7aafc4782f0d91e0a3f67e3
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =5272
+                            Width =516
+                            Height =255
+                            Name ="Note e raclami_Etichetta"
+                            Caption ="Note "
+                            EventProcPrefix ="Note_e_raclami_Etichetta"
+                            GUID = Begin
+                                0x2131bb33cdddc646a713fe2743525c9a
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =3684
+                    TabIndex =17
+                    Name ="Segni rod"
+                    ControlSource ="Segni rod"
+                    EventProcPrefix ="Segni_rod"
+                    GUID = Begin
+                        0x2657b34a4441034c91d8d2ff3fe70792
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =3684
+                            Width =1311
+                            Height =255
+                            Name ="Segni rod_Etichetta"
+                            Caption ="Segni rod"
+                            EventProcPrefix ="Segni_rod_Etichetta"
+                            GUID = Begin
+                                0x5a7100f1dfa48044a002dc7561d8d580
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =4026
+                    TabIndex =18
+                    Name ="Insetti stri"
+                    ControlSource ="Insetti stri"
+                    EventProcPrefix ="Insetti_stri"
+                    GUID = Begin
+                        0x0b40d4ba98049942b0f0508bc304c5ef
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =4026
+                            Width =1311
+                            Height =255
+                            Name ="Insetti stri_Etichetta"
+                            Caption ="Insetti stri"
+                            EventProcPrefix ="Insetti_stri_Etichetta"
+                            GUID = Begin
+                                0x77b19ee7d693f046b258d8ca53ac0d0a
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =4205
+                    Top =4368
+                    TabIndex =19
+                    Name ="Insetti Volanti"
+                    ControlSource ="Insetti Volanti"
+                    EventProcPrefix ="Insetti_Volanti"
+                    GUID = Begin
+                        0x22d7c021b9e07e4da7f7406284035f04
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2834
+                            Top =4368
+                            Width =1311
+                            Height =255
+                            Name ="Insetti Volanti_Etichetta"
+                            Caption ="Insetti Volanti"
+                            EventProcPrefix ="Insetti_Volanti_Etichetta"
+                            GUID = Begin
+                                0xf3616bccc28e9c4386e36fb05ea37cac
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Top =963
+                    Width =1531
+                    Height =235
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta42"
+                    Caption ="LABORATORIO"
+                    GUID = Begin
+                        0xd5749df30b52d64d90792e88c9d09eaf
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =2834
+                    Top =963
+                    Width =1531
+                    Height =235
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta43"
+                    Caption ="DISPENSA"
+                    GUID = Begin
+                        0x4f59f81d61a0b648aca8244f61ada04c
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =2834
+                    Top =1870
+                    Width =1755
+                    Height =285
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta44"
+                    Caption ="SERVIZI IGIENICI"
+                    GUID = Begin
+                        0x89ee304fd6607f4ea0679a4751419350
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =-7
+                    Top =850
+                    Width =1934
+                    Height =4364
+                    Name ="Casella45"
+                    GUID = Begin
+                        0x184c12044c62b64e89accbbb1851bfdc
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =2777
+                    Top =907
+                    Width =1815
+                    Height =793
+                    Name ="Casella46"
+                    GUID = Begin
+                        0x14b308a71d2b7e4db6fde9a4dad6117b
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =2777
+                    Top =1814
+                    Width =2041
+                    Height =1134
+                    Name ="Casella47"
+                    GUID = Begin
+                        0xe642d93707975946b8977c928d778027
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =2834
+                    Top =3231
+                    Width =3860
+                    Height =397
+                    FontWeight =700
+                    ForeColor =255
+                    Name ="Etichetta48"
+                    Caption ="DERATTIZZAZIONE DISINFESTAZIONE"
+                    GUID = Begin
+                        0x1f9a90d80d2c5e4b8e6b0dc73f801f2b
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =247
+                    Left =2834
+                    Top =3174
+                    Width =4139
+                    Height =1701
+                    Name ="Casella49"
+                    GUID = Begin
+                        0x34c17c83cc12c64ba37c5997ae9ff6e3
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3855
+                    Top =170
+                    TabIndex =20
+                    Name ="Operatore"
+                    ControlSource ="Operatore"
+                    GUID = Begin
+                        0xa15f9aeefa7a564d804f6d7a6d84336d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2891
+                            Top =113
+                            Width =825
+                            Height =240
+                            Name ="Etichetta50"
+                            Caption ="Operatore:"
+                            GUID = Begin
+                                0xa0f9d8f970d8a74cbef927ba8441e7d8
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    OverlapFlags =255
+                    Left =56
+                    Top =56
+                    Width =5726
+                    Height =737
+                    Name ="Casella51"
+                    GUID = Begin
+                        0x2aa726799079d741b3109c481e83e9ec
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =247
+                    ColumnCount =3
+                    ListWidth =3180
+                    Left =3061
+                    Top =453
+                    Width =2041
+                    Height =284
+                    TabIndex =21
+                    BoundColumn =2
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xce00b05f2bbd96479b84cac71fca6fb7
+                    End
+                    Name ="CasellaCombinata52"
+                    ControlSource ="Operatore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Organico].[CognomeOrg], [Organico].[NomeOrg], [Organico].[IdOrganico] FR"
+                        "OM [Organico]"
+                    ColumnWidths ="1440;1440;300"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =1360
+                            Top =453
+                            Width =1560
+                            Height =240
+                            Name ="CognomeOrg_Etichetta"
+                            Caption ="CognomeOrg"
+                            GUID = Begin
+                                0x64f8c68606a6df47a720aa0d8b716a0b
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =87
+                    ColumnCount =3
+                    ListWidth =4380
+                    Left =680
+                    Top =5782
+                    Width =7037
+                    Height =805
+                    TabIndex =22
+                    BoundColumn =2
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"510\""
+                    GUID = Begin
+                        0x72fcb6d010561a47ba7b25109c1cdaa7
+                    End
+                    Name ="CasellaCombinata54"
+                    ControlSource ="Giudizio"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Giudizi sanificazione].[Giudizio], [Giudizi sanificazione].[Guiudsint], "
+                        "[Giudizi sanificazione].[IDGiudizio] FROM [Giudizi sanificazione]"
+                    ColumnWidths ="1440;2580;360"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =5782
+                            Width =675
+                            Height =240
+                            Name ="CasellaCombinata54_Etichetta"
+                            Caption ="Giudizio"
+                            GUID = Begin
+                                0xf76aeedfd100164f9803d519adad5f31
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1133
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x31590aaaca017e4390fa92292cbaf813
+            End
+        End
+    End
+End

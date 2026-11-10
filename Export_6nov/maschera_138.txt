@@ -1,0 +1,292 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    AutoCenter = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =124
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6294
+    DatasheetFontHeight =10
+    ItemSuffix =12
+    Left =9420
+    Top =1020
+    Right =16005
+    Bottom =5760
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xc4b61e137731e440
+    End
+    RecordSource ="Date"
+    Caption ="Date"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0xc6798e5f3d14e74da136ef4c58c89a54
+            End
+        End
+        Begin Section
+            Height =2211
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x0b2589a69901d0498154db4428eff69d
+            End
+            Begin
+                Begin ComboBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ListWidth =1440
+                    Left =1020
+                    Top =850
+                    Width =2736
+                    Height =340
+                    ColumnInfo ="\"\";\"\";\"8\";\"8\""
+                    GUID = Begin
+                        0x901dd58957fe484a911f552bf244c137
+                    End
+                    Name ="CasellaCombinata6"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Date].[Data] FROM [Date]"
+                    ColumnWidths ="1440"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =907
+                            Width =555
+                            Height =245
+                            Name ="Data1_Etichetta"
+                            Caption ="Data1"
+                            GUID = Begin
+                                0xc606f5cc1c39d64e95734a4852fcd81a
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ListWidth =1440
+                    Left =1020
+                    Top =1474
+                    Width =2665
+                    Height =284
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"8\";\"8\""
+                    GUID = Begin
+                        0xda080abbd099744b8674fb89c17b4b7c
+                    End
+                    Name ="CasellaCombinata8"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Date].[Data] FROM [Date]"
+                    ColumnWidths ="1440"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =1474
+                            Width =465
+                            Height =245
+                            Name ="Data_Etichetta"
+                            Caption ="Data"
+                            GUID = Begin
+                                0x5a459e20798aba438e59c1caae28b94a
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4535
+                    Top =907
+                    Width =726
+                    Height =906
+                    TabIndex =2
+                    Name ="Comando10"
+                    Caption ="Comando10"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada000000000000ad000ffffffffff0d000 ,
+                        0x0fffffff0000700d0ffffff0788707da0fffff0788e770ad0fffff08888780da ,
+                        0x0fffff08e88780ad0fffff07ee8770da0ffffff078870dad0fffffff0000dada ,
+                        0x0ffffffffff0adad0fffffff0000dada0fffffff080dadad0fffffff00dadada ,
+                        0x000000000dadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Anteprima report"
+                    GUID = Begin
+                        0xfaec18c66775454f8baba8152f85e804
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OverlapFlags =85
+                    Left =170
+                    Top =113
+                    Width =5890
+                    Height =567
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =10092543
+                    ForeColor =255
+                    Name ="Etichetta11"
+                    Caption ="SELEZIONE DATE PER STAMPA LOTTI"
+                    GUID = Begin
+                        0x3340939571920c4eb7f3060c4ed97be5
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =340
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0xb23131f511fbbf4c86c37c213ce44c14
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Comando10_Click()
+On Error GoTo Err_Comando10_Click
+
+    Dim stDocName As String
+
+    stDocName = "selezione_date"
+    DoCmd.OpenReport stDocName, acPreview
+
+Exit_Comando10_Click:
+    Exit Sub
+
+Err_Comando10_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando10_Click
+    
+End Sub
