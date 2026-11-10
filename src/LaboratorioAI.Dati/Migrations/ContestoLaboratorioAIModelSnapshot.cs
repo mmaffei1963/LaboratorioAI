@@ -10867,6 +10867,85 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("VociChecklist", "man");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.VoceDocumentoVenditaAzw", b =>
+                {
+                    b.Property<int>("IdVoceDocumentoVenditaAzw")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVoceDocumentoVenditaAzw"));
+
+                    b.Property<int>("AnnoDocumento")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Centro")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("CodiceArticolo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CodiceCliente")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Commessa")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("DataDocumento")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Descrizione")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<decimal>("Importo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("NumeroDocumento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("NumeroRiga")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Prezzo")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("Quantita")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("RagioneSociale")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Sconto")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Voce")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("IdVoceDocumentoVenditaAzw");
+
+                    b.HasIndex("CodiceCliente");
+
+                    b.HasIndex("DataDocumento");
+
+                    b.ToTable("VociDocumentiVenditaAzw", "dir");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.VoceElencoSviluppo", b =>
                 {
                     b.Property<int>("IdElencoSviluppo")
