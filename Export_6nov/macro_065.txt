@@ -1,0 +1,31 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenForm"
+    Argument ="SMElencomerce"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="SMElencomerce"
+    Argument ="0"
+End
+Begin
+    Action ="Save"
+    Argument ="2"
+    Argument ="Accettazione in entrata"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="SMElencomerce"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End

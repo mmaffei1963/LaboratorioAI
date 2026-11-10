@@ -1,0 +1,687 @@
+Version =19
+VersionRequired =19
+Checksum =-234827586
+Begin Form
+    AutoCenter = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10557
+    DatasheetFontHeight =10
+    ItemSuffix =50
+    Left =2205
+    Top =45
+    Right =13290
+    Bottom =3675
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x914294690f42e240
+    End
+    RecordSource ="SELECT PianoInterventi.IdPianoInt, PianoInterventi.CodPiano, [DenApp] & \" \" & "
+        "[ModelloApp] AS apparecchiatura, PianoInterventi.IdApparecchio, PianoInterventi."
+        "NomePiano, PianoInterventi.IdProcedura, PianoInterventi.IdAttività, PianoInterve"
+        "nti.LimInfInt, PianoInterventi.LimSupInt, PianoInterventi.ValTeorico, PianoInter"
+        "venti.ValImpostato, PianoInterventi.IdUnità, PianoInterventi.FreqGiorni, PianoIn"
+        "terventi.FreqOre, PianoInterventi.FreqCampioni, PianoInterventi.FreqVaria, Piano"
+        "Interventi.AzioneCorr, PianoInterventi.ParteInt, PianoInterventi.IdAttività, Pia"
+        "noInterventi.IperlinkProcedura, Apparecchiature.NonInUso FROM Apparecchiature IN"
+        "NER JOIN (Unitadimisura RIGHT JOIN PianoInterventi ON Unitadimisura.IdUnita = Pi"
+        "anoInterventi.IdUnità) ON Apparecchiature.IdApparecchio = PianoInterventi.IdAppa"
+        "recchio;"
+    Caption ="PianoControlli"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =453
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            Begin
+                Begin TextBox
+                    SpecialEffect =0
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =115
+                    Top =56
+                    Width =9021
+                    Height =390
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =-2147483633
+                    BorderColor =0
+                    ForeColor =8388608
+                    Name ="DenApp"
+                    ControlSource ="apparecchiatura"
+                End
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =4949
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin Rectangle
+                    SpecialEffect =2
+                    BackStyle =1
+                    OverlapFlags =93
+                    Left =7370
+                    Top =567
+                    Width =2995
+                    Height =1032
+                    Name ="Casella36"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =8503
+                    Top =2324
+                    Width =441
+                    Height =227
+                    ColumnWidth =1701
+                    Name ="IdPianoInt"
+                    ControlSource ="IdPianoInt"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1697
+                    Top =510
+                    Width =1755
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =1
+                    Name ="CodPiano"
+                    ControlSource ="CodPiano"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =510
+                            Width =660
+                            Height =227
+                            Name ="CodPiano Etichetta"
+                            Caption ="codice"
+                            EventProcPrefix ="CodPiano_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    SpecialEffect =2
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =1697
+                    Top =56
+                    Width =8670
+                    Height =332
+                    ColumnWidth =3000
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =2
+                    ForeColor =255
+                    Name ="NomePiano"
+                    ControlSource ="NomePiano"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =56
+                            Width =510
+                            Height =227
+                            Name ="NomePiano Etichetta"
+                            Caption ="titolo"
+                            EventProcPrefix ="NomePiano_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5215
+                    Top =737
+                    Width =1140
+                    Height =227
+                    ColumnWidth =900
+                    TabIndex =3
+                    Name ="IdProcedura"
+                    ControlSource ="IdProcedura"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =3571
+                            Top =737
+                            Width =945
+                            Height =227
+                            Name ="IdProcedura Etichetta"
+                            Caption ="procedura"
+                            EventProcPrefix ="IdProcedura_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    ListWidth =3969
+                    Left =1697
+                    Top =964
+                    Width =1755
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =4
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"80\""
+                    Name ="IdAttività"
+                    ControlSource ="IdAttività"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Attività.IdAttività, Attività.Attività, Attività.IdTipoAttività FROM Atti"
+                        "vità WHERE (((Attività.IdTipoAttività)=3)) ORDER BY Attività.Attività;"
+                    ColumnWidths ="0;2835"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =964
+                            Width =1485
+                            Height =227
+                            Name ="IdTipoRespInt Etichetta"
+                            Caption ="tipo di attività"
+                            EventProcPrefix ="IdTipoRespInt_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1697
+                    Top =1190
+                    Width =1755
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =5
+                    Name ="LimInfInt"
+                    ControlSource ="LimInfInt"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =1190
+                            Width =705
+                            Height =227
+                            Name ="LimInfInt Etichetta"
+                            Caption ="lim. inf."
+                            EventProcPrefix ="LimInfInt_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1697
+                    Top =1417
+                    Width =1755
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =6
+                    Name ="LimSupInt"
+                    ControlSource ="LimSupInt"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =1417
+                            Width =795
+                            Height =227
+                            Name ="LimSupInt Etichetta"
+                            Caption ="lim. sup."
+                            EventProcPrefix ="LimSupInt_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =4
+                    OverlapFlags =95
+                    Left =5215
+                    Top =963
+                    Width =1140
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =7
+                    Name ="ValTeorico"
+                    ControlSource ="ValTeorico"
+                    Format ="#,#00;–#,#00;#,#00"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =3571
+                            Top =964
+                            Width =1425
+                            Height =227
+                            Name ="ValTeorico Etichetta"
+                            Caption ="incertezza +/-"
+                            EventProcPrefix ="ValTeorico_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =4
+                    OverlapFlags =95
+                    Left =5215
+                    Top =1190
+                    Width =1140
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =8
+                    Name ="ValImpostato"
+                    ControlSource ="ValImpostato"
+                    Format ="#,#00;–#,#00;#,#00"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =3571
+                            Top =1190
+                            Width =1485
+                            Height =227
+                            Name ="ValImpostato Etichetta"
+                            Caption ="tolleranza+/-"
+                            EventProcPrefix ="ValImpostato_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =223
+                    Left =8776
+                    Top =618
+                    Width =690
+                    Height =227
+                    ColumnWidth =900
+                    TabIndex =9
+                    Name ="FreqGiorni"
+                    ControlSource ="FreqGiorni"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            TextAlign =1
+                            Left =7472
+                            Top =618
+                            Width =555
+                            Height =227
+                            Name ="FreqGiorni Etichetta"
+                            Caption ="giorni"
+                            EventProcPrefix ="FreqGiorni_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =223
+                    Left =8776
+                    Top =845
+                    Width =690
+                    Height =227
+                    ColumnWidth =900
+                    TabIndex =10
+                    Name ="FreqOre"
+                    ControlSource ="FreqOre"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =7472
+                            Top =845
+                            Width =360
+                            Height =227
+                            Name ="FreqOre Etichetta"
+                            Caption ="ore"
+                            EventProcPrefix ="FreqOre_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =223
+                    Left =8776
+                    Top =1071
+                    Width =690
+                    Height =227
+                    ColumnWidth =900
+                    TabIndex =11
+                    Name ="FreqCampioni"
+                    ControlSource ="FreqCampioni"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =7472
+                            Top =1071
+                            Width =1080
+                            Height =227
+                            Name ="FreqCampioni Etichetta"
+                            Caption ="n° campioni"
+                            EventProcPrefix ="FreqCampioni_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    Left =8776
+                    Top =1298
+                    Width =1425
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =12
+                    Name ="FreqVaria"
+                    ControlSource ="FreqVaria"
+                    Begin
+                        Begin Label
+                            OverlapFlags =215
+                            Left =7472
+                            Top =1298
+                            Width =855
+                            Height =227
+                            Name ="FreqVaria Etichetta"
+                            Caption ="specifica"
+                            EventProcPrefix ="FreqVaria_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =1712
+                    Top =1644
+                    Width =8652
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =13
+                    Name ="AzioneCorr"
+                    ControlSource ="AzioneCorr"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =56
+                            Top =1644
+                            Width =1515
+                            Height =227
+                            Name ="AzioneCorr Etichetta"
+                            Caption ="azione corretiva"
+                            EventProcPrefix ="AzioneCorr_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =5215
+                    Top =510
+                    Width =1140
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =14
+                    Name ="ParteInt"
+                    ControlSource ="ParteInt"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =3570
+                            Top =510
+                            Width =1455
+                            Height =225
+                            Name ="ParteInt Etichetta"
+                            Caption ="campo di misura"
+                            EventProcPrefix ="ParteInt_Etichetta"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6406
+                    Top =567
+                    Width =930
+                    Height =240
+                    BackColor =12632256
+                    Name ="Etichetta37"
+                    Caption ="frequenza"
+                End
+                Begin Subform
+                    OverlapFlags =247
+                    Left =56
+                    Top =2167
+                    Width =10365
+                    Height =2385
+                    TabIndex =15
+                    Name ="SchedeIntervento"
+                    SourceObject ="Form.SchedeIntervento"
+                    LinkChildFields ="IdPianoInt"
+                    LinkMasterFields ="IdPianoInt"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1927
+                            Width =1605
+                            Height =227
+                            ForeColor =255
+                            Name ="SchedeIntervento Etichetta"
+                            Caption ="Schede"
+                            EventProcPrefix ="SchedeIntervento_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =87
+                    ColumnCount =2
+                    Left =5215
+                    Top =1417
+                    Width =1146
+                    TabIndex =16
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="IdUnità"
+                    ControlSource ="IdUnità"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Unitadimisura.IdUnita, Unitadimisura.UnitaMisura FROM Unitadimisura;"
+                    ColumnWidths ="0;1701"
+                    Begin
+                        Begin Label
+                            OverlapFlags =215
+                            Left =3570
+                            Top =1412
+                            Width =1320
+                            Height =240
+                            Name ="Etichetta44"
+                            Caption ="unità di misura"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6576
+                    Top =907
+                    Width =576
+                    Height =576
+                    TabIndex =17
+                    Name ="Anteprima"
+                    Caption ="Comando48"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadada000000000000ad000ffffffffff0d000 ,
+                        0x0fffffff0000700d0ffffff0788707da0fffff0788e770ad0fffff08888780da ,
+                        0x0fffff08e88780ad0fffff07ee8770da0ffffff078870dad0fffffff0000dada ,
+                        0x0ffffffffff0adad0fffffff0000dada0fffffff080dadad0fffffff00dadada ,
+                        0x000000000dadadad000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000000000000000
+                    End
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="visualizza e stampa elenco interventi effettuati"
+                End
+                Begin TextBox
+                    FontUnderline = NotDefault
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =87
+                    Left =3401
+                    Top =1870
+                    Width =6969
+                    Height =228
+                    TabIndex =18
+                    ForeColor =16711680
+                    Name ="IperlinkProcedura"
+                    ControlSource ="IperlinkProcedura"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =1700
+                            Top =1870
+                            Width =1596
+                            Height =228
+                            Name ="Etichetta49"
+                            Caption ="IperlinkProcedura:"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub anteprima_Click()
+On Error GoTo Err_anteprima_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "IntervAppar"
+    stLinkCriteria = "IdPianoInt = " & IdPianoInt
+    DoCmd.OpenReport stDocName, acPreview, , stLinkCriteria
+
+Exit_anteprima_Click:
+    Exit Sub
+
+Err_anteprima_Click:
+    MsgBox Err.Description
+    Resume Exit_anteprima_Click
+    
+End Sub

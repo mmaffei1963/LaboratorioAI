@@ -1,0 +1,580 @@
+Version =19
+VersionRequired =19
+Checksum =-234827537
+Begin Form
+    AutoCenter = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9070
+    DatasheetFontHeight =10
+    ItemSuffix =43
+    Left =2772
+    Top =1248
+    Right =12132
+    Bottom =4992
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xe38cebab5745e240
+    End
+    RecordSource ="SELECT SedeFornitore.* FROM SedeFornitore ORDER BY SedeFornitore.NomeSede;"
+    Caption ="SedeFornitore"
+    OnCurrent ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            BackStyle =0
+            Width =850
+            Height =850
+            BorderColor =128
+        End
+        Begin Line
+            BorderWidth =2
+            Width =1701
+            BorderColor =128
+        End
+        Begin Image
+            SpecialEffect =3
+            BackStyle =0
+            OldBorderStyle =0
+            BorderWidth =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =3
+            OldBorderStyle =0
+            BorderWidth =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =3
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =15269887
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =3
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+            FontName ="Arial"
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =3174
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =2777
+                    Top =2097
+                    Width =381
+                    Height =227
+                    ColumnWidth =1701
+                    Name ="IdSedeFornitore"
+                    ControlSource ="IdSedeFornitore"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =3458
+                    Top =1984
+                    Width =375
+                    Height =227
+                    ColumnWidth =900
+                    TabIndex =1
+                    Name ="IdFornitore"
+                    ControlSource ="IdFornitore"
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =93
+                    Left =913
+                    Top =56
+                    Width =8103
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =2
+                    Name ="NomeSede"
+                    ControlSource ="NomeSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =56
+                            Width =540
+                            Height =227
+                            Name ="NomeSede Etichetta"
+                            Caption ="nome"
+                            EventProcPrefix ="NomeSede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =922
+                    Top =283
+                    Width =8088
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =3
+                    Name ="IndirizzoSede"
+                    ControlSource ="IndirizzoSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =283
+                            Width =780
+                            Height =227
+                            Name ="IndirizzoSede Etichetta"
+                            Caption ="indirizzo"
+                            EventProcPrefix ="IndirizzoSede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =4523
+                    Top =510
+                    Width =1488
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =4
+                    Name ="Citt‡Sede"
+                    ControlSource ="Citt‡Sede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =3968
+                            Top =510
+                            Width =465
+                            Height =227
+                            Name ="Citt‡Sede Etichetta"
+                            Caption ="citt‡"
+                            EventProcPrefix ="Citt‡Sede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =223
+                    Left =2834
+                    Top =510
+                    Width =900
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =5
+                    Name ="ProvinciaSede"
+                    ControlSource ="ProvinciaSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =1870
+                            Top =513
+                            Width =975
+                            Height =227
+                            Name ="ProvinciaSede Etichetta"
+                            Caption ="sigla prov."
+                            EventProcPrefix ="ProvinciaSede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =7313
+                    Top =510
+                    Width =1698
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =6
+                    Name ="StatoSede"
+                    ControlSource ="StatoSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =6746
+                            Top =510
+                            Width =450
+                            Height =227
+                            Name ="StatoSede Etichetta"
+                            Caption ="stato"
+                            EventProcPrefix ="StatoSede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =922
+                    Top =510
+                    Width =933
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =7
+                    Name ="CapSede"
+                    ControlSource ="CapSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =510
+                            Width =405
+                            Height =227
+                            Name ="CapSede Etichetta"
+                            Caption ="cap"
+                            EventProcPrefix ="CapSede_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    Left =908
+                    Top =737
+                    Width =1431
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =8
+                    Name ="EmailSede"
+                    ControlSource ="EmailSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =56
+                            Top =737
+                            Width =540
+                            Height =227
+                            Name ="EmailSede Etichetta"
+                            Caption ="Email"
+                            EventProcPrefix ="EmailSede_Etichetta"
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =247
+                    Left =4308
+                    Top =1247
+                    Width =3810
+                    Height =1821
+                    TabIndex =9
+                    Name ="TelefonoFornitore"
+                    SourceObject ="Form.TelefonoFornitore"
+                    LinkChildFields ="IdSedeFornitore"
+                    LinkMasterFields ="IdSedeFornitore"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =4536
+                    Top =737
+                    Width =1473
+                    Height =227
+                    TabIndex =10
+                    Name ="FaxOrdiniSede"
+                    ControlSource ="FaxOrdiniSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =3231
+                            Top =737
+                            Width =1200
+                            Height =227
+                            Name ="Etichetta24"
+                            Caption ="fax per ordini"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =7323
+                    Top =737
+                    Height =227
+                    TabIndex =11
+                    Name ="TelOrdiniSede"
+                    ControlSource ="TelOrdiniSede"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =6066
+                            Top =737
+                            Width =1155
+                            Height =227
+                            Name ="Etichetta25"
+                            Caption ="tel per ordini"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =6576
+                    Top =2040
+                    Width =789
+                    Height =227
+                    ColumnWidth =408
+                    TabIndex =12
+                    Name ="Testo34"
+                    ControlSource ="IdSedeFornitore"
+                End
+                Begin Subform
+                    OverlapFlags =247
+                    Left =56
+                    Top =1247
+                    Width =4146
+                    Height =1830
+                    TabIndex =13
+                    Name ="MarcaProdotto"
+                    SourceObject ="Form.MarcaProdotto"
+                    LinkChildFields ="IdFornitore"
+                    LinkMasterFields ="IdFornitore"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1020
+                            Width =1425
+                            Height =227
+                            ForeColor =255
+                            Name ="MarcaProdotto Etichetta"
+                            Caption ="rappresentanze"
+                            EventProcPrefix ="MarcaProdotto_Etichetta"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =4308
+                    Top =1020
+                    Width =720
+                    Height =210
+                    ForeColor =255
+                    Name ="Etichetta42"
+                    Caption ="telefoni"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8163
+                    Top =1417
+                    Width =765
+                    Height =405
+                    TabIndex =14
+                    Name ="ApriContatti"
+                    Caption ="contatti"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8163
+                    Top =1927
+                    Width =735
+                    Height =405
+                    TabIndex =15
+                    Name ="btnApriOrdini"
+                    Caption ="ordini"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =566
+            BackColor =-2147483633
+            Name ="PiËDiPaginaMaschera"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =113
+                    Top =56
+                    Width =690
+                    Height =405
+                    Name ="btnNuovaSede"
+                    Caption ="nuovo"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =963
+                    Top =56
+                    Width =645
+                    Height =405
+                    TabIndex =1
+                    Name ="btnSalva"
+                    Caption ="Salva"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Private Sub btnApriOrdini_Click()
+On Error GoTo Err_btnApriOrdini_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Ordini"
+    
+    stLinkCriteria = "[IdSedeFornitore]=" & Me![IdSedeFornitore]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_btnApriOrdini_Click:
+    Exit Sub
+
+Err_btnApriOrdini_Click:
+    MsgBox Err.Description
+    Resume Exit_btnApriOrdini_Click
+    
+End Sub
+
+Private Sub Form_Current()
+If IsNull(IdSedeFornitore) Then
+btnApriOrdini.Visible = False
+Else: btnApriOrdini.Visible = True
+End If
+End Sub
+Private Sub btnNuovaSede_Click()
+On Error GoTo Err_btnNuovaSede_Click
+
+
+    DoCmd.GoToRecord , , acNewRec
+    If IsOpen("Fornitori") Then
+        Me.NomeSede.DefaultValue = "Forms!Fornitori!RagSocialeForn"
+        Me.IndirizzoSede.DefaultValue = "Forms!Fornitori!IndirizzoFattForn"
+        Me.Citt‡Sede.DefaultValue = "Forms!Fornitori!Citt‡FattForn"
+        Me.ProvinciaSede.DefaultValue = "Forms!Fornitori!ProvinciaFattForn"
+        Me.CapSede.DefaultValue = "Forms!Fornitori!CapFattForn"
+        Me.StatoSede.DefaultValue = "Forms!Fornitori!StatoFattForn"
+    End If
+
+Exit_btnNuovaSede_Click:
+    Exit Sub
+
+Err_btnNuovaSede_Click:
+    MsgBox Err.Description
+    Resume Exit_btnNuovaSede_Click
+    
+End Sub
+Private Sub ApriContatti_Click()
+On Error GoTo Err_ApriContatti_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Contatti"
+    
+    stLinkCriteria = "[IdSedeFornitore]=" & Me![IdSedeFornitore]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_ApriContatti_Click:
+    Exit Sub
+
+Err_ApriContatti_Click:
+    MsgBox Err.Description
+    Resume Exit_ApriContatti_Click
+    
+End Sub
+Private Sub btnSalva_Click()
+On Error GoTo Err_btnSalva_Click
+
+
+    DoCmd.DoMenuItem acFormBar, acRecordsMenu, acSaveRecord, , acMenuVer70
+
+Exit_btnSalva_Click:
+    Exit Sub
+
+Err_btnSalva_Click:
+    MsgBox Err.Description
+    Resume Exit_btnSalva_Click
+    
+End Sub

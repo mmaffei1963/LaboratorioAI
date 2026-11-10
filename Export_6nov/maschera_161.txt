@@ -1,0 +1,709 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoCenter = NotDefault
+    DividingLines = NotDefault
+    OrderByOn = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6870
+    DatasheetFontHeight =10
+    ItemSuffix =37
+    Left =1440
+    Top =1020
+    Right =8640
+    Bottom =5445
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xbd13014b1591e140
+    End
+    RecordSource ="Fornitori"
+    Caption ="Fornitori"
+    OnCurrent ="[Event Procedure]"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            Height =3518
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    Left =6122
+                    Top =56
+                    Width =666
+                    Height =227
+                    ColumnWidth =1701
+                    Name ="IdFornitore"
+                    ControlSource ="IdFornitore"
+                    Format ="General Number"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =5385
+                            Top =56
+                            Width =510
+                            Height =227
+                            Name ="IdFornitore Etichetta"
+                            Caption ="N∞"
+                            EventProcPrefix ="IdFornitore_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =93
+                    Left =1474
+                    Top =907
+                    Width =5340
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =1
+                    Name ="RagSocialeForn"
+                    ControlSource ="RagSocialeForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =907
+                            Width =1365
+                            Height =227
+                            Name ="RagSocialeForn Etichetta"
+                            Caption ="ragione sociale"
+                            EventProcPrefix ="RagSocialeForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3009
+                    Top =1361
+                    Width =1860
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =2
+                    Name ="Citt‡FattForn"
+                    ControlSource ="Citt‡FattForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2437
+                            Top =1361
+                            Width =465
+                            Height =227
+                            Name ="Citt‡FattForn Etichetta"
+                            Caption ="citt‡"
+                            EventProcPrefix ="Citt‡FattForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =6293
+                    Top =1361
+                    Width =510
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =3
+                    Name ="ProvinciaFattForn"
+                    ControlSource ="ProvinciaFattForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =5215
+                            Top =1366
+                            Width =870
+                            Height =227
+                            Name ="ProvinciaFattForn Etichetta"
+                            Caption ="provincia"
+                            EventProcPrefix ="ProvinciaFattForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1474
+                    Top =1588
+                    Width =3390
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =4
+                    Name ="StatoFattForn"
+                    ControlSource ="StatoFattForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =1588
+                            Width =510
+                            Height =227
+                            Name ="StatoFattForn Etichetta"
+                            Caption ="stato"
+                            EventProcPrefix ="StatoFattForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1474
+                    Top =1814
+                    Width =1590
+                    Height =227
+                    ColumnWidth =885
+                    TabIndex =5
+                    Name ="PIVAForn"
+                    ControlSource ="PIVAForn"
+                    InputMask ="###########;0;#"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =1814
+                            Width =915
+                            Height =227
+                            Name ="PIVAForn Etichetta"
+                            Caption ="Part. IVA"
+                            EventProcPrefix ="PIVAForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =3692
+                    Top =1814
+                    Width =1860
+                    Height =227
+                    ColumnWidth =1260
+                    TabIndex =6
+                    Name ="CodFiscForn"
+                    ControlSource ="CodFiscForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =3118
+                            Top =1814
+                            Width =465
+                            Height =227
+                            Name ="CodFiscForn Etichetta"
+                            Caption ="C. F."
+                            EventProcPrefix ="CodFiscForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =95
+                    Left =1474
+                    Top =1134
+                    Width =5340
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =7
+                    Name ="IndirizzoFattForn"
+                    ControlSource ="IndirizzoFattForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =1134
+                            Width =1365
+                            Height =227
+                            Name ="IndirizzoFattForn Etichetta"
+                            Caption ="indirizzo "
+                            EventProcPrefix ="IndirizzoFattForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =1474
+                    Top =1361
+                    Width =675
+                    Height =227
+                    ColumnWidth =1560
+                    TabIndex =8
+                    Name ="CapFattForn"
+                    ControlSource ="CapFattForn"
+                    InputMask ="00000;0;*"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =67
+                            Top =1361
+                            Width =1290
+                            Height =227
+                            Name ="CapFattForn Etichetta"
+                            Caption ="CAP"
+                            EventProcPrefix ="CapFattForn_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    Left =1470
+                    Top =3231
+                    Width =5337
+                    Height =287
+                    ColumnWidth =3000
+                    TabIndex =9
+                    Name ="NotaForn"
+                    ControlSource ="NotaForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =3231
+                            Width =675
+                            Height =227
+                            Name ="NotaForn Etichetta"
+                            Caption ="note"
+                            EventProcPrefix ="NotaForn_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =95
+                    ColumnCount =2
+                    Left =1474
+                    Top =2040
+                    Width =5340
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =10
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdDilPagForn"
+                    ControlSource ="IdDilPagForn"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DilPagamento.IdDilPagamento, DilPagamento.Dilazione FROM DilPagamento;"
+                    ColumnWidths ="0;1701"
+                    Begin
+                        Begin Label
+                            OverlapFlags =95
+                            Left =56
+                            Top =2040
+                            Width =1335
+                            Height =227
+                            Name ="IdDilPagForn Etichetta"
+                            Caption ="dil. pagamento"
+                            EventProcPrefix ="IdDilPagForn_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =1474
+                    Top =56
+                    Width =3621
+                    Height =227
+                    TabIndex =11
+                    ColumnInfo ="\"N∞ Cliente\";\"\";\"ragione sociale\";\"\";\"10\";\"300\""
+                    Name ="CasellaCombinata24"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornitor"
+                        "i ORDER BY Fornitori.RagSocialeForn;"
+                    ColumnWidths ="0;1440"
+                    AfterUpdate ="[Event Procedure]"
+                    BaseInfo ="\"SELECT DISTINCTROW Fornitori.IdFornitore, Fornitori.RagSocialeForn FROM Fornit"
+                        "ori ORDER BY Fornitori.RagSocialeForn;\";\"Fornitori\";\"\";\"IdFornitore\";\"Ra"
+                        "gSocialeForn\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =56
+                            Width =1290
+                            Height =227
+                            Name ="Etichetta25"
+                            Caption ="trova fornitore"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    ListWidth =1454
+                    Left =1474
+                    Top =2495
+                    Width =2886
+                    Height =227
+                    ColumnWidth =990
+                    TabIndex =12
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdTipoForn"
+                    ControlSource ="IdTipoForn"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW TipoFornitore.IdTipoForn, TipoFornitore.TipoFornitore FROM Ti"
+                        "poFornitore ORDER BY TipoFornitore.TipoFornitore;"
+                    ColumnWidths ="0;1440"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2495
+                            Width =630
+                            Height =227
+                            Name ="Etichetta26"
+                            Caption ="tipo"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1474
+                    Top =2948
+                    Width =831
+                    Height =227
+                    TabIndex =13
+                    Name ="CodAbiForn"
+                    ControlSource ="CodAbiForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =2948
+                            Width =840
+                            Height =227
+                            Name ="Etichetta28"
+                            Caption ="Cod ABI"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =3118
+                    Top =2948
+                    Width =1296
+                    Height =227
+                    TabIndex =14
+                    Name ="CabForn"
+                    ControlSource ="CabForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2494
+                            Top =2948
+                            Width =570
+                            Height =227
+                            Name ="Etichetta29"
+                            Caption ="C.A.B."
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =5215
+                    Top =2948
+                    Width =1596
+                    Height =227
+                    TabIndex =15
+                    Name ="ContoForn"
+                    ControlSource ="ContoForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =4535
+                            Top =2948
+                            Width =570
+                            Height =227
+                            Name ="Etichetta30"
+                            Caption ="C.C."
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =1474
+                    Top =2722
+                    Width =5331
+                    Height =227
+                    TabIndex =16
+                    Name ="BancaForn"
+                    ControlSource ="BancaForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =56
+                            Top =2722
+                            Width =675
+                            Height =227
+                            Name ="Etichetta31"
+                            Caption ="banca:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =1474
+                    Top =2268
+                    Width =2841
+                    Height =227
+                    TabIndex =17
+                    Name ="CodClienteForn"
+                    ControlSource ="CodClienteForn"
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =60
+                            Top =2268
+                            Width =1365
+                            Height =227
+                            Name ="Etichetta32"
+                            Caption ="cod cliente"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3004
+                    Top =340
+                    Width =1080
+                    Height =210
+                    Name ="Etichetta34"
+                    Caption ="si/no"
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =2721
+                    Top =340
+                    ColumnWidth =930
+                    TabIndex =18
+                    Name ="critico?"
+                    ControlSource ="critico?"
+                    EventProcPrefix ="critico_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =340
+                            Width =2580
+                            Height =240
+                            Name ="Etichetta33"
+                            Caption ="fornisce beni o servizi critici?"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    Left =1757
+                    Top =566
+                    Width =1011
+                    Height =255
+                    TabIndex =19
+                    Name ="DataInserimento"
+                    ControlSource ="DataInserimento"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =60
+                            Top =570
+                            Width =1680
+                            Height =240
+                            Name ="Etichetta35"
+                            Caption ="Inserimento (data):"
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =87
+                    Left =3685
+                    Top =646
+                    TabIndex =20
+                    Name ="Sospeso"
+                    ControlSource ="Sospeso"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =3908
+                            Top =623
+                            Width =2160
+                            Height =225
+                            Name ="Etichetta36"
+                            Caption ="Attualmente Sospeso"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =566
+            BackColor =-2147483633
+            Name ="PiËDiPaginaMaschera"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =56
+                    Top =56
+                    Width =1365
+                    Height =405
+                    Name ="btnApriSede"
+                    Caption ="sede operativa"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Sub CasellaCombinata24_AfterUpdate()
+    ' Trova il record corrispondente al controllo
+    Me.RecordsetClone.FindFirst "[IdFornitore] = " & Me![CasellaCombinata24]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+End Sub
+
+Private Sub Form_Current()
+If IsNull(IdFornitore) Then
+btnApriSede.Visible = False
+Else: btnApriSede.Visible = True
+End If
+CasellaCombinata24 = IdFornitore
+End Sub
+Private Sub btnApriSede_Click()
+On Error GoTo Err_btnApriSede_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Sede"
+    
+    stLinkCriteria = "[IdFornitore]=" & Me![IdFornitore]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_btnApriSede_Click:
+    Exit Sub
+
+Err_btnApriSede_Click:
+    MsgBox Err.Description
+    Resume Exit_btnApriSede_Click
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+DoCmd.Maximize
+End Sub

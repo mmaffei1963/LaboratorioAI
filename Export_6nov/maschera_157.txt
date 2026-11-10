@@ -1,0 +1,386 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10931
+    DatasheetFontHeight =10
+    ItemSuffix =22
+    Left =1830
+    Top =975
+    Right =13050
+    Bottom =6345
+    DatasheetGridlinesColor =12632256
+    Filter ="((Strumenti.CodiceStrum=\"24\") AND (Strumenti.NomeStrum Like \"s*\"))"
+    RecSrcDt = Begin
+        0xf38cdfb0d7a3e140
+    End
+    RecordSource ="Strumenti"
+    Caption ="Strumenti"
+    OnCurrent ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =2
+            Width =850
+            Height =850
+            BorderColor =8388608
+        End
+        Begin Line
+            BorderWidth =2
+            Width =1701
+            BorderColor =8388608
+        End
+        Begin Image
+            BackStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =16776960
+        End
+        Begin CommandButton
+            FontItalic = NotDefault
+            Width =1701
+            Height =283
+            FontSize =8
+            ForeColor =-2147483630
+            FontName ="Arial"
+        End
+        Begin OptionButton
+            SpecialEffect =4
+            BorderWidth =2
+            LabelX =230
+            LabelY =-30
+            BorderColor =8388608
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BackColor =8421376
+            BorderColor =16776960
+        End
+        Begin BoundObjectFrame
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+            BorderColor =16776960
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =8421376
+            ForeColor =16777215
+            BorderColor =16776960
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            BackStyle =0
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+            BorderColor =16776960
+        End
+        Begin ToggleButton
+            FontItalic = NotDefault
+            Width =283
+            Height =283
+            FontSize =8
+            ForeColor =-2147483630
+            FontName ="Arial"
+        End
+        Begin Tab
+            FontItalic = NotDefault
+            BackStyle =0
+            Width =5103
+            Height =3402
+            FontWeight =700
+            FontName ="Arial"
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5385
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =56
+                    Top =56
+                    Width =549
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdStrumento"
+                    ControlSource ="IdStrumento"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1604
+                    Top =56
+                    Width =1623
+                    Height =255
+                    ColumnWidth =2208
+                    TabIndex =1
+                    Name ="CodiceStrum"
+                    ControlSource ="CodiceStrum"
+                    Begin
+                        Begin Label
+                            OverlapFlags =247
+                            Left =56
+                            Top =56
+                            Width =675
+                            Height =240
+                            Name ="CodiceStrum Etichetta"
+                            Caption ="Codice"
+                            EventProcPrefix ="CodiceStrum_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =1604
+                    Top =311
+                    Width =4923
+                    Height =255
+                    ColumnWidth =2208
+                    TabIndex =2
+                    Name ="NomeStrum"
+                    ControlSource ="NomeStrum"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =56
+                            Top =340
+                            Width =1350
+                            Height =240
+                            Name ="NomeStrum Etichetta"
+                            Caption ="denominazione"
+                            EventProcPrefix ="NomeStrum_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =87
+                    ColumnCount =2
+                    Left =1604
+                    Top =566
+                    Width =4923
+                    Height =255
+                    ColumnWidth =2208
+                    TabIndex =3
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="IdCollStrum"
+                    ControlSource ="IdCollocazione"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT AreaLab.IdCollocazione, AreaLab.AreaLab FROM AreaLab ORDER BY AreaLab.Are"
+                        "aLab;"
+                    ColumnWidths ="0;3402"
+                    Begin
+                        Begin Label
+                            OverlapFlags =215
+                            Left =56
+                            Top =566
+                            Width =1155
+                            Height =240
+                            Name ="IdCollStrum Etichetta"
+                            Caption ="collocazione"
+                            EventProcPrefix ="IdCollStrum_Etichetta"
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =7370
+                    Top =56
+                    Width =3276
+                    Height =255
+                    TabIndex =4
+                    ColumnInfo ="\"\";\"\";\"denominazione\";\"\";\"10\";\"100\""
+                    Name ="CasellaCombinata8"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW Strumenti.IdStrumento, Strumenti.NomeStrum FROM Strumenti ORD"
+                        "ER BY Strumenti.NomeStrum;"
+                    ColumnWidths ="0;1440"
+                    AfterUpdate ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6803
+                            Top =56
+                            Width =525
+                            Height =240
+                            Name ="trova_Etichetta"
+                            Caption ="trova"
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =56
+                    Top =1430
+                    Width =10875
+                    Height =3675
+                    TabIndex =5
+                    Name ="Apparecchiature1"
+                    SourceObject ="Form.Apparecchiature1"
+                    LinkChildFields ="IdStrumento"
+                    LinkMasterFields ="IdStrumento"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =60
+                            Top =1140
+                            Width =2175
+                            Height =240
+                            Name ="Apparecchiature1 Etichetta"
+                            Caption ="PARTI E COMPONENTI:"
+                            EventProcPrefix ="Apparecchiature1_Etichetta"
+                        End
+                    End
+                End
+                Begin Line
+                    OverlapFlags =85
+                    Top =963
+                    Width =10704
+                    Name ="Linea13"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9524
+                    Top =340
+                    Width =1140
+                    Height =525
+                    TabIndex =6
+                    Name ="Comando14"
+                    Caption ="nuovo strumento..."
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6859
+                    Top =453
+                    Width =2265
+                    Height =405
+                    TabIndex =7
+                    Name ="Comando15"
+                    Caption ="stampa scheda strumento"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =87
+                    Left =4648
+                    Top =56
+                    TabIndex =8
+                    Name ="Testo16"
+                    ControlSource ="IdStrumento"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Sub CasellaCombinata8_AfterUpdate()
+    ' Trova il record corrispondente al controllo
+    Me.RecordsetClone.FindFirst "[IdStrumento] = " & Me![CasellaCombinata8]
+    Me.Bookmark = Me.RecordsetClone.Bookmark
+End Sub
+
+Private Sub Form_Current()
+CasellaCombinata8 = IdStrumento
+End Sub
+Private Sub Comando14_Click()
+On Error GoTo Err_Comando14_Click
+
+
+    DoCmd.GoToRecord , , acNewRec
+
+Exit_Comando14_Click:
+    Exit Sub
+
+Err_Comando14_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando14_Click
+    
+End Sub
+Private Sub Comando15_Click()
+On Error GoTo Err_Comando15_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "SchedeStrumento"
+    stLinkCriteria = "[IdStrumento] = forms![Strumenti]![IdStrumento]"
+    DoCmd.OpenReport stDocName, acViewPreview, , stLinkCriteria
+
+Exit_Comando15_Click:
+    Exit Sub
+
+Err_Comando15_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando15_Click
+    
+End Sub

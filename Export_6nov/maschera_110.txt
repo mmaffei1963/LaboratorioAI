@@ -1,0 +1,241 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =8681
+    DatasheetFontHeight =10
+    ItemSuffix =11
+    Left =936
+    Top =348
+    Right =9600
+    Bottom =4308
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x3bc5e5a2ba08e240
+    End
+    RecordSource ="Marchi"
+    Caption ="Configurazione programma - MODIFICARE SOLO SE AUTORIZZATI"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Section
+            Height =3301
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =3
+                    Left =1927
+                    Top =283
+                    Width =6171
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="PercorsoFileProgramma"
+                    ControlSource ="PercorsoFileProgramma"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =6853
+                            Top =56
+                            Width =1785
+                            Height =240
+                            Name ="Etichetta0"
+                            Caption ="Percorso installazione"
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =3
+                    Left =1927
+                    Top =850
+                    Width =6171
+                    FontWeight =700
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="PercorsoFileDati"
+                    ControlSource ="PercorsoFileDati"
+                    ControlTipText ="inserire il percorso del file dei dati, compreso il nome file, senza estensione"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =7364
+                            Top =623
+                            Width =1275
+                            Height =240
+                            Name ="Etichetta1"
+                            Caption ="Percorso dati"
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =56
+                    Top =1417
+                    Width =6171
+                    FontWeight =700
+                    TabIndex =2
+                    BackColor =12632256
+                    Name ="PercorsoSalvataggi"
+                    ControlSource ="PercorsoSalvataggi"
+                    ControlTipText ="inserire il percorso della cartella di salvataggio, senza barra inversa finale"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =7137
+                            Top =1190
+                            Width =1500
+                            Height =240
+                            Name ="Etichetta2"
+                            Caption ="Cartella salvataggio"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8107
+                    Top =850
+                    Width =510
+                    Height =284
+                    FontWeight =700
+                    Name ="Etichetta4"
+                    Caption =".mdb"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6236
+                    Top =1417
+                    Width =2370
+                    Height =240
+                    FontWeight =700
+                    Name ="Etichetta5"
+                    Caption ="\\datisalvatiXX-XX-XX.mdb"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8107
+                    Top =283
+                    Width =510
+                    Height =284
+                    FontWeight =700
+                    Name ="Etichetta6"
+                    Caption =".mdb"
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =87
+                    TextAlign =3
+                    Left =1700
+                    Top =1984
+                    Width =6861
+                    FontWeight =700
+                    TabIndex =3
+                    BackColor =12632256
+                    Name ="PercorsoSnapshot"
+                    ControlSource ="PercorsoSnapshot"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =6462
+                            Top =1757
+                            Width =2175
+                            Height =225
+                            Name ="Etichetta7"
+                            Caption ="Percorso documenti salvati"
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =223
+                    TextAlign =3
+                    Left =113
+                    Top =2550
+                    Width =8391
+                    FontWeight =700
+                    TabIndex =4
+                    BackColor =12632256
+                    Name ="PercorsoGuidaHtml"
+                    ControlSource ="PercorsoGuidaHtml"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =6179
+                            Top =2324
+                            Width =2445
+                            Height =240
+                            Name ="Etichetta8"
+                            Caption ="Cartella guida al programma (html)"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =8503
+                    Top =2551
+                    Width =171
+                    Height =226
+                    FontWeight =700
+                    Name ="Etichetta9"
+                    Caption ="\\"
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =87
+                    TextAlign =3
+                    Left =170
+                    Top =3060
+                    Width =8445
+                    FontWeight =700
+                    TabIndex =5
+                    BackColor =12632256
+                    Name ="ApplicazioneSnapshot"
+                    ControlSource ="ApplicazioneSnapshot"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            TextAlign =3
+                            Left =6965
+                            Top =2834
+                            Width =1716
+                            Height =228
+                            Name ="Etichetta10"
+                            Caption ="ApplicazioneSnapshot:"
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

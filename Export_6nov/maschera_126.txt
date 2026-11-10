@@ -1,0 +1,74 @@
+Version =19
+VersionRequired =19
+Checksum =234827967
+Begin Form
+    AllowFilters = NotDefault
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    AllowEdits = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =3636
+    DatasheetFontHeight =10
+    ItemSuffix =2
+    Left =7020
+    Top =3255
+    Right =10410
+    Bottom =3240
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x90b244b2f722e440
+    End
+    RecordSource ="SELECT DISTINCTROW [NomeOrg] & \" \" & [CognomeOrg] AS Espr1, Organico.Log, Orga"
+        "nico.IdOrganico FROM Organico WHERE (((Organico.Log)=\"Lucia Bigucci\"));"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Section
+            Height =240
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    FontItalic = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    Width =3636
+                    FontWeight =700
+                    ForeColor =8421504
+                    Name ="Espr1"
+                    ControlSource ="Espr1"
+                    FontName ="Arial"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =247
+                    Left =2948
+                    Width =621
+                    ColumnWidth =405
+                    TabIndex =1
+                    Name ="IdOrganico"
+                    ControlSource ="IdOrganico"
+                End
+            End
+        End
+    End
+End

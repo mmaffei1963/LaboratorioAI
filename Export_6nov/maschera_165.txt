@@ -1,0 +1,195 @@
+Version =19
+VersionRequired =19
+Checksum =-234827538
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =5669
+    DatasheetFontHeight =10
+    ItemSuffix =7
+    Left =1260
+    Top =1575
+    Right =8715
+    Bottom =5880
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x54d9c5e13fd7e340
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =3004
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0xe204150952767a40b27688dd174a26f7
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1983
+                    Top =851
+                    Width =2501
+                    Height =287
+                    FontSize =10
+                    FontWeight =700
+                    Name ="Testo0"
+                    Format ="Short Date"
+                    InputMask ="00/00/00;0;_"
+                    GUID = Begin
+                        0x2c6d40356e1dc349a1507ea2f8a7f0fc
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =393
+                            Top =850
+                            Width =1260
+                            Height =225
+                            FontSize =10
+                            FontWeight =700
+                            Name ="Etichetta1"
+                            Caption ="DATA INIZIO:"
+                            GUID = Begin
+                                0x346b88315981f4459802e8ac1096fc17
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1983
+                    Top =1532
+                    Width =2503
+                    Height =286
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="Testo2"
+                    Format ="Short Date"
+                    InputMask ="00/00/00;0;_"
+                    GUID = Begin
+                        0x1f115fc26bf6904c9048bba34a1db4aa
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =348
+                            Top =1525
+                            Width =1245
+                            Height =225
+                            FontSize =10
+                            FontWeight =700
+                            Name ="Etichetta3"
+                            Caption ="DATA FINE:"
+                            GUID = Begin
+                                0x3e683ceeedd14b488bf8a63828d2a2f3
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =5370
+                    Height =705
+                    FontSize =14
+                    BackColor =65535
+                    ForeColor =255
+                    Name ="Etichetta4"
+                    Caption ="STAMPA VALUTAZIONE FORNITORI"
+                    GUID = Begin
+                        0xc108bf783c2bb148bad7fc847bc29b6e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =1077
+                    Top =2154
+                    Width =3225
+                    Height =690
+                    FontSize =14
+                    FontWeight =700
+                    TabIndex =2
+                    ForeColor =8388608
+                    Name ="Comando6"
+                    Caption ="Anteprima Rapporto"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xbf3195b0daef0c4aa965ba9179488fb5
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Comando5_Click()
+On Error GoTo Err_Comando5_Click
+
+    Dim stDocName As String
+
+    stDocName = "ControlloSanificazioneMultiplo1"
+    DoCmd.OpenReport stDocName, acPreview
+
+Exit_Comando5_Click:
+    Exit Sub
+
+Err_Comando5_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando5_Click
+    
+End Sub
+
+Private Sub Comando6_Click()
+ On Error GoTo Err_Comando6_Click
+
+ 
+ Dim stDocName As String
+
+    stDocName = "ValutazioneFornitori"
+    DoCmd.OpenReport stDocName, acPreview
+Exit_Comando6_Click:
+    Exit Sub
+
+Err_Comando6_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando6_Click
+
+End Sub

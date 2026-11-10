@@ -1,0 +1,823 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7994
+    DatasheetFontHeight =10
+    ItemSuffix =50
+    Left =1845
+    Top =-840
+    Right =9660
+    Bottom =5325
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x7a7486d3f507e240
+    End
+    RecordSource ="Marchi"
+    Caption ="Marchi"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+        End
+        Begin Section
+            Height =9800
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =114
+                    Top =354
+                    Width =7638
+                    Height =285
+                    ColumnWidth =2310
+                    Name ="Descrizione"
+                    ControlSource ="Descrizione"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =114
+                            Top =114
+                            Width =7638
+                            Height =240
+                            Name ="Descrizione Etichetta"
+                            Caption ="Descrizione"
+                            EventProcPrefix ="Descrizione_Etichetta"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    SizeMode =3
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    BackStyle =1
+                    Left =114
+                    Top =879
+                    Width =4578
+                    Height =1260
+                    TabIndex =1
+                    BackColor =-2147483643
+                    Name ="Marchio"
+                    ControlSource ="Marchio"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =114
+                            Top =639
+                            Width =4578
+                            Height =240
+                            Name ="Marchio Etichetta"
+                            Caption ="Marchio"
+                            EventProcPrefix ="Marchio_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =56
+                    Top =2451
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =2
+                    Name ="NomeSocietà"
+                    ControlSource ="NomeSocietà"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =56
+                            Top =2211
+                            Width =2310
+                            Height =240
+                            Name ="NomeSocietà Etichetta"
+                            Caption ="NomeSocietà"
+                            EventProcPrefix ="NomeSocietà_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =2366
+                    Top =2451
+                    Width =5385
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =3
+                    Name ="Indirizzo"
+                    ControlSource ="Indirizzo"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =2366
+                            Top =2211
+                            Width =5385
+                            Height =240
+                            Name ="Indirizzo Etichetta"
+                            Caption ="Indirizzo"
+                            EventProcPrefix ="Indirizzo_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =4762
+                    Top =2961
+                    Width =3018
+                    Height =225
+                    ColumnWidth =2310
+                    TabIndex =4
+                    Name ="PartitaIVA"
+                    ControlSource ="PartitaIVA"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =4762
+                            Top =2721
+                            Width =3018
+                            Height =240
+                            Name ="PartitaIVA Etichetta"
+                            Caption ="PartitaIVA"
+                            EventProcPrefix ="PartitaIVA_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =113
+                    Top =3471
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =5
+                    Name ="RegImprese"
+                    ControlSource ="RegImprese"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =113
+                            Top =3231
+                            Width =2310
+                            Height =240
+                            Name ="RegImprese Etichetta"
+                            Caption ="RegImprese"
+                            EventProcPrefix ="RegImprese_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =2423
+                    Top =3471
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =6
+                    Name ="CapitaleSociale"
+                    ControlSource ="CapitaleSociale"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =2423
+                            Top =3231
+                            Width =2310
+                            Height =240
+                            Name ="CapitaleSociale Etichetta"
+                            Caption ="CapitaleSociale"
+                            EventProcPrefix ="CapitaleSociale_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =4733
+                    Top =3471
+                    Width =3018
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =7
+                    Name ="Telefono"
+                    ControlSource ="Telefono"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =4733
+                            Top =3231
+                            Width =3018
+                            Height =240
+                            Name ="Telefono Etichetta"
+                            Caption ="Telefono"
+                            EventProcPrefix ="Telefono_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =113
+                    Top =3996
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =8
+                    Name ="Fax"
+                    ControlSource ="Fax"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =113
+                            Top =3756
+                            Width =2310
+                            Height =240
+                            Name ="Fax Etichetta"
+                            Caption ="Fax"
+                            EventProcPrefix ="Fax_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =2423
+                    Top =3996
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =9
+                    Name ="Internet"
+                    ControlSource ="Internet"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =2423
+                            Top =3756
+                            Width =2310
+                            Height =240
+                            Name ="Internet Etichetta"
+                            Caption ="Internet"
+                            EventProcPrefix ="Internet_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =4733
+                    Top =3996
+                    Width =3018
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =10
+                    Name ="Email"
+                    ControlSource ="Email"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =95
+                            Left =4733
+                            Top =3756
+                            Width =3018
+                            Height =240
+                            Name ="Email Etichetta"
+                            Caption ="Email"
+                            EventProcPrefix ="Email_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =4705
+                    Top =920
+                    Width =3045
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =11
+                    Name ="IntestazioneSopra"
+                    ControlSource ="IntestazioneSopra"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =4705
+                            Top =680
+                            Width =3045
+                            Height =240
+                            Name ="IntestazioneSopra Etichetta"
+                            Caption ="IntestazioneSopra"
+                            EventProcPrefix ="IntestazioneSopra_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =4705
+                    Top =1884
+                    Width =3045
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =12
+                    Name ="IntestazioneSotto"
+                    ControlSource ="IntestazioneSotto"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Left =4705
+                            Top =1644
+                            Width =3045
+                            Height =240
+                            Name ="IntestazioneSotto Etichetta"
+                            Caption ="IntestazioneSotto"
+                            EventProcPrefix ="IntestazioneSotto_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Top =4548
+                    Width =7758
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =13
+                    Name ="PiediPaginaPrimaRiga"
+                    ControlSource ="PiediPaginaPrimaRiga"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =93
+                            Top =4308
+                            Width =7758
+                            Height =240
+                            Name ="PiediPaginaPrimaRiga Etichetta"
+                            Caption ="PiediPaginaPrimaRiga"
+                            EventProcPrefix ="PiediPaginaPrimaRiga_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Top =5058
+                    Width =7755
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =14
+                    Name ="PiediPaginaSecondaRiga"
+                    ControlSource ="PiediPaginaSecondaRiga"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Top =4818
+                            Width =2310
+                            Height =240
+                            Name ="PiediPaginaSecondaRiga Etichetta"
+                            Caption ="PiediPaginaSecondaRiga"
+                            EventProcPrefix ="PiediPaginaSecondaRiga_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Top =5569
+                    Width =7755
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =15
+                    Name ="PiediPaginaTerzaRiga"
+                    ControlSource ="PiediPaginaTerzaRiga"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Top =5329
+                            Width =7755
+                            Height =240
+                            Name ="PiediPaginaTerzaRiga Etichetta"
+                            Caption ="PiediPaginaTerzaRiga"
+                            EventProcPrefix ="PiediPaginaTerzaRiga_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Top =6079
+                    Width =7758
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =16
+                    Name ="PiediPaginaQuartaRiga"
+                    ControlSource ="PiediPaginaQuartaRiga"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Top =5839
+                            Width =7758
+                            Height =240
+                            Name ="PiediPaginaQuartaRiga Etichetta"
+                            Caption ="PiediPaginaQuartaRiga"
+                            EventProcPrefix ="PiediPaginaQuartaRiga_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Top =6589
+                    Width =2310
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =17
+                    Name ="DirettoreLaboratorio"
+                    ControlSource ="DirettoreLaboratorio"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Top =6349
+                            Width =2310
+                            Height =240
+                            Name ="DirettoreLaboratorio Etichetta"
+                            Caption ="DirettoreLaboratorio"
+                            EventProcPrefix ="DirettoreLaboratorio_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =2310
+                    Top =6589
+                    Width =2388
+                    Height =285
+                    ColumnWidth =2310
+                    TabIndex =18
+                    Name ="ResponsabileAmministrativo"
+                    ControlSource ="ResponsabileAmministrativo"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =2310
+                            Top =6349
+                            Width =2388
+                            Height =240
+                            Name ="ResponsabileAmministrativo Etichetta"
+                            Caption ="ResponsabileAmministrativo"
+                            EventProcPrefix ="ResponsabileAmministrativo_Etichetta"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    OldBorderStyle =1
+                    OverlapFlags =87
+                    BackStyle =1
+                    Left =5385
+                    Top =6589
+                    Width =2313
+                    Height =1005
+                    TabIndex =19
+                    BackColor =-2147483643
+                    Name ="LogoAccreditamento"
+                    ControlSource ="LogoAccreditamento"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =5385
+                            Top =6349
+                            Width =2313
+                            Height =240
+                            Name ="LogoAccreditamento Etichetta"
+                            Caption ="LogoAccreditamento"
+                            EventProcPrefix ="LogoAccreditamento_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    Left =4705
+                    Top =1417
+                    Width =3066
+                    TabIndex =20
+                    Name ="IntestazioneMedia"
+                    ControlSource ="IntestazioneMedia"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =4705
+                            Top =1190
+                            Width =1410
+                            Height =240
+                            Name ="Etichetta40"
+                            Caption ="IntestazioneMedia:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =56
+                    Top =2948
+                    Width =906
+                    TabIndex =21
+                    Name ="CAP"
+                    ControlSource ="CAP"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =56
+                            Top =2721
+                            Width =900
+                            Height =240
+                            Name ="Etichetta41"
+                            Caption ="CAP:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =963
+                    Top =2948
+                    Width =2436
+                    TabIndex =22
+                    Name ="Città"
+                    ControlSource ="Città"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =963
+                            Top =2721
+                            Width =2445
+                            Height =240
+                            Name ="Etichetta42"
+                            Caption ="Città:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    Left =3401
+                    Top =2948
+                    Width =1356
+                    TabIndex =23
+                    Name ="Provincia"
+                    ControlSource ="Provincia"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =3401
+                            Top =2721
+                            Width =1350
+                            Height =240
+                            Name ="Etichetta43"
+                            Caption ="Provincia:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =255
+                    Left =2330
+                    Top =6859
+                    Width =2361
+                    TabIndex =24
+                    Name ="Cellulare1"
+                    ControlSource ="Cellulare1"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =223
+                            Left =6
+                            Top =6859
+                            Width =2325
+                            Height =240
+                            Name ="Etichetta44"
+                            Caption ="Cellulare1:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =255
+                    Left =2330
+                    Top =7086
+                    Width =2361
+                    TabIndex =25
+                    Name ="Cellulare2"
+                    ControlSource ="Cellulare2"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =255
+                            Left =6
+                            Top =7086
+                            Width =2325
+                            Height =240
+                            Name ="Etichetta45"
+                            Caption ="Cellulare2:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =119
+                    Left =2331
+                    Top =7313
+                    Width =2361
+                    TabIndex =26
+                    Name ="Cellulare3"
+                    ControlSource ="Cellulare3"
+                    Begin
+                        Begin Label
+                            OldBorderStyle =1
+                            OverlapFlags =127
+                            Top =7313
+                            Width =2325
+                            Height =240
+                            Name ="Etichetta46"
+                            Caption ="Cellulare3:"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    SizeMode =3
+                    OverlapFlags =87
+                    Top =7823
+                    Height =1530
+                    TabIndex =27
+                    Name ="FirmaDirettore"
+                    ControlSource ="FirmaDirettore"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =7596
+                            Width =1095
+                            Height =240
+                            Name ="Etichetta47"
+                            Caption ="FirmaDirettore:"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    OverlapFlags =215
+                    Left =4705
+                    Top =7880
+                    Width =2391
+                    Height =1920
+                    TabIndex =28
+                    Name ="TimbroDirettore"
+                    ControlSource ="TimbroDirettore"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =4705
+                            Top =7653
+                            Width =1200
+                            Height =240
+                            Name ="Etichetta48"
+                            Caption ="TimbroDirettore:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3914
+                    Top =9411
+                    Width =621
+                    TabIndex =29
+                    Name ="GiorniConservazioneCampioni"
+                    ControlSource ="GiorniConservazioneCampioni"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =9405
+                            Width =3810
+                            Height =240
+                            Name ="Etichetta49"
+                            Caption ="Giorni Conservazione Campioni (da emissione referto)"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End

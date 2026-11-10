@@ -1,0 +1,17 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenForm"
+    Argument ="Mat-fornitori1perCODCF"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="0"
+    Argument ="0"
+End
+Begin
+    Action ="GoToRecord"
+    Argument ="2"
+    Argument ="Mat-fornitori1perCODCF"
+    Argument ="5"
+End

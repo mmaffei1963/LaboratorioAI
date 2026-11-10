@@ -1,0 +1,477 @@
+Version =19
+VersionRequired =19
+Checksum =234827536
+Begin Form
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowAdditions = NotDefault
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9808
+    DatasheetFontHeight =10
+    ItemSuffix =25
+    Left =420
+    Top =1395
+    Right =10605
+    Bottom =3705
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x5c8d4e0af8ade140
+    End
+    RecordSource ="SchedeIntervento"
+    Caption ="SchedeIntervento"
+    OnCurrent ="[Event Procedure]"
+    AfterUpdate ="[Event Procedure]"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =288
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =60
+                    Top =57
+                    Width =1800
+                    Height =227
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="IdRespInt Etichetta"
+                    Caption ="operatore"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="IdRespInt_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1957
+                    Top =57
+                    Width =663
+                    Height =227
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="DataInt Etichetta"
+                    Caption ="data "
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataInt_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2672
+                    Top =57
+                    Width =888
+                    Height =227
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="ValMis Etichetta"
+                    Caption ="valore mis."
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="ValMis_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =4138
+                    Top =56
+                    Width =870
+                    Height =227
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="DataRientro Etichetta"
+                    Caption ="data rientro"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="DataRientro_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4981
+                    Top =57
+                    Width =3063
+                    Height =227
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="NotaScheda Etichetta"
+                    Caption ="note"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="NotaScheda_Etichetta"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8163
+                    Top =56
+                    Width =456
+                    Height =228
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="Etichetta23"
+                    Caption ="Link:"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3685
+                    Top =56
+                    Width =420
+                    Height =228
+                    FontWeight =400
+                    ForeColor =-2147483630
+                    Name ="Etichetta24"
+                    Caption ="Conf."
+                End
+            End
+        End
+        Begin Section
+            Height =353
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    Enabled = NotDefault
+                    OverlapFlags =93
+                    ColumnCount =2
+                    Left =56
+                    Top =56
+                    Width =1830
+                    Height =227
+                    TabIndex =6
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="CasellaCombinata21"
+                    ControlSource ="IdMansione"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCT mansione.IdMansione, [CognomeOrg] & \" \" & [NomeOrg] AS Nome, P"
+                        "ianoInterventi.IdAttività, Attività.IdTipoAttività FROM Organico INNER JOIN ((At"
+                        "tività INNER JOIN mansione ON Attività.IdAttività = mansione.IdAttività) INNER J"
+                        "OIN PianoInterventi ON Attività.IdAttività = PianoInterventi.IdAttività) ON Orga"
+                        "nico.IdOrganico = mansione.IdOrganico WHERE (((PianoInterventi.IdAttività)=[Form"
+                        "s]![Apparecchiature]![PianoControlli].[Form]![IdAttività]) AND ((Attività.IdTipo"
+                        "Attività)=3));"
+                    ColumnWidths ="0;2268"
+                    BaseInfo ="\"SELECT DISTINCT mansione.IdMansione, [CognomeOrg] & \"\" \"\" & [NomeOrg] AS N"
+                        "ome, PianoInterventi.IdAttività, Attività.IdTipoAttività FROM Organico INNER JOI"
+                        "N ((Attività INNER JOIN mansione ON Attività.IdAttività = mansione.IdAttività) I"
+                        "NNER JOIN PianoIntervent\";\"Organico\";\"Attività\";\"mansione\";\"PianoInterve"
+                        "nti\";\"\""
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    OverlapFlags =255
+                    Left =57
+                    Top =57
+                    Width =390
+                    Height =227
+                    ColumnWidth =1701
+                    Name ="IdSchedaInt"
+                    ControlSource ="IdSchedaInt"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =247
+                    ColumnCount =2
+                    Left =60
+                    Top =57
+                    Width =1830
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"0\""
+                    Name ="IdMansione"
+                    ControlSource ="IdMansione"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCT mansione.IdMansione, [CognomeOrg] & \" \" & [NomeOrg] AS Nome, P"
+                        "ianoInterventi.IdAttività, Attività.IdTipoAttività, mansione.DataFineMansione, O"
+                        "rganico.FineProf FROM Organico INNER JOIN ((Attività INNER JOIN mansione ON Atti"
+                        "vità.IdAttività = mansione.IdAttività) INNER JOIN PianoInterventi ON Attività.Id"
+                        "Attività = PianoInterventi.IdAttività) ON Organico.IdOrganico = mansione.IdOrgan"
+                        "ico WHERE (((PianoInterventi.IdAttività)=[Forms]![Apparecchiature]![PianoControl"
+                        "li].[Form]![IdAttività]) AND ((Attività.IdTipoAttività)=3) AND ((mansione.DataFi"
+                        "neMansione) Is Null) AND ((Organico.FineProf) Is Null));"
+                    ColumnWidths ="0;2268"
+                    BaseInfo ="\"SELECT DISTINCT mansione.IdMansione, [CognomeOrg] & \"\" \"\" & [NomeOrg] AS N"
+                        "ome, PianoInterventi.IdAttività, Attività.IdTipoAttività, mansione.DataFineMansi"
+                        "one, Organico.FineProf FROM Organico INNER JOIN ((Attività INNER JOIN mansione O"
+                        "N Attività.IdAttività = \";\"Organico\";\"Attività\";\"mansione\";\"PianoInterve"
+                        "nti\";\"\""
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1927
+                    Top =57
+                    Width =882
+                    Height =227
+                    ColumnWidth =825
+                    TabIndex =2
+                    Name ="DataInt"
+                    ControlSource ="DataInt"
+                    Format ="Short Date"
+                    DefaultValue ="Date()"
+                    InputMask ="99/99/00;0;_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =2934
+                    Top =57
+                    Width =870
+                    Height =227
+                    ColumnWidth =2310
+                    TabIndex =3
+                    Name ="ValMis"
+                    ControlSource ="ValMis"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =4081
+                    Top =56
+                    Width =861
+                    Height =227
+                    ColumnWidth =825
+                    TabIndex =4
+                    Name ="DataRientro"
+                    ControlSource ="DataRientro"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =85
+                    Left =4980
+                    Top =57
+                    Width =3054
+                    Height =227
+                    ColumnWidth =3000
+                    TabIndex =5
+                    Name ="NotaScheda"
+                    ControlSource ="NotaScheda"
+                End
+                Begin TextBox
+                    FontUnderline = NotDefault
+                    OverlapFlags =85
+                    Left =8107
+                    Top =56
+                    TabIndex =7
+                    ForeColor =1279872587
+                    Name ="Link"
+                    ControlSource ="Link"
+                End
+                Begin CheckBox
+                    OverlapFlags =247
+                    Left =3855
+                    Top =113
+                    TabIndex =8
+                    Name ="Conforme"
+                    ControlSource ="Conforme"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =680
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =3458
+                    Top =56
+                    Width =1440
+                    Height =405
+                    Name ="btnNuovoInt"
+                    Caption ="nuovo intervento"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =1927
+                    Top =56
+                    Width =1071
+                    Height =283
+                    TabIndex =1
+                    Name ="Testo17"
+                    ControlSource ="=DMax(\"[DataInt]\",\"SchedeIntervento\",\" [IdPianoInt]=  Forms![Apparecchiatur"
+                        "e]![PianoControlli].Form![IdPianoInt] \")"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =453
+                            Top =63
+                            Width =1425
+                            Height =240
+                            Name ="Etichetta18"
+                            Caption ="ultimo eseguito:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =1927
+                    Top =396
+                    Width =1070
+                    Height =227
+                    TabIndex =2
+                    Name ="Testo19"
+                    ControlSource ="=[Testo17]+[Forms]![Apparecchiature]![PianoControlli].[Form]![FreqGiorni]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =458
+                            Top =393
+                            Width =885
+                            Height =240
+                            Name ="Etichetta20"
+                            Caption ="prossimo:"
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Private Sub Form_AfterUpdate()
+Me.AllowAdditions = False
+
+End Sub
+
+
+Private Sub btnNuovoInt_Click()
+On Error GoTo Err_btnNuovoInt_Click
+Me.AllowAdditions = True
+
+    DoCmd.GoToRecord , , acNewRec
+
+Exit_btnNuovoInt_Click:
+    Exit Sub
+
+Err_btnNuovoInt_Click:
+    MsgBox Err.Description
+    Resume Exit_btnNuovoInt_Click
+    
+End Sub
+
+
+
+Private Sub Form_Current()
+Me.ValMis.SetFocus
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+Me.AllowAdditions = True
+DoCmd.GoToRecord , , acLast
+Me.AllowAdditions = False
+
+End Sub

@@ -1,0 +1,268 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    AutoCenter = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =255
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =4195
+    DatasheetFontHeight =10
+    ItemSuffix =12
+    Left =600
+    Top =330
+    Right =7125
+    Bottom =3045
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xd0ca95825a7de240
+    End
+    RecordSource ="Attrezzature"
+    Caption ="Attrezzature"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0xf7b3a41f8a82274cb57a9abb33f17cc8
+            End
+        End
+        Begin Section
+            Height =1509
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x983bff8487c40f44a78cbc09fcd4520c
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =114
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="ID"
+                    ControlSource ="ID"
+                    GUID = Begin
+                        0x32adc0ecfea3624db385e638585d8d38
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =114
+                            Width =1560
+                            Height =255
+                            Name ="ID_Etichetta"
+                            Caption ="ID"
+                            GUID = Begin
+                                0x81d3480fcaf0934d929fcd17dd03c15a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =456
+                    Width =2310
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    Name ="Attrezzatura"
+                    ControlSource ="Attrezzatura"
+                    GUID = Begin
+                        0x06af42d4bb0d5e45bd4e3ce0803a3dc6
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =456
+                            Width =1560
+                            Height =255
+                            Name ="Attrezzatura_Etichetta"
+                            Caption ="Attrezzatura"
+                            GUID = Begin
+                                0xa680789df719dc4ea9ddae57ab94d90a
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =1140
+                    TabIndex =2
+                    Name ="Sanificazione"
+                    ControlSource ="Sanificazione"
+                    GUID = Begin
+                        0xe89244e2d1a7084bac9e5830bc538e7e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =1140
+                            Width =1560
+                            Height =255
+                            Name ="Sanificazione_Etichetta"
+                            Caption ="Sanificazione"
+                            GUID = Begin
+                                0xcb0719f44a5d4a4492e8e24d9cbd3941
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =3000
+                    Left =1757
+                    Top =793
+                    Width =1928
+                    Height =284
+                    TabIndex =3
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x7fab83bca2422d419fa9c72d1c050ef0
+                    End
+                    Name ="CasellaCombinata10"
+                    ControlSource ="Localizzazione"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [Reparti].[NomeReparto], [Reparti].[IDReparto] FROM [Reparti]"
+                    ColumnWidths ="2340;660"
+                    BaseInfo ="\"SELECT [Reparti].[NomeReparto], [Reparti].[IDReparto] FROM [Reparti]\";\"Repar"
+                        "ti\";\"\";\"IDReparto\";\"NomeReparto\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =56
+                            Top =793
+                            Width =1560
+                            Height =240
+                            Name ="Reparto_Etichetta"
+                            Caption ="Reparto"
+                            GUID = Begin
+                                0xf6af6c6ace059840b3f66b4c1366e0a9
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0xbc9632f56166c54082418af969feca38
+            End
+        End
+    End
+End

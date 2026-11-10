@@ -1,0 +1,35 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="OpenReport"
+    Argument ="Ordine"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="OrdineInt"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="Ordine Identificativo prodotto"
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="3"
+    Argument ="Ordine"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="3"
+    Argument ="Ordine Identificativo prodotto"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="3"
+    Argument ="OrdineInt"
+    Argument ="1"
+End

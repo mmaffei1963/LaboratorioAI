@@ -1,0 +1,165 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6994
+    DatasheetFontHeight =11
+    ItemSuffix =9
+    Left =2340
+    Top =570
+    Right =9615
+    Bottom =6510
+    DatasheetGridlinesColor =15062992
+    RecSrcDt = Begin
+        0x10148da2965ee440
+    End
+    GUID = Begin
+        0x971ed830b946fe45b4cb4af30b74e582
+    End
+    DatasheetFontName ="Calibri"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            FontName ="Calibri"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin ComboBox
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            FontName ="Calibri"
+        End
+        Begin Section
+            Height =5952
+            Name ="Corpo"
+            GUID = Begin
+                0x484f71f0e9480743974674967782d6f9
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1644
+                    Top =680
+                    Width =3118
+                    Height =585
+                    BorderColor =12835293
+                    ForeColor =4138256
+                    Name ="Data1"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x0f3371c180da5a4eb0fbd7c1028fe92a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =675
+                            Width =1275
+                            Height =315
+                            BorderColor =16777215
+                            ForeColor =13995605
+                            Name ="Etichetta1"
+                            Caption ="Data iniziale:"
+                            GUID = Begin
+                                0x1c6c8a914fbdf54c94f7e9aeda06eb53
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1644
+                    Top =1644
+                    Width =3118
+                    Height =585
+                    TabIndex =1
+                    BorderColor =12835293
+                    ForeColor =4138256
+                    Name ="Data2"
+                    Format ="Short Date"
+                    DefaultValue ="=Date()"
+                    GUID = Begin
+                        0x2b194f7045c9e247aacdf2737648fabb
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =1644
+                            Width =1470
+                            Height =315
+                            BorderColor =16777215
+                            ForeColor =13995605
+                            Name ="Etichetta3"
+                            Caption ="Data Finale:"
+                            GUID = Begin
+                                0xb24b1b315ac5ae42bfa2299c8a9b6f2d
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =793
+                    Top =2891
+                    Width =2205
+                    Height =630
+                    TabIndex =2
+                    ForeColor =4138256
+                    Name ="Comando8"
+                    Caption ="Report Date/Lotti"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x108572f3a21882468c73ee46e3521715
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Comando8_Click()
+On Error GoTo Err_Comando8_Click
+
+    Dim stDocName As String
+
+    stDocName = "Report_Date_lotti"
+    DoCmd.OpenReport stDocName, acPreview
+
+Exit_Comando8_Click:
+    Exit Sub
+
+Err_Comando8_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando8_Click
+    
+End Sub

@@ -1,0 +1,188 @@
+macro_001 | Tracciabilit‡Gas
+macro_002 | tracciabilit‡lottoNOBILEBIO
+macro_003 | tracciabilit‡lottoolio1
+macro_004 | tracciabilit‡lotto_FARCITURA_ERBE_MOZZ
+macro_005 | tracciabilit‡lottoolio_ambiente_stampa
+macro_006 | tracciabilit‡lotto_IGP_FF_Stampa
+macro_007 | tracciabilit‡lotto_Tartufo_Ambiente_Stampa
+macro_008 | tracciabilit‡lottoBIOEVOINTEGRALE_stampa
+macro_009 | tracciabilit‡lottoIntegrale_stampa
+macro_010 | tracciabilit‡lottoSenzaGlutine_stampa
+macro_011 | tracciabilit‡lottoZenzAnice_stampa
+macro_012 | tracciabilit‡lottoolio_A_stampa
+macro_013 | tracciabilit‡lotto_A_Stampa
+macro_014 | tracciabilit‡lotto_FARCITURA_ERBE_MOZZ_stampa
+macro_015 | Tracciabilit‡lotto5Cereali_stampa
+macro_016 | tracciabilit‡lottoBIOStrutto_stampa
+macro_017 | tracciabilit‡lottoolio_ambiente
+macro_018 | Tracciabilit‡lottooliolatte
+macro_019 | SMElencomerce
+macro_020 | ChiudiSMElencomerce
+macro_021 | tracciabilit‡lotto_A_Ambiente
+macro_022 | tracciabilit‡_Kamut_Stampa
+macro_023 | tracciabilit‡lottoBIOEVO_stampa
+macro_024 | tracciabilit‡lotto_INTEGRALE_BIO_STAMPA
+macro_025 | tracciabilit‡lottoFIOCCHIBIO_Stampa
+macro_026 | tracciabilit‡lottoGENTILBIO_Stampa
+macro_027 | tracciabilitalottoProteicaStampa
+macro_028 | tracciabilit‡lotto_Farcitura_Rossa_Stampa
+macro_029 | tracciabilit‡lotto_A_Ambiente_Stampa
+macro_030 | tracciabilit‡lottoTartufo_Stampa
+macro_031 | tracciabilit‡lottoIGPBIOEVO_Stampa
+macro_032 | tracciabilit‡lottoNOBILEBIO_Stampa
+macro_033 | tracciabilit‡lotto_FARCITURA_PCOTTO_MOZZ
+macro_034 | tracciabilit‡lotto_INTEGRALE_BIO
+macro_035 | tracciabilit‡lotto_Fornarina_rosmarino
+macro_036 | tracciabilit‡lottoolio
+macro_037 | Macro1
+macro_038 | tracciabilit‡lottoTartufo
+macro_039 | tracciabilit‡lottoIGPBIOEVO
+macro_040 | MatFornitoriMAT
+macro_041 | tracciabilit‡_Kamut
+macro_042 | tracciabilit‡lottoFIOCCHIBIO
+macro_043 | tracciabilit‡lottoGENTILBIO
+macro_044 | tracciabilit‡lotto_A
+macro_045 | tracciabilit‡lottoolio_A
+macro_046 | tracciabilit‡lottoBIOEVOINTEGRALE
+macro_047 | tracciabilit‡lottoSenzaGlutine
+macro_048 | tracciabilit‡lottoIntegrale
+macro_049 | tracciabilit‡lottoBIOStrutto
+macro_050 | Tracciabilit‡lotto500
+macro_051 | tracciabilit‡lottoBIOEVO
+macro_052 | tracciabilit‡lotto
+macro_053 | Ordini est int
+macro_054 | tracciabilit‡Imballo
+macro_055 | CostruttoreMacro
+macro_056 | Tracciabilit‡lottoYukYuk
+macro_057 | Snapshot controllo sanif
+macro_058 | Tracciabilit‡lottoSalutiRiccione
+macro_059 | Tracciabilit‡lotto5Cereali
+macro_060 | MacroSelezID
+macro_061 | LottoDateApri
+macro_062 | MatFornitoriCODCF
+macro_063 | tracciabilit‡lotto600FdB
+macro_064 | Lotto-Date
+macro_065 | SMElencomerceA
+macro_066 | tracciabilit‡lottosnapshot
+macro_067 | tracciabilit‡lottoMerav
+macro_068 | xtracciabilit‡1
+macro_069 | Stampa controllo sanif1
+macro_070 | Stampa1 controllo sanif1
+macro_071 | tracciabilit‡khorasan
+macro_072 | Tracciabilit‡lottorosm
+macro_073 | anteprima accettazione
+macro_074 | StampaAccettazione
+macro_075 | Stampa1 controllo sanif
+macro_076 | tracciabilit‡lotto360FdB
+macro_077 | tracciabilit‡lotto_IGP_FF
+macro_078 | Stampa controllo sanif
+macro_079 | rintra fornitore
+macro_080 | tracciabilit‡lotto_Stampa
+macro_081 | T_lotto_Piada BIO grani antichi - STAMPA
+macro_082 | Ordini est int stampa
+macro_083 | tracciabilit‡lotto_FRESCO PIADA - STAMPA
+macro_084 | tracciabilit‡khorasan_stampa
+macro_085 | tracciabilit‡lottoCurcCumino_stampa
+macro_086 | tracciabilit‡lottoolio_stampa
+macro_087 | tracciabilit‡lottoolio-stampa
+macro_088 | tracciabilit‡lotto_Fornarina_rosmarino_Stampa
+macro_089 | tracciabilit‡lotto_FARCITURA_PCOTTO_MOZZ_Stampa
+macro_090 | tracciabilit‡lottoCurcCumino
+macro_091 | tracciabilit‡lottoZenzAnice
+macro_092 | tracciabilit‡lotto_Farcitura_Rossa
+macro_093 | ProvaMirko
+macro_094 | tracciabilit‡lotto_Tartufo_Ambiente
+macro_095 | tracciabilitalottoProteica
+macro_096 | mcrApriMatriciFoglioDati
+macro_097 | T_lotto_Piada BIO grani antichi
+macro_098 | tracciabilit‡lotto2
+macro_099 | tracciabilit‡lotto_FRESCO PIADA
+report_100 | xxAccettazione in entrata
+report_101 | X Accettazione in entrata
+report_102 | Accettazione in entrata
+report_103 | Traccabilit‡daData_FRESCO PIADA
+report_104 | Traccabilit‡daData_Piada BIO grani antichi
+maschera_105 | 1410SMElencomerce
+maschera_106 | 1510 SMElencomerce
+maschera_107 | Controllo Sanificazione
+maschera_108 | XControllo Sanificazione
+maschera_109 | xxControllo Sanificazione
+maschera_110 | PercorsiFile
+maschera_111 | SMControlloaccettazione
+maschera_112 | xSwitchboard
+maschera_113 | ricerche
+maschera_114 | Sottomaschera Impegno Materie prime
+maschera_115 | Mat-fornitori1perCODCF
+maschera_116 | xx Accettazione in entrata
+maschera_117 | xxxAccettazione in entrata
+maschera_118 | 1010Ordine
+maschera_119 | Anag_clienti
+maschera_120 | Anteprime e stampe vendite
+maschera_121 | Impegni di materie prime per la produzione
+maschera_122 | SMElencomerce
+maschera_123 | SMPianoInterventi
+maschera_124 | SMAccettazione
+maschera_125 | SMAttivitaFormazione
+maschera_126 | OperatoreAttualeSM
+maschera_127 | Matrici
+maschera_128 | report_lotti
+maschera_129 | Tabella controlli
+maschera_130 | SchedeIntervento
+maschera_131 | Organico
+maschera_132 | SMPercorso
+maschera_133 | Apparecchiature1
+maschera_134 | Marchio
+maschera_135 | SampaRapporti1
+maschera_136 | Ricerca_Magazzino
+maschera_137 | Sottomaschera Mat-Fornitori Query
+maschera_138 | Date
+maschera_139 | Lotto-Date
+maschera_140 | SMSezioneAppartenenza
+maschera_141 | xxOrdine
+maschera_142 | Apparecchiature
+maschera_143 | Sede
+maschera_144 | StampaVerPreoperative
+maschera_145 | VerifichePreoperative
+maschera_146 | 1110 Accettazione in entrata
+maschera_147 | 11102Accettazione in entrata
+maschera_148 | 11103Accettazione in entrata
+maschera_149 | 1410Accettazione in entrata
+maschera_150 | Accettazione in entrata
+maschera_151 | SedeFornitore
+maschera_152 | Sottomaschera Variazione quant-qualitativa
+maschera_153 | x Sottomaschera Variazione quant-qualitativa
+maschera_154 | Ordine
+maschera_155 | MENU PRODUZIONE
+maschera_156 | Menu Vendite
+maschera_157 | Strumenti
+maschera_158 | Switchboard
+maschera_159 | PianoManutenzione
+maschera_160 | Mat-fornitorixmateriale
+maschera_161 | Fornitori
+maschera_162 | Marchi
+maschera_163 | Procedure di Ordine a fornitori
+maschera_164 | AttivitaFormazione
+maschera_165 | StampaValutazioni
+maschera_166 | xStampaValutazioni
+maschera_167 | Costruttore
+maschera_168 | Anag_fornitori
+maschera_169 | Stampa e anteprime ordini fornitori
+maschera_170 | xStampa e anteprime ordini fornitori
+maschera_171 | xAnag_fornitori
+maschera_172 | Attrezzature
+maschera_173 | Mat-fornitori
+maschera_174 | Planning
+maschera_175 | PianoControlli
+maschera_176 | ProcMetodoAppSM
+maschera_177 | ReportLotti
+maschera_178 | StampaRapporti
+maschera_179 | tutti lotti
+maschera_180 | ricerchep
+maschera_181 | xAccettazione in entrata1
+maschera_182 | SottomascheraImballo
+maschera_183 | StampaMultiplaCertificato
+maschera_184 | Controllo Sanificazione1
+maschera_185 | Ricerca Lotto Per Data12-06-21
+maschera_186 | Ricerca Lotto Per Data
+maschera_187 | Switchboard_old
+maschera_188 | Switchboard1

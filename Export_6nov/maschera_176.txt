@@ -1,0 +1,159 @@
+Version =19
+VersionRequired =19
+Checksum =-234827585
+Begin Form
+    AutoResize = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    ScrollBars =2
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7710
+    DatasheetFontHeight =10
+    ItemSuffix =8
+    Left =990
+    Top =465
+    Right =9900
+    Bottom =4215
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x6ac8ef16773fe240
+    End
+    RecordSource ="SELECT ProcMetodoAppar.IdProceduraMetodo, ProcMetodoAppar.IdProcMetodoApp, ProcM"
+        "etodoAppar.IdApparecchiatura, Apparecchiature.DenApp, Apparecchiature.ModelloApp"
+        ", Apparecchiature.NSerieApp, IIf([NonInUso]=-1,\"ATTENZIONE - FUORI USO\",\"\") "
+        "AS FuoriUso FROM Apparecchiature INNER JOIN ProcMetodoAppar ON Apparecchiature.I"
+        "dApparecchio = ProcMetodoAppar.IdApparecchiatura ORDER BY Apparecchiature.DenApp"
+        ";"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =240
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    Left =56
+                    Width =1185
+                    Height =240
+                    Name ="Etichetta0"
+                    Caption ="denominazione:"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3967
+                    Width =660
+                    Height =240
+                    Name ="Etichetta1"
+                    Caption ="modello:"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5101
+                    Width =810
+                    Height =240
+                    Name ="Etichetta2"
+                    Caption ="n° di serie:"
+                End
+            End
+        End
+        Begin Section
+            Height =340
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =3911
+                    Top =56
+                    Width =846
+                    TabIndex =1
+                    Name ="ModelloApp"
+                    ControlSource ="ModelloApp"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    Left =4875
+                    Top =56
+                    Width =1371
+                    TabIndex =2
+                    Name ="NSerieApp"
+                    ControlSource ="NSerieApp"
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    ColumnCount =6
+                    ListWidth =8505
+                    Left =56
+                    Top =56
+                    Width =3801
+                    ColumnWidth =3420
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Apparecchio"
+                    ControlSource ="IdApparecchiatura"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Apparecchiature.IdApparecchio, Apparecchiature.DenApp, Costruttore.NomeCo"
+                        "s, Apparecchiature.ModelloApp, Apparecchiature.NSerieApp, IIf([NonInUso]=-1,\"no"
+                        "n in uso\",\"in uso\") AS in_uso FROM Costruttore INNER JOIN Apparecchiature ON "
+                        "Costruttore.IdCostruttore = Apparecchiature.IdCostruttore ORDER BY IIf([NonInUso"
+                        "]=-1,\"non in uso\",\"in uso\"), Apparecchiature.DenApp;"
+                    ColumnWidths ="0;3688;1134;1134;1134;1134"
+                    BaseInfo ="\"SELECT Apparecchiature.IdApparecchio, Apparecchiature.DenApp, Costruttore.Nome"
+                        "Cos, Apparecchiature.ModelloApp, Apparecchiature.NSerieApp, IIf([NonInUso]=-1,\""
+                        "\"non in uso\"\",\"\"in uso\"\") AS in_uso FROM Costruttore INNER JOIN Apparecch"
+                        "iature ON Costruttore.IdCostru\";\"Costruttore\";\"Apparecchiature\";\"\""
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    SpecialEffect =0
+                    BorderWidth =3
+                    OverlapFlags =247
+                    TextAlign =2
+                    BackStyle =0
+                    Left =3910
+                    Top =56
+                    Width =3756
+                    FontWeight =700
+                    TabIndex =3
+                    ForeColor =255
+                    Name ="Testo6"
+                    ControlSource ="FuoriUso"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+        End
+    End
+End

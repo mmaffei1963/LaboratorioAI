@@ -1,0 +1,535 @@
+Version =19
+VersionRequired =19
+Checksum =-234827539
+Begin Form
+    AutoCenter = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =255
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11451
+    DatasheetFontHeight =10
+    ItemSuffix =32
+    Left =705
+    Top =45
+    Right =12765
+    Bottom =4605
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x215c1530af87e240
+    End
+    RecordSource ="Tabella controlli"
+    Caption ="Tabella controlli"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x581b66199d72b64ebd4385d87a9eacf2
+            End
+        End
+        Begin Section
+            Height =2877
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x5267c191eac41e42b5fa4a778c55c495
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =114
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IDTabella controlli"
+                    ControlSource ="IDTabella controlli"
+                    EventProcPrefix ="IDTabella_controlli"
+                    GUID = Begin
+                        0xe13583e876282f4881ee79499450f43f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =114
+                            Width =1560
+                            Height =255
+                            Name ="IDTabella controlli_Etichetta"
+                            Caption ="IDTabella controlli"
+                            EventProcPrefix ="IDTabella_controlli_Etichetta"
+                            GUID = Begin
+                                0x8ebf141aa9faf6428941a919567ea68a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =456
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =1
+                    Name ="Matrice"
+                    ControlSource ="Matrice"
+                    GUID = Begin
+                        0x2ba9644a69ecb14fbe209f601f0447c0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =456
+                            Width =1560
+                            Height =255
+                            Name ="Matrice_Etichetta"
+                            Caption ="Matrice"
+                            GUID = Begin
+                                0x290d11f27dffec4087ba754dfbf908c5
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1677
+                    Top =798
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Controllo Etichettatura"
+                    ControlSource ="Controllo Etichettatura"
+                    EventProcPrefix ="Controllo_Etichettatura"
+                    GUID = Begin
+                        0xeb7a18a63a599b43ab3f842310eafb38
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =798
+                            Width =1560
+                            Height =255
+                            Name ="Controllo Etichettatura_Etichetta"
+                            Caption ="Controllo Etichettatura"
+                            EventProcPrefix ="Controllo_Etichettatura_Etichetta"
+                            GUID = Begin
+                                0x80ea11f6e2eaff418a264f2a0078f82d
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1677
+                    Top =1140
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =3
+                    Name ="Controllo Confezione"
+                    ControlSource ="Controllo Confezione"
+                    EventProcPrefix ="Controllo_Confezione"
+                    GUID = Begin
+                        0xecdca7b378cb814180d1cdc33f2305ec
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =1140
+                            Width =1560
+                            Height =255
+                            Name ="Controllo Confezione_Etichetta"
+                            Caption ="Controllo Confezione"
+                            EventProcPrefix ="Controllo_Confezione_Etichetta"
+                            GUID = Begin
+                                0x39cf6a2e583c074b9cd9303a2b11cfcf
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1677
+                    Top =1482
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =4
+                    Name ="Controllo Temperatura"
+                    ControlSource ="Controllo Temperatura"
+                    EventProcPrefix ="Controllo_Temperatura"
+                    GUID = Begin
+                        0x6efe82d0a41b3641ab3fe2aed4caf23a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =1482
+                            Width =1560
+                            Height =255
+                            Name ="Controllo Temperatura_Etichetta"
+                            Caption ="Controllo Temperatura"
+                            EventProcPrefix ="Controllo_Temperatura_Etichetta"
+                            GUID = Begin
+                                0xb0f5325213e2f246902d89497528849b
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =1824
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =5
+                    Name ="Controllo Organolettico"
+                    ControlSource ="Controllo Organolettico"
+                    EventProcPrefix ="Controllo_Organolettico"
+                    GUID = Begin
+                        0xc6a421bc433756448e1df876675fade0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =1824
+                            Width =1560
+                            Height =255
+                            Name ="Controllo Organolettico_Etichetta"
+                            Caption ="Controllo Organolettico"
+                            EventProcPrefix ="Controllo_Organolettico_Etichetta"
+                            GUID = Begin
+                                0x8dcd3ee031a6f34fa6e4ff63933a2098
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =2166
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =6
+                    Name ="Prelievo per Analisi di Laboratorio"
+                    ControlSource ="Prelievo per Analisi di Laboratorio"
+                    EventProcPrefix ="Prelievo_per_Analisi_di_Laboratorio"
+                    GUID = Begin
+                        0xf1c10329eca37a45b16ba1eccb21af86
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =2166
+                            Width =1560
+                            Height =255
+                            Name ="Prelievo per Analisi di Laboratorio_Etichetta"
+                            Caption ="Prelievo per Analisi di Laboratorio"
+                            EventProcPrefix ="Prelievo_per_Analisi_di_Laboratorio_Etichetta"
+                            GUID = Begin
+                                0xf27c22862bd2a64eab7fac81654206d0
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1677
+                    Top =2508
+                    Width =900
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =7
+                    Name ="Certificati Fornitore"
+                    ControlSource ="Certificati Fornitore"
+                    EventProcPrefix ="Certificati_Fornitore"
+                    GUID = Begin
+                        0xb2069a02d9efbe489a0bbb9c0345e086
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =2508
+                            Width =1560
+                            Height =255
+                            Name ="Certificati Fornitore_Etichetta"
+                            Caption ="Certificati Fornitore"
+                            EventProcPrefix ="Certificati_Fornitore_Etichetta"
+                            GUID = Begin
+                                0x5f5d0001ea016145a1d7795ac4a94082
+                            End
+                        End
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =4350
+                    Left =2604
+                    Top =453
+                    Width =3859
+                    Height =302
+                    TabIndex =8
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"400\""
+                    GUID = Begin
+                        0x8bc3b7519ec5e947af2528a1e5f6384b
+                    End
+                    Name ="CasellaCombinata16"
+                    ControlSource ="Matrice"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT Matrici.Matrice, Matrici.IDMatrice FROM Matrici;"
+                    ColumnWidths ="3868;484"
+                End
+                Begin ComboBox
+                    OverlapFlags =247
+                    ColumnCount =2
+                    ListWidth =2865
+                    Left =2551
+                    Top =793
+                    Width =3802
+                    Height =227
+                    TabIndex =9
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x4b425d8e9bd9614dbbc0578f2d5117bb
+                    End
+                    Name ="CasellaCombinata18"
+                    ControlSource ="Controllo Etichettatura"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloEtichettatura.Chiave, ControlloEtichettatura.IDEtichettatura FRO"
+                        "M ControlloEtichettatura;"
+                    ColumnWidths ="3316;684"
+                End
+                Begin ComboBox
+                    OverlapFlags =247
+                    ColumnCount =2
+                    ListWidth =3270
+                    Left =2551
+                    Top =1133
+                    Width =3685
+                    Height =287
+                    TabIndex =10
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xd36dba3c5168854da96c236497492b71
+                    End
+                    Name ="CasellaCombinata22"
+                    ControlSource ="Controllo Confezione"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloConfezione.Chiave, ControlloConfezione.IDConfezione FROM Control"
+                        "loConfezione;"
+                    ColumnWidths ="3883;1089"
+                End
+                Begin ComboBox
+                    OverlapFlags =247
+                    ColumnCount =2
+                    ListWidth =4305
+                    Left =2551
+                    Top =1474
+                    Width =3685
+                    Height =284
+                    TabIndex =11
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x0a62d7ccb651324ab6a688e3350f3eb3
+                    End
+                    Name ="CasellaCombinata24"
+                    ControlSource ="Controllo Temperatura"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloTemperatura.Chiave, ControlloTemperatura.IDtemperatura FROM Cont"
+                        "rolloTemperatura;"
+                    ColumnWidths ="3466;841"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =2475
+                    Left =2607
+                    Top =1814
+                    Width =3515
+                    Height =287
+                    TabIndex =12
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xc59be6234edee74a90f7f34df1c5d2db
+                    End
+                    Name ="CasellaCombinata26"
+                    ControlSource ="Controllo Organolettico"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloOrganolettico.Chiave, ControlloOrganolettico.IDOrganolettico FRO"
+                        "M ControlloOrganolettico;"
+                    ColumnWidths ="3406;771"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =3360
+                    Left =2607
+                    Top =2154
+                    Width =3515
+                    Height =230
+                    TabIndex =13
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x7557fca19ca5dd44ba2c5dd14072677a
+                    End
+                    Name ="CasellaCombinata28"
+                    ControlSource ="Prelievo per Analisi di Laboratorio"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloPrelievo.Chiave, ControlloPrelievo.IDPrelivo FROM ControlloPreli"
+                        "evo;"
+                    ColumnWidths ="3466;1030"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =4140
+                    Left =2607
+                    Top =2494
+                    Width =3459
+                    Height =275
+                    TabIndex =14
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x135f26251a61a843b2e5489ff66391a0
+                    End
+                    Name ="CasellaCombinata30"
+                    ControlSource ="Certificati Fornitore"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT ControlloCertificati.Chiave, ControlloCertificati.IDCertificati FROM Cont"
+                        "rolloCertificati;"
+                    ColumnWidths ="3957;750"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x4507d62016c1574dac13e1a5ff267067
+            End
+        End
+    End
+End

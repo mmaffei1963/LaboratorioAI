@@ -1,0 +1,551 @@
+Version =19
+VersionRequired =19
+Checksum =234827538
+Begin Form
+    AutoCenter = NotDefault
+    DefaultView =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10318
+    DatasheetFontHeight =10
+    ItemSuffix =35
+    Left =2160
+    Top =1860
+    Right =12768
+    Bottom =5316
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x1d2dcd087b7fe240
+    End
+    RecordSource ="SELECT Organico.IdOrganico, Organico.IdTitoloProf, Organico.FineProf, Organico.C"
+        "ognomeOrg, Organico.NomeOrg, Organico.InizioProf, Organico.TelCasaOrganico, Orga"
+        "nico.TelCellOrganico, Organico.Firma, Organico.Timbro, Organico.Log, Organico.[F"
+        "ax di riferimento] FROM Organico ORDER BY Organico.FineProf, Organico.CognomeOrg"
+        ";"
+    Caption ="Organico"
+    DatasheetFontName ="Arial"
+    OnLoad ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontWeight =700
+            BackColor =-2147483633
+            ForeColor =8388608
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+            BackColor =8421504
+            BorderColor =12632256
+        End
+        Begin Line
+            BorderWidth =2
+            Width =1701
+            BorderColor =8388608
+        End
+        Begin Image
+            BackStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =16776960
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =4
+            BorderWidth =2
+            LabelX =230
+            LabelY =-30
+            BorderColor =8388608
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BackColor =8421376
+            BorderColor =16776960
+        End
+        Begin BoundObjectFrame
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+            BorderColor =16776960
+        End
+        Begin TextBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin ListBox
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =8421376
+            ForeColor =16777215
+            BorderColor =16776960
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            SpecialEffect =3
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =9868950
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            BackStyle =0
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+            BorderColor =16776960
+        End
+        Begin ToggleButton
+            FontItalic = NotDefault
+            Width =283
+            Height =283
+            FontSize =8
+            ForeColor =-2147483630
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =3231
+            BackColor =-2147483633
+            Name ="Corpo"
+            Begin
+                Begin TextBox
+                    Visible = NotDefault
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    Left =56
+                    Top =2437
+                    Width =741
+                    Height =255
+                    ColumnWidth =1701
+                    Name ="IdOrganico"
+                    ControlSource ="IdOrganico"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =85
+                    ColumnCount =2
+                    Left =850
+                    Top =56
+                    Width =1545
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    Name ="IdTitoloProf"
+                    ControlSource ="IdTitoloProf"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT TitoloProfessionale.IdTitoloProf, TitoloProfessionale.TitoloProf FROM Tit"
+                        "oloProfessionale ORDER BY TitoloProfessionale.TitoloProf;"
+                    ColumnWidths ="0;1134"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =57
+                            Top =59
+                            Width =735
+                            Height =240
+                            Name ="IdTitoloProf Etichetta"
+                            Caption ="titolo"
+                            EventProcPrefix ="IdTitoloProf_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =4589
+                    Top =56
+                    Width =2040
+                    Height =255
+                    ColumnWidth =2310
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="CognomeOrg"
+                    ControlSource ="CognomeOrg"
+                    BeforeUpdate ="[Event Procedure]"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3344
+                            Top =56
+                            Width =855
+                            Height =240
+                            Name ="CognomeOrg Etichetta"
+                            Caption ="cognome"
+                            EventProcPrefix ="CognomeOrg_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =7937
+                    Top =56
+                    Width =1815
+                    Height =255
+                    ColumnWidth =2310
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =3
+                    Name ="NomeOrg"
+                    ControlSource ="NomeOrg"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6803
+                            Top =56
+                            Width =540
+                            Height =240
+                            Name ="NomeOrg Etichetta"
+                            Caption ="nome"
+                            EventProcPrefix ="NomeOrg_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =4592
+                    Top =340
+                    Width =1425
+                    Height =255
+                    ColumnWidth =840
+                    TabIndex =4
+                    Name ="InizioProf"
+                    ControlSource ="InizioProf"
+                    Format ="Short Date"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3344
+                            Top =340
+                            Width =1170
+                            Height =240
+                            Name ="InizioProf Etichetta"
+                            Caption ="inizio attività"
+                            EventProcPrefix ="InizioProf_Etichetta"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =7937
+                    Top =340
+                    Width =1140
+                    Height =255
+                    ColumnWidth =840
+                    TabIndex =5
+                    Name ="FineProf"
+                    ControlSource ="FineProf"
+                    Format ="Short Date"
+                    BeforeUpdate ="[Event Procedure]"
+                    InputMask ="99/99/00;0;_"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6803
+                            Top =340
+                            Width =1050
+                            Height =240
+                            Name ="FineProf Etichetta"
+                            Caption ="fine attività"
+                            EventProcPrefix ="FineProf_Etichetta"
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =850
+                    Top =2381
+                    Width =1665
+                    Height =405
+                    TabIndex =6
+                    Name ="Curriculum formativo"
+                    Caption ="Curriculum formativo"
+                    OnClick ="[Event Procedure]"
+                    EventProcPrefix ="Curriculum_formativo"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =6066
+                    Top =2324
+                    Width =2046
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =7
+                    Name ="TelCasaOrganico"
+                    ControlSource ="TelCasaOrganico"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    Left =6066
+                    Top =2607
+                    Width =2046
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =8
+                    Name ="TelCellOrganico"
+                    ControlSource ="TelCellOrganico"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =5053
+                    Top =2494
+                    Width =1002
+                    Height =240
+                    Name ="Etichetta24"
+                    Caption ="reperibilità:"
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =113
+                    Top =623
+                    Width =7260
+                    TabIndex =9
+                    Name ="SMSezioneAppartenenza"
+                    SourceObject ="Form.SMSezioneAppartenenza"
+                    LinkChildFields ="IdOrganico"
+                    LinkMasterFields ="IdOrganico"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =113
+                            Top =396
+                            Width =2205
+                            Height =240
+                            Name ="SMSezioneAppartenenza Etichetta"
+                            Caption ="Sezioni di Appartenenza"
+                            EventProcPrefix ="SMSezioneAppartenenza_Etichetta"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    SizeMode =3
+                    OverlapFlags =247
+                    Left =7483
+                    Top =794
+                    Width =2721
+                    Height =690
+                    TabIndex =10
+                    Name ="Firma"
+                    ControlSource ="Firma"
+                    Begin
+                        Begin Label
+                            OverlapFlags =255
+                            Left =7483
+                            Top =566
+                            Width =600
+                            Height =240
+                            Name ="Etichetta31"
+                            Caption ="Firma:"
+                        End
+                    End
+                End
+                Begin BoundObjectFrame
+                    SizeMode =3
+                    OverlapFlags =85
+                    Left =8162
+                    Top =1530
+                    Width =2055
+                    Height =1365
+                    TabIndex =11
+                    Name ="Timbro"
+                    ControlSource ="Timbro"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =7426
+                            Top =1530
+                            Width =720
+                            Height =240
+                            Name ="Etichetta32"
+                            Caption ="Timbro:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =2551
+                    Top =2603
+                    Width =2337
+                    TabIndex =12
+                    Name ="Log"
+                    ControlSource ="Log"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =2555
+                            Top =2324
+                            Width =2316
+                            Height =228
+                            Name ="Etichetta33"
+                            Caption ="Log accesso al gestionale:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =7823
+                    Top =2948
+                    FontWeight =700
+                    TabIndex =13
+                    Name ="Fax di riferimento"
+                    ControlSource ="Fax di riferimento"
+                    EventProcPrefix ="Fax_di_riferimento"
+                    GUID = Begin
+                        0x4058da8e86b68443b0a036247cda6f01
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6122
+                            Top =2948
+                            Width =1605
+                            Height =240
+                            Name ="Etichetta34"
+                            Caption ="Fax di riferimento:"
+                            GUID = Begin
+                                0x0fa32ada735aae4e90c5ca1ce4272b94
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+Option Compare Database
+Option Explicit
+
+Private Sub formazione_Click()
+On Error GoTo Err_formazione_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "AttivitaFormazioneAggiornamento"
+    
+    stLinkCriteria = "[CognomeOrg]=" & "'" & Me![CognomeOrg] & "'"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_formazione_Click:
+    Exit Sub
+
+Err_formazione_Click:
+    MsgBox Err.Description
+    Resume Exit_formazione_Click
+    
+End Sub
+Private Sub Comando14_Click()
+On Error GoTo Err_Comando14_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "AttivitaFormazioneAggiornamento"
+    
+    stLinkCriteria = "[IdOrganico]=" & Me![IdOrganico]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando14_Click:
+    Exit Sub
+
+Err_Comando14_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando14_Click
+    
+End Sub
+Private Sub Comando15_Click()
+On Error GoTo Err_Comando15_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "AttivitaFormazioneAggiornamento"
+    
+    stLinkCriteria = "[IdOrganico]=" & Me![IdOrganico]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Comando15_Click:
+    Exit Sub
+
+Err_Comando15_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando15_Click
+    
+End Sub
+Private Sub Comando16_Click()
+On Error GoTo Err_Comando16_Click
+
+
+    DoCmd.DoMenuItem acFormBar, acRecordsMenu, 2, , acMenuVer70
+
+Exit_Comando16_Click:
+    Exit Sub
+
+Err_Comando16_Click:
+    MsgBox Err.Description
+    Resume Exit_Comando16_Click
+    
+End Sub
+
+
+Private Sub Curriculum_formativo_Click()
+On Error GoTo Err_Curriculum_formativo_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "AttivitaFormazione"
+    
+    stLinkCriteria = "[IdOrganico]=" & Me![IdOrganico]
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Curriculum_formativo_Click:
+    Exit Sub
+
+Err_Curriculum_formativo_Click:
+    MsgBox Err.Description
+    Resume Exit_Curriculum_formativo_Click
+    
+End Sub

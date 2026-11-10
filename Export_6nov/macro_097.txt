@@ -1,0 +1,288 @@
+Version =196611
+ColumnsShown =0
+Begin
+    Action ="SetWarnings"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="OlioEVOBio"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="OlioEVOBio"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Farina bio tipo 2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Farina bio tipo 2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="LievitoBIO"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="LievitoBIO"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaFarina bio tipo 2"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaFarina bio tipo 2"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaLievitoBIO"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaLievitoBIO"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaOlioEVOBIO"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaOlioEVOBIO"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Crusca bio"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Crusca bio"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaCrusca bio"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaCrusca bio"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Sale Marino Integrale di Cervia"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Sale Marino Integrale di Cervia"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaSale Marino Integrale di Cervia"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaSale Marino Integrale di Cervia"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Miele bio"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Miele bio"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="AccodaMiele bio"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="AccodaMiele bio"
+    Argument ="1"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="Close"
+    Argument ="1"
+    Argument ="Lotto-Date"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Lotto-Date"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="OpenReport"
+    Argument ="TraccabilitàdaData_Piada BIO grani antichi"
+    Argument ="2"
+    Argument =""
+    Argument =""
+    Argument ="0"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="Lotto-Date"
+    Argument ="0"
+End
+Begin
+    Action ="SetWarnings"
+    Argument ="0"
+End
+Begin
+    Comment ="_AXL:<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>\015\012<UserI"
+        "nterfaceMacro MinimumClientDesignVersion=\"14.0.0000.0000\" xmlns=\"http://schem"
+        "as.microsoft.com/office/accessservices/2009/11/application\"><Statements><Action"
+        " Name=\"SetWarnings\"/><Action "
+End
+Begin
+    Comment ="_AXL:Name=\"OpenQuery\"><Argument Name=\"QueryName\">OlioEVOBio</Argument></Acti"
+        "on><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><A"
+        "rgument Name=\"ObjectName\">OlioEVOBio</Argument><Argument Name=\"Save\">Yes</Ar"
+        "gument></Action><Action N"
+End
+Begin
+    Comment ="_AXL:ame=\"OpenQuery\"><Argument Name=\"QueryName\">Farina bio tipo 2</Argument>"
+        "</Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argum"
+        "ent><Argument Name=\"ObjectName\">Farina bio tipo 2</Argument><Argument Name=\"S"
+        "ave\">Yes</Argument></Act"
+End
+Begin
+    Comment ="_AXL:ion><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">LievitoBIO</Arg"
+        "ument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query<"
+        "/Argument><Argument Name=\"ObjectName\">LievitoBIO</Argument></Action><Action Na"
+        "me=\"OpenQuery\"><Argumen"
+End
+Begin
+    Comment ="_AXL:t Name=\"QueryName\">AccodaFarina bio tipo 2</Argument></Action><Action Nam"
+        "e=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\""
+        "ObjectName\">AccodaFarina bio tipo 2</Argument><Argument Name=\"Save\">Yes</Argu"
+        "ment></Action><Action "
+End
+Begin
+    Comment ="_AXL:Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaLievitoBIO</Argument>"
+        "</Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argum"
+        "ent><Argument Name=\"ObjectName\">AccodaLievitoBIO</Argument></Action><Action Na"
+        "me=\"OpenQuery\"><Argumen"
+End
+Begin
+    Comment ="_AXL:t Name=\"QueryName\">AccodaOlioEVOBIO</Argument></Action><Action Name=\"Clo"
+        "seWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\"Object"
+        "Name\">AccodaOlioEVOBIO</Argument><Argument Name=\"Save\">Yes</Argument></Action"
+        "><Action Name=\"OpenQuer"
+End
+Begin
+    Comment ="_AXL:y\"><Argument Name=\"QueryName\">Crusca bio</Argument></Action><Action Name"
+        "=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\""
+        "ObjectName\">Crusca bio</Argument><Argument Name=\"Save\">Yes</Argument></Action"
+        "><Action Name=\"OpenQuery"
+End
+Begin
+    Comment ="_AXL:\"><Argument Name=\"QueryName\">AccodaCrusca bio</Argument></Action><Action"
+        " Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Na"
+        "me=\"ObjectName\">AccodaCrusca bio</Argument><Argument Name=\"Save\">Yes</Argume"
+        "nt></Action><Action Name"
+End
+Begin
+    Comment ="_AXL:=\"OpenQuery\"><Argument Name=\"QueryName\">Sale Marino Integrale di Cervia"
+        "</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Q"
+        "uery</Argument><Argument Name=\"ObjectName\">Sale Marino Integrale di Cervia</Ar"
+        "gument><Argument Name=\""
+End
+Begin
+    Comment ="_AXL:Save\">Yes</Argument></Action><Action Name=\"OpenQuery\"><Argument Name=\"Q"
+        "ueryName\">AccodaSale Marino Integrale di Cervia</Argument></Action><Action Name"
+        "=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</Argument><Argument Name=\""
+        "ObjectName\">AccodaSale "
+End
+Begin
+    Comment ="_AXL:Marino Integrale di Cervia</Argument><Argument Name=\"Save\">Yes</Argument>"
+        "</Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Miele bio</Argu"
+        "ment></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Query</"
+        "Argument><Argument Name"
+End
+Begin
+    Comment ="_AXL:=\"ObjectName\">Miele bio</Argument><Argument Name=\"Save\">Yes</Argument><"
+        "/Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">AccodaMiele bio<"
+        "/Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Qu"
+        "ery</Argument><Argument N"
+End
+Begin
+    Comment ="_AXL:ame=\"ObjectName\">AccodaMiele bio</Argument><Argument Name=\"Save\">Yes</A"
+        "rgument></Action><Action Name=\"OpenQuery\"><Argument Name=\"QueryName\">Lotto-D"
+        "ate</Argument></Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\""
+        ">Query</Argument><Argume"
+End
+Begin
+    Comment ="_AXL:nt Name=\"ObjectName\">Lotto-Date</Argument><Argument Name=\"Save\">Yes</Ar"
+        "gument></Action><Action Name=\"OpenForm\"><Argument Name=\"FormName\">Lotto-Date"
+        "</Argument></Action><Action Name=\"OpenReport\"><Argument Name=\"ReportName\">Tr"
+        "accabilitàdaData_Piada BI"
+End
+Begin
+    Comment ="_AXL:O grani antichi</Argument><Argument Name=\"View\">Print Preview</Argument><"
+        "/Action><Action Name=\"CloseWindow\"><Argument Name=\"ObjectType\">Form</Argumen"
+        "t><Argument Name=\"ObjectName\">Lotto-Date</Argument></Action><Action Name=\"Set"
+        "Warnings\"/></Statement"
+End
+Begin
+    Comment ="_AXL:s></UserInterfaceMacro>"
+End

@@ -1,0 +1,381 @@
+Version =19
+VersionRequired =19
+Checksum =-234827585
+Begin Form
+    AllowFilters = NotDefault
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =2
+    TabularFamily =9
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11169
+    DatasheetFontHeight =10
+    ItemSuffix =21
+    Left =1320
+    Top =3990
+    Right =12630
+    Bottom =5700
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x4e873bfc5682e240
+    End
+    RecordSource ="SELECT Ordine.Numero, Ordine.Fornitore, Ordine.Articolo, Ordine.Colli, Ordine.Qu"
+        "antita, Ordine.Prezzo, Ordine.[Controllo in accettazione], Ordine.ID FROM Ordine"
+        " WHERE (((Ordine.[Controllo in accettazione])=No) AND ((Ordine.ID)=[Forms]![Acce"
+        "ttazione in entrata]![selezioneid]));"
+    Caption ="Sottomaschera Variazione quant-qualitativa"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =345
+            BackColor =-2147483633
+            Name ="IntestazioneMaschera"
+            GUID = Begin
+                0x19ce6adfe887d711acfaa47766769872
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =627
+                    Top =57
+                    Width =675
+                    Height =240
+                    Name ="Numero_Etichetta"
+                    Caption ="Numero"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x1cce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =1360
+                    Top =57
+                    Width =2040
+                    Height =240
+                    Name ="Fornitore_Etichetta"
+                    Caption ="Fornitore"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x1ece6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =5944
+                    Top =56
+                    Width =900
+                    Height =240
+                    Name ="Colli_Etichetta"
+                    Caption ="Colli"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x20ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =6901
+                    Top =56
+                    Width =900
+                    Height =240
+                    Name ="Quantita_Etichetta"
+                    Caption ="Quantita"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x22ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =7858
+                    Top =56
+                    Width =900
+                    Height =240
+                    Name ="Prezzo_Etichetta"
+                    Caption ="Prezzo"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x24ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3458
+                    Top =56
+                    Width =2370
+                    Height =240
+                    Name ="Etichetta10"
+                    Caption ="Articolo"
+                    Tag ="DetachedLabel"
+                    GUID = Begin
+                        0x42ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =56
+                    Top =56
+                    Width =450
+                    Height =210
+                    Name ="Etichetta18"
+                    Caption ="ID"
+                    GUID = Begin
+                        0x67eae1899940234782c7c9e9c7997ad7
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8787
+                    Top =56
+                    Width =825
+                    Height =225
+                    Name ="Etichetta20"
+                    Caption ="Controllato"
+                    GUID = Begin
+                        0x5e2574a78a7d4a44a0e137cb1cf50901
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =410
+            BackColor =-2147483633
+            Name ="Corpo"
+            GUID = Begin
+                0x15ce6adfe887d711acfaa47766769872
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =612
+                    Top =57
+                    Width =690
+                    Height =255
+                    ColumnWidth =2310
+                    Name ="Numero"
+                    ControlSource ="Numero"
+                    GUID = Begin
+                        0x1bce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    Left =1360
+                    Top =57
+                    Width =2040
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    Name ="Fornitore"
+                    ControlSource ="Fornitore"
+                    GUID = Begin
+                        0x1dce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =5944
+                    Top =56
+                    Width =900
+                    Height =285
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Colli"
+                    ControlSource ="Colli"
+                    GUID = Begin
+                        0x1fce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =6901
+                    Top =56
+                    Width =900
+                    Height =285
+                    ColumnWidth =900
+                    TabIndex =3
+                    Name ="Quantita"
+                    ControlSource ="Quantita"
+                    GUID = Begin
+                        0x21ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    Left =7858
+                    Top =56
+                    Width =900
+                    Height =285
+                    ColumnWidth =900
+                    TabIndex =4
+                    Name ="Prezzo"
+                    ControlSource ="Prezzo"
+                    Format ="€ #,##0;-€ #,##0"
+                    GUID = Begin
+                        0x23ce6adfe887d711acfaa47766769872
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =87
+                    Left =3401
+                    Top =56
+                    Width =2430
+                    ColumnWidth =2565
+                    TabIndex =5
+                    GUID = Begin
+                        0x45ce6adfe887d711acfaa47766769872
+                    End
+                    Name ="Articoli"
+                    ControlSource ="Articolo"
+                    RowSourceType ="Table/Query"
+                    RowSource ="Elenco prodotti"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =56
+                    Top =56
+                    Width =456
+                    TabIndex =6
+                    Name ="Testo15"
+                    ControlSource ="ID"
+                    GUID = Begin
+                        0xbdc1e2378b80374382093f34b460bac1
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =9014
+                    Top =170
+                    TabIndex =7
+                    Name ="Controllo in accettazione"
+                    ControlSource ="Controllo in accettazione"
+                    EventProcPrefix ="Controllo_in_accettazione"
+                    GUID = Begin
+                        0x0224e642ff242d4980432370cdb8cf25
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="PièDiPaginaMaschera"
+            GUID = Begin
+                0x1ace6adfe887d711acfaa47766769872
+            End
+        End
+    End
+End
