@@ -67,8 +67,19 @@ async function riempiClienti() {
   const r = await fetch('/api/manualistica/compilazioni/clienti');
   if (!r.ok) return;
   const clienti = await r.json();
+  // In ArcLab capita di trovare più schede quasi uguali per la stessa
+  // società: senza partita IVA e comune non si distinguono, e aprire la
+  // check list su un doppione vuoto si scopre mesi dopo.
   sel.innerHTML = '<option value="">— cliente nuovo, non ancora nei gestionali —</option>'
-    + clienti.map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+    + clienti.map((c) => {
+        const segni = [
+          c.partitaIva || 'senza P.IVA',
+          c.comune || '',
+          c.insediamenti === 1 ? '1 insediamento' : `${c.insediamenti} insediamenti`,
+          c.haEmail ? '' : 'senza e-mail'
+        ].filter(Boolean).join(' · ');
+        return `<option value="${c.id}">${esc(c.nome)} — ${esc(segni)}</option>`;
+      }).join('');
 }
 
 async function crea() {

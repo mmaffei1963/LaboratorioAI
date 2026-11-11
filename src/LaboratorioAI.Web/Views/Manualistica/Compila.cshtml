@@ -1,4 +1,4 @@
-@{
+﻿@{
     var id = (int)ViewData["IdCompilazione"]!;
 }
 
@@ -16,10 +16,193 @@
     <div class="azioni-riga" id="passi"></div>
 </section>
 
+<section class="riquadro" id="sezione-sedi" hidden>
+    <h2>Sedi del trattamento</h2>
+    <p class="sottotitolo">Sono i luoghi che compaiono nelle informative e nei cartelli. ArcLab conosce gli insediamenti del cliente: qui si scelgono quali sono sedi di trattamento, e se ne possono aggiungere altre a mano. Con più di una sede, nei documenti ciascuna porta davanti il nome dell'attività.</p>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-sedi">
+            <thead>
+                <tr>
+                    <th>Nome dell'attività</th>
+                    <th>Indirizzo</th>
+                    <th>Comune</th>
+                    <th>CAP</th>
+                    <th>Pr.</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="azioni-riga" style="margin-top:.75rem">
+        <button class="pulsante pulsante-secondario" id="btn-sede-nuova">Aggiungi una sede</button>
+        <button class="pulsante pulsante-secondario" id="btn-proposte">Prendile da ArcLab</button>
+    </div>
+
+    <div id="pannello-proposte" hidden style="margin-top:1rem">
+        <h3>Insediamenti del cliente in ArcLab</h3>
+        <p class="sottotitolo" id="stato-proposte"></p>
+        <div id="elenco-proposte"></div>
+        <div class="azioni-riga" style="margin-top:.75rem">
+            <button class="pulsante" id="btn-importa">Aggiungi le sedi scelte</button>
+            <button class="pulsante pulsante-secondario" id="btn-chiudi-proposte">Chiudi</button>
+        </div>
+    </div>
+
+    <datalist id="lista-comuni"></datalist>
+</section>
+
+<section class="riquadro" id="sezione-autorizzati" hidden>
+    <h2>Autorizzati al trattamento</h2>
+    <p class="sottotitolo">Le persone che trattano i dati, con la loro qualifica e le funzioni aziendali che svolgono. Di Legale Rappresentante, Soci e Coadiuvanti familiari serve il nominativo; dei Lavoratori basta quanti sono, perché il nome lo scrivono a mano sul documento stampato. Chi svolge più funzioni riceve una sola lettera di nomina, con tutti gli ambiti.</p>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-autorizzati">
+            <thead>
+                <tr>
+                    <th>Qualifica</th>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Quanti</th>
+                    <th>Funzioni aziendali</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="azioni-riga" style="margin-top:.75rem">
+        <button class="pulsante pulsante-secondario" id="btn-persona-nuova">Aggiungi una persona</button>
+    </div>
+</section>
+
+<section class="riquadro" id="sezione-archivi" hidden>
+    <h2>Archivi e gestionali</h2>
+    <p class="sottotitolo">Dove il cliente tiene i dati: gli armadi e i raccoglitori, i computer, i gestionali installati sopra. Nel modello Word le caselle sono in numero fisso — tre persone che accedono, due gestionali — mentre qui le righe sono libere: si descrive la situazione vera, e sarà la generazione del Registro ad avvisare se non ci sta nel documento.</p>
+
+    <h3>Gestionali del cliente</h3>
+    <p class="sottotitolo">Si elencano una volta sola, poi si spuntano sui computer su cui sono installati.</p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-gestionali">
+            <thead>
+                <tr>
+                    <th>Prodotto</th>
+                    <th>Misure di sicurezza</th>
+                    <th>Manutenzione</th>
+                    <th>Backup</th>
+                    <th>Frequenza</th>
+                    <th>Dove si conserva</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-riga" style="margin-top:.75rem">
+        <button class="pulsante pulsante-secondario" id="btn-gestionale-nuovo">Aggiungi un gestionale</button>
+    </div>
+
+    <h3 style="margin-top:1.5rem">Archivi</h3>
+    <div id="elenco-archivi"></div>
+    <div class="azioni-riga" style="margin-top:.75rem">
+        <button class="pulsante pulsante-secondario" id="btn-archivio-cartaceo">Aggiungi un archivio cartaceo</button>
+        <button class="pulsante pulsante-secondario" id="btn-archivio-informatico">Aggiungi un archivio informatico</button>
+    </div>
+
+    <h3 style="margin-top:1.5rem">Caselle di posta</h3>
+    <p class="sottotitolo">Nel Registro ogni funzione aziendale elenca le caselle a cui accede. Una casella senza nessuna funzione spuntata compare in tutte le sezioni.</p>
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-caselle">
+            <thead>
+                <tr>
+                    <th>Indirizzo</th>
+                    <th>Chi vi accede</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="azioni-riga" style="margin-top:.75rem">
+        <button class="pulsante pulsante-secondario" id="btn-casella-nuova">Aggiungi una casella</button>
+    </div>
+</section>
+
+<section class="riquadro" id="sezione-firme" hidden>
+    <h2>Firme</h2>
+    <p class="sottotitolo">Si caricano come immagine PNG, con lo sfondo trasparente se possibile. Restano legate a questa check list e non si riusano altrove: il documento prodotto deve restare uguale a sé stesso. Si conserva solo l'immagine — niente pressione, velocità o tempi: non è firma grafometrica.</p>
+
+    <div class="griglia-filtri" id="riquadri-firme"></div>
+</section>
+
 <section class="riquadro">
     <h2 id="nome-passo"></h2>
     <p class="sottotitolo" id="stato-passo"></p>
     <div id="domande"></div>
+</section>
+
+<section class="riquadro" id="riquadro-genera" hidden>
+    <h2>Genera un documento</h2>
+    <p class="sottotitolo">Prima prova: si genera un documento alla volta e lo si scarica. La cartella dei documenti consegnati, il PDF e l'invio al cliente sono il pezzo dopo. I documenti che usano elenchi, testi alternativi o blocchi ripetuti che il generatore non sa ancora fare vengono rifiutati con il motivo, invece di uscire incompleti.</p>
+    <div class="griglia-filtri">
+        <label>Documento
+            <select id="f-documento"></select>
+        </label>
+        <div class="azioni-riga" style="align-items:flex-end">
+            <button class="pulsante" id="btn-genera">Genera e scarica</button>
+            <button class="pulsante pulsante-secondario" id="btn-genera-pdf">Genera in PDF</button>
+        </div>
+    </div>
+    <div id="esito-genera"></div>
+</section>
+
+<section class="riquadro" id="riquadro-archivio" hidden>
+    <h2>Documenti prodotti</h2>
+    <p class="sottotitolo" id="stato-archivio"></p>
+
+    <div class="tabella-scorrevole">
+        <table class="tabella" id="tabella-archivio">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Documento</th>
+                    <th>Formato</th>
+                    <th>Prodotto il</th>
+                    <th>Da</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="pannello-invio" hidden style="margin-top:1rem">
+        <h3>Manda al cliente</h3>
+        <p class="sottotitolo">Si inviano solo documenti già archiviati: il cliente riceve esattamente quello che risulta consegnato. L'invio passa da Brevo e resta registrato.</p>
+        <div class="griglia-filtri">
+            <label>A <span class="nota-riga" id="nota-indirizzi">più indirizzi separati da virgola</span>
+                <input type="text" id="f-destinatari" list="lista-indirizzi" maxlength="500" />
+                <datalist id="lista-indirizzi"></datalist>
+            </label>
+            <label>Messaggio <span class="nota-riga">facoltativo</span>
+                <input type="text" id="f-messaggio" maxlength="500" placeholder="In allegato la documentazione privacy." />
+            </label>
+            <div class="azioni-riga" style="align-items:flex-end">
+                <button class="pulsante" id="btn-invia">Invia</button>
+            </div>
+        </div>
+        <div id="esito-invio"></div>
+    </div>
+
+    <div id="storico-invii"></div>
+
+    <div class="azioni-riga" id="riga-riapri" hidden style="margin-top:1rem">
+        <button class="pulsante pulsante-secondario" id="btn-riapri">Riapri per correggere</button>
+        <span class="nota-riga">I documenti già consegnati restano nell'archivio: rigenerando ne nascono di nuovi accanto ai vecchi.</span>
+    </div>
 </section>
 
 <dialog id="dlg-avviso">

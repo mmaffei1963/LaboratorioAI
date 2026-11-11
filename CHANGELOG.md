@@ -13,6 +13,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 - Nuovi `INIZIO-LAVORO.bat` e `FINE-LAVORO.bat` (script in `scripts\Inizio-Lavoro.ps1` e `Fine-Lavoro.ps1`): pull con controlli e proposta di aggiornare il database locale quando arrivano migrazioni; commit e push con blocco se ci sono password in chiaro, file di configurazione locali, database o file oltre 50 MB.
 - `.gitignore`: ignorate le copie di backup delle configurazioni (`appsettings*.json.*`, come `appsettings.Development.json.prima-di-D`).
 
+## Manualistica - primo documento generato in C# (11/11/2026)
+- `ContestoGenerazione`: il porto in C# di `contesto()` di motore.js, riga per riga. Le regole non sono state reinterpretate — una differenza anche piccola fa uscire o sparire un paragrafo da un documento firmato, e non se ne accorgerebbe nessuno.
+- `GeneratoreManualistica`: apre la revisione approvata, toglie i blocchi con la condizione falsa, scrive i campi e scioglie i controlli contenuto. Nell'ordine del motore: i blocchi per primi, perche' togliere un blocco dopo averlo compilato cancellerebbe un valore senza che si veda.
+- Riusa `ControlliContenuto` del DVR (`Scrivi` conserva la formattazione, `Sciogli` toglie il controllo lasciando il contenuto): nessun codice OpenXml nuovo.
+- **Tratta solo `CAMPO:` e `SE:`.** Un modello che usa `TESTO:`, `LISTA:`, `RIPETI:`, `SEZIONE:`, `FIRMA:` o `SPECIALE:` viene rifiutato dicendo quali, invece di uscire incompleto in silenzio. Oggi basta per i cartelli.
+- Nella schermata della check list si sceglie un documento, si leggono gli avvisi e si scarica. Il documento non si salva da nessuna parte: cartella dei consegnati, PDF e invio sono il pezzo dopo.
+
 ## Manualistica - si compila la check list (10/11/2026)
 - Schermata `Manualistica/Compila/{id}`: i sei passi, le domande di ciascuno rese secondo il tipo (tendina, si'/no, numero, data, testo, scelta multipla) e **il salvataggio a ogni risposta** — in sopralluogo non si preme «salva», e quello che si e' scritto non deve dipendere dal ricordarsene.
 - Una riga per domanda in `man.ValoriCompilazione`: la risposta e' una sola e la seconda volta si sovrascrive. Risposta vuota = riga tolta: «non risposto» e «risposto con niente» sono la stessa cosa.

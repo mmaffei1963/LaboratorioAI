@@ -1515,6 +1515,11 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<bool>("Attivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Cognome")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -9314,6 +9319,11 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSedeCompilazione"));
+
+                    b.Property<bool>("Attivo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Cap")
                         .HasMaxLength(10)

@@ -315,6 +315,10 @@ builder.Services.AddScoped<IServizioPreventivi, ServizioPreventivi>();
 builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioModelliManualistica>();
 builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioVociChecklist>();
 builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioCompilazioni>();
+builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioArchiviCompilazione>();
+builder.Services.AddScoped<LaboratorioAI.Documenti.Manualistica.ServizioArchivioManualistica>();
+builder.Services.Configure<LaboratorioAI.Documenti.Manualistica.OpzioniManualistica>(
+    builder.Configuration.GetSection(LaboratorioAI.Documenti.Manualistica.OpzioniManualistica.Sezione));
 
 // ── Accreditamento ACCREDIA laboratori esterni ─────────────────────────────
 // Timeout esplicito (invece del default di 100s): con più laboratori controllati in sequenza,

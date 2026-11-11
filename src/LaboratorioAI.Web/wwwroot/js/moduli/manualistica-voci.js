@@ -157,9 +157,13 @@ function disegnaVoci() {
     const proposta = !v.gruppo && v.passoProposto
       ? `<div class="nota-riga">proposto: ${esc(nomePasso(v.passoProposto))}</div>`
       : '';
-    const automatica = v.attivo && v.spegnimentoProposto
-      ? `<div class="nota-riga">da spegnere: ${esc(v.spegnimentoProposto)}</div>`
+    const attesa = v.attivo && v.fonteAttesa
+      ? `<div class="nota-riga">da lasciare accesa: arriverà da ${esc(v.fonteAttesa)}</div>`
       : '';
+
+    const automatica = v.attivo && v.spegnimentoProposto
+      ? `<div class="nota-riga">da spegnere: ${esc(v.spegnimentoProposto)}</div>${attesa}`
+      : attesa;
     const legate = v.opzioniLegateAlModello
       ? `<div class="nota-riga">${v.opzioniLegateAlModello} legate a un documento</div>`
       : '';

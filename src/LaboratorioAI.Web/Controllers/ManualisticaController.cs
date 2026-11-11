@@ -2,6 +2,8 @@
 using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Enumerazioni;
 using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Documenti;
+
 using LaboratorioAI.Documenti.Manualistica;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
@@ -31,18 +33,30 @@ public class ManualisticaController : Controller
     private readonly ServizioCompilazioni _compilazioni;
     private readonly IContestoUtente _utente;
     private readonly IServizioAudit _audit;
+    private readonly IWebHostEnvironment _ambiente;
 
     public ManualisticaController(ServizioModelliManualistica modelli, ServizioVociChecklist voci,
-        ServizioCompilazioni compilazioni, IContestoUtente utente, IServizioAudit audit)
+        ServizioCompilazioni compilazioni, IContestoUtente utente, IServizioAudit audit,
+        IWebHostEnvironment ambiente)
     {
         _modelli = modelli;
         _voci = voci;
         _compilazioni = compilazioni;
         _utente = utente;
         _audit = audit;
+        _ambiente = ambiente;
     }
 
     private string Upn => _utente.Email ?? "sconosciuto";
+
+    /// <summary>
+    /// Se la schermata deve mostrare i campi scrivibili. La stessa
+    /// regola la applica il servizio: qui si decide solo cosa far
+    /// vedere.
+    /// </summary>
+    private bool PuoCompilare(CompilazioneAperta aperta) =>
+        _utente.HaPermesso(Permessi.ManualisticaGenera)
+        && aperta.Stato is StatoCompilazione.Bozza or StatoCompilazione.Generata;
 
     public IActionResult Modelli()
     {
@@ -239,7 +253,10 @@ public class ManualisticaController : Controller
     public async Task<IActionResult> ClientiArcLab(CancellationToken ct)
     {
         var clienti = await _compilazioni.ClientiAsync(ct);
-        return Json(clienti.Select(c => new { c.Id, c.Nome }));
+        return Json(clienti.Select(c => new
+        {
+            c.Id, c.Nome, c.PartitaIva, c.Comune, c.HaEmail, c.Insediamenti
+        }));
     }
 
     [HttpPost("api/manualistica/compilazioni")]
@@ -289,8 +306,7 @@ public class ManualisticaController : Controller
             Data = aperta.DataDocumenti.ToString("dd/MM/yyyy"),
             Revisione = "Rev. " + aperta.Revisione.ToString("00"),
             Stato = aperta.Stato.ToString(),
-            PuoCompilare = _utente.HaPermesso(Permessi.ManualisticaGenera)
-                           && aperta.Stato == StatoCompilazione.Bozza,
+            PuoCompilare = PuoCompilare(aperta),
             Passi = ServizioVociChecklist.Passi.Select(p => new { p.Codice, p.Nome }),
             Risposte = aperta.Risposte
         });
@@ -322,6 +338,484 @@ public class ManualisticaController : Controller
             id, risposta.Codice, risposta.Valore, risposta.ScrittoAMano, Upn, ct);
 
         return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    // ── Sedi del trattamento ──────────────────────────────
+
+    /// <summary>Le sedi gia' inserite e gli insediamenti che ArcLab propone.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/sedi")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Sedi(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var sedi = await _compilazioni.SediAsync(id, ct);
+        var proposte = await _compilazioni.ProposteSediAsync(id, ct);
+
+        return Json(new
+        {
+            Sedi = sedi,
+            Proposte = proposte,
+            PuoCompilare = PuoCompilare(aperta)
+        });
+    }
+
+    /// <summary>Aggiunge o corregge una sede.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/sedi")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaSede(int id, [FromBody] SedeInviata sede, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(sede.Indirizzo) && string.IsNullOrWhiteSpace(sede.Comune))
+            return BadRequest("Una sede senza indirizzo né comune non serve a niente.");
+
+        var idSede = await _compilazioni.SalvaSedeAsync(
+            id, sede.Id, sede.Nome, sede.Indirizzo, sede.Cap, sede.Comune, sede.Provincia, Upn, ct);
+
+        return idSede is null
+            ? BadRequest("La check list non è modificabile.")
+            : Json(new { Ok = true, Id = idSede });
+    }
+
+    /// <summary>Porta dentro gli insediamenti scelti fra quelli proposti.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/sedi/importa")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> ImportaSedi(int id, [FromBody] SediScelte scelte, CancellationToken ct)
+    {
+        var quante = await _compilazioni.ImportaSediAsync(id, scelte.Codici ?? [], Upn, ct);
+        return Json(new { Ok = true, Quante = quante });
+    }
+
+    /// <summary>Toglie una sede dalla check list.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/sedi/{idSede:int}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliSede(int id, int idSede, CancellationToken ct)
+    {
+        var ok = await _compilazioni.TogliSedeAsync(id, idSede, Upn, ct);
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    // ── Autorizzati al trattamento ──────────────────────
+
+    /// <summary>Gli autorizzati inseriti, con qualifiche e funzioni fra cui scegliere.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/autorizzati")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Autorizzati(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var persone = await _compilazioni.AutorizzatiAsync(id, ct);
+        var scelte = await _compilazioni.SceltePersoneAsync(aperta.CodiceTipo, ct);
+
+        return Json(new
+        {
+            Autorizzati = persone,
+            scelte.Qualifiche,
+            scelte.Funzioni,
+            PuoCompilare = PuoCompilare(aperta)
+        });
+    }
+
+    /// <summary>Aggiunge o corregge un autorizzato.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/autorizzati")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaAutorizzato(
+        int id, [FromBody] AutorizzatoInviato persona, CancellationToken ct)
+    {
+        if (persona.IdQualifica <= 0) return BadRequest("Manca la qualifica.");
+
+        var idPersona = await _compilazioni.SalvaAutorizzatoAsync(
+            id, persona.Id, persona.IdQualifica, persona.Nome, persona.Cognome,
+            persona.Quantita, persona.Funzioni ?? [], Upn, ct);
+
+        return idPersona is null
+            ? BadRequest("La check list non è modificabile.")
+            : Json(new { Ok = true, Id = idPersona });
+    }
+
+    /// <summary>Toglie un autorizzato dalla check list.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/autorizzati/{idPersona:int}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliAutorizzato(int id, int idPersona, CancellationToken ct)
+    {
+        var ok = await _compilazioni.TogliAutorizzatoAsync(id, idPersona, Upn, ct);
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    // ── Archivi, gestionali e caselle ──────────────────
+
+    /// <summary>Archivi e gestionali della check list, con le voci delle tendine.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/archivi")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Archivi(
+        int id, [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var scelte = await _compilazioni.SceltePersoneAsync(aperta.CodiceTipo, ct);
+
+        return Json(new
+        {
+            Archivi = await archivi.ArchiviAsync(id, ct),
+            Gestionali = await archivi.GestionaliAsync(id, ct),
+            Caselle = await archivi.CaselleAsync(id, ct),
+            scelte.Funzioni,
+            Tendine = await archivi.DizionarioAsync(aperta.CodiceTipo, ct),
+            PuoCompilare = PuoCompilare(aperta)
+        });
+    }
+
+    /// <summary>Aggiunge o corregge un archivio.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/archivi")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaArchivio(
+        int id, [FromBody] ArchivioInviato a,
+        [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        var idArchivio = await archivi.SalvaArchivioAsync(
+            id, a.Id, a.Tipo ?? "", a.Luogo, a.SistemaOperativo, a.Antivirus, a.Backup,
+            a.FrequenzaBackup, a.LuogoConservazione,
+            a.Accessi ?? [], a.Interessati ?? [], a.CategorieDati ?? [], a.Gestionali ?? [],
+            Upn, ct);
+
+        return idArchivio is null
+            ? BadRequest("La check list non è modificabile, oppure il tipo di archivio non è valido.")
+            : Json(new { Ok = true, Id = idArchivio });
+    }
+
+    /// <summary>Toglie un archivio.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/archivi/{idArchivio:int}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliArchivio(
+        int id, int idArchivio, [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        var ok = await archivi.TogliArchivioAsync(id, idArchivio, Upn, ct);
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    /// <summary>Aggiunge o corregge un gestionale.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/gestionali")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaGestionale(
+        int id, [FromBody] GestionaleInviato g,
+        [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(g.Prodotto)) return BadRequest("Manca il nome del gestionale.");
+
+        var idGestionale = await archivi.SalvaGestionaleAsync(
+            id, g.Id, g.Prodotto, g.MisureSicurezza, g.Manutenzione,
+            g.Backup, g.Frequenza, g.LuogoConservazione, Upn, ct);
+
+        return idGestionale is null
+            ? BadRequest("La check list non è modificabile.")
+            : Json(new { Ok = true, Id = idGestionale });
+    }
+
+    /// <summary>Toglie un gestionale.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/gestionali/{idGestionale:int}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliGestionale(
+        int id, int idGestionale, [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        var ok = await archivi.TogliGestionaleAsync(id, idGestionale, Upn, ct);
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    /// <summary>Aggiunge o corregge una casella di posta.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/caselle")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> SalvaCasella(
+        int id, [FromBody] CasellaInviata c,
+        [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(c.Indirizzo)) return BadRequest("Manca l'indirizzo.");
+
+        var idCasella = await archivi.SalvaCasellaAsync(id, c.Id, c.Indirizzo, c.Funzioni ?? [], Upn, ct);
+
+        return idCasella is null
+            ? BadRequest("La check list non è modificabile.")
+            : Json(new { Ok = true, Id = idCasella });
+    }
+
+    /// <summary>Toglie una casella di posta.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/caselle/{idCasella:int}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliCasella(
+        int id, int idCasella, [FromServices] ServizioArchiviCompilazione archivi, CancellationToken ct)
+    {
+        var ok = await archivi.TogliCasellaAsync(id, idCasella, Upn, ct);
+        return ok ? Json(new { Ok = true }) : BadRequest("La check list non è modificabile.");
+    }
+
+    // ── Firme ─────────────────────────────────────
+
+    /// <summary>Le firme raccolte, senza le immagini.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/firme")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Firme(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        return Json(new
+        {
+            Firme = await _compilazioni.FirmeAsync(id, ct),
+            PuoCompilare = PuoCompilare(aperta)
+        });
+    }
+
+    /// <summary>L'immagine di una firma, per rivederla.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/firme/{ruolo}/immagine")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> ImmagineFirma(int id, string ruolo, CancellationToken ct)
+    {
+        if (!Enum.TryParse<RuoloFirmaManualistica>(ruolo, out var quale)) return BadRequest();
+
+        var png = await _compilazioni.ImmagineFirmaAsync(id, quale, ct);
+        return png is null ? NotFound() : File(png, "image/png");
+    }
+
+    /// <summary>Carica la firma di un ruolo.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/firme/{ruolo}")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    [RequestSizeLimit(4 * 1024 * 1024)]
+    public async Task<IActionResult> CaricaFirma(
+        int id, string ruolo, IFormFile? file, string? nome, CancellationToken ct)
+    {
+        if (!Enum.TryParse<RuoloFirmaManualistica>(ruolo, out var quale)) return BadRequest("Ruolo sconosciuto.");
+        if (file is null || file.Length == 0) return BadRequest("Manca il file della firma.");
+        if (file.Length > 2 * 1024 * 1024) return BadRequest("La firma non deve superare i 2 MB.");
+
+        using var memoria = new MemoryStream();
+        await file.CopyToAsync(memoria, ct);
+        var png = memoria.ToArray();
+
+        // Si accetta solo PNG, e lo si verifica dai byte: l'estensione
+        // del file non dice niente, e un JPEG qui dentro uscirebbe come
+        // un rettangolo nero nel documento.
+        if (png.Length < 8 || png[0] != 0x89 || png[1] != 0x50 || png[2] != 0x4E || png[3] != 0x47)
+            return BadRequest("La firma deve essere un file PNG.");
+
+        var ok = await _compilazioni.SalvaFirmaAsync(id, quale, png, nome, Upn, ct);
+        if (!ok) return BadRequest("La check list non è modificabile.");
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "firma.carica", EsitoOperazione.Successo,
+            dettaglio: new { IdCompilazione = id, Ruolo = quale.ToString() }, ct: ct);
+
+        return Json(new { Ok = true });
+    }
+
+    /// <summary>Toglie una firma.</summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/firme/{ruolo}/togli")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> TogliFirma(int id, string ruolo, CancellationToken ct)
+    {
+        if (!Enum.TryParse<RuoloFirmaManualistica>(ruolo, out var quale)) return BadRequest();
+
+        var ok = await _compilazioni.TogliFirmaAsync(id, quale, Upn, ct);
+        if (!ok) return BadRequest("La check list non è modificabile.");
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "firma.togli", EsitoOperazione.Successo,
+            dettaglio: new { IdCompilazione = id, Ruolo = quale.ToString() }, ct: ct);
+
+        return Json(new { Ok = true });
+    }
+
+    /// <summary>I documenti che si possono generare per questa compilazione.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/documenti")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> DocumentiGenerabili(int id, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var modelli = await _compilazioni.ModelliGenerabiliAsync(aperta.CodiceTipo, ct);
+        return Json(modelli.Select(m => new { m.Codice, m.Nome, Revisione = "Rev. " + m.Revisione.ToString("00") }));
+    }
+
+    /// <summary>
+    /// Cosa succederebbe generando: gli avvisi da rileggere, o il
+    /// motivo per cui non si puo'. Si guarda prima di scaricare.
+    /// </summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/genera/{codice}/controllo")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> ControlloGenerazione(int id, string codice, CancellationToken ct)
+    {
+        var esito = await _compilazioni.GeneraAsync(id, codice, Upn, archivia: false, ct);
+        if (esito is null) return NotFound();
+
+        return Json(new { Ok = esito.Errore is null, esito.Errore, esito.Avvisi, esito.NomeFile });
+    }
+
+    [HttpGet("api/manualistica/compilazioni/{id:int}/genera/{codice}")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> Genera(int id, string codice, CancellationToken ct)
+    {
+        var esito = await _compilazioni.GeneraAsync(id, codice, Upn, archivia: true, ct);
+        if (esito is null) return NotFound();
+        if (esito.Contenuto is null) return BadRequest(esito.Errore);
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "compilazione.genera", EsitoOperazione.Successo,
+            idEntita: id.ToString(),
+            dettaglio: new { Documento = codice, Avvisi = esito.Avvisi.Count }, ct: ct);
+
+        return File(esito.Contenuto, MimeDocx, esito.NomeFile);
+    }
+
+    // ── Archivio, PDF e invio ────────────────────────
+
+    /// <summary>I documenti gia' prodotti per questa check list.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/documenti/archivio")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> Archivio(
+        int id, [FromServices] ServizioArchivioManualistica archivio, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        return Json(new
+        {
+            Documenti = await archivio.ElencoAsync(id, ct),
+            Invii = await _compilazioni.InviiAsync(id, ct),
+            Stato = aperta.Stato.ToString(),
+            Riapribile = _utente.HaPermesso(Permessi.ManualisticaGenera)
+                         && aperta.Stato is StatoCompilazione.Inviata or StatoCompilazione.InAttesaFirma,
+            archivio.Configurato,
+            Indirizzi = await _compilazioni.IndirizziPropostiAsync(id, ct),
+            PuoCompilare = _utente.HaPermesso(Permessi.ManualisticaGenera)
+        });
+    }
+
+    /// <summary>Riscarica un documento archiviato.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/documenti/archivio/{idDocumento:int}")]
+    [RichiedeUnoDeiPermessi(Permessi.ManualisticaGenera, Permessi.ManualisticaConsulta)]
+    public async Task<IActionResult> ScaricaArchiviato(
+        int id, int idDocumento, [FromServices] ServizioArchivioManualistica archivio, CancellationToken ct)
+    {
+        var documento = await archivio.LeggiAsync(id, idDocumento, ct);
+        if (documento is null) return NotFound("Il file non si trova più nell'archivio.");
+
+        var tipo = documento.Value.NomeFile.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+            ? "application/pdf" : MimeDocx;
+
+        return File(documento.Value.Contenuto, tipo, documento.Value.NomeFile);
+    }
+
+    /// <summary>Genera un documento gia' convertito in PDF.</summary>
+    [HttpGet("api/manualistica/compilazioni/{id:int}/genera/{codice}/pdf")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> GeneraPdf(int id, string codice, CancellationToken ct)
+    {
+        var esito = await _compilazioni.GeneraPdfAsync(id, codice, _ambiente.WebRootPath, Upn, ct);
+        if (esito is null) return NotFound();
+        if (esito.Contenuto is null) return BadRequest(esito.Errore);
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "compilazione.genera.pdf", EsitoOperazione.Successo,
+            idEntita: id.ToString(), dettaglio: new { Documento = codice }, ct: ct);
+
+        return File(esito.Contenuto, "application/pdf", esito.NomeFile);
+    }
+
+    /// <summary>
+    /// Manda al cliente documenti gia' archiviati.
+    ///
+    /// Si inviano solo documenti che sono gia' nell'archivio: quello
+    /// che il cliente riceve dev'essere esattamente quello che
+    /// risulta consegnato.
+    /// </summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/documenti/invia")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> InviaDocumenti(
+        int id, [FromBody] InvioRichiesto richiesta,
+        [FromServices] ServizioArchivioManualistica archivio,
+        [FromServices] IServizioEmail email, CancellationToken ct)
+    {
+        var aperta = await _compilazioni.ApriAsync(id, ct);
+        if (aperta is null) return NotFound();
+
+        var destinatari = (richiesta.Destinatari ?? "")
+            .Split([';', ','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(d => d.Trim()).Where(d => d.Contains('@')).Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (destinatari.Count == 0) return BadRequest("Manca un indirizzo a cui mandarli.");
+        if (richiesta.Documenti is null || richiesta.Documenti.Length == 0)
+            return BadRequest("Non hai scelto nessun documento.");
+
+        var allegati = new List<AllegatoEmail>();
+        foreach (var idDocumento in richiesta.Documenti.Distinct())
+        {
+            var documento = await archivio.LeggiAsync(id, idDocumento, ct);
+            if (documento is null) continue;
+
+            var tipo = documento.Value.NomeFile.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+                ? "application/pdf" : MimeDocx;
+
+            allegati.Add(new AllegatoEmail(documento.Value.NomeFile, documento.Value.Contenuto, tipo));
+        }
+
+        if (allegati.Count == 0) return BadRequest("Nessuno dei documenti scelti si trova nell'archivio.");
+
+        var oggetto = $"Documentazione privacy — {aperta.RagioneSociale}";
+        var corpo = string.IsNullOrWhiteSpace(richiesta.Messaggio)
+            ? "<p>In allegato la documentazione privacy.</p>"
+            : "<p>" + System.Net.WebUtility.HtmlEncode(richiesta.Messaggio).Replace("\n", "<br />") + "</p>";
+
+        var formati = allegati
+            .Select(a => Path.GetExtension(a.NomeFile).TrimStart('.').ToUpperInvariant())
+            .ToList();
+
+        string? idMessaggio;
+        try
+        {
+            idMessaggio = await email.InviaConAllegatiAsync(destinatari, oggetto, corpo, allegati, ct);
+        }
+        catch (Exception ex)
+        {
+            // Anche il tentativo fallito resta scritto: un invio mai
+            // arrivato non deve sembrare mai tentato.
+            await _compilazioni.RegistraInvioAsync(id, destinatari, formati, null, ex.Message, Upn, ct);
+
+            await _audit.RegistraAsync(
+                AreaFunzionale.Manualistica, "compilazione.invia", EsitoOperazione.Errore,
+                idEntita: id.ToString(), dettaglio: new { Errore = ex.Message }, ct: ct);
+
+            return BadRequest($"L'invio non è riuscito: {ex.Message}");
+        }
+
+        await _compilazioni.RegistraInvioAsync(id, destinatari, formati, idMessaggio, null, Upn, ct);
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "compilazione.invia", EsitoOperazione.Successo,
+            idEntita: id.ToString(),
+            dettaglio: new { Destinatari = destinatari, Allegati = allegati.Count, MessageId = idMessaggio },
+            ct: ct);
+
+        return Json(new { Ok = true, Quanti = allegati.Count, Destinatari = destinatari });
+    }
+
+    /// <summary>
+    /// Riapre una check list consegnata, per correggerla. I documenti
+    /// gia' prodotti restano nell'archivio.
+    /// </summary>
+    [HttpPost("api/manualistica/compilazioni/{id:int}/riapri")]
+    [RichiedePermesso(Permessi.ManualisticaGenera)]
+    public async Task<IActionResult> Riapri(int id, CancellationToken ct)
+    {
+        var ok = await _compilazioni.RiapriAsync(id, Upn, ct);
+        if (!ok) return BadRequest("Questa check list non si può riaprire.");
+
+        await _audit.RegistraAsync(
+            AreaFunzionale.Manualistica, "compilazione.riapri", EsitoOperazione.Successo,
+            idEntita: id.ToString(), ct: ct);
+
+        return Json(new { Ok = true });
     }
 
     // ── Voci della check list ──────────────────────────────────────
@@ -509,6 +1003,34 @@ public record AccensioneVoci(int[]? IdVoci, bool Attivo);
 
 /// <summary>Una risposta della check list.</summary>
 public record RispostaChecklist(string Codice, string? Valore, bool ScrittoAMano);
+
+/// <summary>Una sede del trattamento inviata dalla schermata.</summary>
+public record SedeInviata(
+    int Id, string? Nome, string? Indirizzo, string? Cap, string? Comune, string? Provincia);
+
+/// <summary>Gli insediamenti scelti fra quelli proposti da ArcLab.</summary>
+public record SediScelte(string[]? Codici);
+
+/// <summary>Un autorizzato inviato dalla schermata.</summary>
+/// <summary>Un archivio inviato dalla schermata.</summary>
+public record ArchivioInviato(
+    int Id, string? Tipo, string? Luogo, string? SistemaOperativo, string? Antivirus,
+    string? Backup, string? FrequenzaBackup, string? LuogoConservazione,
+    string[]? Accessi, string[]? Interessati, string[]? CategorieDati, int[]? Gestionali);
+
+/// <summary>Un gestionale inviato dalla schermata.</summary>
+public record GestionaleInviato(
+    int Id, string? Prodotto, string? MisureSicurezza, string? Manutenzione,
+    string? Backup, string? Frequenza, string? LuogoConservazione);
+
+/// <summary>Una casella di posta inviata dalla schermata.</summary>
+public record CasellaInviata(int Id, string? Indirizzo, string[]? Funzioni);
+
+/// <summary>Richiesta di invio dei documenti al cliente.</summary>
+public record InvioRichiesto(string? Destinatari, int[]? Documenti, string? Messaggio);
+
+public record AutorizzatoInviato(
+    int Id, int IdQualifica, string? Nome, string? Cognome, int Quantita, string[]? Funzioni);
 
 /// <summary>Una check list nuova: da un cliente di ArcLab, o a mano per un cliente nuovo.</summary>
 public record NuovaCompilazione(

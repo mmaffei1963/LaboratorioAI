@@ -250,6 +250,7 @@ public class ConfigurazioneSedeCompilazione : IEntityTypeConfiguration<SedeCompi
         e.Property(x => x.Cap).HasMaxLength(10);
         e.Property(x => x.Comune).HasMaxLength(100);
         e.Property(x => x.Provincia).HasMaxLength(2).IsFixedLength();
+        e.Property(x => x.Attivo).HasDefaultValue(true);
 
         e.HasIndex(x => new { x.IdCompilazione, x.Ordine });
     }
@@ -281,6 +282,7 @@ public class ConfigurazioneAutorizzatoCompilazione : IEntityTypeConfiguration<Au
         e.Property(x => x.Nome).HasMaxLength(100);
         e.Property(x => x.Cognome).HasMaxLength(100);
         e.Property(x => x.AccessoImmagini).HasMaxLength(300);
+        e.Property(x => x.Attivo).HasDefaultValue(true);
 
         e.HasOne(x => x.Qualifica).WithMany().HasForeignKey(x => x.IdQualifica).OnDelete(DeleteBehavior.Restrict);
         e.HasMany(x => x.Funzioni).WithOne(f => f.Autorizzato!).HasForeignKey(f => f.IdAutorizzatoCompilazione).OnDelete(DeleteBehavior.Restrict);

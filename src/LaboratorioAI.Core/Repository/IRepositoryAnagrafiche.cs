@@ -1,4 +1,4 @@
-using LaboratorioAI.Core.Modelli;
+﻿using LaboratorioAI.Core.Modelli;
 
 namespace LaboratorioAI.Core.Repository;
 
@@ -12,6 +12,13 @@ public interface IRepositoryAnagrafiche
     /// dell'ultimo: base dell'invio massivo delle richieste di approvazione delle Condizioni (10/10/2026).
     /// </summary>
     Task<IReadOnlyList<ClienteConCampioni>> ClientiConCampioniAsync(DateTime dal, CancellationToken ct = default);
+
+    /// <summary>
+    /// I clienti con partita IVA, comune e quanti insediamenti hanno:
+    /// serve a scegliere la scheda giusta quando ce ne sono di
+    /// omonime (11/11/2026).
+    /// </summary>
+    Task<IReadOnlyList<ClienteDistinto>> ClientiDistintiAsync(CancellationToken ct = default);
 
     /// <summary>Insediamenti, opzionalmente filtrati per cliente.</summary>
     Task<IReadOnlyList<VoceInsediamento>> InsediamentiAsync(
@@ -29,6 +36,13 @@ public interface IRepositoryAnagrafiche
     /// arrivano le comunicazioni relative ai rapporti di prova, riportati in fondo a offerte/preventivi.
     /// </summary>
     Task<IReadOnlyList<InsediamentoContatto>> InsediamentiConEmailAsync(int idCliente, CancellationToken ct = default);
+
+    /// <summary>
+    /// Insediamenti del cliente con l'indirizzo nelle sue parti: sono le
+    /// sedi di trattamento che la manualistica privacy propone al
+    /// consulente, che poi sceglie quali tenere (11/11/2026).
+    /// </summary>
+    Task<IReadOnlyList<SedeInsediamento>> SediInsediamentiAsync(int idCliente, CancellationToken ct = default);
 
     Task<IReadOnlyList<VoceAnagrafica>> MatriciAsync(CancellationToken ct = default);
     Task<IReadOnlyList<VoceAnagrafica>> ControlliAsync(CancellationToken ct = default);

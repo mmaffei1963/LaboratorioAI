@@ -464,6 +464,9 @@ public class SedeCompilazione
     public string? Comune { get; set; }
     public string? Provincia { get; set; }
     public int Ordine { get; set; }
+
+    /// <summary>Falso se tolta dalla check list: le righe non si cancellano.</summary>
+    public bool Attivo { get; set; } = true;
 }
 
 /// <summary>Una risposta della check list.</summary>
@@ -504,6 +507,9 @@ public class AutorizzatoCompilazione
     public string? AccessoImmagini { get; set; }
 
     public int Ordine { get; set; }
+
+    /// <summary>Falso se tolto dalla check list: le righe non si cancellano.</summary>
+    public bool Attivo { get; set; } = true;
 
     public List<AutorizzatoFunzione> Funzioni { get; set; } = new();
 }

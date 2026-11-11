@@ -15,9 +15,16 @@ public sealed record SegnalazioneTendina(string Codice, string Problema, string 
 public sealed record PassoChecklist(string Codice, string Nome);
 
 /// <summary>Una domanda nell'elenco, con quante voci ha.</summary>
+/// <summary>
+/// <paramref name="SpegnimentoProposto"/> e' valorizzato solo per le
+/// domande il cui valore arriva gia' da un'altra parte: sono quelle che
+/// si possono spegnere oggi. <paramref name="FonteAttesa"/> e' per
+/// quelle che arriveranno da una scheda non ancora fatta: vanno lasciate
+/// accese, altrimenti il campo resterebbe senza nessuno che lo compila.
+/// </summary>
 public sealed record VoceSintesi(
     int IdVoceChecklist, string Codice, string Etichetta, string? Gruppo,
-    string? PassoProposto, string? SpegnimentoProposto,
+    string? PassoProposto, string? SpegnimentoProposto, string? FonteAttesa,
     int Opzioni, int OpzioniLegateAlModello, bool Attivo);
 
 /// <summary>Una voce di tendina, con il documento a cui e' legata se lo e'.</summary>
@@ -99,7 +106,7 @@ public class ServizioVociChecklist
 
         return voci.Select(v => new VoceSintesi(
             v.IdVoceChecklist, v.Codice, v.Etichetta, v.Gruppo,
-            Proposta(v.Codice), DaSpegnere(v.Codice),
+            Proposta(v.Codice), DaSpegnere(v.Codice), FonteAttesa(v.Codice),
             v.Opzioni, v.PerModello, v.Attivo)).ToList();
     }
 
@@ -159,43 +166,97 @@ public class ServizioVociChecklist
     /// E' una proposta da rivedere, non una regola: dice da dove sembra
     /// che il valore arrivi, e il motivo si legge accanto alla domanda.
     /// </summary>
-    private static readonly (string Inizio, string Motivo)[] Automatiche =
+    /// <remarks>
+    /// <c>Pronta</c> distingue le domande che oggi hanno davvero una
+    /// fonte da quelle che l'avranno. Spegnere le seconde adesso
+    /// lascerebbe il campo senza nessuno che lo compila: resta acceso
+    /// e la riga dice da dove arrivera' (11/11/2026).
+    /// </remarks>
+    private static readonly (string Inizio, string Motivo, bool Pronta)[] Automatiche =
     [
-        // Anagrafica del cliente, da ArcLab o dalla partita IVA
-        ("RAGIONE_SOCIALE",        "anagrafica del cliente"),
-        ("PARTITA_IVA",            "anagrafica del cliente"),
-        ("CODICE_FISCALE",         "anagrafica del cliente"),
-        ("CODICE_ATECO",           "anagrafica del cliente"),
-        ("ATTIVITA_ESERCITATA",    "anagrafica del cliente"),
-        ("SITI_WEB",               "anagrafica del cliente"),
-        ("EMAIL",                  "anagrafica del cliente"),
-        ("PEC",                    "anagrafica del cliente"),
-        ("TELEFONO",               "anagrafica del cliente"),
-        ("SEDE_LEGALE_",           "anagrafica del cliente"),
+        // Anagrafica del cliente, copiata da ArcLab alla creazione
+        ("RAGIONE_SOCIALE",        "anagrafica del cliente", true),
+        ("PARTITA_IVA",            "anagrafica del cliente", true),
+        ("CODICE_FISCALE",         "anagrafica del cliente", true),
+        ("CODICE_ATECO",           "anagrafica del cliente", true),
+        ("ATTIVITA_ESERCITATA",    "anagrafica del cliente", true),
+        ("SITI_WEB",               "anagrafica del cliente", true),
+        ("EMAIL",                  "anagrafica del cliente", true),
+        ("PEC",                    "anagrafica del cliente", true),
+        ("TELEFONO",               "anagrafica del cliente", true),
+        ("SEDE_LEGALE_",           "anagrafica del cliente", true),
 
         // Testata e date
-        ("REVISIONE_",             "testata del documento"),
-        ("DATA_DOCUMENTI",         "testata del documento"),
-        ("DATA_RIESAME_DPIA",      "calcolato: data dei documenti piu' due anni"),
+        ("REVISIONE_",             "testata del documento", true),
+        ("DATA_DOCUMENTI",         "testata del documento", true),
+        ("DATA_RIESAME_DPIA",      "calcolato: data dei documenti piu' due anni", true),
+        ("REV_CORRENTE",           "testata del documento", true),
 
-        // Dati gia' inseriti in una tabella
-        ("SEDE_TRATTAMENTO_",      "sedi del trattamento"),
-        ("AUTORIZZATO_",           "elenco degli autorizzati"),
-        ("LR_",                    "elenco degli autorizzati"),
-        ("BACKUP_AUTORIZZATO",     "elenco degli autorizzati"),
-        ("CREDENZIALI_AUTORIZZATO","elenco degli autorizzati"),
-        ("SOSTITUTO_LR",           "elenco degli autorizzati"),
-        ("FUNZIONE_VISIONE",       "ricavato da chi accede alle immagini"),
-        ("CONTRATTO_",             "contratto di fornitura"),
-        ("PREZZO_",                "contratto di fornitura"),
+        // Schede gia' fatte
+        // FUNZIONE_VISIONE non e' una domanda: nel modello e' un blocco
+        // ripetuto, una riga per funzione, e una risposta sola non vuol
+        // dire niente. Si spegne anche se l'elenco da cui nascera' non
+        // c'e' ancora (11/11/2026).
+        ("FUNZIONE_VISIONE",       "blocco ripetuto: una riga per funzione, non una risposta", true),
+        ("SEDE_TRATTAMENTO_",      "scheda delle sedi", true),
+        ("AUTORIZZATO_",           "scheda degli autorizzati", true),
+        ("LR_",                    "scheda degli autorizzati", true),
 
-        // Numerati dal motore
-        ("ARCHIVIO_CARTACEO_NUMERO",    "numerato dal programma"),
-        ("ARCHIVIO_INFORMATICO_NUMERO", "numerato dal programma")
+        // Schede ancora da fare: lasciare accese
+        ("BACKUP_AUTORIZZATO",     "scheda degli autorizzati, quando si sceglierà chi gestisce il backup", false),
+        ("CREDENZIALI_AUTORIZZATO","scheda degli autorizzati, quando si sceglierà chi tiene le credenziali", false),
+        ("SOSTITUTO_LR",           "scheda degli autorizzati, quando si sceglierà il sostituto del legale rappresentante", false),
+
+        // Gli estremi bancari restano da chiedere; il resto del
+        // contratto si ricava dall'anagrafica, dalle sedi e dal legale
+        // rappresentante (11/11/2026). La riga della banca va prima,
+        // altrimenti vince quella generica.
+        ("CONTRATTO_RIBA",         "scheda del contratto, per gli estremi bancari", false),
+        ("PREZZO_",                "scheda del contratto, per i prezzi concordati", false),
+        ("CONTRATTO_",             "anagrafica, sedi e legale rappresentante", true),
+
+        // Numerati dal motore, contando le righe della scheda
+        ("ARCHIVIO_CARTACEO_NUMERO",    "numerato dal programma", true),
+        ("ARCHIVIO_INFORMATICO_NUMERO", "numerato dal programma", true),
+
+        // Tutto il resto degli archivi: la scheda sostituisce le caselle
+        // fisse del modello (11/11/2026). Va dopo le due righe qui sopra,
+        // che sono piu' precise e devono vincere.
+        ("ARCHIVIO_",                   "scheda degli archivi e dei gestionali", true)
     ];
 
+    /// <summary>La regola che riguarda questa domanda, se c'e'.</summary>
+    private static (string Inizio, string Motivo, bool Pronta)? Regola(string codice)
+    {
+        foreach (var r in Automatiche)
+            if (codice.StartsWith(r.Inizio, StringComparison.Ordinal)) return r;
+        return null;
+    }
+
+    /// <summary>Il motivo per spegnerla oggi, se oggi ha davvero una fonte.</summary>
+    /// <summary>
+    /// Le domande che nei documenti sono un elenco, non una risposta
+    /// sola (11/11/2026).
+    ///
+    /// Nel modello sono marcate come un campo qualunque, ma il motore le
+    /// riempie con <c>LISTA:</c>, una voce per riga. Chiederle come
+    /// risposta singola farebbe scrivere una misura di sicurezza sola
+    /// dove ce ne sono cinque.
+    /// </summary>
+    private static readonly IReadOnlySet<string> Elenchi =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "MISURA_MINACCE_UMANE_VOCE",
+            "MISURE_ANTINCENDIO_VOCE",
+            "MISURE_EVENTI_NATURALI_VOCE"
+        };
+
     private static string? DaSpegnere(string codice) =>
-        Automatiche.FirstOrDefault(r => codice.StartsWith(r.Inizio, StringComparison.Ordinal)).Motivo;
+        Regola(codice) is { Pronta: true } r ? r.Motivo : null;
+
+    /// <summary>Da dove arrivera', per quelle che vanno lasciate accese.</summary>
+    private static string? FonteAttesa(string codice) =>
+        Regola(codice) is { Pronta: false } r ? r.Motivo : null;
 
     /// <summary>Le voci di tendina di una domanda, per guardarle.</summary>
     public async Task<IReadOnlyList<OpzioneSintesi>> OpzioniAsync(int idVoce, CancellationToken ct = default) =>
@@ -452,8 +513,13 @@ public class ServizioVociChecklist
             }
             else aggiornate++;
 
-            voce.Etichetta = campo.Etichetta ?? Leggibile(campo.Codice);
-            voce.TipoCampo = campo.Tipo;
+            // I nomi decisi a mano vincono sulla cella del modello, che per
+            // alcune tabelle dice la cosa sbagliata (EtichetteDecise).
+            voce.Etichetta = EtichetteDecise.Per(campo.Codice)
+                             ?? campo.Etichetta ?? Leggibile(campo.Codice);
+            voce.TipoCampo = Elenchi.Contains(campo.Codice)
+                ? TipoCampoChecklist.SceltaMultipla
+                : campo.Tipo;
             // Le domande che governano i documenti stanno sotto il mille e
             // vengono prima: dentro un passo si chiede «c'e' la
             // videosorveglianza?» prima di «dov'e' il DVR?».

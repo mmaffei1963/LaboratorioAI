@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 
@@ -64,6 +64,47 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
             new CommandDefinition(sql, cancellationToken: ct))).ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ClienteDistinto>> ClientiDistintiAsync(CancellationToken ct = default)
+    {
+        // Come ClientiAsync, con quello che serve a distinguere gli
+        // omonimi, e senza le schede da cui non si deve partire.
+        //
+        // Un cliente entra nella scelta solo se e' **attivo** e ha un
+        // **codice contabilita'**: in ArcLab restano schede vecchie
+        // della stessa societa', spente o mai aperte davvero, e
+        // produrre un pacchetto di documenti intestato a una di quelle
+        // si scopre mesi dopo (11/11/2026, verificato su tre doppioni
+        // di PARCO LE NAVI). Il codice contabilita' da solo non basta:
+        // PARCONAVI S.P.A. ce l'ha ed e' spento.
+        //
+        // Gli insediamenti si contano e si pretendono **in uso**
+        // (<c>NonInUso = 0</c>): una societa' i cui insediamenti sono
+        // tutti chiusi non e' un cliente a cui fare la manualistica.
+        //
+        // NB: la colonna citta' di fatturazione e' [CittàFatt] con
+        // l'accento.
+        const string sql = """
+            SELECT cl.IDCliente AS Id, cl.RagioneSociale AS Nome,
+                   cl.PIVA AS PartitaIva, cl.[CittàFatt] AS Comune,
+                   CAST(CASE WHEN NULLIF(LTRIM(RTRIM(cl.email)), '') LIKE '%@%'
+                             THEN 1 ELSE 0 END AS bit) AS HaEmail,
+                   (SELECT COUNT(*) FROM Insediamento i
+                     WHERE i.IDCliente = cl.IDCliente AND ISNULL(i.NonInUso, 0) = 0) AS Insediamenti
+            FROM Clienti cl
+            WHERE cl.RagioneSociale IS NOT NULL
+              AND cl.Attivo = 1
+              AND NULLIF(LTRIM(RTRIM(cl.CODContabilita)), '') IS NOT NULL
+              AND EXISTS (SELECT 1 FROM Insediamento i
+                           WHERE i.IDCliente = cl.IDCliente AND ISNULL(i.NonInUso, 0) = 0)
+            ORDER BY cl.RagioneSociale
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<ClienteDistinto>(
+            new CommandDefinition(sql, cancellationToken: ct))).ToList();
+    }
+
     public async Task<IReadOnlyList<VoceInsediamento>> InsediamentiAsync(
         int? idCliente = null, CancellationToken ct = default)
     {
@@ -104,6 +145,40 @@ public class RepositoryAnagrafiche : IRepositoryAnagrafiche
         return await cn.QueryFirstOrDefaultAsync<DettaglioCliente>(
             new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SedeInsediamento>> SediInsediamentiAsync(int idCliente, CancellationToken ct = default)
+    {
+        // Le stesse colonne di InsediamentiConEmailAsync, senza comporle:
+        // qui servono separate. NB: la colonna citta' e' [CittaInsed] con
+        // l'accento, come nelle altre letture di questa classe.
+        const string sql = """
+            SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.IndirizzoInsed AS Indirizzo,
+                   i.CapInsed AS Cap, i.[CittàInsed] AS Comune, i.ProvinciaInsed AS Provincia,
+                   i.Email AS Email
+            FROM Insediamento i
+            WHERE i.IDCliente = @IdCliente AND i.NomeInsed IS NOT NULL
+              AND ISNULL(i.NonInUso, 0) = 0
+            ORDER BY i.NomeInsed
+            """;
+
+        using var cn = await _fabbrica.ApriAsync(ct);
+        var righe = await cn.QueryAsync<SedeInsediamento>(
+            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
+
+        return righe.Select(r => r with
+        {
+            Nome = (r.Nome ?? "").Trim(),
+            Indirizzo = Ripulisci(r.Indirizzo),
+            Cap = Ripulisci(r.Cap),
+            Comune = Ripulisci(r.Comune),
+            Provincia = Ripulisci(r.Provincia),
+            Email = Ripulisci(r.Email)
+        }).ToList();
+    }
+
+    private static string? Ripulisci(string? v) =>
+        string.IsNullOrWhiteSpace(v) ? null : v.Trim();
 
     public async Task<IReadOnlyList<InsediamentoContatto>> InsediamentiConEmailAsync(int idCliente, CancellationToken ct = default)
     {

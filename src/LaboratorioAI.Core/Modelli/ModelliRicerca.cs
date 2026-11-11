@@ -1,4 +1,4 @@
-namespace LaboratorioAI.Core.Modelli;
+﻿namespace LaboratorioAI.Core.Modelli;
 
 /// <summary>Stato di lavorazione di un campione.</summary>
 public enum StatoCampione
@@ -141,3 +141,23 @@ public record DettaglioCliente(
 /// richiamo ai recapiti riportato in fondo alle offerte/preventivi.
 /// </summary>
 public record InsediamentoContatto(string Nome, string? Indirizzo, string? Email);
+
+/// <summary>
+/// Insediamento del cliente con l'indirizzo diviso nelle sue parti
+/// (11/11/2026). Nella manualistica privacy CAP, comune e provincia
+/// finiscono in campi distinti dei documenti, quindi qui non si compone
+/// la riga unica come in <see cref="InsediamentoContatto"/>.
+/// </summary>
+/// <summary>
+/// Un cliente con quanto basta a distinguerlo da un suo omonimo
+/// (11/11/2026). In ArcLab capita di trovare tre schede quasi uguali
+/// per la stessa societa': scegliere la sbagliata significa produrre un
+/// pacchetto di documenti intestato a un doppione vuoto, e accorgersene
+/// mesi dopo.
+/// </summary>
+public record ClienteDistinto(
+    int Id, string Nome, string? PartitaIva, string? Comune, bool HaEmail, int Insediamenti);
+
+public record SedeInsediamento(
+    int Id, string Nome, string? Indirizzo, string? Cap, string? Comune, string? Provincia,
+    string? Email);
