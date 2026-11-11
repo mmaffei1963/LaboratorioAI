@@ -1,12 +1,25 @@
 @{
     ViewData["Titolo"] = "Ricerca fatture per descrizione";
 }
+@* Ricerca documenti AZW per descrizione (10/11/2026; costi, aree, commesse e zone dall'11/11/2026).
+   Definizione: claude/definizione-ricerca-documenti-azw.md *@
+<style>
+    .rf-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; }
+    .rf-cifre > div { border: 1px solid #e5e5e5; border-radius: .5rem; padding: .6rem .8rem; background: #fafafa; }
+    .rf-cifre .valore { font-size: 1.45rem; font-weight: 700; }
+    .rf-cifre .neg, #tabella tr.neg td.importo { color: #B91C1C; }
+    .rf-aree { width: auto; margin-top: .8rem; }
+    .rf-aree td, .rf-aree th { padding: .2rem .8rem; }
+    #f-aree { min-height: 6.5rem; }
+    #tabella tr.costo { background: #f6f8fc; }
+</style>
 
 <div class="barra-strumenti">
     <div>
         <h1>Ricerca fatture per descrizione</h1>
-        <p class="sottotitolo">Fatture di vendita AZW dal 2019 cercate nel testo scritto in fattura (es. «e-learning»). Le note di credito sono in negativo.
-            Importi = imponibile della voce. Dati dell'ultima importazione da AZW <span id="aggiornato"></span>.</p>
+        <p class="sottotitolo">Ricavi: fatture e note di credito di vendita AZW dal 2019, cercate nel testo scritto in fattura (note di credito in negativo).
+            Costi: registrazioni della contabilità analitica, cercate nella descrizione e nel nome del fornitore.
+            Importi = imponibile. Dati dell'ultima importazione da AZW <span id="aggiornato"></span>.</p>
     </div>
 </div>
 
@@ -14,24 +27,42 @@
     <div class="griglia-filtri">
         <label>Dal<input type="date" id="f-dal" /></label>
         <label>Al<input type="date" id="f-al" /></label>
-        <label style="grid-column:span 2">Testo da cercare (più parole separate da «;»)<input type="search" id="f-testo" placeholder="es. e-learning; elearning; FAD" /></label>
-        <label>Cliente (nome o codice, facoltativo)<input type="search" id="f-cliente" /></label>
-        <label>Documenti<select id="f-tipo"><option value="">Fatture e note di credito</option><option value="fatture">Solo fatture</option><option value="note">Solo note di credito</option></select></label>
+        <label>Cosa cercare
+            <select id="f-tipo">
+                <option value="ricavi">Ricavi (fatture e note di credito)</option>
+                <option value="fatture">Solo fatture</option>
+                <option value="note">Solo note di credito</option>
+                <option value="costi">Costi</option>
+                <option value="tutti">Ricavi e costi</option>
+            </select></label>
+        <label style="grid-column:span 2">Testo (facoltativo; più parole separate da «;»)<input type="search" id="f-testo" placeholder="es. e-learning; elearning; FAD" /></label>
+        <label>Cliente / fornitore<input type="search" id="f-cliente" list="elenco-controparti" autocomplete="off" placeholder="nome o codice" />
+            <datalist id="elenco-controparti"></datalist></label>
+        <label>Area (Ctrl+clic per più aree)<select id="f-aree" multiple></select></label>
+        <label>Chi ha fatto il lavoro (commessa)<select id="f-commessa"><option value="">Tutti</option><option value="-">Senza commessa</option></select></label>
+        <label>Chi gestisce il cliente (zona)<select id="f-zona"><option value="">Tutti</option><option value="-">Senza zona</option></select></label>
         <div style="display:flex;align-items:flex-end;gap:0.4rem">
             <button type="button" class="pulsante" id="btn-cerca">Cerca</button>
             <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Excel</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-pulisci" title="Azzera i filtri">Azzera</button>
         </div>
     </div>
+    <p class="sottotesto" style="margin:.5rem 0 0">La zona è quella del cliente alla data del documento (storico registrato a ogni importazione da AZW;
+        per i documenti più vecchi della prima rilevazione vale la prima zona conosciuta). Con un filtro sulla zona i costi non compaiono.</p>
+</section>
+
+<section class="riquadro nascosto" id="pannello-cifre">
+    <div class="rf-cifre" id="cifre"></div>
+    <table class="tabella rf-aree" id="tabella-aree"><thead><tr><th>Area</th><th class="numerico">Ricavi</th><th class="numerico">Costi</th></tr></thead><tbody></tbody></table>
 </section>
 
 <section class="riquadro nascosto" id="pannello">
-    <div class="barra-risultati">
-        <h2 id="riepilogo"></h2>
-    </div>
+    <div class="barra-risultati"><h2 id="riepilogo"></h2></div>
     <div class="tabella-scorrevole" style="max-height:36rem">
         <table class="tabella" id="tabella">
-            <thead><tr><th data-ordina>Data</th><th data-ordina>Documento</th><th data-ordina>Cliente</th><th>Descrizione</th>
-                <th class="numerico">Q.tà</th><th class="numerico">Prezzo</th><th>Sconto</th><th class="numerico" data-ordina>Imponibile</th><th>Centro/voce</th></tr></thead>
+            <thead><tr><th data-ordina>Data</th><th data-ordina>Documento</th><th data-ordina>Cliente / fornitore</th><th>Descrizione</th>
+                <th class="numerico">Q.tà</th><th class="numerico">Prezzo</th><th>Sconto</th><th class="numerico" data-ordina>Importo</th>
+                <th data-ordina>Area</th><th data-ordina>Commessa</th><th data-ordina>Responsabile</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>

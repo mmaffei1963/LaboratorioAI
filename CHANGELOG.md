@@ -1317,3 +1317,12 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - L'importazione da AZW legge anche le righe dei documenti di vendita dal 2019 (TABFST01 testata, TABFST02 righe; FE fatture, CE note di credito) e le ricompone in voci con il testo completo della fattura (riga con prezzo + righe di solo testo TIPRIG=1). Tabella di lavoro dir.VociDocumentiVenditaAzw → MIGRAZIONE DA CREARE (VociDocumentiVenditaAzw). Un errore di lettura non blocca il resto dell'importazione.
 - Nuova pagina Amministrazione → «Ricerca fatture per descrizione» (/RicercaFatture): periodo, più parole separate da «;» (senza maiuscole/accenti), cliente, tipo documento; totale imponibile (note di credito in negativo), n. fatture/note/clienti, Excel.
 - Permesso `ricercafatture.consulta`, assegnato una volta ai ruoli Socio e Amministrazione contabile (Migani, Volponi); Amministratori come sempre.
+
+## 11/11/2026 — Ricerca fatture per descrizione: costi, aree, commesse, zone e riquadri
+- Pagina /RicercaFatture: «Cosa cercare» ricavi / solo fatture / solo note / costi / ricavi e costi; testo facoltativo; filtri per area (centri accorpati come nel Consuntivo per area, scelta multipla), cliente/fornitore con suggerimenti, chi ha fatto il lavoro (commessa AZW) e chi gestisce il cliente (zona AZW); riquadri riassuntivi (ricavi netti, costi, differenza, righe) e totali per area su tutte le righe filtrate; a video max 5.000 righe; Excel con foglio «Totali».
+- Costi = registrazioni della contabilità analitica (dir.RegistrazioniAnalitiche) con voce non di ricavo, in positivo; testo cercato nella descrizione e nel nome del fornitore.
+- Commessa delle voci di vendita senza commessa: quella della contabilità analitica della stessa fattura (AzwRigheFattura) se unica.
+- Importazione AZW: cliente/fornitore di ogni registrazione analitica (TESTANA per ANNREG+NUMREG, nome da ANACF) → nuove colonne ClienteFornitore, CodiceControparte, RagioneSocialeControparte; se la lettura fallisce l'importazione prosegue con un avviso.
+- Nuova tabella provv.StoricoZoneClienti: a ogni importazione si registrano i cambi di zona dei clienti; ogni documento prende la zona valida alla sua data (prima della prima rilevazione: la prima zona conosciuta).
+- MIGRAZIONE DA CREARE: RicercaDocumentiCostiZone.
+- Definizione: claude/definizione-ricerca-documenti-azw.md. Test: RicercaDocumentiAzwTest.

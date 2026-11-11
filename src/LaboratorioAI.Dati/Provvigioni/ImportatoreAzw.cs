@@ -130,6 +130,13 @@ public sealed class ImportatoreAzw
                     await _db.FatturatoClienti.ExecuteDeleteAsync(ct);
                 }
 
+                // 11/11/2026: storico delle zone dei clienti (la zona attuale di AZW confrontata con l'ultima registrata).
+                var zoneAperte = await _db.StoricoZoneClienti.Where(z => z.DataAl == null).ToListAsync(ct);
+                var zoneNuove = RicercaDocumentiAzw.AllineaZone(zoneAperte, dati.Anagrafiche.Select(a => (a.CodiceCliente, a.Zona)),
+                    DateTime.UtcNow, out _);
+                _db.StoricoZoneClienti.AddRange(zoneNuove);
+                await _db.SaveChangesAsync(ct);
+
                 _db.ChangeTracker.AutoDetectChangesEnabled = false;
                 _db.AzwFatture.AddRange(dati.Fatture);
                 _db.AzwIncassi.AddRange(dati.Incassi);
@@ -167,6 +174,8 @@ public sealed class ImportatoreAzw
                     esito.Messaggio = "Importazione riuscita, ma contabilità analitica NON aggiornata (restano i dati già importati): " + motivoDirezione;
                 if (dati.ErroreTrasferte is not null)
                     esito.Messaggio = ((esito.Messaggio ?? "Importazione riuscita") + "; trasferte non lette: " + dati.ErroreTrasferte) is var m && m.Length > 1900 ? m[..1900] : m;
+                if (direzione?.ErroreControparti is not null)
+                    esito.Messaggio = ((esito.Messaggio ?? "Importazione riuscita") + "; fornitori dei costi (ricerca per descrizione) non letti: " + direzione.ErroreControparti) is var m3 && m3.Length > 1900 ? m3[..1900] : m3;
                 if (dati.ErroreVociVendita is not null)
                     esito.Messaggio = ((esito.Messaggio ?? "Importazione riuscita") + "; righe delle fatture (ricerca per descrizione) non lette: " + dati.ErroreVociVendita) is var m2 && m2.Length > 1900 ? m2[..1900] : m2;
                 _db.ImportazioniAzw.Add(esito);
@@ -358,6 +367,8 @@ public sealed class ImportatoreAzw
     {
         /// <summary>Consuntivo per area (20/10/2026): righe senza somme.</summary>
         public List<RegistrazioneAnalitica> Registrazioni { get; init; } = [];
+        /// <summary>11/11/2026: errore nella lettura di cliente/fornitore delle registrazioni (restano senza controparte).</summary>
+        public string? ErroreControparti { get; init; }
     }
 
     /// <summary>
@@ -445,6 +456,29 @@ public sealed class ImportatoreAzw
             Anno = f.Key.Item1, Mese = f.Key.Item2, CodiceCliente = f.Key.Item3, Centro = f.Key.Item4, Voce = f.Key.Item5,
             Commessa = f.Key.Item6, Importo = Math.Round(f.Value, 2)
         }).ToList();
+        // 11/11/2026: cliente o fornitore di ogni registrazione (TESTANA per anno e numero di registrazione, nome da ANACF),
+        // per la ricerca dei costi per fornitore. Se non si legge, le registrazioni restano senza controparte.
+        var controparti = new Dictionary<(int, int), (string Clfr, string Cod)>();
+        var nomi = new Dictionary<(string, string), string?>();
+        string? erroreControparti = null;
+        try
+        {
+            foreach (var r in Leggi(conn, "SELECT ANNREG, NUMREG, CLFR, CODCF FROM TESTANA WHERE CODCF IS NOT NULL"))
+            {
+                if (!int.TryParse(Numero(r[0]), NumberStyles.Integer, CultureInfo.InvariantCulture, out var a)) continue;
+                if (!int.TryParse(Numero(r[1]), NumberStyles.Integer, CultureInfo.InvariantCulture, out var n)) continue;
+                var cod = Testo(r[3]);
+                if (cod.Length > 0) controparti[(a, n)] = (Testo(r[2]).ToUpperInvariant(), cod);
+            }
+            foreach (var r in Leggi(conn, "SELECT CLFR, CODCF, RAGSOC FROM ANACF"))
+                nomi[(Testo(r[0]).ToUpperInvariant(), Testo(r[1]))] = NullSeVuoto(r[2]);
+        }
+        catch (Exception ex) when (ex is OleDbException or InvalidOperationException or InvalidCastException)
+        {
+            erroreControparti = ex.Message;
+            controparti.Clear();
+        }
+
         // Consuntivo per area (20/10/2026): le stesse righe, una per una (periodo a giorni e dettaglio registrazioni).
         var registrazioni = new List<RegistrazioneAnalitica>();
         const string sqlReg =
@@ -464,8 +498,15 @@ public sealed class ImportatoreAzw
                 Centro = Taglia(Testo(r[5]), 10)!, Voce = Taglia(Testo(r[6]), 10)!, Commessa = Taglia(Testo(r[7]), 20)!,
                 Conto = Taglia(Testo(r[8]), 20)!, Descrizione = Taglia(NullSeVuoto(r[9]), 200), Importo = importo
             });
+            if (controparti.TryGetValue((annoReg, numReg), out var cp))
+            {
+                var reg = registrazioni[^1];
+                reg.ClienteFornitore = Taglia(cp.Clfr, 1);
+                reg.CodiceControparte = Taglia(cp.Cod, 20);
+                reg.RagioneSocialeControparte = Taglia(nomi.GetValueOrDefault((cp.Clfr, cp.Cod)), 200);
+            }
         }
-        return new DatiDirezione(movimenti, voci, centri, commesse, righeFatt) { Registrazioni = registrazioni };
+        return new DatiDirezione(movimenti, voci, centri, commesse, righeFatt) { Registrazioni = registrazioni, ErroreControparti = erroreControparti };
     }
 
     private static DatiAzw LeggiDaAccess(string file, DateTime dal, IReadOnlyCollection<string> fornitoriConsulenti)

@@ -71,6 +71,12 @@ public class RegistrazioneAnalitica
     public string? Descrizione { get; set; }
     /// <summary>Importo con segno: AVERE positivo, DARE negativo (IMPORTO_SEGNO).</summary>
     public decimal Importo { get; set; }
+    /// <summary>11/11/2026: TESTANA.CLFR della registrazione ("C" cliente, "F" fornitore); null se non collegata.</summary>
+    public string? ClienteFornitore { get; set; }
+    /// <summary>11/11/2026: TESTANA.CODCF (codice del cliente o fornitore); null se non collegata.</summary>
+    public string? CodiceControparte { get; set; }
+    /// <summary>11/11/2026: ragione sociale della controparte (ANACF.RAGSOC) al momento dell'importazione.</summary>
+    public string? RagioneSocialeControparte { get; set; }
 }
 
 /// <summary>Centro di costo AZW (CENTCOST) con la descrizione, per le etichette delle aree. Riscritta a ogni importazione.</summary>

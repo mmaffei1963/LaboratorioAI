@@ -29,3 +29,19 @@ public class ConfigurazioneVoceDocumentoVenditaAzw : IEntityTypeConfiguration<Vo
         e.Property(x => x.Commessa).HasMaxLength(20);
     }
 }
+
+// Storico delle zone AZW dei clienti (11/11/2026), schema "provv" come l'anagrafica AzwClienti.
+public class ConfigurazioneStoricoZonaCliente : IEntityTypeConfiguration<StoricoZonaCliente>
+{
+    public void Configure(EntityTypeBuilder<StoricoZonaCliente> e)
+    {
+        e.ToTable("StoricoZoneClienti", "provv");
+        e.HasKey(x => x.IdStoricoZonaCliente);
+        e.Property(x => x.CodiceCliente).HasMaxLength(20).IsRequired();
+        e.Property(x => x.Zona).HasMaxLength(20);
+        e.Property(x => x.DataDal).HasColumnType("date");
+        e.Property(x => x.DataAl).HasColumnType("date");
+        e.Property(x => x.DataCreazione).HasDefaultValueSql("SYSUTCDATETIME()");
+        e.HasIndex(x => new { x.CodiceCliente, x.DataDal });
+    }
+}

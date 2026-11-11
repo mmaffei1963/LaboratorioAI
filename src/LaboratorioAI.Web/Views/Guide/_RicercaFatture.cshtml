@@ -1,10 +1,15 @@
 @model LaboratorioAI.Web.Navigazione.Guida
-@* Guida «Ricerca fatture per descrizione» (10/11/2026). *@
+@* Guida «Ricerca fatture per descrizione» (10/11/2026; costi, aree, commesse e zone dall'11/11/2026). *@
 
 <div class="guida-intro">
-    <p><strong>A cosa serve.</strong> Trovare le fatture di vendita di un periodo in base al testo scritto in fattura, per esempio
-        per sapere quanto abbiamo fatturato di corsi <em>e-learning</em>. I dati vengono da AZW (fatture elettroniche dal 2019) e si aggiornano
-        con l'importazione da AZW. Le note di credito sono contate in negativo.</p>
+    <p><strong>A cosa serve.</strong> Trovare i ricavi e i costi di un periodo e sommarli: per esempio quanto abbiamo fatturato di corsi
+        <em>e-learning</em>, quanto ha fatturato un consulente, quanto fatturano i clienti seguiti da un responsabile o quanto abbiamo speso
+        con un fornitore. I dati vengono da AZW e si aggiornano con l'importazione da AZW (Provvigioni → Importa da AZW).</p>
+    <ul>
+        <li><strong>Ricavi</strong>: fatture e note di credito di vendita dal 2019, con il testo scritto in fattura. Le note di credito sono in negativo.</li>
+        <li><strong>Costi</strong>: registrazioni della contabilità analitica con una voce di costo. In AZW le fatture dei fornitori non hanno
+            righe descrittive: si cerca nella descrizione della registrazione e nel nome del fornitore.</li>
+    </ul>
 </div>
 
 <h2>Cosa devo fare?</h2>
@@ -13,9 +18,28 @@
     <ol class="passi">
         <li>Scegli le date e scrivi il testo da cercare. Per prendere le diverse grafie scrivi più parole separate da punto e virgola,
             per esempio <code>e-learning; elearning; FAD</code>: basta che la voce ne contenga una. Maiuscole e accenti non contano.</li>
-        <li>Premi <span class="tasto">Cerca</span>: in alto vedi il totale imponibile, il numero di fatture, note di credito e clienti.</li>
-        <li>Con <span class="tasto">Excel</span> scarichi l'elenco completo.</li>
+        <li>Premi <span class="tasto">Cerca</span>: nei riquadri in alto vedi il totale, il numero di documenti e di clienti, e sotto i totali per area.</li>
+        <li>Con <span class="tasto">Excel</span> scarichi l'elenco completo, con un secondo foglio dei totali.</li>
     </ol>
-    <p class="nota">In AZW il testo di una voce può essere su più righe (per esempio «Corso di formazione addetti sicurezza – solo lezione generale –
-        modalità e-learning»): qui le righe sono riunite, così la parola viene trovata anche se non è sulla riga con il prezzo.</p>
+    <p class="nota">In AZW il testo di una voce può essere su più righe: qui le righe sono riunite, così la parola viene trovata anche se
+        non è sulla riga con il prezzo.</p>
+</details>
+<details class="situazione">
+    <summary>Voglio vedere il lavoro di una persona o i clienti di un responsabile</summary>
+    <ol class="passi">
+        <li><strong>Chi ha fatto il lavoro</strong> è la commessa AZW della riga di fattura. Se sulla riga manca, si usa quella della
+            contabilità analitica della stessa fattura, se è una sola.</li>
+        <li><strong>Chi gestisce il cliente</strong> è la zona AZW del cliente. AZW conserva solo quella attuale: LaboratorioAI registra i
+            cambi a ogni importazione, e ogni documento prende la zona valida alla sua data. Per i documenti più vecchi della prima
+            rilevazione vale la prima zona conosciuta. I nomi vengono da Amministrazione → Responsabili clienti.</li>
+        <li>Il testo non è obbligatorio: puoi cercare solo con questi filtri, con il periodo e con l'area.</li>
+    </ol>
+</details>
+<details class="situazione">
+    <summary>Voglio confrontare ricavi e costi</summary>
+    <ol class="passi">
+        <li>In «Cosa cercare» scegli <em>Ricavi e costi</em> e, se serve, un'area: compare anche il riquadro della differenza.</li>
+        <li>Il filtro sulla zona riguarda i clienti: se lo usi, i costi non compaiono.</li>
+    </ol>
+    <p class="nota">A video si vedono al massimo 5.000 righe; riquadri, totali per area ed Excel comprendono sempre tutte le righe trovate.</p>
 </details>

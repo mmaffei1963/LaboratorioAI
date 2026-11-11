@@ -38,6 +38,9 @@ public class ConfigurazioneRegistrazioneAnalitica : IEntityTypeConfiguration<Reg
         e.Property(x => x.Conto).HasMaxLength(20).IsRequired();
         e.Property(x => x.Descrizione).HasMaxLength(200);
         e.Property(x => x.Importo).HasPrecision(18, 2);
+        e.Property(x => x.ClienteFornitore).HasMaxLength(1);
+        e.Property(x => x.CodiceControparte).HasMaxLength(20);
+        e.Property(x => x.RagioneSocialeControparte).HasMaxLength(200);
         e.HasIndex(x => x.DataRegistrazione);
         e.HasIndex(x => new { x.Voce, x.Centro });
     }

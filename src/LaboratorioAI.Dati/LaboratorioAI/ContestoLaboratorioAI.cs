@@ -184,6 +184,8 @@ public class ContestoLaboratorioAI : DbContext
     public DbSet<RegistrazioneAnalitica> RegistrazioniAnalitiche => Set<RegistrazioneAnalitica>();
     // 10/11/2026: voci dei documenti di vendita AZW (ricerca fatture per descrizione)
     public DbSet<VoceDocumentoVenditaAzw> VociDocumentiVenditaAzw => Set<VoceDocumentoVenditaAzw>();
+    /// <summary>11/11/2026: storico della zona AZW (responsabile) dei clienti, aggiornato a ogni importazione.</summary>
+    public DbSet<StoricoZonaCliente> StoricoZoneClienti => Set<StoricoZonaCliente>();
     public DbSet<ClassificazioneVoce> ClassificazioniVoci => Set<ClassificazioneVoce>();
     public DbSet<CentroCostoAzw> CentriCostoAzw => Set<CentroCostoAzw>();
     public DbSet<CommessaAzw> CommesseAzw => Set<CommessaAzw>();

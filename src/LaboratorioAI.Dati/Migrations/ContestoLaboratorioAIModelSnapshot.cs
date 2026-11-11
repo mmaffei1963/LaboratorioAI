@@ -7961,6 +7961,14 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("ClienteFornitore")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("CodiceControparte")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Commessa")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -7988,6 +7996,10 @@ namespace LaboratorioAI.Dati.Migrations
 
                     b.Property<int>("NumeroRegistrazione")
                         .HasColumnType("int");
+
+                    b.Property<string>("RagioneSocialeControparte")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("TipoDocumento")
                         .HasMaxLength(5)
@@ -9648,6 +9660,41 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("IdAccordo");
 
                     b.ToTable("SoglieAccordo", "provv");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.StoricoZonaCliente", b =>
+                {
+                    b.Property<int>("IdStoricoZonaCliente")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdStoricoZonaCliente"));
+
+                    b.Property<string>("CodiceCliente")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("DataAl")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime>("DataDal")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Zona")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdStoricoZonaCliente");
+
+                    b.HasIndex("CodiceCliente", "DataDal");
+
+                    b.ToTable("StoricoZoneClienti", "provv");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.SubentroInsediamento", b =>
