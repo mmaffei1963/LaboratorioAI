@@ -255,6 +255,11 @@ function disegnaPrezzi(prezzi) {
                    ${prezzi.clientiAlMinimo > 1 ? ` e altri ${prezzi.clientiAlMinimo - 1}` : ''}</span>
            </div>
            <div class="prezzo-voce">
+               <span class="prezzo-etichetta">Medio pesato</span>
+               <strong>${euro(prezzi.prezzoMedio)}</strong>
+               <span class="sottotesto">media per cliente (ogni cliente conta uno)</span>
+           </div>
+           <div class="prezzo-voce">
                <span class="prezzo-etichetta">Massimo</span>
                <strong>${euro(prezzi.prezzoMassimo)}</strong>
                <span class="sottotesto">${testo(prezzi.clientePrezzoMassimo)}
@@ -270,6 +275,86 @@ function disegnaPrezzi(prezzi) {
 function apriEsito() {
     document.getElementById('segnaposto-esito').classList.add('nascosto');
     document.getElementById('pannello-esito').classList.remove('nascosto');
+}
+
+// ── Controlli per matrice (12/11/2026) ─────────────────────
+
+let matrici = [];
+const matriciScelte = new Map();
+
+function disegnaMatriciScelte() {
+    const box = document.getElementById('matrici-scelte');
+    box.innerHTML = [...matriciScelte].map(([id, nome]) =>
+        `<span class="scelta">${testo(nome)} <button type="button" data-id="${id}" aria-label="Rimuovi">&times;</button></span>`).join('');
+    box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        matriciScelte.delete(Number(b.dataset.id)); disegnaMatriciScelte(); filtraMatrici();
+    }));
+}
+
+function filtraMatrici() {
+    const q = document.getElementById('cerca-matrice').value.trim().toLowerCase();
+    const lista = document.getElementById('lista-matrici');
+    if (q.length < 2) { lista.classList.add('nascosto'); return; }
+    const trovate = matrici.filter(m => m.nome.toLowerCase().includes(q)).slice(0, 80);
+    lista.innerHTML = trovate.length === 0
+        ? '<div class="sottotesto">Nessuna matrice trovata.</div>'
+        : `<label class="sottotesto" style="display:block"><input type="checkbox" id="tutte-matrici" /> tutte le ${trovate.length} trovate</label>` +
+          trovate.map(m => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${m.id}" ${matriciScelte.has(m.id) ? 'checked' : ''} /> ${testo(m.nome)}</label>`).join('');
+    lista.classList.remove('nascosto');
+    lista.querySelectorAll('input[value]').forEach(c => c.addEventListener('change', () => {
+        const m = matrici.find(x => x.id === Number(c.value));
+        if (c.checked) matriciScelte.set(m.id, m.nome); else matriciScelte.delete(m.id);
+        disegnaMatriciScelte();
+    }));
+    document.getElementById('tutte-matrici')?.addEventListener('change', e => {
+        for (const m of trovate) { if (e.target.checked) matriciScelte.set(m.id, m.nome); else matriciScelte.delete(m.id); }
+        disegnaMatriciScelte(); filtraMatrici();
+    });
+}
+
+function parametriMatrice() {
+    return new URLSearchParams({
+        matrici: [...matriciScelte.keys()].join(','),
+        dal: document.getElementById('matrice-dal').value,
+        al: document.getElementById('matrice-al').value
+    }).toString();
+}
+
+async function cercaPerMatrice(pulsante) {
+    if (matriciScelte.size === 0) { avvisa('Scegli almeno una matrice.', 'info'); return; }
+    const libera = occupa(pulsante, 'Ricerca…');
+    try {
+        const r = await chiamaApi('/api/metodi/controlli-per-matrice?' + parametriMatrice());
+        apriEsito();
+        document.getElementById('filtro-esito').classList.add('nascosto');
+        document.getElementById('riquadro-prezzi').classList.add('nascosto');
+        document.getElementById('titolo-esito').textContent = `Controlli per matrice: ${[...matriciScelte.values()].join(', ')}`;
+        const campioni = r.controlli.reduce((s, c) => s + c.campioni, 0);
+        document.getElementById('info-esito').textContent =
+            `${r.controlli.length} controlli, ${campioni.toLocaleString('it-IT')} campioni dal ${new Date(r.dal).toLocaleDateString('it-IT')} al ${new Date(r.al).toLocaleDateString('it-IT')}`;
+        const euro = v => v == null ? '—' : v.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+        document.querySelector('#tabella-esito thead').innerHTML = `
+            <tr><th>ID</th><th>Controllo</th><th class="numerico">Campioni</th><th class="numerico">Clienti</th>
+                ${r.prezzi ? '<th class="numerico">Prezzo min</th><th class="numerico" title="Media dei prezzi dei clienti: ogni cliente conta uno">Medio pesato</th><th class="numerico">Prezzo max</th>' : ''}
+                <th></th></tr>`;
+        document.querySelector('#tabella-esito tbody').innerHTML = r.controlli.length === 0
+            ? `<tr><td colspan="${r.prezzi ? 8 : 5}" class="vuoto">Nessun campione di queste matrici su commesse attive nel periodo.</td></tr>`
+            : r.controlli.map(c => `
+                <tr>
+                    <td class="codice">${c.idControllo}</td>
+                    <td><strong>${testo(c.controllo)}</strong></td>
+                    <td class="numerico">${c.campioni.toLocaleString('it-IT')}</td>
+                    <td class="numerico">${c.clienti}</td>
+                    ${r.prezzi ? `<td class="numerico">${euro(c.prezzoMinimo)}</td><td class="numerico"><strong>${euro(c.prezzoMedio)}</strong></td><td class="numerico">${euro(c.prezzoMassimo)}</td>` : ''}
+                    <td><button class="pulsante pulsante-tenue minuto" data-id="${c.idControllo}" title="Parametri (metodi) del controllo">Parametri</button></td>
+                </tr>`).join('');
+        document.querySelectorAll('#tabella-esito .minuto').forEach(b =>
+            b.addEventListener('click', () => esplodi(Number(b.dataset.id))));
+    } catch (errore) {
+        avvisa(errore.message, 'errore');
+    } finally {
+        libera();
+    }
 }
 
 // ── Avvio ──────────────────────────────────────────────────
@@ -311,6 +396,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('scelta-controllo').addEventListener('change', e => {
         if (e.target.value) esplodi(Number(e.target.value));
+    });
+
+    // 12/11/2026: controlli per matrice.
+    const oggi = new Date();
+    const unAnno = new Date(oggi); unAnno.setFullYear(oggi.getFullYear() - 1); unAnno.setDate(unAnno.getDate() + 1);
+    const giorno = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    document.getElementById('matrice-dal').value = giorno(unAnno);
+    document.getElementById('matrice-al').value = giorno(oggi);
+    chiamaApi('/api/metodi/matrici').then(m => { matrici = m; }).catch(e => avvisa(`Matrici non caricate: ${e.message}`, 'errore'));
+    document.getElementById('cerca-matrice').addEventListener('input', filtraMatrici);
+    document.getElementById('btn-cerca-matrice').addEventListener('click', e => cercaPerMatrice(e.currentTarget));
+    document.getElementById('btn-excel-matrice').addEventListener('click', () => {
+        if (matriciScelte.size === 0) { avvisa('Scegli almeno una matrice.', 'info'); return; }
+        window.location.href = '/api/metodi/controlli-per-matrice/excel?' + parametriMatrice();
     });
 
     document.getElementById('btn-esplodi').addEventListener('click', () => {

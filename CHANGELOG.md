@@ -1326,3 +1326,8 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - Nuova tabella provv.StoricoZoneClienti: a ogni importazione si registrano i cambi di zona dei clienti; ogni documento prende la zona valida alla sua data (prima della prima rilevazione: la prima zona conosciuta).
 - MIGRAZIONE DA CREARE: RicercaDocumentiCostiZone.
 - Definizione: claude/definizione-ricerca-documenti-azw.md. Test: RicercaDocumentiAzwTest.
+
+## 12/11/2026 — Controlli per matrice e prezzo medio pesato
+- Metodi e Controlli: nuovo riquadro «Controlli per matrice» (una o più matrici ArcLab, periodo di ricevimento, predefinito ultimi 12 mesi): controlli usati sui campioni, dal più usato, con campioni, clienti e — con il permesso metodi.prezzi — prezzo minimo, medio pesato e massimo; pulsante «Parametri» (metodi del controllo) ed Excel. Contano solo le commesse di laboratorio attive con campioni nel periodo (esclusa MIRKO1).
+- Prezzo medio pesato per cliente (media delle commesse di ogni cliente, poi media tra i clienti: ogni cliente conta uno) aggiunto dove c'erano minimo e massimo: dettaglio del controllo in Metodi e Controlli, prezzi delle commesse attive nei Preventivi.
+- Sola lettura su ArcLab, nessuna migrazione. Test: StatistichePrezziTest.

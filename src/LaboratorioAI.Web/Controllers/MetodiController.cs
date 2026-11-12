@@ -2,6 +2,7 @@ using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Documenti;
 using LaboratorioAI.Web.Autorizzazione;
 using Microsoft.AspNetCore.Mvc;
 
@@ -104,10 +105,67 @@ public class MetodiController : Controller
                 prezzi.ClientePrezzoMassimo,
                 prezzi.ClientiAlMassimo,
                 prezzi.ClientiTotali,
+                prezzi.PrezzoMedio,
                 prezzi.PrezzoUnico
             }
         });
     }
 
     public record RichiestaControlli(List<int> IdMetodi, string Logica);
+
+    // ── Controlli per matrice (12/11/2026) ─────────────────────────────
+
+    [HttpGet("api/metodi/matrici")]
+    public async Task<IActionResult> Matrici(CancellationToken ct) => Json(await _metodi.MatriciAsync(ct));
+
+    /// <summary>
+    /// Controlli usati sui campioni delle matrici indicate nel periodo (data ricevimento), dal più usato, contando solo le
+    /// commesse di laboratorio attive con campioni. Prezzi (minimo, medio pesato per cliente, massimo) solo con il permesso.
+    /// </summary>
+    [HttpGet("api/metodi/controlli-per-matrice")]
+    public async Task<IActionResult> ControlliPerMatrice([FromQuery] string? matrici, [FromQuery] DateTime? dal, [FromQuery] DateTime? al, CancellationToken ct)
+    {
+        var (righe, errore, da, a) = await CercaPerMatriceAsync(matrici, dal, al, ct);
+        if (errore is not null) return BadRequest(new { messaggio = errore });
+        var prezzi = _utente.HaPermesso(Permessi.MetodiPrezzi);
+        return Json(new
+        {
+            dal = da, al = a, prezzi,
+            controlli = righe.Select(c => new
+            {
+                c.IdControllo, c.Controllo, c.Campioni, c.Clienti, c.Commesse,
+                PrezzoMinimo = prezzi ? c.PrezzoMinimo : null,
+                PrezzoMedio = prezzi ? c.PrezzoMedio : null,
+                PrezzoMassimo = prezzi ? c.PrezzoMassimo : null
+            })
+        });
+    }
+
+    [HttpGet("api/metodi/controlli-per-matrice/excel")]
+    public async Task<IActionResult> ControlliPerMatriceExcel([FromQuery] string? matrici, [FromQuery] DateTime? dal, [FromQuery] DateTime? al, CancellationToken ct)
+    {
+        var (righe, errore, da, a) = await CercaPerMatriceAsync(matrici, dal, al, ct);
+        if (errore is not null) return BadRequest(new { messaggio = errore });
+        var ids = ParseIds(matrici);
+        var nomi = (await _metodi.MatriciAsync(ct)).Where(m => ids.Contains(m.Id)).Select(m => m.Nome).ToList();
+        var file = EsportatoreControlliPerMatrice.Genera(righe, nomi, da, a, _utente.HaPermesso(Permessi.MetodiPrezzi));
+        return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Controlli_per_matrice_{da:yyyyMMdd}-{a:yyyyMMdd}.xlsx");
+    }
+
+    private static List<int> ParseIds(string? testo) =>
+        (testo ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => int.TryParse(x, out var n) ? n : 0).Where(n => n != 0).Distinct().ToList();
+
+    private async Task<(IReadOnlyList<ControlloPerMatrice> Righe, string? Errore, DateTime Dal, DateTime Al)> CercaPerMatriceAsync(
+        string? matrici, DateTime? dal, DateTime? al, CancellationToken ct)
+    {
+        var a = (al ?? DateTime.Today).Date;
+        var da = (dal ?? a.AddYears(-1).AddDays(1)).Date;
+        var ids = ParseIds(matrici);
+        if (ids.Count == 0) return ([], "Scegli almeno una matrice.", da, a);
+        if (a < da) return ([], "La data «al» è precedente alla data «dal».", da, a);
+        if (ids.Count > 200) return ([], "Troppe matrici: restringi la scelta.", da, a);
+        var righe = await _metodi.CampioniPerMatriciAsync(ids, da, a, ct);
+        return (StatistichePrezzi.PerMatrice(righe), null, da, a);
+    }
 }

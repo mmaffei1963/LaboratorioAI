@@ -104,7 +104,7 @@ public class PreventiviController : Controller
     [HttpGet("api/preventivi/prezzi-commesse")]
     public async Task<IActionResult> PrezziCommesse([FromServices] IRepositoryCommesse commesse, CancellationToken ct) =>
         Json((await commesse.PrezziControlliCommesseAttiveAsync(ct))
-            .ToDictionary(x => x.IdControllo.ToString(), x => new { x.Minimo, x.Massimo, x.Commesse }));
+            .ToDictionary(x => x.IdControllo.ToString(), x => new { x.Minimo, x.Massimo, x.Commesse, x.Medio }));
 
     /// <summary>Verifica se un metodo è già presente tra i nostri (prima di inserirlo a campo libero).</summary>
     [HttpGet("api/preventivi/metodi")]

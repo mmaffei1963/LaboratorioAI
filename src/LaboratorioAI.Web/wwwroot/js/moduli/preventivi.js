@@ -98,7 +98,8 @@ async function caricaPrezziCommesse() {
 function fasciaCommesse(idControllo) {
     const f = prezziCommesse[idControllo];
     if (!f) return '';
-    const prezzo = f.minimo === f.massimo ? `${eur(f.minimo)} €` : `${eur(f.minimo)}–${eur(f.massimo)} €`;
+    // 12/11/2026: con il medio pesato per cliente.
+    const prezzo = f.minimo === f.massimo ? `${eur(f.minimo)} €` : `${eur(f.minimo)}–${eur(f.massimo)} €, medio ${eur(f.medio)} €`;
     return `commesse attive: ${prezzo} (${f.commesse})`;
 }
 

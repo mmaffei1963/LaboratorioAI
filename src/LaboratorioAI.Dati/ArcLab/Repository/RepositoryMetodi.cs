@@ -232,6 +232,10 @@ public class RepositoryMetodi : IRepositoryMetodi
             (SELECT COUNT(DISTINCT a.Cod_Cliente) FROM Attive a
               WHERE a.PrezzoControllo = e.Massimo) AS ClientiAlMassimo,
             (SELECT COUNT(DISTINCT a.Cod_Cliente) FROM Attive a) AS ClientiTotali,
+            -- 12/11/2026: medio pesato per cliente (ogni cliente conta uno, con la media delle sue commesse).
+            (SELECT CAST(AVG(x.Prezzo) AS decimal(18, 2))
+               FROM (SELECT AVG(CAST(a.PrezzoControllo AS decimal(18, 4))) AS Prezzo
+                       FROM Attive a GROUP BY a.Cod_Cliente) x) AS PrezzoMedio,
             (SELECT TOP 1 cl.RagioneSociale
                FROM Attive a
                LEFT JOIN Clienti cl
@@ -257,5 +261,51 @@ public class RepositoryMetodi : IRepositoryMetodi
                 new { IdControllo = idControllo }, cancellationToken: ct));
 
         return prezzi ?? new PrezziControllo();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTROLLI PER MATRICE (12/11/2026)
+    // ═══════════════════════════════════════════════════════════════
+
+    public async Task<IReadOnlyList<VoceAnagrafica>> MatriciAsync(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT CAST(IdMatrice AS int) AS Id, LTRIM(RTRIM(Matrice)) AS Nome
+            FROM matrice
+            WHERE Matrice IS NOT NULL AND LTRIM(RTRIM(Matrice)) <> ''
+            ORDER BY Matrice
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<VoceAnagrafica>(new CommandDefinition(sql, cancellationToken: ct))).ToList();
+    }
+
+    public async Task<IReadOnlyList<CampioniCommessaMatrice>> CampioniPerMatriciAsync(
+        IReadOnlyList<int> idMatrici, DateTime dal, DateTime al, CancellationToken ct = default)
+    {
+        if (idMatrici.Count == 0) return [];
+        const string sql = """
+            SELECT CAST(cm.IDControllo AS int)              AS IdControllo,
+                   MAX(co.Controllo)                         AS Controllo,
+                   CAST(cm.IdCommessa AS int)                AS IdCommessa,
+                   CAST(cm.Cod_Cliente AS varchar(50))       AS CodCliente,
+                   CAST(cm.PrezzoControllo AS decimal(18, 2)) AS Prezzo,
+                   CAST(COUNT(DISTINCT ca.IdCampione) AS int) AS Campioni
+            FROM Campione ca
+            INNER JOIN Lotto lo     ON lo.IdLotto = ca.IdLotto
+            INNER JOIN commessa cm  ON cm.IdCommessa = lo.IdCommessa
+            LEFT  JOIN Controllo co ON co.IDControllo = cm.IDControllo
+            WHERE ca.IdMatrice IN @Matrici
+              AND lo.DataRic >= @Dal AND lo.DataRic < @Al
+              AND cm.IdTipoCommessa = @IdTipo
+              AND cm.DataScadenzaInc IS NULL
+              AND cm.IDControllo IS NOT NULL
+              AND cm.Cod_Cliente IS NOT NULL
+              AND CAST(cm.Cod_Cliente AS varchar(50)) <> 'MIRKO1'
+            GROUP BY cm.IDControllo, cm.IdCommessa, cm.Cod_Cliente, cm.PrezzoControllo
+            """;
+        using var cn = await _fabbrica.ApriAsync(ct);
+        return (await cn.QueryAsync<CampioniCommessaMatrice>(new CommandDefinition(sql,
+            new { Matrici = idMatrici, Dal = dal.Date, Al = al.Date.AddDays(1), IdTipo = CostantiArcLab.TipoCommessaLaboratorio },
+            commandTimeout: 120, cancellationToken: ct))).ToList();
     }
 }

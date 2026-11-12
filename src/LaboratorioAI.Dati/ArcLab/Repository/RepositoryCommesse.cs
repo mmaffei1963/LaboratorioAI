@@ -160,18 +160,28 @@ public class RepositoryCommesse : IRepositoryCommesse
     /// <inheritdoc />
     public async Task<IReadOnlyList<PrezziControlloCommesse>> PrezziControlliCommesseAttiveAsync(CancellationToken ct = default)
     {
+        // 12/11/2026: anche il medio pesato per cliente (media delle commesse di ogni cliente, poi media tra i clienti).
         const string sql = """
-            SELECT CAST(cm.IDControllo AS int) AS IdControllo,
-                   CAST(MIN(cm.PrezzoControllo) AS decimal(18, 2)) AS Minimo,
-                   CAST(MAX(cm.PrezzoControllo) AS decimal(18, 2)) AS Massimo,
-                   CAST(COUNT(*) AS int) AS Commesse
-            FROM commessa cm
-            WHERE cm.IdTipoCommessa = @IdTipo
-              AND cm.DataScadenzaInc IS NULL
-              AND cm.PrezzoControllo IS NOT NULL
-              AND cm.PrezzoControllo > 0
-              AND cm.IDControllo IS NOT NULL
-            GROUP BY cm.IDControllo
+            SELECT x.IdControllo,
+                   CAST(MIN(x.Minimo) AS decimal(18, 2)) AS Minimo,
+                   CAST(MAX(x.Massimo) AS decimal(18, 2)) AS Massimo,
+                   CAST(SUM(x.Commesse) AS int) AS Commesse,
+                   CAST(AVG(x.PrezzoCliente) AS decimal(18, 2)) AS Medio
+            FROM (
+                SELECT CAST(cm.IDControllo AS int) AS IdControllo,
+                       MIN(cm.PrezzoControllo) AS Minimo,
+                       MAX(cm.PrezzoControllo) AS Massimo,
+                       COUNT(*) AS Commesse,
+                       AVG(CAST(cm.PrezzoControllo AS decimal(18, 4))) AS PrezzoCliente
+                FROM commessa cm
+                WHERE cm.IdTipoCommessa = @IdTipo
+                  AND cm.DataScadenzaInc IS NULL
+                  AND cm.PrezzoControllo IS NOT NULL
+                  AND cm.PrezzoControllo > 0
+                  AND cm.IDControllo IS NOT NULL
+                GROUP BY cm.IDControllo, cm.Cod_Cliente
+            ) x
+            GROUP BY x.IdControllo
             """;
         using var cn = await _fabbrica.ApriAsync(ct);
         return (await cn.QueryAsync<PrezziControlloCommesse>(new CommandDefinition(sql,

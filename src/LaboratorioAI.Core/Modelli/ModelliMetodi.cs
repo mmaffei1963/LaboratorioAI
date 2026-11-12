@@ -84,6 +84,9 @@ public record PrezziControllo
 
     public int ClientiTotali { get; init; }
 
+    /// <summary>12/11/2026: prezzo medio pesato per cliente (media dei prezzi dei clienti, ognuno conta uno).</summary>
+    public decimal? PrezzoMedio { get; init; }
+
     public bool Disponibili => PrezzoMinimo is not null;
 
     /// <summary>Vero se tutti i clienti applicano lo stesso prezzo.</summary>
@@ -99,4 +102,47 @@ public record ControlloEsploso
 
     /// <summary>Valorizzato solo per gli utenti abilitati alla visione dei prezzi.</summary>
     public PrezziControllo? Prezzi { get; init; }
+}
+
+/// <summary>
+/// 12/11/2026: campioni di una matrice raggruppati per commessa (controllo, cliente, prezzo), per la vista
+/// «Controlli per matrice». Solo commesse di laboratorio attive con campioni nel periodo.
+/// </summary>
+public record CampioniCommessaMatrice(int IdControllo, string? Controllo, int IdCommessa, string CodCliente, decimal? Prezzo, int Campioni);
+
+/// <summary>12/11/2026: controllo usato sulle matrici scelte, con campioni, clienti e prezzi delle commesse attive.</summary>
+public record ControlloPerMatrice(int IdControllo, string Controllo, int Campioni, int Clienti, int Commesse,
+    decimal? PrezzoMinimo, decimal? PrezzoMedio, decimal? PrezzoMassimo);
+
+/// <summary>Calcoli dei prezzi dei controlli (12/11/2026).</summary>
+public static class StatistichePrezzi
+{
+    /// <summary>
+    /// Medio pesato per cliente: per ogni cliente la media dei prezzi delle sue commesse, poi la media tra i clienti
+    /// (ogni cliente conta uno). Prezzi nulli o a zero esclusi. Null se non c'è nessun prezzo.
+    /// </summary>
+    public static decimal? MedioPerCliente(IEnumerable<(string Cliente, decimal? Prezzo)> prezzi)
+    {
+        var perCliente = prezzi.Where(p => p.Prezzo is > 0)
+            .GroupBy(p => (p.Cliente ?? "").Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Average(p => p.Prezzo!.Value)).ToList();
+        return perCliente.Count == 0 ? null : Math.Round(perCliente.Average(), 2, MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>Controlli delle matrici scelte, dal più usato (campioni) al meno usato.</summary>
+    public static IReadOnlyList<ControlloPerMatrice> PerMatrice(IEnumerable<CampioniCommessaMatrice> righe) =>
+        righe.GroupBy(r => r.IdControllo)
+            .Select(g =>
+            {
+                var prezzi = g.Where(r => r.Prezzo is > 0).Select(r => r.Prezzo!.Value).ToList();
+                return new ControlloPerMatrice(g.Key, g.Select(r => r.Controllo).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c))?.Trim() ?? $"Controllo {g.Key}",
+                    g.Sum(r => r.Campioni),
+                    g.Select(r => (r.CodCliente ?? "").Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+                    g.Select(r => r.IdCommessa).Distinct().Count(),
+                    prezzi.Count == 0 ? null : prezzi.Min(),
+                    MedioPerCliente(g.Select(r => (r.CodCliente, r.Prezzo))),
+                    prezzi.Count == 0 ? null : prezzi.Max());
+            })
+            .OrderByDescending(c => c.Campioni).ThenBy(c => c.Controllo, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
 }

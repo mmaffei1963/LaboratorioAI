@@ -28,4 +28,14 @@ public interface IRepositoryMetodi
     /// <summary>Quadro dei prezzi di un controllo sulle commesse in vigore.</summary>
     Task<PrezziControllo> PrezziControlloAsync(
         int idControllo, CancellationToken ct = default);
+
+    /// <summary>12/11/2026: matrici di ArcLab (per la vista «Controlli per matrice»).</summary>
+    Task<IReadOnlyList<VoceAnagrafica>> MatriciAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// 12/11/2026: campioni ricevuti nel periodo con una delle matrici indicate, raggruppati per commessa. Solo commesse
+    /// di laboratorio attive (senza scadenza incarico), con cliente, esclusa MARE.A stessa (MIRKO1).
+    /// </summary>
+    Task<IReadOnlyList<CampioniCommessaMatrice>> CampioniPerMatriciAsync(
+        IReadOnlyList<int> idMatrici, DateTime dal, DateTime al, CancellationToken ct = default);
 }

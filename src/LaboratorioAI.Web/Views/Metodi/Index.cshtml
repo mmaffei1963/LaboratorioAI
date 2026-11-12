@@ -60,6 +60,25 @@
             </div>
         </section>
 
+        @* 12/11/2026: controlli più usati sui campioni di una matrice, con i prezzi delle commesse attive. *@
+        <section class="riquadro">
+            <h2>Controlli per matrice</h2>
+            <p class="sottotitolo">I controlli usati sui campioni delle matrici scelte, dal più usato.
+                Contano solo le commesse di laboratorio attive con campioni nel periodo.</p>
+            <label>Cerca la matrice
+                <input type="search" id="cerca-matrice" placeholder="es. olio" autocomplete="off" /></label>
+            <div id="matrici-scelte" class="contenitore-scelte" style="min-height:0;border:0;padding:0"></div>
+            <div id="lista-matrici" class="nascosto" style="max-height:12rem;overflow:auto;border:1px solid #e5e5e5;border-radius:.4rem;padding:.3rem .5rem;margin-top:.3rem"></div>
+            <div class="riga-lookup" style="margin-top:.5rem">
+                <label>Campioni dal<input type="date" id="matrice-dal" /></label>
+                <label>al<input type="date" id="matrice-al" /></label>
+            </div>
+            <div class="azioni-dettaglio">
+                <button class="pulsante" id="btn-cerca-matrice">Cerca controlli</button>
+                <button class="pulsante pulsante-tenue" id="btn-excel-matrice">Excel</button>
+            </div>
+        </section>
+
     </div>
 
     <section id="pannello-esito" class="riquadro nascosto">

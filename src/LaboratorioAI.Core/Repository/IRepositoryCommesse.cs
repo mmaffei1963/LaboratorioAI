@@ -43,5 +43,6 @@ public interface IRepositoryCommesse
 /// <summary>Controllo di una commessa di laboratorio in vigore, con il suo prezzo (senza IVA).</summary>
 public record ControlloCommessaCliente(int IdCommessa, int IdControllo, string Controllo, decimal Prezzo, string? CodCommessa);
 
-/// <summary>Prezzo minimo e massimo di un controllo nelle commesse di laboratorio attive (27/10/2026).</summary>
-public record PrezziControlloCommesse(int IdControllo, decimal Minimo, decimal Massimo, int Commesse);
+/// <summary>Prezzo minimo e massimo di un controllo nelle commesse di laboratorio attive (27/10/2026);
+/// dal 12/11/2026 anche il medio pesato per cliente.</summary>
+public record PrezziControlloCommesse(int IdControllo, decimal Minimo, decimal Massimo, int Commesse, decimal Medio);
