@@ -1331,3 +1331,8 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - Metodi e Controlli: nuovo riquadro «Controlli per matrice» (una o più matrici ArcLab, periodo di ricevimento, predefinito ultimi 12 mesi): controlli usati sui campioni, dal più usato, con campioni, clienti e — con il permesso metodi.prezzi — prezzo minimo, medio pesato e massimo; pulsante «Parametri» (metodi del controllo) ed Excel. Contano solo le commesse di laboratorio attive con campioni nel periodo (esclusa MIRKO1).
 - Prezzo medio pesato per cliente (media delle commesse di ogni cliente, poi media tra i clienti: ogni cliente conta uno) aggiunto dove c'erano minimo e massimo: dettaglio del controllo in Metodi e Controlli, prezzi delle commesse attive nei Preventivi.
 - Sola lettura su ArcLab, nessuna migrazione. Test: StatistichePrezziTest.
+
+## 14/11/2026 — Monitor Econorma: timeout di «Controllo» e «Differenze»
+- In produzione le pagine Controllo e Differenze andavano in timeout (oltre 30 s) con circa 100.000 misure: la query univa Misure1 con Misure su IdSonda + DataOra (Misure non ha indici su queste colonne) e poi con la vista vw_StoricoTemperature, che rilegge tutta Misure.
+- Riscritte le due query: sonda, apparecchiatura e limiti presi direttamente da Sonde / AssegnazioneSonde / Apparecchiature (stessi join della vista), Controllo senza più Misure; filtro sulle date sempre valorizzato (dal 1900 / al 9999 al posto di NULL) e OPTION (RECOMPILE); elenco sonde di Controllo dalla tabella Sonde.
+- Nessuna modifica alle tabelle Econorma, nessuna migrazione. Differenza di comportamento: in Controllo compaiono anche le misure di Misure1 senza la gemella in Misure.

@@ -133,14 +133,17 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
 
             await using (var command = connection.CreateCommand())
             {
+                // 14/11/2026: riscritta per i timeout in produzione. Senza la vista vw_StoricoTemperature (che rilegge tutta
+                // Misure): sonda, apparecchiatura e limiti da Sonde / AssegnazioneSonde / Apparecchiature (stessi join
+                // della vista). Misure1 si trova con il suo indice (IdSonda, DataOra). Date sempre valorizzate + RECOMPILE.
                 command.CommandText = @"
                     SELECT
                         m.IdMisura,
                         m.DataOra,
                         m.IdSonda,
-                        v.CodiceSonda,
-                        v.Apparecchiatura,
-                        v.CodiceApparecchiatura,
+                        s.CodiceSonda,
+                        a.Descrizione AS Apparecchiatura,
+                        a.CodiceApparecchiatura,
                         ISNULL(a.Tipo, '') AS TipoApparecchiatura,
                         CAST(m.TemperaturaGrezza + ISNULL(m.OffsetApplicato, 0) AS DECIMAL(7,3)) AS TemperaturaOriginale,
                         CAST(m1.TemperaturaGrezza + ISNULL(m1.OffsetApplicato, 0) AS DECIMAL(7,3)) AS TemperaturaControllo,
@@ -149,8 +152,8 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
                             - (m.TemperaturaGrezza + ISNULL(m.OffsetApplicato, 0))
                             AS DECIMAL(7,3)
                         ) AS Differenza,
-                        v.LimiteMin,
-                        v.LimiteMax
+                        a.LimiteMin,
+                        a.LimiteMax
 
                     FROM temperature.Misure m
 
@@ -159,31 +162,32 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
                         AND m1.DataOra = m.DataOra
                         AND m1.TemperaturaGrezza = m.TemperaturaGrezza
 
-                    INNER JOIN temperature.vw_StoricoTemperature v
-                        ON v.IdMisura = m.IdMisura
-
                     INNER JOIN temperature.Sonde s
                         ON s.IdSonda = m.IdSonda
 
+                    INNER JOIN temperature.AssegnazioneSonde ass
+                        ON ass.IdSonda = s.IdSonda
+
                     INNER JOIN temperature.Apparecchiature a
-                        ON a.IdApparecchiatura = v.IdApparecchiatura
+                        ON a.IdApparecchiatura = ass.IdApparecchiatura
 
                     WHERE
-                        (@DataInizio IS NULL OR m.DataOra >= @DataInizio)
-                        AND (@DataFineEsclusiva IS NULL OR m.DataOra < @DataFineEsclusiva)
-                        AND (@CodiceSonda = 'TUTTE' OR v.CodiceSonda = @CodiceSonda)
+                        m.DataOra >= @DataInizio
+                        AND m.DataOra < @DataFineEsclusiva
+                        AND (@CodiceSonda = 'TUTTE' OR s.CodiceSonda = @CodiceSonda)
                         AND s.Attiva = 1
                         AND a.Attiva = 1
 
                     ORDER BY
-                        m.DataOra;
+                        m.DataOra
+                    OPTION (RECOMPILE);
                 ";
 
-                command.Parameters.Add("@DataInizio", SqlDbType.DateTime2).Value =
-                    dataInizio.HasValue ? dataInizio.Value : DBNull.Value;
+                command.Parameters.Add("@DataInizio", SqlDbType.DateTime).Value =
+                    dataInizio ?? new DateTime(1900, 1, 1);
 
-                command.Parameters.Add("@DataFineEsclusiva", SqlDbType.DateTime2).Value =
-                    dataFineEsclusiva.HasValue ? dataFineEsclusiva.Value : DBNull.Value;
+                command.Parameters.Add("@DataFineEsclusiva", SqlDbType.DateTime).Value =
+                    dataFineEsclusiva ?? new DateTime(9999, 12, 31);
 
                 command.Parameters.Add("@CodiceSonda", SqlDbType.NVarChar, 50).Value = codiceNormalizzato;
 

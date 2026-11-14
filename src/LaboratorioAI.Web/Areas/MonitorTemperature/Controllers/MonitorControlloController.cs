@@ -34,47 +34,48 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
             _audit = audit;
         }
 
+        // 14/11/2026: riscritta per i timeout in produzione (oltre 30 s con ~100.000 misure). Prima univa Misure1 con
+        // Misure (su IdSonda + DataOra, senza indice su Misure) e poi con la vista vw_StoricoTemperature, che rilegge
+        // tutta Misure. Sonda, apparecchiatura e limiti si prendono direttamente da Sonde / AssegnazioneSonde /
+        // Apparecchiature (stessi join della vista). Filtro sulle date semplice (sempre valorizzato) + RECOMPILE.
         private const string SqlBase = @"
             SELECT
                 m1.IdMisura1 AS IdMisura,
                 m1.DataOra,
                 m1.IdSonda,
-                v.CodiceSonda,
-                v.DescrizioneSonda,
-                v.IdApparecchiatura,
-                v.CodiceApparecchiatura,
-                v.Apparecchiatura,
+                s.CodiceSonda,
+                s.Descrizione AS DescrizioneSonda,
+                a.IdApparecchiatura,
+                a.CodiceApparecchiatura,
+                a.Descrizione AS Apparecchiatura,
                 m1.TemperaturaGrezza,
                 m1.OffsetApplicato AS OffsetTemperatura,
                 CAST(m1.TemperaturaGrezza + ISNULL(m1.OffsetApplicato, 0) AS DECIMAL(7,3)) AS TemperaturaCorretta,
-                v.LimiteMin,
-                v.LimiteMax,
+                a.LimiteMin,
+                a.LimiteMax,
                 CAST(m1.StatoAllarme AS INT) AS AllarmeCalcolato
 
             FROM temperature.Misure1 m1
 
-            INNER JOIN temperature.Misure m
-                ON m.IdSonda = m1.IdSonda
-                AND m.DataOra = m1.DataOra
-
-            INNER JOIN temperature.vw_StoricoTemperature v
-                ON v.IdMisura = m.IdMisura
-
             INNER JOIN temperature.Sonde s
                 ON s.IdSonda = m1.IdSonda
 
+            INNER JOIN temperature.AssegnazioneSonde ass
+                ON ass.IdSonda = s.IdSonda
+
             INNER JOIN temperature.Apparecchiature a
-                ON a.IdApparecchiatura = v.IdApparecchiatura
+                ON a.IdApparecchiatura = ass.IdApparecchiatura
 
             WHERE
-                (@DataInizio IS NULL OR m1.DataOra >= @DataInizio)
-                AND (@DataFineEsclusiva IS NULL OR m1.DataOra < @DataFineEsclusiva)
-                AND (@CodiceSonda = 'TUTTE' OR v.CodiceSonda = @CodiceSonda)
+                m1.DataOra >= @DataInizio
+                AND m1.DataOra < @DataFineEsclusiva
+                AND (@CodiceSonda = 'TUTTE' OR s.CodiceSonda = @CodiceSonda)
                 AND s.Attiva = 1
                 AND a.Attiva = 1
-                AND v.CodiceSonda LIKE 'T%'
+                AND s.CodiceSonda LIKE 'T%'
 
-            ORDER BY m1.DataOra;
+            ORDER BY m1.DataOra
+            OPTION (RECOMPILE);
         ";
 
         public async Task<IActionResult> Index(
@@ -91,10 +92,9 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
 
             var dati = await InterrogaAsync(dataInizio, dataFineEsclusiva, codiceNormalizzato);
 
-            var sondeDisponibili = await _context.StoricoTemperature
-                .Where(x => x.CodiceSonda.StartsWith("T"))
-                .Select(x => x.CodiceSonda)
-                .Distinct()
+            // 14/11/2026: elenco sonde dalla tabella Sonde (prima dalla vista su tutto lo storico delle misure).
+            var sondeDisponibili = await _context.Database
+                .SqlQueryRaw<string>("SELECT DISTINCT CodiceSonda AS Value FROM temperature.Sonde WHERE Attiva = 1 AND CodiceSonda LIKE 'T%'")
                 .ToListAsync();
 
             sondeDisponibili = OrdinaCodiciSonda(sondeDisponibili);
@@ -156,8 +156,9 @@ namespace LaboratorioAI.Web.Areas.MonitorTemperature.Controllers
             return await _context.StoricoTemperature
                 .FromSqlRaw(
                     SqlBase,
-                    new SqlParameter("@DataInizio", (object?)dataInizio ?? DBNull.Value),
-                    new SqlParameter("@DataFineEsclusiva", (object?)dataFineEsclusiva ?? DBNull.Value),
+                    // Date sempre valorizzate: «tutto» = dal 1900, nessuna fine = fino al 9999 (filtro semplice, usa gli indici).
+                    new SqlParameter("@DataInizio", System.Data.SqlDbType.DateTime) { Value = dataInizio ?? new DateTime(1900, 1, 1) },
+                    new SqlParameter("@DataFineEsclusiva", System.Data.SqlDbType.DateTime) { Value = dataFineEsclusiva ?? new DateTime(9999, 12, 31) },
                     new SqlParameter("@CodiceSonda", codiceSonda))
                 .AsNoTracking()
                 .ToListAsync();
