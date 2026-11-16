@@ -18,8 +18,9 @@ const sezioni = {
     },
     soloArcLab: {
         titolo: 'Solo ArcLab', nota: 'spediti ma non sul portale',
-        intest: ['N. certificato', 'Spedizione', 'Tipo certificato'],
-        riga: (s) => `<td>${testo(s.nCert)}</td><td>${giorno(s.dataSped)}</td><td>${s.idTipoCertificato ?? ''}</td>`
+        intest: ['N. certificato', 'Spedizione', 'Tipo cert.', 'Sul portale', 'File trovato'],
+        riga: (s) => `<td>${testo(s.nCert)}</td><td>${giorno(s.dataSped)}</td><td>${s.idTipoCertificato ?? ''}</td>
+            <td class="allarme" style="white-space:normal">${testo(s.sulPortale)}</td><td style="white-space:normal">${testo(s.nomeFilePortale ?? '')}</td>`
     },
     soloPortale: {
         titolo: 'Solo portale', nota: 'caricati ma non spediti in ArcLab',

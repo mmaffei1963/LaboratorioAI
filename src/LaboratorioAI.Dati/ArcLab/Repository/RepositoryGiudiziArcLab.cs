@@ -13,6 +13,7 @@ public class RepositoryGiudiziArcLab : IRepositoryGiudiziArcLab
     private static readonly string SqlStati = $"""
         SELECT ca.IdCampione, CAST(lo.CodLotto AS VARCHAR) + '/' + CAST(ca.CodCampione AS VARCHAR) AS NumeroCampione, ca.IdMatrice,
                CAST(ca.AnalisiChiusa AS bit) AS AnalisiChiusa, CAST(ISNULL(cl.GiudizioConf, 0) AS bit) AS GiudizioConf, ca.IdCertificato,
+               CAST(ISNULL(ca.Avviso_Cliente, 0) AS bit) AS AvvisoCliente,
                (SELECT COUNT(*) FROM prove pr WHERE pr.IdCampione = ca.IdCampione AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}) AS Prove,
                (SELECT COUNT(*) FROM prove pr WHERE pr.IdCampione = ca.IdCampione AND pr.IdRigaMetodo <> {CostantiArcLab.IdRigaMetodoDaEscludere}
                     AND ISNULL(pr.VerificaValore, 0) <> 1) AS ProveNonVerificate

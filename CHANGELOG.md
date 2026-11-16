@@ -1350,3 +1350,10 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 16/11/2026 — Controllo pubblicazione certificati: query più veloce (errore 524 in produzione)
 - Con periodi lunghi la pagina superava i 100 secondi di Cloudflare (errore 524). Abbinamento ora per uguaglianza sul numero certificato ricavato dal nome regolare del file (gg-mm-aa-NCertificato-...), con la ricerca dentro il testo solo per i file rimasti senza abbinamento; «Solo portale» cerca il certificato ArcLab solo tra quelli dell'anno del periodo e del precedente; margine ai bordi ridotto da 30 a 15 giorni.
+
+## 16/11/2026 — Validazione: «Avvisare il cliente» (Campione.Avviso_Cliente)
+- Nella validazione del campione (Da Validare) nuova casella «Avvisare il cliente (parametri fuori specifica)», sempre non spuntata: la mette chi valida. LabAI mostra l'etichetta «Avviso cliente» se in ArcLab è già impostato.
+- Nuovo campo scambio.GiudiziDaRiportare.AvvisoCliente (MIGRAZIONE DA CREARE: ValidazioneAvvisoCliente); in ArcLab l'importazione di Palomar lo riporta in Campione.Avviso_Cliente (solo a sì, non lo toglie mai).
+
+## 16/11/2026 — Controllo pubblicazione: «Solo ArcLab» dice cosa c'è sul portale
+- Per ogni certificato spedito ma non trovato nel periodo, la pagina cerca sul portale qualsiasi file con quel numero (qualsiasi data e tipo) e lo spiega: «non trovato», «solo l'Allegato A: manca il certificato» oppure «caricato il …, fuori periodo: spedizione in ArcLab diversa di N giorni» (es. 2089-02-10A26: caricato il 22/04, DataSped in ArcLab 08/09). Colonne nuove anche nell'Excel.

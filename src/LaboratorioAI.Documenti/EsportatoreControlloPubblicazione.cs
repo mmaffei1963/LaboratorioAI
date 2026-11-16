@@ -16,8 +16,8 @@ public static class EsportatoreControlloPubblicazione
             e.DateDiverse.Select(d => new object?[] { d.NCert, d.DataSped, d.DataUpload, d.DataFirma, d.GiorniUpload, d.GiorniFirma,
                 d.FirmatoDopoPubblicazione ? "firmato dopo la pubblicazione" : "", d.Tipo, d.NomeFile }));
         Foglio(cartella, "Solo ArcLab", "Spediti in ArcLab ma non sul portale", periodo,
-            new[] { "N. certificato", "Spedizione ArcLab", "Tipo certificato" },
-            e.SoloArcLab.Select(s => new object?[] { s.NCert, s.DataSped, s.IdTipoCertificato }));
+            new[] { "N. certificato", "Spedizione ArcLab", "Tipo certificato", "Sul portale", "File trovato", "Caricato il" },
+            e.SoloArcLab.Select(s => new object?[] { s.NCert, s.DataSped, s.IdTipoCertificato, s.SulPortale, s.NomeFilePortale, s.DataUploadPortale }));
         Foglio(cartella, "Solo portale", "Sul portale ma non spediti in ArcLab", periodo,
             new[] { "Tipo", "Nome file", "Titolo", "Caricamento", "Firma", "Certificato ArcLab", "Spedizione ArcLab" },
             e.SoloPortale.Select(s => new object?[] { s.Tipo, s.NomeFile, s.Titolo, s.DataUpload, s.DataFirma, s.CertificatoArcLab, s.DataSpedArcLab }));

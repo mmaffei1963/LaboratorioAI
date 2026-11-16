@@ -31,6 +31,11 @@ public class GiudizioDaRiportare
     /// <summary>Colore dei limiti normativi al momento della validazione (viola, rosso, …).</summary>
     public string? ColoreLimiti { get; set; }
     public bool ConfermaColore { get; set; }
+    /// <summary>
+    /// 16/11/2026: chi valida chiede di avvisare il cliente (parametri fuori specifica). Palomar lo riporta in
+    /// Campione.Avviso_Cliente (solo a sì: un avviso già messo in ArcLab non viene tolto).
+    /// </summary>
+    public bool AvvisoCliente { get; set; }
     public string ValidatoDa { get; set; } = "";
     public int? IdUtenteValidazione { get; set; }
     public DateTime DataValidazione { get; set; }

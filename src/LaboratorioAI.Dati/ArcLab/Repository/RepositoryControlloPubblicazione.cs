@@ -74,8 +74,16 @@ public class RepositoryControlloPubblicazione
         ORDER BY DataSped, NCert;
 
         -- 2) spediti in ArcLab ma non sul portale
-        SELECT c.NCert, CAST(c.DataSped AS datetime) AS DataSped, CAST(c.IdTipoCertificato AS int) AS IdTipoCertificato
+        -- 16/11/2026: per ciascuno si cerca sul portale qualsiasi file con quel numero, in qualsiasi data e di qualsiasi
+        -- tipo (prima il certificato, poi l'Allegato A): spiega se manca del tutto, c'è solo l'allegato o è stato
+        -- caricato in un'altra data.
+        SELECT c.NCert, CAST(c.DataSped AS datetime) AS DataSped, CAST(c.IdTipoCertificato AS int) AS IdTipoCertificato,
+               p.Tipo AS TipoPortale, p.NomeFile AS NomeFilePortale, p.DataUpload AS DataUploadPortale
         FROM #c c
+        OUTER APPLY (SELECT TOP 1 en.Tipo COLLATE Latin1_General_CI_AS AS Tipo, en.NomeFile COLLATE Latin1_General_CI_AS AS NomeFile, en.DataUpload
+                     FROM [Marea].dbo.Entries en
+                     WHERE en.NomeFile COLLATE Latin1_General_CI_AS LIKE N'%' + c.NCert + N'%'
+                     ORDER BY CASE WHEN en.Tipo LIKE '%Allegato%' THEN 1 ELSE 0 END, en.DataUpload DESC) p
         WHERE c.DataSped BETWEEN @Dal AND @Al
           AND NOT EXISTS (SELECT 1 FROM #m m WHERE m.IdCertificato = c.IdCertificato)
         ORDER BY c.DataSped, c.NCert;

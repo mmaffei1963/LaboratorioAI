@@ -17,6 +17,8 @@ public class StatoCampioneArcLab
     public int? IdMatrice { get; set; }
     public bool AnalisiChiusa { get; set; }
     public bool GiudizioConf { get; set; }
+    /// <summary>16/11/2026: Campione.Avviso_Cliente in ArcLab (cliente da avvisare).</summary>
+    public bool AvvisoCliente { get; set; }
     public int? IdCertificato { get; set; }
     public int Prove { get; set; }
     /// <summary>Prove con VerificaValore diverso da 1 (risultati non ancora verificati).</summary>

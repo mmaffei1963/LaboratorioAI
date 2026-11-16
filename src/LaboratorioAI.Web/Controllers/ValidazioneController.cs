@@ -104,7 +104,7 @@ public class ValidazioneController : Controller
     {
         id = g.IdGiudizioDaRiportare, g.IdCampione, g.IdGiudizio, g.CodGiudizio, g.GiudizioTesto, g.Automatico,
         stato = g.Stato.ToString(), g.ValidatoDa, DataValidazione = g.DataValidazione.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
-        DataRiportato = g.DataRiportato?.ToLocalTime().ToString("dd/MM/yyyy HH:mm"), g.ColoreLimiti
+        DataRiportato = g.DataRiportato?.ToLocalTime().ToString("dd/MM/yyyy HH:mm"), g.ColoreLimiti, g.AvvisoCliente
     };
 
     [HttpGet("api/validazione/campione/{idCampione:int}/giudizio")]
@@ -116,7 +116,7 @@ public class ValidazioneController : Controller
         {
             arcLab = s.ArcLab is null ? null : new
             {
-                s.ArcLab.AnalisiChiusa, s.ArcLab.GiudizioConf, s.ArcLab.NumeroCampione, s.ArcLab.ProveNonVerificate,
+                s.ArcLab.AnalisiChiusa, s.ArcLab.GiudizioConf, s.ArcLab.NumeroCampione, s.ArcLab.ProveNonVerificate, s.ArcLab.AvvisoCliente,
                 giudizi = s.ArcLab.Giudizi.Select(g => new { g.IdGiudizio, g.CodGiudizio, g.Giudizio })
             },
             proposti = s.Proposti.Select(g => new { g.IdGiudizio, g.CodGiudizio, g.Giudizio, g.GiudizioConformita }),
@@ -135,7 +135,7 @@ public class ValidazioneController : Controller
         { return StatusCode(500, new { messaggio = "Stato delle validazioni non disponibile: " + ex.Message }); }
     }
 
-    public record RichiestaValida(int IdCampione, int? IdGiudizio, bool ConfermaColore);
+    public record RichiestaValida(int IdCampione, int? IdGiudizio, bool ConfermaColore, bool AvvisoCliente = false);
 
     [HttpPost("api/validazione/valida")]
     [RichiedePermesso(Permessi.ValidazioneConferma)]
@@ -143,10 +143,10 @@ public class ValidazioneController : Controller
         [FromServices] IContestoUtente utente, CancellationToken ct)
     {
         var op = new LaboratorioAI.Dati.Limiti.OperatoreLimiti(utente.IdUtente ?? 0, utente.NomeCompleto ?? utente.Email ?? "?");
-        var esito = await servizio.ValidaAsync(r.IdCampione, r.IdGiudizio, r.ConfermaColore, op, ct);
+        var esito = await servizio.ValidaAsync(r.IdCampione, r.IdGiudizio, r.ConfermaColore, r.AvvisoCliente, op, ct);
         if (esito.Riuscita)
             await _audit.RegistraAsync(AreaFunzionale.Validazione, "campione.validato", EsitoOperazione.Successo,
-                tipoEntita: "Campione", idEntita: r.IdCampione.ToString(), dettaglio: new { r.IdGiudizio, r.ConfermaColore, esito.Messaggio }, ct: ct);
+                tipoEntita: "Campione", idEntita: r.IdCampione.ToString(), dettaglio: new { r.IdGiudizio, r.ConfermaColore, r.AvvisoCliente, esito.Messaggio }, ct: ct);
         return Json(new { riuscita = esito.Riuscita, messaggio = esito.Messaggio, chiedeConferma = esito.ChiedeConferma });
     }
 

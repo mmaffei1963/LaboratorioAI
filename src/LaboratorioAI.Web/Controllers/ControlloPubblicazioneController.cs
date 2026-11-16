@@ -51,7 +51,11 @@ public class ControlloPubblicazioneController : Controller
                 d.NCert, d.DataSped, d.DataUpload, d.DataFirma, d.GiorniUpload, d.GiorniFirma, d.Tipo, d.NomeFile,
                 firmatoDopo = d.FirmatoDopoPubblicazione
             }),
-            esito.SoloArcLab, esito.SoloPortale, esito.Doppioni
+            soloArcLab = esito.SoloArcLab.Select(s => new
+            {
+                s.NCert, s.DataSped, s.IdTipoCertificato, s.TipoPortale, s.NomeFilePortale, s.DataUploadPortale, sulPortale = s.SulPortale
+            }),
+            esito.SoloPortale, esito.Doppioni
         });
     }
 

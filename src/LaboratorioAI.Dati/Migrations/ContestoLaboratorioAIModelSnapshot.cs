@@ -5107,6 +5107,9 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Property<bool>("Automatico")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("AvvisoCliente")
+                        .HasColumnType("bit");
+
                     b.Property<string>("CodGiudizio")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");

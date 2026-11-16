@@ -81,7 +81,7 @@ public class ServizioValidazioneGiudizio
         return true;
     }
 
-    public async Task<EsitoValidazione> ValidaAsync(int idCampione, int? idGiudizio, bool confermaColore, OperatoreLimiti op, CancellationToken ct)
+    public async Task<EsitoValidazione> ValidaAsync(int idCampione, int? idGiudizio, bool confermaColore, bool avvisoCliente, OperatoreLimiti op, CancellationToken ct)
     {
         var arclab = await _arclab.StatoAsync(idCampione, ct);
         if (arclab is null) return new(false, "Campione non trovato in ArcLab.");
@@ -107,7 +107,7 @@ public class ServizioValidazioneGiudizio
         {
             IdCampione = idCampione, NumeroCampione = arclab.NumeroCampione, IdGiudizio = giudizio.IdGiudizio,
             CodGiudizio = Taglia(giudizio.CodGiudizio, 255), GiudizioTesto = Taglia(giudizio.Giudizio, 2000), Automatico = scelta.Automatico,
-            ColoreLimiti = colore, ConfermaColore = confermaColore, ValidatoDa = op.Nome, IdUtenteValidazione = op.IdUtente,
+            ColoreLimiti = colore, ConfermaColore = confermaColore, AvvisoCliente = avvisoCliente, ValidatoDa = op.Nome, IdUtenteValidazione = op.IdUtente,
             DataValidazione = DateTime.UtcNow, Stato = StatoGiudizioDaRiportare.DaRiportare
         });
         try { await _ctx.SaveChangesAsync(ct); }
@@ -117,9 +117,10 @@ public class ServizioValidazioneGiudizio
             _ctx.ChangeTracker.Clear();
             return new(false, "Il campione risulta già validato (validazione contemporanea): ricarica la pagina.");
         }
+        var avviso = avvisoCliente ? " Cliente da avvisare." : "";
         return new(true, scelta.Automatico
-            ? $"Validato con giudizio 212 «{giudizio.CodGiudizio}» (automatico). In attesa che ArcLab lo riceva."
-            : $"Validato con giudizio «{giudizio.CodGiudizio}». In attesa che ArcLab lo riceva.");
+            ? $"Validato con giudizio 212 «{giudizio.CodGiudizio}» (automatico).{avviso} In attesa che ArcLab lo riceva."
+            : $"Validato con giudizio «{giudizio.CodGiudizio}».{avviso} In attesa che ArcLab lo riceva.");
     }
 
     public async Task<EsitoValidazione> AnnullaAsync(int idGiudizioDaRiportare, string? nota, OperatoreLimiti op, CancellationToken ct)

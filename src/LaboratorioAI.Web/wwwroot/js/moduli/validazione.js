@@ -237,6 +237,7 @@ function disegnaGiudizio(idCampione, g) {
         html += ` <span class="sottotesto">in ArcLab:</span>
             ${chip(a.giudizi.length > 0, 'Giudizio: ' + testo(a.giudizi.map(x => x.codGiudizio).join(', ')), 'Giudizio: nessuno')}
             ${chip(a.analisiChiusa, 'Analisi chiusa', 'Analisi aperta')}
+            ${a.avvisoCliente ? '<span class="limiti limiti-rosso">Avviso cliente</span>' : ''}
             <span class="sottotesto">· cliente ${a.giudizioConf ? '<strong>richiede</strong> il giudizio di conformità' : 'non richiede il giudizio di conformità'}</span>`;
     }
     html += '</div>';
@@ -245,7 +246,7 @@ function disegnaGiudizio(idCampione, g) {
     if (v) {
         const [nome, classe] = STATI_VALIDAZIONE[v.stato] || [v.stato, 'limiti-grigio'];
         html += `<p>Validato da <strong>${testo(v.validatoDa)}</strong> il ${testo(v.dataValidazione)} con
-            <strong>«${testo(v.codGiudizio)}»</strong>${v.automatico ? ' (212 automatico)' : ''}
+            <strong>«${testo(v.codGiudizio)}»</strong>${v.automatico ? ' (212 automatico)' : ''}${v.avvisoCliente ? ' · <strong>cliente da avvisare</strong>' : ''}
             <span class="limiti ${classe}">${nome}</span>
             ${v.stato === 'Riportato' && v.dataRiportato ? `<span class="sottotesto">· visto in ArcLab il ${testo(v.dataRiportato)}</span>` : ''}</p>
             ${v.stato === 'Conflitto' ? '<p class="errore">In ArcLab c\'è un giudizio diverso da quello validato qui: controllare in ArcLab.</p>' : ''}
@@ -264,6 +265,10 @@ function disegnaGiudizio(idCampione, g) {
             </select>
             <button class="pulsante" id="btn-valida" ${obbligatorio ? 'disabled' : ''}>Valida</button>
         </div>
+        <label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin:.3rem 0">
+            <input type="checkbox" id="avviso-cliente" />
+            <span><strong>Avvisare il cliente</strong> (parametri fuori specifica) — viene riportato in ArcLab nel campo Avviso cliente</span>
+        </label>
         <p class="sottotesto" id="testo-giudizio"></p>
         ${g.coloreLimiti === 'rosso' || g.coloreLimiti === 'viola' ? `<p class="sottotesto">Campione segnalato in <span class="limiti limiti-${g.coloreLimiti}">${NOMI_COLORI[g.coloreLimiti]}</span>: alla validazione verrà chiesta una conferma.</p>` : ''}`;
     }
@@ -276,18 +281,19 @@ function disegnaGiudizio(idCampione, g) {
             document.getElementById('testo-giudizio').textContent = p ? p.giudizio : '';
             document.getElementById('btn-valida').disabled = a?.giudizioConf && !sel.value;
         });
-        document.getElementById('btn-valida').addEventListener('click', e => valida(idCampione, sel.value ? Number(sel.value) : null, e.currentTarget));
+        document.getElementById('btn-valida').addEventListener('click', e => valida(idCampione, sel.value ? Number(sel.value) : null, e.currentTarget, false,
+            document.getElementById('avviso-cliente')?.checked ?? false));
     }
     document.getElementById('btn-annulla-validazione')?.addEventListener('click', () => annullaValidazione(idCampione, v.id));
 }
 
-async function valida(idCampione, idGiudizio, pulsante, confermaColore = false) {
+async function valida(idCampione, idGiudizio, pulsante, confermaColore = false, avvisoCliente = false) {
     const libera = occupa(pulsante, 'Validazione…');
     try {
-        const r = await inviaJson('/api/validazione/valida', { idCampione, idGiudizio, confermaColore });
+        const r = await inviaJson('/api/validazione/valida', { idCampione, idGiudizio, confermaColore, avvisoCliente });
         if (r.chiedeConferma) {
             libera();
-            if (confirm(r.messaggio)) return valida(idCampione, idGiudizio, pulsante, true);
+            if (confirm(r.messaggio)) return valida(idCampione, idGiudizio, pulsante, true, avvisoCliente);
             return;
         }
         avvisa(r.messaggio, r.riuscita ? 'info' : 'errore');
