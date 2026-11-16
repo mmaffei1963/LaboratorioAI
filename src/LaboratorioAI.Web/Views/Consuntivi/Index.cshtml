@@ -193,6 +193,7 @@
     // Dati dei grafici (20/10/2026): disegnati in SVG da consuntivi.js, senza librerie esterne.
     var nomiMesi = new[] { "", "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
     var operative = aree.Where(a => !a.DaRipartire).ToList();
+    var primeVoci = r.Costi.OrderBy(v => v.Totale).Take(10).ToList();
     var datiGrafici = new
     {
         periodo = $"{r.Dal:dd/MM/yy}–{r.Al:dd/MM/yy}",
@@ -206,9 +207,13 @@
         mesi = r.Mesi.Select(m => nomiMesi[m.Mese]),
         progressivo = r.Mesi.Select((m, i) => r.Mesi.Take(i + 1).Sum(x => x.Utile.Values.Sum())),
         progressivoPrec = r.MesiPrecedenti.Select((m, i) => r.MesiPrecedenti.Take(i + 1).Sum(x => x.Utile.Values.Sum())),
-        vociCosto = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => v.Descrizione),
-        costoVoci = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => -v.Totale),
-        costoVociPrec = r.Costi.OrderBy(v => v.Totale).Take(10).Select(v => -v.TotalePrecedente),
+        vociCosto = primeVoci.Select(v => v.Descrizione),
+        costoVoci = primeVoci.Select(v => -v.Totale),
+        costoVociPrec = primeVoci.Select(v => -v.TotalePrecedente),
+        // 16/11/2026: divisione per area nel tooltip (il totale è di tutte le aree, rettifiche comprese).
+        dettaglioVoci = primeVoci.Select(v => string.Join(" · ", aree
+            .Where(a => v.Valori.GetValueOrDefault(a.Codice) != 0m)
+            .Select(a => $"{a.Etichetta} {(-v.Valori[a.Codice]).ToString("N0", CultureInfo.GetCultureInfo("it-IT"))}"))),
     };
 }
 <section class="riquadro">
@@ -217,7 +222,7 @@
         <figure><figcaption>Utile o perdita per area, con contributo AMM</figcaption><div id="graf-utile"></div></figure>
         <figure><figcaption>Utile MARE.A progressivo, mese per mese</figcaption><div id="graf-progressivo"></div></figure>
         <figure><figcaption>Ricavi e costi per area (<span style="color:#16A34A">ricavi</span>, <span style="color:#DC2626">costi</span>)</figcaption><div id="graf-ricavi-costi"></div></figure>
-        <figure><figcaption>Le 10 voci di costo più alte</figcaption><div id="graf-voci"></div></figure>
+        <figure><figcaption>Le 10 voci di costo più alte <span class="sottotesto">(totale MARE.A di tutte le aree, rettifiche comprese; passa sulla barra per la divisione per area)</span></figcaption><div id="graf-voci"></div></figure>
     </div>
     <script type="application/json" id="cons-dati-grafici">@Html.Raw(JsonSerializer.Serialize(datiGrafici))</script>
 </section>

@@ -1357,3 +1357,7 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 16/11/2026 — Controllo pubblicazione: «Solo ArcLab» dice cosa c'è sul portale
 - Per ogni certificato spedito ma non trovato nel periodo, la pagina cerca sul portale qualsiasi file con quel numero (qualsiasi data e tipo) e lo spiega: «non trovato», «solo l'Allegato A: manca il certificato» oppure «caricato il …, fuori periodo: spedizione in ArcLab diversa di N giorni» (es. 2089-02-10A26: caricato il 22/04, DataSped in ArcLab 08/09). Colonne nuove anche nell'Excel.
+
+## 16/11/2026 — Consuntivo: grafico delle 10 voci di costo
+- Titolo esplicito: totale MARE.A di tutte le aree, rettifiche comprese.
+- Tooltip di ogni barra con la divisione per area (es. Formazione 16.000 · Sicurezza 16.000).

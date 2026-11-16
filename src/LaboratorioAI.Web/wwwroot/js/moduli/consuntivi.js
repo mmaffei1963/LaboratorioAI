@@ -118,7 +118,7 @@ function linee(contenitore, etichette, serie) {
 }
 
 // Barre orizzontali: etichette × serie [{nome, colore, valori}]
-function barreOrizzontali(contenitore, etichette, serie) {
+function barreOrizzontali(contenitore, etichette, serie, dettagli = []) {
     if (!contenitore || etichette.length === 0) return;
     const W = 560, sx = 170, dx = 52, riga = 26, su = 6;
     const H = su + etichette.length * riga + 22;
@@ -137,7 +137,7 @@ function barreOrizzontali(contenitore, etichette, serie) {
         serie.forEach((se, j) => {
             const v = se.valori[i] ?? 0;
             const r = el('rect', { x: Math.min(x(0), x(v)), y: y0 + j * alt, width: Math.max(Math.abs(x(v) - x(0)), 0.5), height: alt - 1, fill: se.colore, rx: 2 });
-            r.append(el('title', {}, `${e} · ${se.nome}: ${eur.format(v)}`));
+            r.append(el('title', {}, `${e} · ${se.nome}: ${eur.format(v)}` + (j === 0 && dettagli[i] ? `\n${dettagli[i]}` : '')));
             s.append(r);
             if (j === 0) s.append(el('text', { x: x(v) + 4, y: y0 + alt - 2, 'font-size': 10.5, fill: ASSE }, breve(v)));
         });
@@ -163,5 +163,5 @@ if (datiGrafici) {
     barreOrizzontali(document.getElementById('graf-voci'), d.vociCosto, [
         { nome: d.periodo, colore: BLU, valori: d.costoVoci },
         { nome: 'anno prima ' + d.precedente, colore: GRIGIO, valori: d.costoVociPrec },
-    ]);
+    ], d.dettaglioVoci || []);
 }
