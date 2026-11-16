@@ -24,7 +24,7 @@ public static class SetRiferimentoBilancia
         Portata = 220,
         UnitaFormato = 0.0001,
         CoefficienteSensibilitaTermica = 1.5e-6,
-        MaxIncertezzaAmmessa = 0.02,
+        MaxIncertezzaAmmessa = 2,
         TemperaturaTaratura = 21,
         TemperaturaUtilizzo = 22,
         Eccentricita = new ProvaEccentricita

@@ -104,6 +104,9 @@ public static class Permessi
     // ── Certificati esterni (triage e rinomina per Palomar) ──
     public const string CertificatiEsterniGestione = "certificatiesterni.gestione";
 
+    // ── Controllo pubblicazione certificati (ArcLab DataSped contro portale clienti, 16/11/2026) ──
+    public const string CertificatiControlloPubblicazione = "certificati.controllopubblicazione";
+
     // ── Proposta controlli (consulenti/clienti → import supervisionato) ──
     public const string ControlliProponi = "controlli.proponi";
     public const string ControlliApprova = "controlli.approva";
@@ -227,6 +230,7 @@ public static class Permessi
         OrdiniAccettazioneGestione,
         SoloEsterniVisualizza,
         CertificatiEsterniGestione,
+        CertificatiControlloPubblicazione,
         ControlliProponi, ControlliApprova,
         PreventiviGestione, PreventiviApprova, RichiestePrivatiGestione,
         PreventiviConsulenza,

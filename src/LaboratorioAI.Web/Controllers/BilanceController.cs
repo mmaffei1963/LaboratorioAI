@@ -273,7 +273,7 @@ public class BilanceController : Controller
         t.Portata = req.Portata;
         t.UnitaFormato = req.UnitaFormato;
         t.CoefficienteSensibilitaTermica = req.CoefficienteSensibilitaTermica;
-        t.MaxIncertezzaAmmessa = req.MaxIncertezzaAmmessa <= 0 ? 0.02 : req.MaxIncertezzaAmmessa;
+        t.MaxIncertezzaAmmessa = req.MaxIncertezzaAmmessa <= 0 ? 2 : req.MaxIncertezzaAmmessa;
         t.TemperaturaTaratura = req.TemperaturaTaratura;
         t.TemperaturaUtilizzo = req.TemperaturaUtilizzo;
         t.CampoTaratura = req.CampoTaratura;
@@ -506,7 +506,7 @@ public class BilanceController : Controller
         double tTar, double tUso, ProveBilanciaDto prove) => new()
     {
         Portata = portata, UnitaFormato = uf, CoefficienteSensibilitaTermica = coeff,
-        MaxIncertezzaAmmessa = maxU <= 0 ? 0.02 : maxU, TemperaturaTaratura = tTar, TemperaturaUtilizzo = tUso,
+        MaxIncertezzaAmmessa = maxU <= 0 ? 2 : maxU, TemperaturaTaratura = tTar, TemperaturaUtilizzo = tUso,
         Eccentricita = new ProvaEccentricita
         {
             CaricoNominale = prove.Eccentricita?.CaricoNominale ?? 0,
@@ -628,7 +628,7 @@ public record RichiestaCalcoloBilancia
     public double Portata { get; init; }
     public double UnitaFormato { get; init; }
     public double CoefficienteSensibilitaTermica { get; init; }
-    public double MaxIncertezzaAmmessa { get; init; } = 0.02;
+    public double MaxIncertezzaAmmessa { get; init; } = 2;
     public double TemperaturaTaratura { get; init; }
     public double TemperaturaUtilizzo { get; init; }
     public ProveBilanciaDto? Prove { get; init; }
@@ -651,7 +651,7 @@ public record RichiestaSalvaBilancia
     public double Portata { get; init; }
     public double UnitaFormato { get; init; }
     public double CoefficienteSensibilitaTermica { get; init; }
-    public double MaxIncertezzaAmmessa { get; init; } = 0.02;
+    public double MaxIncertezzaAmmessa { get; init; } = 2;
     public double TemperaturaTaratura { get; init; }
     public double TemperaturaUtilizzo { get; init; }
     public double CampoTaratura { get; init; }

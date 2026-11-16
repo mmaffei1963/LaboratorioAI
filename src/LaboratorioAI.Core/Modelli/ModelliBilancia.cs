@@ -30,8 +30,11 @@ public record DatiBilancia
     /// <summary>Unità di formato / risoluzione (g).</summary>
     public double UnitaFormato { get; init; }
     public double CoefficienteSensibilitaTermica { get; init; }
-    /// <summary>Massima incertezza estesa ammessa dal laboratorio (g).</summary>
-    public double MaxIncertezzaAmmessa { get; init; } = 0.02;
+    /// <summary>
+    /// Massima incertezza estesa ammessa, in % del carico minimo della prova di linearità (16/11/2026; prima era
+    /// confrontata come grammi). Strumenti interni: 2%; bilance dei clienti: 2-5% secondo l'autocontrollo, senza dati 3%.
+    /// </summary>
+    public double MaxIncertezzaAmmessa { get; init; } = 2;
 
     public double TemperaturaTaratura { get; init; }
     public double TemperaturaUtilizzo { get; init; }
@@ -71,5 +74,12 @@ public record RisultatoBilancia
 
     public double IncertezzaEstesaMax { get; init; }
     public double IncertezzaEstesaUsoMax { get; init; }
+    /// <summary>16/11/2026: carico nominale minimo (diverso da zero) della prova di linearità (g).</summary>
+    public double CaricoMinimoLinearita { get; init; }
+    /// <summary>16/11/2026: percentuale ammessa usata per il giudizio.</summary>
+    public double PercentualeAmmessa { get; init; }
+    /// <summary>16/11/2026: incertezza massima ammessa in grammi = % × carico minimo della linearità.</summary>
+    public double LimiteIncertezza { get; init; }
+    /// <summary>Conforme se l'incertezza estesa massima è inferiore al limite (e c'è almeno un punto di linearità).</summary>
     public bool Conforme { get; init; }
 }

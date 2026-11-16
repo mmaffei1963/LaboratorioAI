@@ -18,7 +18,7 @@ public class BilanciaTest
             Portata = 220,
             UnitaFormato = 0.0001,
             CoefficienteSensibilitaTermica = 1.5e-6,
-            MaxIncertezzaAmmessa = 0.02,
+            MaxIncertezzaAmmessa = 2,
             TemperaturaTaratura = 21,
             TemperaturaUtilizzo = 22,
             Eccentricita = new ProvaEccentricita
@@ -37,6 +37,16 @@ public class BilanciaTest
             ]
         };
         return new ServizioBilancia().Calcola(dati);
+    }
+
+    [Fact]
+    public void Conformita_in_percentuale_del_carico_minimo()
+    {
+        // 16/11/2026: limite = % del carico minimo della linearità (qui 50 g × 2% = 1 g); U max dell'esempio EURAMET è molto sotto.
+        var r = Calcola();
+        Assert.Equal(50, r.CaricoMinimoLinearita);
+        Assert.Equal(1.0, r.LimiteIncertezza, 9);
+        Assert.True(r.Conforme);
     }
 
     [Fact]

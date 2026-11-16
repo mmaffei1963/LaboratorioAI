@@ -68,7 +68,8 @@ public class TaraturaBilancia
     public double Portata { get; set; }
     public double UnitaFormato { get; set; }
     public double CoefficienteSensibilitaTermica { get; set; }
-    public double MaxIncertezzaAmmessa { get; set; } = 0.02;
+    /// <summary>% del carico minimo della prova di linearità (16/11/2026; i vecchi valori < 1 sono portati a 2 all'avvio).</summary>
+    public double MaxIncertezzaAmmessa { get; set; } = 2;
     public double TemperaturaTaratura { get; set; }
     public double TemperaturaUtilizzo { get; set; }
 

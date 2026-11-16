@@ -173,7 +173,8 @@ public class GeneratoreRapportoBilancia : IGeneratoreRapportoBilancia
 
         var criteri = sec.AddParagraph(
             "La taratura è ritenuta conforme secondo i criteri stabiliti dal laboratorio quando il max valore di "
-            + "incertezza estesa U risulta inferiore al 2% del carico minimo testato nella prova di linearità. "
+            + $"incertezza estesa U risulta inferiore al {Num(r.PercentualeAmmessa, 2)}% del carico minimo testato nella prova di linearità "
+            + $"({Num(r.CaricoMinimoLinearita, 4)} g, limite {Num(r.LimiteIncertezza, 5)} g). "
             + "La prova di eccentricità è ritenuta superata quando la max differenza dovuta all'eccentricità non supera le 15 divisioni.");
         criteri.Format.Font.Italic = true; criteri.Format.Font.Size = 8; criteri.Format.SpaceBefore = "0.1cm";
 

@@ -1,0 +1,46 @@
+@{
+    ViewData["Titolo"] = "Controllo pubblicazione certificati";
+}
+@* Controllo pubblicazione certificati (16/11/2026): ArcLab (certificato.DataSped) contro portale (Marea.Entries). *@
+<style>
+    .cp-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .8rem; }
+    .cp-cifre button { text-align: left; border: 1px solid #e5e5e5; border-radius: .5rem; padding: .6rem .8rem; background: #fafafa; cursor: pointer; }
+    .cp-cifre button.attivo { border-color: #B91C1C; background: #fff5f5; }
+    .cp-cifre .valore { font-size: 1.45rem; font-weight: 700; }
+    #tabella td.allarme { color: #B91C1C; font-weight: 600; }
+</style>
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Controllo pubblicazione certificati</h1>
+        <p class="sottotitolo">Confronta i certificati spediti in ArcLab (data spedizione) con quelli caricati sul portale clienti (data caricamento e data firma).
+            Aggancio: il numero del certificato contenuto nel nome del file o nel titolo. Gli Allegati A non sono considerati. Sola lettura.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div class="griglia-filtri">
+        <label>Dal<input type="date" id="f-dal" /></label>
+        <label>Al<input type="date" id="f-al" /></label>
+        <label style="display:flex;align-items:center;gap:.4rem;margin-top:1.2rem">
+            <input type="checkbox" id="f-esterni" checked /> In «Solo portale» nascondi i certificati esterni con il nome regolare
+        </label>
+        <div style="display:flex;align-items:flex-end;gap:.4rem">
+            <button type="button" class="pulsante" id="btn-cerca">Controlla</button>
+            <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Excel</button>
+        </div>
+    </div>
+    <p class="sottotesto" style="margin:.5rem 0 0">Al massimo 6 mesi per volta. La controparte si cerca anche 30 giorni prima e dopo il periodo.</p>
+</section>
+
+<section class="riquadro nascosto" id="pannello">
+    <div class="cp-cifre" id="cifre"></div>
+    <h2 id="titolo-elenco" style="margin-top:1rem"></h2>
+    <div class="tabella-scorrevole" style="max-height:34rem">
+        <table class="tabella" id="tabella"><thead></thead><tbody></tbody></table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/controllo-pubblicazione.js" asp-append-version="true"></script>
+}

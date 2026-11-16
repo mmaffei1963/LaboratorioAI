@@ -31,6 +31,10 @@ public static class Popolamento
         var nuovaRicercaFatture = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.RicercaFattureConsulta, ct);
         await PopolaPermessiAsync(ctx, ct);
         await PopolaRuoliAsync(ctx, primaVolta, ct);
+        // 16/11/2026: la max incertezza ammessa delle bilance è ora in % del carico minimo di linearità; i valori vecchi
+        // (0,02 inteso come grammi) diventano 2%. Ripetibile: dopo la prima volta nessun valore è più sotto 1.
+        await ctx.TaratureBilance.Where(t => t.MaxIncertezzaAmmessa > 0 && t.MaxIncertezzaAmmessa < 1)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.MaxIncertezzaAmmessa, 2.0), ct);
         await AssegnaPermessiAmministratoreAsync(ctx, ct);
         await ctx.SaveChangesAsync(ct);
         string? riepilogo = null;
@@ -194,6 +198,7 @@ public static class Popolamento
         (Permessi.SoloEsterniVisualizza, "Confrontare i certificati esterni con gli interni", AreaFunzionale.SoloEsterni),
 
         (Permessi.CertificatiEsterniGestione, "Rinominare e smistare i certificati dei laboratori esterni", AreaFunzionale.CertificatiEsterni),
+        (Permessi.CertificatiControlloPubblicazione, "Confrontare i certificati spediti in ArcLab con quelli pubblicati sul portale clienti", AreaFunzionale.CertificatiEsterni),
 
         (Permessi.ControlliProponi, "Proporre nuovi controlli (bozze)",                    AreaFunzionale.Controlli),
         (Permessi.ControlliApprova, "Approvare e generare il tracciato dei controlli",     AreaFunzionale.Controlli),

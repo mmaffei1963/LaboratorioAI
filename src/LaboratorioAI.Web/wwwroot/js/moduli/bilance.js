@@ -190,7 +190,7 @@ function nuova() {
     ['t-id', 't-numero', 't-scadenza', 'b-identificazione', 'b-modello', 'b-tipo', 'b-sda', 't-termometro', 't-portata', 't-campo', 'e-carico', 'e-conv'].forEach(id => $(id).value = '');
     $('t-pesiera').value = ''; $('t-istruzione').value = 'IO 4-05'; $('b-origine').value = 'interno';
     committente.svuota();
-    $('t-uf').value = '0.0001'; $('t-coeff').value = '0.0000015'; $('t-maxu').value = '0.02'; $('t-ttar').value = '21'; $('t-tuso').value = '22';
+    $('t-uf').value = '0.0001'; $('t-coeff').value = '0.0000015'; $('t-maxu').value = '2'; $('t-ttar').value = '21'; $('t-tuso').value = '22';
     $('t-stab').value = '2'; $('t-intervallo').value = '30'; $('t-maxvar').value = '0';
     $('t-data').value = new Date().toISOString().substring(0, 10);
     aggiornaDatalist();
@@ -303,7 +303,7 @@ function corpoBase() {
 function renderRisultato(r) {
     $('risultati-sintesi').innerHTML =
         `<p>Eccentricità: scostamento max ${gg(r.eccentricitaScostamentoMax)} g — <strong>${r.eccentricitaConforme ? 'conforme' : 'NON conforme'}</strong>. Ripetibilità: ${gg(r.ripetibilitaScartoTipo, 6)} g.</p>`
-        + `<p>Incertezza estesa massima <strong>${gg(r.incertezzaEstesaMax)} g</strong> — <strong style="color:${r.conforme ? '#1a7f37' : '#b3261e'}">${r.conforme ? 'CONFORME' : 'NON CONFORME'}</strong></p>`;
+        + `<p>Incertezza estesa massima <strong>${gg(r.incertezzaEstesaMax)} g</strong>, limite ${gg(r.limiteIncertezza)} g (${r.percentualeAmmessa}% del carico minimo di linearità ${gg(r.caricoMinimoLinearita)} g) — <strong style="color:${r.conforme ? '#1a7f37' : '#b3261e'}">${r.conforme ? 'CONFORME' : 'NON CONFORME'}</strong></p>`;
     $('tabella-risultati').querySelector('tbody').innerHTML = r.punti.map(p =>
         `<tr><td>${gg(p.caricoNominale, 1)}</td><td class="numerico">${gg(p.errore)}</td><td class="numerico">${gg(p.incertezzaEstesa)}</td><td class="numerico">${gg(p.incertezzaEstesaUso)}</td></tr>`).join('');
     $('pannello-risultati-taratura').classList.remove('nascosto');

@@ -89,6 +89,13 @@ public class ServizioBilancia : IServizioBilancia
         double maxU = punti.Count > 0 ? punti.Max(x => x.IncertezzaEstesa) : 0;
         double maxUso = punti.Count > 0 ? punti.Max(x => x.IncertezzaEstesaUso) : 0;
 
+        // 16/11/2026: criterio del laboratorio (come scritto nel rapporto): incertezza estesa massima inferiore alla
+        // percentuale ammessa del carico minimo testato nella prova di linearità. Prima si confrontava con il valore
+        // come se fosse in grammi.
+        double percentuale = d.MaxIncertezzaAmmessa > 0 ? d.MaxIncertezzaAmmessa : 2;
+        double caricoMin = punti.Where(x => x.CaricoNominale > 0).Select(x => x.CaricoNominale).DefaultIfEmpty(0).Min();
+        double limite = caricoMin * percentuale / 100.0;
+
         return new RisultatoBilancia
         {
             EccentricitaScostamentoMax = eccMax,
@@ -99,7 +106,10 @@ public class ServizioBilancia : IServizioBilancia
             Punti = punti,
             IncertezzaEstesaMax = maxU,
             IncertezzaEstesaUsoMax = maxUso,
-            Conforme = maxU <= d.MaxIncertezzaAmmessa
+            CaricoMinimoLinearita = caricoMin,
+            PercentualeAmmessa = percentuale,
+            LimiteIncertezza = limite,
+            Conforme = caricoMin > 0 && maxU < limite
         };
     }
 

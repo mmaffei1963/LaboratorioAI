@@ -1336,3 +1336,14 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - In produzione le pagine Controllo e Differenze andavano in timeout (oltre 30 s) con circa 100.000 misure: la query univa Misure1 con Misure su IdSonda + DataOra (Misure non ha indici su queste colonne) e poi con la vista vw_StoricoTemperature, che rilegge tutta Misure.
 - Riscritte le due query: sonda, apparecchiatura e limiti presi direttamente da Sonde / AssegnazioneSonde / Apparecchiature (stessi join della vista), Controllo senza più Misure; filtro sulle date sempre valorizzato (dal 1900 / al 9999 al posto di NULL) e OPTION (RECOMPILE); elenco sonde di Controllo dalla tabella Sonde.
 - Nessuna modifica alle tabelle Econorma, nessuna migrazione. Differenza di comportamento: in Controllo compaiono anche le misure di Misure1 senza la gemella in Misure.
+
+## 16/11/2026 — Controllo pubblicazione certificati (Ciclo analitico)
+- Nuova pagina /ControlloPubblicazione: confronta i certificati spediti in ArcLab (certificato.DataSped) con quelli caricati sul portale clienti (Marea.dbo.Entries, tipo «Certificato», senza Allegati A); aggancio con NCertificato contenuto in NomeFile o Titolo; controparte cercata con 30 giorni di margine.
+- Quattro controlli con contatori: date diverse (con «firmato dopo la pubblicazione»), solo ArcLab, solo portale (facoltativo: nascosti gli esterni con nome regolare), caricati più volte (la versione inglese non conta). Excel con un foglio per controllo. Periodo massimo 6 mesi.
+- Permesso nuovo certificati.controllopubblicazione (assegnato solo agli amministratori: da dare ai ruoli in Utenti e ruoli). Sola lettura su LabAnalisiDati e Marea, nessuna migrazione.
+
+## 16/11/2026 — Bilance: max incertezza ammessa in % del carico minimo di linearità
+- Il campo «Max incertezza ammessa» è ora una percentuale del carico minimo (diverso da zero) della prova di linearità, come già scritto nel rapporto; prima il programma confrontava l'incertezza estesa massima con il valore come se fosse in grammi (0,02 g).
+- Conforme se l'incertezza estesa massima è inferiore al limite = % × carico minimo; il risultato a video e il rapporto mostrano percentuale, carico minimo e limite in grammi.
+- Valore predefinito 2; indicazione sotto il campo: strumenti interni sempre 2%, bilance dei clienti dal 2 al 5% secondo il loro autocontrollo, in assenza di dati 3%.
+- All'avvio le tarature salvate con il vecchio valore (minore di 1) passano a 2. Nessuna migrazione. Test: Conformita_in_percentuale_del_carico_minimo.
