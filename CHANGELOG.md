@@ -1347,3 +1347,6 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 - Conforme se l'incertezza estesa massima è inferiore al limite = % × carico minimo; il risultato a video e il rapporto mostrano percentuale, carico minimo e limite in grammi.
 - Valore predefinito 2; indicazione sotto il campo: strumenti interni sempre 2%, bilance dei clienti dal 2 al 5% secondo il loro autocontrollo, in assenza di dati 3%.
 - All'avvio le tarature salvate con il vecchio valore (minore di 1) passano a 2. Nessuna migrazione. Test: Conformita_in_percentuale_del_carico_minimo.
+
+## 16/11/2026 — Controllo pubblicazione certificati: query più veloce (errore 524 in produzione)
+- Con periodi lunghi la pagina superava i 100 secondi di Cloudflare (errore 524). Abbinamento ora per uguaglianza sul numero certificato ricavato dal nome regolare del file (gg-mm-aa-NCertificato-...), con la ricerca dentro il testo solo per i file rimasti senza abbinamento; «Solo portale» cerca il certificato ArcLab solo tra quelli dell'anno del periodo e del precedente; margine ai bordi ridotto da 30 a 15 giorni.
