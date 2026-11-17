@@ -1,0 +1,42 @@
+@{
+    ViewData["Titolo"] = "Clienti e insediamenti";
+}
+@* Clienti e insediamenti (17/11/2026): anagrafiche ArcLab con campioni recenti non allineate con il portale clienti (Marea). *@
+<style>
+    #anag-tabella td.allarme { color: #B91C1C; font-weight: 600; }
+</style>
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Clienti e insediamenti</h1>
+        <p class="sottotitolo">Insediamenti ArcLab con campioni ricevuti negli ultimi mesi che sul portale clienti mancano, sono disattivati
+            o sono collegati al cliente sbagliato. Per questi clienti i certificati caricati non arrivano: va corretta l'anagrafica del portale.
+            La colonna «In ArcLab» dice se cliente e insediamento sono ancora attivi in ArcLab (Clienti.Attivo, Insediamento «non in uso»):
+            disattivato sul portale ma attivo in ArcLab va controllato. Sola lettura su ArcLab e sul portale.</p>
+    </div>
+</div>
+
+<section class="riquadro">
+    <div style="display:flex;align-items:flex-end;gap:.6rem;flex-wrap:wrap">
+        <label>Campioni degli ultimi<select id="f-mesi"><option value="6">6 mesi</option><option value="12" selected>12 mesi</option><option value="24">24 mesi</option></select></label>
+        <label style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem">
+            <input type="checkbox" id="f-nascondi-disattivati" /> Nascondi gli insediamenti e i clienti disattivati sul portale
+        </label>
+        <label style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem">
+            <input type="checkbox" id="f-nascondi-arclab" /> Nascondi i clienti non attivi in ArcLab (anche insediamento non in uso)
+        </label>
+        <button type="button" class="pulsante" id="btn-anagrafiche">Controlla</button>
+        <button type="button" class="pulsante pulsante-tenue" id="btn-anag-excel">Excel</button>
+    </div>
+</section>
+
+<section class="riquadro nascosto" id="anag-pannello">
+    <p id="anag-riepilogo" style="margin-top:0"></p>
+    <div class="tabella-scorrevole" style="max-height:40rem">
+        <table class="tabella" id="anag-tabella"><thead></thead><tbody></tbody></table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/clienti-insediamenti.js" asp-append-version="true"></script>
+}

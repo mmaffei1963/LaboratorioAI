@@ -34,9 +34,44 @@ public record SoloPortalePubblicazione(string? Tipo, string? NomeFile, string? T
 /// <summary>Certificato caricato più volte (versioni inglesi escluse dal conteggio dei doppioni).</summary>
 public record DoppioniPubblicazione(string NCert, DateTime DataSped, int Caricamenti, int DiCuiInglese, DateTime? PrimoUpload, DateTime? UltimoUpload);
 
+/// <summary>
+/// 17/11/2026: insediamento con certificati spediti nel periodo (Controllo pubblicazione) o con campioni recenti (pagina
+/// «Clienti e insediamenti», senza date) che sul portale non può riceverli (insediamento o cliente
+/// mancante, disattivato o collegato al cliente sbagliato). Il certificato caricato non arriva al cliente.
+/// </summary>
+public record AnagraficaNonAllineata(int IdCliente, string? RagioneSociale, string? CodContabilita, int IdInsediamento,
+    string? InsediamentoArcLab, int Campioni, DateTime UltimoRicevimento, int Certificati, DateTime? UltimaSpedizione, int? IdInsediamentoPortale, string? InsediamentoPortale,
+    int? IdClientePortale, string? ClientePortale, string Problema, bool ClienteAttivoArcLab, bool InsediamentoInUsoArcLab)
+{
+    /// <summary>Disattivato (obsoleto) sul portale, come insediamento o come cliente.</summary>
+    public bool DisattivatoSulPortale => Problema is "InsediamentoDisattivato" or "ClienteDisattivato";
+
+    /// <summary>Stato in ArcLab (Clienti.Attivo, Insediamento.NonInUso).</summary>
+    public string StatoArcLab => (ClienteAttivoArcLab, InsediamentoInUsoArcLab) switch
+    {
+        (true, true) => "attivo",
+        (false, true) => "cliente non attivo",
+        (true, false) => "insediamento non in uso",
+        _ => "cliente non attivo, insediamento non in uso"
+    };
+
+    /// <summary>Descrizione del problema e di cosa fare sul portale.</summary>
+    public string Descrizione => Problema switch
+    {
+        "MancaTutto" => "mancano cliente e insediamento sul portale",
+        "MancaInsediamento" => "manca l'insediamento sul portale",
+        "InsediamentoDisattivato" => "insediamento disattivato (obsoleto) sul portale",
+        "ClienteDisattivato" => "cliente disattivato (obsoleto) sul portale",
+        "AltroClienteArcLab" => "sul portale l'insediamento è collegato a un altro cliente ArcLab",
+        "ClientePortaleNonCollegato" => "sul portale l'insediamento è sotto un cliente senza il codice ArcLab giusto",
+        _ => Problema
+    };
+}
+
 /// <summary>Esito completo del confronto.</summary>
 public record EsitoControlloPubblicazione(
     IReadOnlyList<DateDiversePubblicazione> DateDiverse,
     IReadOnlyList<SoloArcLabPubblicazione> SoloArcLab,
     IReadOnlyList<SoloPortalePubblicazione> SoloPortale,
-    IReadOnlyList<DoppioniPubblicazione> Doppioni);
+    IReadOnlyList<DoppioniPubblicazione> Doppioni,
+    IReadOnlyList<AnagraficaNonAllineata>? Anagrafiche = null);

@@ -54,6 +54,7 @@ public static class MenuApplicazione
             new("Certificati esterni · rinomina", "/CertificatiEsterni", Permessi.CertificatiEsterniGestione, "Rinomina dei certificati dei laboratori esterni, consegna a Palomar e registro di controllo."),
             new("Certificati esterni non ricertificati", "/SoloEsterni", Permessi.SoloEsterniVisualizza, "Confronto tra certificati esterni e interni per la fatturazione."),
             new("Controllo pubblicazione certificati", "/ControlloPubblicazione", Permessi.CertificatiControlloPubblicazione, "Certificati spediti in ArcLab confrontati con quelli caricati sul portale: date diverse, mancanti, firmati dopo la pubblicazione, doppioni."),
+            new("Clienti e insediamenti", "/ClientiInsediamenti", Permessi.CertificatiControlloPubblicazione, "Clienti e insediamenti ArcLab con campioni recenti che sul portale mancano, sono disattivati o sono collegati al cliente sbagliato: lì i certificati non arrivano."),
             new("Laboratori Esterni", "/LaboratoriEsterni", Permessi.LaboratoriEsterniConsulta, "Analisi affidate all'esterno, accreditamenti ACCREDIA e verifica dei metodi."),
             new("Invio campioni ai lab esterni", "/InviiLaboratoriEsterni", Permessi.LaboratoriEsterniInvio, "Excel dei campioni spediti a un laboratorio esterno, inviato per e-mail con copia a refertazione@mare-a.com."),
             new("Ricerca errori", "/RicercaErrori", Permessi.RicercaErroriVisualizza, "Verifiche diagnostiche su rapporti, metodi, denominazioni e lotti (sola lettura)."),

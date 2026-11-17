@@ -125,7 +125,110 @@ public class RepositoryControlloPubblicazione
         HAVING COUNT(*) - SUM(CASE WHEN NomeFile LIKE '%(ENG)%' THEN 1 ELSE 0 END) > 1
         ORDER BY DataSped;
 
+        -- 5) 17/11/2026: clienti e insediamenti non allineati con il portale, per gli insediamenti con certificati spediti
+        -- nel periodo (la pagina «Clienti e insediamenti» fa lo stesso controllo senza date, sui campioni degli ultimi mesi).
+        WITH arc AS (
+            SELECT CAST(i.IDInsediamento AS int) AS IdInsediamento, CAST(i.NomeInsed AS nvarchar(255)) AS InsediamentoArcLab,
+                   CAST(cl.IDCliente AS int) AS IdCliente, CAST(cl.RagioneSociale AS nvarchar(255)) AS RagioneSociale,
+                   LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))) AS CodContabilita,
+                   CAST(ISNULL(cl.Attivo, 0) AS bit) AS ClienteAttivoArcLab,
+                   CAST(CASE WHEN ISNULL(i.NonInUso, 0) = 1 THEN 0 ELSE 1 END AS bit) AS InsediamentoInUsoArcLab,
+                   COUNT(DISTINCT ca.IdCampione) AS Campioni,
+                   CAST(MAX(lo.DataRic) AS datetime) AS UltimoRicevimento,
+                   COUNT(DISTINCT c.IdCertificato) AS Certificati,
+                   CAST(MAX(ce.DataSped) AS datetime) AS UltimaSpedizione
+            FROM #c c
+            JOIN dbo.certificato ce     ON ce.IdCertificato = c.IdCertificato
+            JOIN dbo.Campione ca        ON ca.IdCertificato = c.IdCertificato
+            JOIN dbo.Lotto lo           ON lo.IdLotto = ca.IdLotto
+            JOIN dbo.commessa co        ON co.IdCommessa = lo.IdCommessa
+            JOIN dbo.ContattoCliente cc ON cc.IDContatto = co.IDContatto
+            JOIN dbo.Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
+            JOIN dbo.Clienti cl         ON cl.IDCliente = i.IDCliente
+            WHERE c.DataSped BETWEEN @Dal AND @Al
+            GROUP BY i.IDInsediamento, i.NomeInsed, cl.IDCliente, cl.RagioneSociale, cl.CODContabilita, cl.Attivo, i.NonInUso
+        ),
+        valutati AS (
+            SELECT a.*, mi.Id AS IdInsediamentoPortale, mi.Insediamento AS InsediamentoPortale,
+                   mcp.Id AS IdClientePortale, mcp.Nome AS ClientePortale,
+                   CASE
+                       WHEN mi.Id IS NULL AND NOT EXISTS (SELECT 1 FROM [Marea].dbo.Clienti x WHERE x.IDArcLab = a.IdCliente) THEN 'MancaTutto'
+                       WHEN mi.Id IS NULL                                     THEN 'MancaInsediamento'
+                       WHEN ISNULL(mi.Obsoleto, 0) = 1                        THEN 'InsediamentoDisattivato'
+                       WHEN ISNULL(mcp.Obsoleto, 0) = 1                       THEN 'ClienteDisattivato'
+                       WHEN mi.IDClienteArcLab <> a.IdCliente                 THEN 'AltroClienteArcLab'
+                       WHEN mcp.IDArcLab IS NULL OR mcp.IDArcLab <> a.IdCliente THEN 'ClientePortaleNonCollegato'
+                   END AS Problema
+            FROM arc a
+            OUTER APPLY (SELECT TOP 1 m.Id, CAST(m.Insediamento AS nvarchar(255)) AS Insediamento, m.Obsoleto, m.IDCliente, m.IDClienteArcLab
+                         FROM [Marea].dbo.Insediamenti m
+                         WHERE m.IDArcLab = a.IdInsediamento
+                         ORDER BY ISNULL(m.Obsoleto, 0), m.Id DESC) mi
+            OUTER APPLY (SELECT TOP 1 k.Id, CAST(k.Nome AS nvarchar(255)) AS Nome, k.Obsoleto, k.IDArcLab
+                         FROM [Marea].dbo.Clienti k WHERE k.Id = mi.IDCliente) mcp
+        )
+        SELECT IdCliente, RagioneSociale, CodContabilita, IdInsediamento, InsediamentoArcLab, Campioni, UltimoRicevimento,
+               Certificati, UltimaSpedizione, IdInsediamentoPortale, InsediamentoPortale, IdClientePortale, ClientePortale, CAST(Problema AS nvarchar(40)) AS Problema,
+               ClienteAttivoArcLab, InsediamentoInUsoArcLab
+        FROM valutati
+        WHERE Problema IS NOT NULL
+        ORDER BY Problema, Campioni DESC, RagioneSociale;
+
         DROP TABLE #a; DROP TABLE #u; DROP TABLE #m; DROP TABLE #e; DROP TABLE #c;
+        """;
+
+    private const string SqlAnagrafiche = """
+        SET NOCOUNT ON;
+
+        -- 17/11/2026: clienti e insediamenti non allineati con il portale. Controllo a sé, senza date: si prendono gli
+        -- insediamenti ArcLab con campioni ricevuti negli ultimi @Mesi mesi (anche quelli non ancora spediti, che saranno
+        -- pubblicati) e si cerca l'insediamento del portale (Insediamenti.IDArcLab; se ce n'è più di uno vale il primo
+        -- attivo) e il suo cliente. Senza un insediamento e un cliente attivi e collegati giusti il certificato non arriva.
+        WITH arc AS (
+            SELECT CAST(i.IDInsediamento AS int) AS IdInsediamento, CAST(i.NomeInsed AS nvarchar(255)) AS InsediamentoArcLab,
+                   CAST(cl.IDCliente AS int) AS IdCliente, CAST(cl.RagioneSociale AS nvarchar(255)) AS RagioneSociale,
+                   LTRIM(RTRIM(CAST(cl.CODContabilita AS nvarchar(50)))) AS CodContabilita,
+                   CAST(ISNULL(cl.Attivo, 0) AS bit) AS ClienteAttivoArcLab,
+                   CAST(CASE WHEN ISNULL(i.NonInUso, 0) = 1 THEN 0 ELSE 1 END AS bit) AS InsediamentoInUsoArcLab,
+                   COUNT(DISTINCT ca.IdCampione) AS Campioni,
+                   CAST(MAX(lo.DataRic) AS datetime) AS UltimoRicevimento,
+                   COUNT(DISTINCT CASE WHEN ce.DataSped IS NOT NULL THEN ce.IdCertificato END) AS Certificati,
+                   CAST(MAX(ce.DataSped) AS datetime) AS UltimaSpedizione
+            FROM dbo.Lotto lo
+            JOIN dbo.Campione ca        ON ca.IdLotto = lo.IdLotto
+            JOIN dbo.commessa co        ON co.IdCommessa = lo.IdCommessa
+            JOIN dbo.ContattoCliente cc ON cc.IDContatto = co.IDContatto
+            JOIN dbo.Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
+            JOIN dbo.Clienti cl         ON cl.IDCliente = i.IDCliente
+            LEFT JOIN dbo.certificato ce ON ce.IdCertificato = ca.IdCertificato
+            WHERE lo.DataRic >= DATEADD(month, -@Mesi, CAST(GETDATE() AS date))
+            GROUP BY i.IDInsediamento, i.NomeInsed, cl.IDCliente, cl.RagioneSociale, cl.CODContabilita, cl.Attivo, i.NonInUso
+        ),
+        valutati AS (
+            SELECT a.*, mi.Id AS IdInsediamentoPortale, mi.Insediamento AS InsediamentoPortale,
+                   mcp.Id AS IdClientePortale, mcp.Nome AS ClientePortale,
+                   CASE
+                       WHEN mi.Id IS NULL AND NOT EXISTS (SELECT 1 FROM [Marea].dbo.Clienti x WHERE x.IDArcLab = a.IdCliente) THEN 'MancaTutto'
+                       WHEN mi.Id IS NULL                                     THEN 'MancaInsediamento'
+                       WHEN ISNULL(mi.Obsoleto, 0) = 1                        THEN 'InsediamentoDisattivato'
+                       WHEN ISNULL(mcp.Obsoleto, 0) = 1                       THEN 'ClienteDisattivato'
+                       WHEN mi.IDClienteArcLab <> a.IdCliente                 THEN 'AltroClienteArcLab'
+                       WHEN mcp.IDArcLab IS NULL OR mcp.IDArcLab <> a.IdCliente THEN 'ClientePortaleNonCollegato'
+                   END AS Problema
+            FROM arc a
+            OUTER APPLY (SELECT TOP 1 m.Id, CAST(m.Insediamento AS nvarchar(255)) AS Insediamento, m.Obsoleto, m.IDCliente, m.IDClienteArcLab
+                         FROM [Marea].dbo.Insediamenti m
+                         WHERE m.IDArcLab = a.IdInsediamento
+                         ORDER BY ISNULL(m.Obsoleto, 0), m.Id DESC) mi
+            OUTER APPLY (SELECT TOP 1 k.Id, CAST(k.Nome AS nvarchar(255)) AS Nome, k.Obsoleto, k.IDArcLab
+                         FROM [Marea].dbo.Clienti k WHERE k.Id = mi.IDCliente) mcp
+        )
+        SELECT IdCliente, RagioneSociale, CodContabilita, IdInsediamento, InsediamentoArcLab, Campioni, UltimoRicevimento,
+               Certificati, UltimaSpedizione, IdInsediamentoPortale, InsediamentoPortale, IdClientePortale, ClientePortale, CAST(Problema AS nvarchar(40)) AS Problema,
+               ClienteAttivoArcLab, InsediamentoInUsoArcLab
+        FROM valutati
+        WHERE Problema IS NOT NULL
+        ORDER BY Problema, Campioni DESC, RagioneSociale;
         """;
 
     public async Task<EsitoControlloPubblicazione> ConfrontaAsync(DateOnly dal, DateOnly al, bool escludiEsterniRegolari,
@@ -143,6 +246,16 @@ public class RepositoryControlloPubblicazione
         var soloArcLab = (await multi.ReadAsync<SoloArcLabPubblicazione>()).ToList();
         var soloPortale = (await multi.ReadAsync<SoloPortalePubblicazione>()).ToList();
         var doppioni = (await multi.ReadAsync<DoppioniPubblicazione>()).ToList();
-        return new EsitoControlloPubblicazione(dateDiverse, soloArcLab, soloPortale, doppioni);
+        var anagrafiche = (await multi.ReadAsync<AnagraficaNonAllineata>()).ToList();
+        return new EsitoControlloPubblicazione(dateDiverse, soloArcLab, soloPortale, doppioni, anagrafiche);
+    }
+
+    /// <summary>17/11/2026: insediamenti con campioni ricevuti negli ultimi <paramref name="mesi"/> mesi non allineati con il portale.</summary>
+    public async Task<List<AnagraficaNonAllineata>> AnagraficheNonAllineateAsync(int mesi = 12, CancellationToken ct = default)
+    {
+        using var cn = await _fabbrica.ApriAsync(ct);
+        var righe = await cn.QueryAsync<AnagraficaNonAllineata>(new CommandDefinition(SqlAnagrafiche, new { Mesi = mesi },
+            commandTimeout: 300, cancellationToken: ct));
+        return righe.ToList();
     }
 }

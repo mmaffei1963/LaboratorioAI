@@ -24,11 +24,30 @@ public static class EsportatoreControlloPubblicazione
         Foglio(cartella, "Caricati più volte", "Certificati caricati più volte (la versione inglese non conta come doppione)", periodo,
             new[] { "N. certificato", "Spedizione ArcLab", "Caricamenti", "Di cui inglese", "Primo caricamento", "Ultimo caricamento" },
             e.Doppioni.Select(d => new object?[] { d.NCert, d.DataSped, d.Caricamenti, d.DiCuiInglese, d.PrimoUpload, d.UltimoUpload }));
+        FoglioAnagrafiche(cartella, e.Anagrafiche ?? [], periodo + " — insediamenti con certificati spediti nel periodo", "Campioni con certificato spedito");
+        using var flusso = new MemoryStream();
+        cartella.SaveAs(flusso);
+        return flusso.ToArray();
+    }
+
+    /// <summary>17/11/2026: Excel dei clienti e insediamenti non allineati con il portale.</summary>
+    public static byte[] GeneraAnagrafiche(IReadOnlyList<AnagraficaNonAllineata> righe, int mesi)
+    {
+        using var cartella = new XLWorkbook();
+        FoglioAnagrafiche(cartella, righe, $"Insediamenti con campioni ricevuti negli ultimi {mesi} mesi — situazione al {DateTime.Now:dd/MM/yyyy HH:mm}", "Campioni");
 
         using var flusso = new MemoryStream();
         cartella.SaveAs(flusso);
         return flusso.ToArray();
     }
+
+    private static void FoglioAnagrafiche(XLWorkbook cartella, IReadOnlyList<AnagraficaNonAllineata> righe, string sotto, string colonnaCampioni) =>
+        Foglio(cartella, "Clienti e insediamenti", "Clienti e insediamenti non allineati con il portale (i certificati non arrivano al cliente)", sotto,
+            new[] { "Problema", "Cliente ArcLab", "Id cliente", "Cod. contab.", "Insediamento ArcLab", "Id insed.", colonnaCampioni, "Ultimo ricevimento",
+                    "Certificati spediti", "Ultima spedizione", "Insediamento portale", "Id insed. portale", "Cliente portale", "Id cliente portale", "Stato in ArcLab" },
+            righe.Select(a => new object?[] { a.Descrizione, a.RagioneSociale?.Trim(), a.IdCliente, a.CodContabilita, a.InsediamentoArcLab?.Trim(),
+                a.IdInsediamento, a.Campioni, a.UltimoRicevimento, a.Certificati, a.UltimaSpedizione, a.InsediamentoPortale?.Trim(),
+                a.IdInsediamentoPortale, a.ClientePortale?.Trim(), a.IdClientePortale, a.StatoArcLab }));
 
     private static void Foglio(XLWorkbook cartella, string nome, string titolo, string sotto, string[] intest, IEnumerable<object?[]> righe)
     {

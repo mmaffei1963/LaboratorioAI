@@ -1361,3 +1361,22 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 ## 16/11/2026 — Consuntivo: grafico delle 10 voci di costo
 - Titolo esplicito: totale MARE.A di tutte le aree, rettifiche comprese.
 - Tooltip di ogni barra con la divisione per area (es. Formazione 16.000 · Sicurezza 16.000).
+
+
+## 17/11/2026 — Clienti e insediamenti non allineati con il portale
+- Nuova pagina «Clienti e insediamenti» (Ciclo analitico), senza date: insediamenti ArcLab con campioni ricevuti negli
+  ultimi 6/12/24 mesi che sul portale (Marea.Insediamenti / Marea.Clienti) mancano, sono disattivati o sono collegati al
+  cliente sbagliato. Con Excel. Stesso permesso del Controllo pubblicazione certificati.
+- Controllo pubblicazione certificati: nuovo riquadro e foglio Excel «Clienti e insediamenti» con lo stesso controllo,
+  limitato agli insediamenti con certificati spediti nel periodo scelto.
+- Casi: mancano cliente e insediamento; manca l'insediamento; insediamento disattivato; cliente disattivato;
+  insediamento sotto un altro cliente ArcLab; insediamento sotto un cliente del portale senza codice ArcLab giusto.
+- Sola lettura su LabAnalisiDati e Marea.
+
+## 17/11/2026 — Clienti e insediamenti: stato in ArcLab e spunta per i disattivati
+- Nuova colonna «In ArcLab» (pagina, riquadro del Controllo pubblicazione ed Excel): cliente attivo (Clienti.Attivo) e
+  insediamento in uso (Insediamento.NonInUso) in ArcLab.
+- Spunta «Nascondi gli insediamenti e i clienti disattivati sul portale», valida anche per l'Excel.
+
+## 17/11/2026 — Clienti e insediamenti: filtro per i non attivi in ArcLab
+- Spunta «Nascondi i clienti non attivi in ArcLab» (cliente non attivo o insediamento non in uso), valida anche per l'Excel.

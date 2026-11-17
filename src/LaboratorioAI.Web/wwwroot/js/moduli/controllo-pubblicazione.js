@@ -34,8 +34,23 @@ const sezioni = {
         intest: ['N. certificato', 'Spedizione', 'Caricamenti', 'Di cui inglese', 'Primo', 'Ultimo'],
         riga: (d) => `<td>${testo(d.nCert)}</td><td>${giorno(d.dataSped)}</td><td class="numerico">${d.caricamenti}</td>
             <td class="numerico">${d.diCuiInglese}</td><td>${oraria(d.primoUpload)}</td><td>${oraria(d.ultimoUpload)}</td>`
+    },
+    // 17/11/2026: insediamenti con certificati spediti nel periodo che sul portale non possono riceverli
+    // (senza date: pagina «Clienti e insediamenti»).
+    anagrafiche: {
+        titolo: 'Clienti e insediamenti', nota: 'non allineati con il portale: i certificati non arrivano',
+        intest: ['Problema', 'Cliente ArcLab', 'Insediamento ArcLab', 'Certificati', 'Ultima spedizione', 'Sul portale', 'In ArcLab'],
+        riga: (a) => `<td class="allarme" style="white-space:normal">${testo(a.descrizione)}</td>
+            <td style="white-space:normal">${testo((a.ragioneSociale ?? '').trim())} <span class="sottotesto">(${a.idCliente}${a.codContabilita ? ' · ' + testo(a.codContabilita) : ''})</span></td>
+            <td style="white-space:normal">${testo((a.insediamentoArcLab ?? '').trim())} <span class="sottotesto">(${a.idInsediamento})</span></td>
+            <td class="numerico">${a.certificati}</td><td>${giorno(a.ultimaSpedizione)}</td>
+            <td style="white-space:normal">${a.idInsediamentoPortale
+                ? `${testo((a.insediamentoPortale ?? '').trim())} <span class="sottotesto">(insed. ${a.idInsediamentoPortale}${a.clientePortale ? ' · cliente ' + testo(a.clientePortale.trim()) + ' ' + a.idClientePortale : ''})</span>`
+                : '<span class="sottotesto">non c\'è</span>'}</td>
+            <td class="${a.statoArcLab === 'attivo' ? '' : 'sottotesto'}">${testo(a.statoArcLab)}</td>`
     }
 };
+
 
 let esito = null;
 let attiva = 'dateDiverse';

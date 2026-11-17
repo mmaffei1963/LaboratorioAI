@@ -55,7 +55,14 @@ public class ControlloPubblicazioneController : Controller
             {
                 s.NCert, s.DataSped, s.IdTipoCertificato, s.TipoPortale, s.NomeFilePortale, s.DataUploadPortale, sulPortale = s.SulPortale
             }),
-            esito.SoloPortale, esito.Doppioni
+            esito.SoloPortale, esito.Doppioni,
+            anagrafiche = (esito.Anagrafiche ?? []).Select(a => new
+            {
+                a.IdCliente, a.RagioneSociale, a.CodContabilita, a.IdInsediamento, a.InsediamentoArcLab, a.Campioni, a.UltimoRicevimento,
+                a.Certificati, a.UltimaSpedizione, a.IdInsediamentoPortale, a.InsediamentoPortale, a.IdClientePortale, a.ClientePortale,
+                a.Problema, descrizione = a.Descrizione, a.ClienteAttivoArcLab, a.InsediamentoInUsoArcLab,
+                statoArcLab = a.StatoArcLab, disattivatoSulPortale = a.DisattivatoSulPortale
+            })
         });
     }
 
@@ -65,7 +72,7 @@ public class ControlloPubblicazioneController : Controller
         if (Verifica(dal, al) is string errore) return BadRequest(new { messaggio = errore });
         var esito = await _repository.ConfrontaAsync(dal, al, escludiEsterni, ct: ct);
         await _audit.RegistraAsync(AreaFunzionale.CertificatiEsterni, "controllopubblicazione.excel", EsitoOperazione.Successo,
-            dettaglio: new { dal, al, escludiEsterni, esito.DateDiverse.Count, SoloArcLab = esito.SoloArcLab.Count, SoloPortale = esito.SoloPortale.Count }, ct: ct);
+            dettaglio: new { dal, al, escludiEsterni, esito.DateDiverse.Count, SoloArcLab = esito.SoloArcLab.Count, SoloPortale = esito.SoloPortale.Count, Anagrafiche = esito.Anagrafiche?.Count ?? 0 }, ct: ct);
         var file = EsportatoreControlloPubblicazione.Genera(esito, dal, al, escludiEsterni);
         return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Controllo_pubblicazione_{dal:yyyyMMdd}-{al:yyyyMMdd}.xlsx");
     }
