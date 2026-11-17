@@ -33,12 +33,17 @@ public class RepositoryOfferteClienti : IRepositoryOfferteClienti
         INNER JOIN Clienti cl        ON cl.IDCliente = i.IDCliente
         LEFT JOIN Controllo co       ON co.IDControllo = cm.IDControllo
         WHERE cm.IdTipoCommessa = 3
-          AND cm.DataScadenzaInc IS NULL
+          -- 17/11/2026: attiva = senza scadenza o con scadenza futura; insediamento in uso.
+          AND (cm.DataScadenzaInc IS NULL OR cm.DataScadenzaInc > CAST(GETDATE() AS date))
           AND ISNULL(cm.Chiuso, 0) = 0
+          AND ISNULL(i.NonInUso, 0) = 0
           AND cm.IDControllo IS NOT NULL
           AND cm.PrezzoControllo > 0
           AND (@IdCliente IS NULL OR cl.IDCliente = @IdCliente)
-          AND (@IdCliente IS NOT NULL OR ISNULL(CAST(cl.CodContabilita AS nvarchar(50)), '') <> 'MIRKO1')
+          -- Solo clienti attivi con codice contabilità (offerte e anomalie); nell'elenco di tutti esclusa MARE.A (MIRKO1).
+          AND ISNULL(cl.Attivo, 0) = 1
+          AND NULLIF(LTRIM(RTRIM(CAST(cl.CodContabilita AS nvarchar(50)))), '') IS NOT NULL
+          AND (@IdCliente IS NOT NULL OR CAST(cl.CodContabilita AS nvarchar(50)) <> 'MIRKO1')
         ORDER BY cl.IDCliente, cm.IDControllo, i.NomeInsed;
         """;
 

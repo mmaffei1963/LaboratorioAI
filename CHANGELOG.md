@@ -1415,3 +1415,6 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 17/11/2026 — Portale: tolti i riferimenti all'accreditamento
 - Pagine di firma delle Condizioni e di indicazione del firmatario: nella testata l'indirizzo (Via E. Toti, 2 — 47841 Cattolica) al posto di «Laboratorio accreditato ACCREDIA».
+
+## 17/11/2026 — Offerte: solo clienti attivi con codice contabilità
+- Anche l'offerta del portale considera solo clienti attivi (Clienti.Attivo) con codice contabilità; per gli altri risulta «Nessun incarico di analisi attivo».

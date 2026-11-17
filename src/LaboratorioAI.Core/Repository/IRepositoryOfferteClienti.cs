@@ -6,9 +6,9 @@ namespace LaboratorioAI.Core.Repository;
 public interface IRepositoryOfferteClienti
 {
     /// <summary>
-    /// Commesse di laboratorio (IdTipoCommessa 3) attive (senza scadenza incarico, non chiuse), con controllo e prezzo
-    /// maggiore di zero, comprese le «non fatturare». Di un cliente, o di tutti se <paramref name="idCliente"/> è nullo
-    /// (esclusa MARE.A stessa, MIRKO1).
+    /// Commesse di laboratorio (IdTipoCommessa 3) attive (senza scadenza incarico o con scadenza futura, non chiuse), su
+    /// insediamenti in uso, di clienti attivi con codice contabilità, con controllo e prezzo maggiore di zero, comprese le
+    /// «non fatturare». Di un cliente, o di tutti se <paramref name="idCliente"/> è nullo (esclusa MARE.A stessa, MIRKO1).
     /// </summary>
     Task<IReadOnlyList<CommessaOffertaArcLab>> CommesseAsync(int? idCliente, CancellationToken ct = default);
 
