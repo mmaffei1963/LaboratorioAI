@@ -47,6 +47,7 @@ public class ValidazioneController : Controller
             c.IdCampione,
             c.NumeroCampione,
             c.RagioneSociale,
+            c.GiudizioConf,
             c.NomeInsediamento,
             c.DenominazioneCampione,
             c.Matrice,

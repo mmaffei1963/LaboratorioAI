@@ -1,0 +1,36 @@
+@{
+    ViewData["Titolo"] = "Anomalie offerte";
+}
+@* Anomalie offerte (17/11/2026): commesse dello stesso cliente e controllo da sistemare prima dell'offerta sul portale. *@
+<style>
+    #anom-tabella td.caso { font-weight: 700; color: #B91C1C; }
+    #anom-tabella tr.gruppo td { border-top: 2px solid #ccc; }
+</style>
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Anomalie offerte</h1>
+        <p class="sottotitolo">Offerte del portale clienti: in ArcLab le commesse sono per insediamento, l'offerta è per cliente. Qui gli stessi
+            controlli dello stesso cliente su insediamenti diversi da sistemare: <strong>B</strong> stesso prezzo con descrizioni diverse
+            (sul portale compaiono tutte), <strong>D</strong> stessa descrizione con prezzi diversi (sul portale va il più alto).
+            Commesse di laboratorio attive, comprese le «non fatturare». Sola lettura su ArcLab: le correzioni vanno fatte in ArcLab.</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+        <button type="button" class="pulsante pulsante-tenue" id="btn-excel">Excel</button>
+        <button type="button" class="pulsante" id="btn-aggiorna">Aggiorna</button>
+    </div>
+</div>
+
+<section class="riquadro">
+    <p id="anom-riepilogo" style="margin-top:0">Caricamento…</p>
+    <div class="tabella-scorrevole" style="max-height:44rem">
+        <table class="tabella" id="anom-tabella">
+            <thead><tr><th>Caso</th><th>Cliente</th><th>Controllo</th><th>Insediamento</th><th>Commessa</th><th>Descrizione incarico</th><th>Prezzo</th><th>Data</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+@section Script {
+    <script type="module" src="~/js/moduli/anomalie-offerte.js" asp-append-version="true"></script>
+}

@@ -219,4 +219,43 @@ public class MotoreSegnalazioniTest
         var l = MotoreSegnalazioni.LimitiPerProva([altra], Schede, Categorie);
         Assert.False(l.ContainsKey(altra.IdProva));
     }
+
+    // ── 17/11/2026 ──
+
+    // 10407/01: coliformi «< 4 ufc/100 ml» con limite «assenti in 100 ml» → colonie presenti sotto il conteggio, non conforme.
+    [Fact]
+    public void AssenteIn_MinoreDiQuattro_NonConforme()
+    {
+        var schede = new List<LimiteNormativo>
+        {
+            S("ACQ-010", FamigliaNormativa.AcqueConsumoUmano, TipoLimiteNormativo.Indicatore, OperatoreLimite.AssenteIn, null, "100 ml", 40)
+        };
+        var e = MotoreSegnalazioni.Calcola([P(1, 40, "Batteri coliformi", Acqua, 4, "ufc/100mL", minore: true)], schede, Categorie, Tempi).Values.Single();
+        Assert.Equal(ColoreRilievo.Rosso, e.Colore);
+        Assert.Contains(e.Rilievi, r => r.Regola == "indicatore");
+    }
+
+    [Fact]
+    public void LimiteZeroUfc_MinoreDiQuattro_NonConformeMinoreDiUnoOk()
+    {
+        var schede = new List<LimiteNormativo>
+        {
+            S("ACQ-011", FamigliaNormativa.AcqueConsumoUmano, TipoLimiteNormativo.Indicatore, OperatoreLimite.ValoreMassimo, 0, "ufc/100 ml", 41)
+        };
+        var ko = MotoreSegnalazioni.Calcola([P(1, 41, "Batteri coliformi", Acqua, 4, "ufc/100mL", minore: true)], schede, Categorie, Tempi).Values.Single();
+        Assert.Equal(ColoreRilievo.Rosso, ko.Colore);
+        var ok = MotoreSegnalazioni.Calcola([P(1, 41, "Batteri coliformi", Acqua, 1, "ufc/100mL", minore: true)], schede, Categorie, Tempi).Values.Single();
+        Assert.Equal(ColoreRilievo.Verde, ok.Colore);
+    }
+
+    [Fact]
+    public void Organolettici_MaiViola()
+    {
+        var odore = P(1, 50, "Odore", Acqua, 0, ""); odore.RegoleArrotondamento = false;
+        odore.DataInizioProva = new(2026, 10, 20);
+        var e = Uno(odore);
+        Assert.DoesNotContain(e.Rilievi, r => r.Colore == ColoreRilievo.Viola);
+        var nitrati = P(2, 10, "Nitrati", Acqua, 20, "mg/l"); nitrati.RegoleArrotondamento = false;
+        Assert.Contains(Uno(nitrati).Rilievi, r => r.Regola == "arrotondamento");
+    }
 }

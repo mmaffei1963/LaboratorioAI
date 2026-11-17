@@ -165,6 +165,9 @@ builder.Services.AddScoped<IRepositoryCertificatiEsterni, RepositoryCertificatiE
 builder.Services.AddScoped<IArchivioEstrazioniCertificato, ArchivioEstrazioniCertificato>();
 builder.Services.AddScoped<IRepositorySigleLaboratori, RepositorySigleLaboratori>();
 builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
+// Offerte del portale e relative anomalie (17/11/2026), sola lettura su ArcLab.
+builder.Services.AddScoped<IRepositoryOfferteClienti, RepositoryOfferteClienti>();
+builder.Services.AddScoped<ServizioOfferteClienti>();
 // Limiti normativi (17/10/2026): schede e fonti, download dei testi ufficiali, estrazione AI in background.
 builder.Services.AddScoped<IRepositoryLimitiArcLab, RepositoryLimitiArcLab>();
 builder.Services.AddHttpClient<LaboratorioAI.Dati.Limiti.ServizioLimitiNormativi>(http => http.Timeout = TimeSpan.FromSeconds(120));

@@ -6,6 +6,8 @@ public record CampioneDaValidare
     public int IdCampione { get; init; }
     public string NumeroCampione { get; init; } = "";
     public string? RagioneSociale { get; init; }
+    /// <summary>17/11/2026: Clienti.GiudizioConf in ArcLab, il cliente richiede il giudizio di conformità.</summary>
+    public bool GiudizioConf { get; init; }
     public string? NomeInsediamento { get; init; }
     public string? DenominazioneCampione { get; init; }
     public string? Matrice { get; init; }

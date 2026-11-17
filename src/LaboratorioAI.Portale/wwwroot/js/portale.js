@@ -314,6 +314,105 @@ async function mostraProve(idCampione, numero) {
 
 // ── Avvio ──────────────────────────────────────────────────
 
+// ── Offerte (17/11/2026) ───────────────────────────────────
+
+const euro = (v) => Number(v || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+function mostraScheda(id) {
+    document.querySelectorAll('.scheda').forEach(b => b.classList.toggle('attiva', b.dataset.scheda === id));
+    document.getElementById('sezione-campioni').classList.toggle('nascosto', id !== 'sezione-campioni');
+    document.getElementById('sezione-offerte').classList.toggle('nascosto', id !== 'sezione-offerte');
+    if (id === 'sezione-offerte') caricaOfferta();
+}
+
+function clienteOfferta() {
+    const v = document.getElementById('scelta-cliente')?.value;
+    return sessione?.operatore ? (v || null) : null;
+}
+
+async function caricaOfferta() {
+    const stato = document.getElementById('offerta-stato');
+    const corpo = document.getElementById('offerta-contenuto');
+    const pdf = document.getElementById('btn-offerta-pdf');
+    pdf.disabled = true;
+    corpo.innerHTML = '';
+    if (sessione?.operatore && !clienteOfferta()) {
+        stato.textContent = 'Accesso operatore: scegli un cliente in alto per vedere la sua offerta.';
+        return;
+    }
+    stato.textContent = 'Caricamento dell\'offerta…';
+    try {
+        const id = clienteOfferta();
+        const o = await api('/api/offerte' + (id ? `?idCliente=${id}` : ''));
+        stato.textContent = `Offerta di ${o.cliente ?? ''} — situazione al ${o.generataIl}`;
+        const t = o.testi;
+        let html = `<p class="oggetto">${testo(t.oggetto)}</p>` + t.presentazione.map(p => `<p>${testo(p)}</p>`).join('');
+
+        html += `<h2>${testo(t.titoloAllegato)}</h2>`;
+        html += o.righe.length === 0 ? '<p>Nessun incarico di analisi attivo.</p>' : `
+            <div class="tabella-scorrevole"><table class="tabella">
+                <thead><tr><th>Cod. Controllo</th><th>Incarico</th><th>Costo</th><th>Data incarico</th><th>Ult. modifica</th></tr></thead>
+                <tbody>${o.righe.map(r => `<tr>
+                    <td>${r.idControllo}</td>
+                    <td>${testo(r.incarico)}</td>
+                    <td class="importo">${euro(r.prezzo)}</td>
+                    <td>${testo(r.dataIncarico ?? '—')}</td>
+                    <td>${testo(r.ultimaModifica ?? '—')}${r.etichettaModifica ? `<span class="etichetta-modifica">${testo(r.etichettaModifica)}</span>` : ''}</td>
+                </tr>`).join('')}</tbody>
+            </table></div>
+            <p class="piccolo">Prezzi IVA esclusa.</p>`;
+
+        html += `<h2>${testo(t.titoloDettaglio)}</h2>`;
+        for (const c of o.dettagli.controlli) {
+            html += `<h3>${testo(c.titolo)}</h3>`;
+            html += c.metodi.length === 0 ? '<p>Nessuna prova associata.</p>' : `
+                <div class="tabella-scorrevole"><table class="tabella">
+                    <thead><tr><th>Denominazione</th><th>Metodo</th><th>Accr.</th></tr></thead>
+                    <tbody>${c.metodi.map(m => `<tr><td>${testo(m.denominazione)}</td><td>${testo(m.metodo)}</td><td>${testo(m.accr)}</td></tr>`).join('')}</tbody>
+                </table></div>`;
+        }
+        html += o.dettagli.frasi.map(f => `<p class="piccolo">${testo(f)}</p>`).join('');
+        if (o.dettagli.frasi.length) html += `<div class="nota-subappalto">${testo(t.notaSubappalto)}</div>`;
+
+        // L'indirizzo delle Condizioni generali diventa un collegamento al sito (nuova scheda).
+        const link = (p) => testo(p).replace(testo(t.indirizzoCondizioni),
+            `<a href="${testo(t.indirizzoCondizioni)}" target="_blank" rel="noopener">${testo(t.indirizzoCondizioni)}</a>`);
+        for (const c of t.condizioni)
+            html += `<h3>${testo(c.titolo)}</h3>` + c.paragrafi.map(p => `<p>${link(p)}</p>`).join('');
+
+        corpo.innerHTML = html;
+        pdf.disabled = false;
+    } catch (e) {
+        stato.textContent = e.message;
+    }
+}
+
+async function scaricaOffertaPdf() {
+    const pulsante = document.getElementById('btn-offerta-pdf');
+    pulsante.disabled = true;
+    try {
+        const token = sessionStorage.getItem(CHIAVE_TOKEN);
+        const id = clienteOfferta();
+        const risposta = await fetch('/api/offerte/pdf' + (id ? `?idCliente=${id}` : ''), {
+            headers: token ? { [INTESTAZIONE]: token } : {}
+        });
+        if (risposta.status === 401 && token) { esci(false); throw new Error('Sessione scaduta.'); }
+        if (!risposta.ok) throw new Error(`Errore ${risposta.status}`);
+        const blob = await risposta.blob();
+        const cd = risposta.headers.get('content-disposition') || '';
+        const nome = (cd.match(/filename="?([^";]+)"?/) || [])[1] || 'Offerta_laboratorio.pdf';
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = nome;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    } catch (e) {
+        document.getElementById('offerta-stato').textContent = e.message;
+    } finally {
+        pulsante.disabled = false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const codiceSalvato = localStorage.getItem(CHIAVE_CODICE);
     if (codiceSalvato) {
@@ -338,7 +437,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('scelta-cliente')?.addEventListener('change', async () => {
         await caricaFiltri();
         await cerca();
+        if (!document.getElementById('sezione-offerte').classList.contains('nascosto')) caricaOfferta();
     });
+
+    document.querySelectorAll('.scheda').forEach(b => b.addEventListener('click', () => mostraScheda(b.dataset.scheda)));
+    document.getElementById('btn-offerta-pdf').addEventListener('click', scaricaOffertaPdf);
 
     document.getElementById('chiudi-prove').addEventListener('click', () =>
         document.getElementById('pannello-prove').classList.add('nascosto'));

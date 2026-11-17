@@ -73,14 +73,15 @@ public static class MotoreSegnalazioni
                     r.Add(new(ColoreRilievo.Grigio, "risultato-mancante", $"Risultato mancante: {p.NomeParametro}.", p.IdProva, p.IdParametro, null));
                     continue;
                 }
-                if (string.IsNullOrWhiteSpace(p.UnitaMisura) && !SenzaUnita(p, perParametro))
+                var organolettico = Organolettico(p);
+                if (!organolettico && string.IsNullOrWhiteSpace(p.UnitaMisura) && !SenzaUnita(p, perParametro))
                     r.Add(new(ColoreRilievo.Viola, "unita-mancante", $"Unità di misura mancante: {p.NomeParametro}.", p.IdProva, p.IdParametro, null));
-                if (!p.RegoleArrotondamento)
+                if (!organolettico && !p.RegoleArrotondamento)
                     r.Add(new(ColoreRilievo.Viola, "arrotondamento", $"Metodo senza regole di arrotondamento (decimali/arrotonda): {p.NomeParametro}.", p.IdProva, p.IdParametro, null));
                 if (p.IdLabEsterno is int && string.IsNullOrWhiteSpace(p.FraseLabEsterno))
                     r.Add(new(ColoreRilievo.Viola, "subappalto-frase", $"Prova in subappalto ({p.LabEsterno}) senza la frase del laboratorio esterno: {p.NomeParametro}.", p.IdProva, p.IdParametro, null));
                 // solo prove eseguite internamente: per quelle in subappalto i tempi dipendono dal laboratorio esterno (19/10/2026)
-                if (p.IdLabEsterno is null && p.DataInizioProva is DateTime di && p.DataRicezione is DateTime ric && OreMassime(tempiMassimi, famiglia, p.IdParametro) is int ore)
+                if (!organolettico && p.IdLabEsterno is null && p.DataInizioProva is DateTime di && p.DataRicezione is DateTime ric && OreMassime(tempiMassimi, famiglia, p.IdParametro) is int ore)
                 {
                     // ricezione senza ora: si conta dalla fine del giorno, per non dare falsi allarmi.
                     // Ritardo programmato (Campione.RitardoAnalisi, es. shelf life): si conta dalla data prevista di inizio.
@@ -189,8 +190,13 @@ public static class MotoreSegnalazioni
             var qs = NumeroIn(s.Unita); var qp = NumeroIn(p.UnitaMisura);
             if (qs is not null && qp is not null && qs != qp)
                 return (Esito.NonConfrontabile, $"quantità diversa (norma {s.Unita}, prova {p.UnitaMisura})");
-            // «< x» (non rilevato) = assente; altrimenti presenza = valore ≥ 1
-            return (!p.MinoreDi && v >= 1m ? Esito.Superato : Esito.Ok, null);
+            // «< x» (non rilevato) = assente; altrimenti presenza = valore ≥ 1.
+            // 17/11/2026 (Mirko Maffei, 10407/01 coliformi «< 4 ufc/100 ml»): se il conteggio è sulla stessa quantità della
+            // norma (100 ml), «< x» con x > 1 vuol dire colonie presenti sotto il conteggio (1-3): non assente, non conforme.
+            // Con quantità diverse (es. «< 10 ufc/g» contro «assente in 25 g») resta come prima.
+            if (p.MinoreDi)
+                return (qs is not null && qs == qp && IsConteggio(p.UnitaMisura) && v > 1m ? Esito.Superato : Esito.Ok, null);
+            return (v >= 1m ? Esito.Superato : Esito.Ok, null);
         }
         // 26/10/2026 (Mirko Maffei): negli alimenti e nei molluschi MPN e ufc vengono da metodi e norme diverse e non si
         // confrontano mai (l'MPN vale solo per i molluschi bivalvi vivi). Nelle acque restano confrontabili (conteggi).
@@ -201,6 +207,11 @@ public static class MotoreSegnalazioni
             && !ControlliSchede.UnitaCompatibili(s.Unita, p.UnitaMisura))
             return (Esito.NonConfrontabile, $"unità diversa (norma {s.Unita}, prova {p.UnitaMisura})");
         var lim = s.Valore ?? 0m;
+        // 17/11/2026: conteggi microbiologici delle acque con limite zero (es. «0 ufc/100 ml»): «< x» con x > 1 = colonie presenti
+        // sotto il conteggio, quindi limite superato (come per «assente in»).
+        if (p.MinoreDi && lim == 0m && s.Operatore == OperatoreLimite.ValoreMassimo && IsConteggio(p.UnitaMisura)
+            && s.Famiglia is not (FamigliaNormativa.Alimenti or FamigliaNormativa.Molluschi))
+            return (v > 1m ? Esito.Superato : Esito.Ok, null);
         if (p.MinoreDi)   // «< x»: il valore è sotto x (x = limite di quantificazione)
         {
             // 05/11/2026 (Bertozzi, 9713/01 Enterobatteriacee in 5 UC): nei piani a 3 classi (n, c, m, M) un «< x» con x
@@ -245,7 +256,7 @@ public static class MotoreSegnalazioni
 
         foreach (var x in valutate.Where(x => x.V.E == Esito.NonConfrontabile).GroupBy(x => x.V.Motivo).Select(g => g.First()))
             r.Add(new(ColoreRilievo.Grigio, "non-confrontabile", $"{p.NomeParametro}: {x.V.Motivo} — confronto con {x.S.CodiceScheda} non eseguito.", p.IdProva, p.IdParametro, x.S.CodiceScheda));
-        foreach (var x in valutate.Where(x => x.V.E == Esito.LoqSopra))
+        foreach (var x in valutate.Where(x => x.V.E == Esito.LoqSopra && !Organolettico(p)))
             r.Add(new(ColoreRilievo.Viola, "loq-sopra-limite", $"{p.NomeParametro}: risultato {Valore(p)} con limite di quantificazione sopra il limite {RegoleLimiti.Descrivi(x.S)} ({Rif(x.S)}).", p.IdProva, p.IdParametro, x.S.CodiceScheda));
 
         // linee guida a più soglie (Legionella): solo la soglia più alta superata
@@ -305,6 +316,17 @@ public static class MotoreSegnalazioni
 
     // 26/10/2026: anche l'attività dell'acqua (aw) è adimensionale.
     private static readonly Regex AdimensionaleRx = new(@"\bph\b|\baw\b|attivita dell'?\s?acqua|odore|sapore|aspetto|colore|presenza|assenza", RegexOptions.Compiled);
+
+    private static bool IsConteggio(string? unita)
+    {
+        var u = RegoleLimiti.NormalizzaTesto(unita);
+        return u.Contains("ufc") || u.Contains("cfu") || u.Contains("mpn") || u.Contains("npp");
+    }
+
+    // 17/11/2026 (Mirko Maffei): i caratteri organolettici non vanno mai in viola (unità, arrotondamento, tempi, LoQ).
+    private static readonly Regex OrganoletticoRx = new(@"odore|sapore|aspetto|colore|gusto|organolett", RegexOptions.Compiled);
+
+    private static bool Organolettico(ProvaPerSegnalazioni p) => OrganoletticoRx.IsMatch(RegoleLimiti.NormalizzaTesto(p.NomeParametro));
 
     private static bool IsMpn(string? unita) => RegoleLimiti.NormalizzaTesto(unita).Contains("mpn") || RegoleLimiti.NormalizzaTesto(unita).Contains("npp");
 

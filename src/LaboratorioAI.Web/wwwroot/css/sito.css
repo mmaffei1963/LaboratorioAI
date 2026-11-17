@@ -1081,3 +1081,7 @@ table thead th[aria-sort="descending"]::after { content: " ▼"; font-size: 0.75
 @media (max-width: 760px) {
     .riga-domanda { grid-template-columns: 1fr; gap: 5px; }
 }
+
+/* 17/11/2026: cliente che richiede il giudizio di conformità (Clienti.GiudizioConf) in «Da Validare». */
+.limiti.giud-conf { background: #FEF3C7; color: #92400E; font-weight: 700; }
+.avviso-giud-conf { background: #FEF3C7; border-left: 4px solid #D97706; color: #78350F; padding: .6rem .8rem; margin: .5rem 0 .7rem; border-radius: 6px; }

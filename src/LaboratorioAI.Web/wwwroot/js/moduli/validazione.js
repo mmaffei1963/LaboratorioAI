@@ -140,6 +140,7 @@ function disegnaElenco() {
             <div class="voce-pie">
                 <span>${testo(c.matrice)}</span>
                 <span>${c.numeroProve} prove</span>
+                ${c.giudizioConf ? '<span class="limiti giud-conf" title="Il cliente richiede il giudizio di conformità (Clienti.GiudizioConf in ArcLab)">Giudizio di conformità</span>' : ''}
                 ${etichettaValidazione(c.idCampione)}
                 ${etichettaLimiti(c.idCampione)}
                 ${c.analisi ? etichettaGiudizio(c.analisi.giudizio) : ''}
@@ -238,7 +239,7 @@ function disegnaGiudizio(idCampione, g) {
             ${chip(a.giudizi.length > 0, 'Giudizio: ' + testo(a.giudizi.map(x => x.codGiudizio).join(', ')), 'Giudizio: nessuno')}
             ${chip(a.analisiChiusa, 'Analisi chiusa', 'Analisi aperta')}
             ${a.avvisoCliente ? '<span class="limiti limiti-rosso">Avviso cliente</span>' : ''}
-            <span class="sottotesto">· cliente ${a.giudizioConf ? '<strong>richiede</strong> il giudizio di conformità' : 'non richiede il giudizio di conformità'}</span>`;
+            ${a.giudizioConf ? '<span class="limiti giud-conf">Giudizio di conformità richiesto</span>' : '<span class="sottotesto">· cliente non richiede il giudizio di conformità</span>'}`;
     }
     html += '</div>';
 
@@ -258,6 +259,10 @@ function disegnaGiudizio(idCampione, g) {
     } else {
         const obbligatorio = a?.giudizioConf;
         const opzioni = g.proposti.map(p => `<option value="${p.idGiudizio}" title="${testo(p.giudizio)}">${testo(p.codGiudizio)}${p.giudizioConformita ? ' — conformità' : ''}</option>`).join('');
+        // 17/11/2026: avviso ben visibile quando il cliente richiede il giudizio di conformità (Clienti.GiudizioConf).
+        if (obbligatorio)
+            html += `<div class="avviso-giud-conf"><strong>Questo cliente richiede il giudizio di conformità.</strong>
+                Scegli un giudizio di conformità prima di validare: senza scelta non si può validare e il 212 «Senza giudizio» va scelto solo se voluto.</div>`;
         html += `<div class="val-scelta">
             <select id="scelta-giudizio">
                 <option value="">${obbligatorio ? '— scegli il giudizio (obbligatorio) —' : '— nessuna scelta: 212 «Senza giudizio» in automatico —'}</option>

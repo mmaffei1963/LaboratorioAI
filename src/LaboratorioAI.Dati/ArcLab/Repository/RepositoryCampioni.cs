@@ -21,6 +21,7 @@ public class RepositoryCampioni : IRepositoryCampioni
             ca.IdCampione,
             CAST(lo.CodLotto AS VARCHAR) + '/' + CAST(ca.CodCampione AS VARCHAR) AS NumeroCampione,
             cl.RagioneSociale,
+            CAST(ISNULL(cl.GiudizioConf, 0) AS bit) AS GiudizioConf,
             i.NomeInsed        AS NomeInsediamento,
             ca.DenomCampione   AS DenominazioneCampione,
             mx.Matrice,
@@ -51,7 +52,7 @@ public class RepositoryCampioni : IRepositoryCampioni
         WHERE (ca.IdCertificato IS NULL OR ca.IdCertificato = 0)
           AND ISNULL(ca.AnalisiChiusa, 0) = 0
         GROUP BY
-            ca.IdCampione, lo.CodLotto, ca.CodCampione, cl.RagioneSociale,
+            ca.IdCampione, lo.CodLotto, ca.CodCampione, cl.RagioneSociale, cl.GiudizioConf,
             i.NomeInsed, ca.DenomCampione, mx.Matrice, lo.DataRic
         HAVING COUNT(pr.IdProva) > 0
            AND SUM(CASE WHEN pr.VerificaValore = 1 THEN 0 ELSE 1 END) = 0

@@ -37,6 +37,10 @@ builder.Services.AddDbContext<ContestoLaboratorioAI>(opzioni =>
 
 builder.Services.AddSingleton<IFabbricaConnessioniArcLab, FabbricaConnessioniArcLab>();
 builder.Services.AddScoped<IRepositoryPortale, RepositoryPortale>();
+// Offerte (17/11/2026): offerta di laboratorio del cliente dalle commesse ArcLab (sola lettura).
+builder.Services.AddScoped<IRepositoryOfferteClienti, RepositoryOfferteClienti>();
+builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
+builder.Services.AddScoped<ServizioOfferteClienti>();
 // Approvazione delle Condizioni Generali (pagina /Firma, 10/10/2026): registro delle evidenze a impronte concatenate.
 builder.Services.AddScoped<IRegistroEvidenzeApprovazioni, RegistroEvidenzeApprovazioni>();
 // Invio del codice OTP delle Condizioni (15/10/2026): stessa configurazione Smtp della Web app.

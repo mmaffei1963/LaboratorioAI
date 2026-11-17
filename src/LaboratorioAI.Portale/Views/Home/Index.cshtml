@@ -34,8 +34,7 @@
         <p class="errore-accesso nascosto" id="errore-accesso"></p>
 
         <p class="nota-accesso">
-            MARE.A srl — Laboratorio accreditato ACCREDIA n° 00729<br />
-            ISO/IEC 17025:2018 · Cattolica (RN)
+            MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN)
         </p>
     </form>
 </div>
@@ -64,6 +63,13 @@
             </label>
         </div>
 
+        <!-- 17/11/2026: schede Campioni / Offerte -->
+        <nav class="schede" id="schede">
+            <button type="button" class="scheda attiva" data-scheda="sezione-campioni">Campioni</button>
+            <button type="button" class="scheda" data-scheda="sezione-offerte">Offerte</button>
+        </nav>
+
+        <div id="sezione-campioni">
         <div class="sintesi" id="sintesi">
             <div class="sintesi-voce">
                 <span class="sintesi-etichetta">Campioni</span>
@@ -162,9 +168,21 @@
                 </table>
             </div>
         </section>
+        </div>
+
+        <!-- 17/11/2026: Offerte — offerta di laboratorio dalle commesse attive -->
+        <div id="sezione-offerte" class="nascosto">
+            <section class="riquadro">
+                <div class="barra-risultati">
+                    <span id="offerta-stato">Caricamento dell'offerta…</span>
+                    <button class="pulsante" id="btn-offerta-pdf" disabled>Scarica PDF</button>
+                </div>
+                <div id="offerta-contenuto" class="offerta"></div>
+            </section>
+        </div>
     </main>
 
     <footer class="pie">
-        MARE.A srl — Via della Repubblica, 26 — 47841 Cattolica (RN) — Tel. 0541 963038
+        MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN) — Tel. 0541 830442
     </footer>
 </div>

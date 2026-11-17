@@ -21,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\LaboratorioAI.Core\LaboratorioAI.Core.csproj" />
     <ProjectReference Include="..\LaboratorioAI.Dati\LaboratorioAI.Dati.csproj" />
+    <!-- 17/11/2026: PDF delle Offerte (GeneratoreOffertaCliente). -->
+    <ProjectReference Include="..\LaboratorioAI.Documenti\LaboratorioAI.Documenti.csproj" />
   </ItemGroup>
 
 </Project>

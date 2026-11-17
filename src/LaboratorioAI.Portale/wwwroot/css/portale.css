@@ -223,6 +223,23 @@ main { padding: 24px 28px; max-width: 1500px; margin: 0 auto; }
 .pie { text-align: center; padding: 18px; font-size: .74rem; color: var(--grigio-500);
        border-top: 1px solid var(--grigio-300); background: var(--bianco); }
 
+/* ── Schede e Offerte (17/11/2026) ───────────────────────── */
+.schede { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid var(--grigio-300); }
+.scheda { background: none; border: none; padding: 10px 18px; font: inherit; font-weight: 600; color: var(--grigio-500);
+          cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.scheda.attiva { color: var(--rosso); border-bottom-color: var(--rosso); }
+.offerta { font-size: .86rem; line-height: 1.55; }
+.offerta h2 { font-size: 1rem; background: var(--grigio-100); padding: 6px 10px; margin: 22px 0 10px; }
+.offerta h3 { font-size: .9rem; margin: 16px 0 6px; }
+.offerta .oggetto { font-weight: 700; margin: 6px 0 10px; }
+.offerta p { margin: 0 0 6px; }
+.offerta .tabella { min-width: 0; }
+.offerta td.importo { text-align: right; white-space: nowrap; }
+.offerta .piccolo { font-size: .74rem; color: var(--grigio-500); }
+.offerta .nota-subappalto { background: #FFF3D6; font-weight: 700; padding: 10px 12px; border-radius: var(--raggio); margin: 12px 0; }
+.offerta .etichetta-modifica { display: inline-block; font-size: .7rem; background: var(--arancio-bg); color: var(--arancio);
+          border-radius: 10px; padding: 1px 8px; margin-left: 4px; }
+
 /* ── Adattamento a schermi ridotti ───────────────────────── */
 @media (max-width: 768px) {
     .intestazione { padding: 0 14px; }

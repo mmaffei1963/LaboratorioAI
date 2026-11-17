@@ -1380,3 +1380,38 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 17/11/2026 — Clienti e insediamenti: filtro per i non attivi in ArcLab
 - Spunta «Nascondi i clienti non attivi in ArcLab» (cliente non attivo o insediamento non in uso), valida anche per l'Excel.
+
+## 17/11/2026 — Da Validare: «< 4» nei conteggi delle acque e organolettici mai viola
+- Conteggi microbiologici sulla stessa quantità della norma (es. coliformi «< 4 ufc/100 ml» contro «assenti in 100 ml»
+  o «0 ufc/100 ml»): «< x» con x > 1 vuol dire colonie presenti sotto il conteggio, quindi non conforme (prima risultava
+  assente). «< 1» resta conforme; negli alimenti con quantità diverse (es. «< 10 ufc/g» contro «assente in 25 g») invariato.
+- I caratteri organolettici (odore, sapore, aspetto, colore, gusto) non danno più rilievi viola (unità, arrotondamento,
+  tempi di inizio, limite di quantificazione).
+- Test: AssenteIn_MinoreDiQuattro_NonConforme, LimiteZeroUfc_MinoreDiQuattro_NonConformeMinoreDiUnoOk, Organolettici_MaiViola.
+
+## 17/11/2026 — Da Validare: cliente che richiede il giudizio di conformità
+- Elenco: etichetta «Giudizio di conformità» sui campioni dei clienti con Clienti.GiudizioConf = 1 in ArcLab.
+- Scheda: etichetta «Giudizio di conformità richiesto» e riquadro giallo sopra la scelta del giudizio, che ricorda di
+  scegliere un giudizio di conformità prima di validare (la regola che blocca la validazione senza scelta c'era già).
+
+## 17/11/2026 — Offerte sul portale clienti (prima consegna)
+- Portale: nuova scheda «Offerte» accanto a «Campioni», con l'offerta di laboratorio del cliente costruita dalle commesse
+  ArcLab attive (laboratorio, senza scadenza, non chiuse, prezzo > 0, comprese le «non fatturare»): oggetto e riferimenti,
+  ALL.1 Offerta analisi di laboratorio (Cod. controllo, Incarico, Costo, Data incarico, Ult. modifica), Dettaglio incarico
+  con i metodi e le prove in subappalto (§) come nell'allegato tecnico degli OA, condizioni. Pulsante «Scarica PDF» con la
+  carta intestata delle offerte. Il cliente vede solo la sua offerta, l'operatore sceglie il cliente.
+- Stesso controllo su più insediamenti (regole A-D in RegoleOfferteClienti): A una riga; B tutte; C tutte; D il prezzo più alto.
+- LaboratorioAI: nuova pagina «Anomalie offerte» (stesso permesso di Ricerca errori) con i casi B e D di tutti i clienti, ed Excel.
+- Portale: aggiunto il riferimento al progetto Documenti (PDF) e i loghi della carta intestata. Sola lettura su ArcLab, nessuna migrazione.
+- Seconda consegna: storico delle variazioni (Ult. modifica con etichetta), popup al cliente, mail settimanale delle anomalie.
+- Test: RegoleOfferteClientiTest.
+
+## 17/11/2026 — Offerte: ultima modifica ISTAT e link alle Condizioni
+- «Ult. modifica»: per gli incarichi con data precedente al 21/01/2026 (aggiornamento ISTAT applicato in ArcLab) vale il
+  21/01/2026 con l'etichetta «Aggiornamento ISTAT 2026»; per quelli successivi la data dell'incarico.
+- L'indirizzo delle Condizioni generali di fornitura (https://www.mare-a.com/laboratorio-analisi/) è un collegamento
+  cliccabile sul portale (nuova scheda) e nel PDF.
+- Test: UltimaModifica_PrimaDelDataIstat_21Gennaio2026ConEtichetta.
+
+## 17/11/2026 — Portale: tolti i riferimenti all'accreditamento
+- Pagine di firma delle Condizioni e di indicazione del firmatario: nella testata l'indirizzo (Via E. Toti, 2 — 47841 Cattolica) al posto di «Laboratorio accreditato ACCREDIA».
