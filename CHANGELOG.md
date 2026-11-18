@@ -1445,3 +1445,25 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
   cliente e per operatore (senza «@IdCliente IS NULL OR»), OPTION (RECOMPILE) e risultato tenuto in memoria 20 minuti.
   L'operatore senza cliente scelto vede i cataloghi completi di matrici e controlli.
 - Ricerca campioni: OPTION (RECOMPILE) e attesa massima 60 secondi.
+
+## 18/11/2026 — Portale: Ordini di accettazione
+- Nuova scheda «Ordini di accettazione»: lotti ricevuti del cliente (di partenza gli ultimi 12 mesi; filtri per periodo,
+  insediamento e n° lotto) con «Scarica PDF». Lotti con campioni senza parametri: «In preparazione».
+- Stesso documento dell'anteprima di LaboratorioAI (stesso repository e generatore); revisione delle Condizioni: quella
+  pubblicata in vigore alla data di ricezione del lotto (Condizioni e firme), altrimenti quella delle impostazioni.
+- Il cliente vede e scarica solo i propri lotti (controllo anche sul PDF); i privati (MAF2) restano solo in LaboratorioAI.
+- Destinato a sostituire la pubblicazione degli Ordini di Palomar. Sola lettura su ArcLab, nessuna migrazione.
+
+## 18/11/2026 — Portale, Ordini di accettazione: anteprima
+- Pulsante «Anteprima» accanto a «Scarica PDF»: apre l'Ordine in una nuova scheda del browser.
+
+## 18/11/2026 — Scadenziario tarature (esterni) e maschera di taratura
+- Due colonne: «N° rapporto» (generato dal modulo Taratura, es. «26-012»; vuoto per l'archivio storico) e «Codice
+  strumento» (il numero dell'archivio, oppure il codice strumento della taratura per le righe create dal modulo Taratura).
+  Per queste righe il codice non si modifica dallo scadenziario.
+- Ricerche libere su N° rapporto, Codice strumento e Tipologia.
+- Maschera di taratura: nuovo campo «Riferimento interno (solo scadenziario)», non stampato nel rapporto, che passa nel
+  «Rif.» della riga dello scadenziario. Nessuna migrazione.
+
+## 18/11/2026 — Service worker solo per Prelievo vocale
+- sw.js (cache labai-prelievo-v5) gestisce solo i file della pagina Prelievo vocale: prima intercettava tutto il sito e dopo un aggiornamento il browser poteva mostrare pagine vecchie.

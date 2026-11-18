@@ -72,18 +72,51 @@ public class ScadenziarioController : Controller
             .Where(t => t.Attivo && t.DataCancellazione == null)
             .OrderByDescending(t => t.DataScadenza)
             .ToListAsync(ct);
-        // 03/11/2026: stato (in uso, rinnovata, dismessa) e n° rapporto della taratura che la rinnova
-        var numeri = righe.ToDictionary(t => t.IdTermometroEsterno, t => t.NumeroRapporto);
+        // 18/11/2026: due colonne, «N° rapporto» (generato dal modulo Taratura) e «Codice strumento».
+        var tarature = await DatiTaratureAsync(_ctx, righe, ct);
+        var colonne = righe.ToDictionary(t => t.IdTermometroEsterno, t => Colonne(t, tarature));
         return Json(righe.Select(t => new
         {
-            t.IdTermometroEsterno, t.NumeroRapporto, t.Tipologia, t.DataTaratura, t.DataScadenza,
+            t.IdTermometroEsterno,
+            colonne[t.IdTermometroEsterno].NumeroRapporto,
+            colonne[t.IdTermometroEsterno].CodiceStrumento,
+            DaTaratura = t.IdTaraturaOrigine != null,
+            t.Tipologia, t.DataTaratura, t.DataScadenza,
             t.Cliente, t.Riferimento, t.Note, t.DataConsegna, t.OperatoreConsegna, t.RifFattura, t.Fatturato,
             t.EscludiScadenze, t.DataRinnovo, t.IdTermometroRinnovo,
             TipoTermometro = (int)LaboratorioAI.Core.Tarature.RinnoviTermometri.Tipo(t),
             Servizio = (int)t.Servizio,
-            NumeroRapportoRinnovo = t.IdTermometroRinnovo is int ir && numeri.TryGetValue(ir, out var nr) ? nr : null,
+            // 03/11/2026: stato (in uso, rinnovata, dismessa) e n° rapporto della taratura che la rinnova
+            NumeroRapportoRinnovo = t.IdTermometroRinnovo is int ir && colonne.TryGetValue(ir, out var nr) ? nr.NumeroRapporto ?? nr.CodiceStrumento : null,
             Stato = LaboratorioAI.Core.Tarature.RinnoviTermometri.Stato(t)
         }));
+    }
+
+    /// <summary>
+    /// Dati della taratura di origine per le righe dell'archivio esterni create dal modulo Taratura (18/11/2026):
+    /// n° rapporto generato dal programma (es. «26-012») e codice strumento.
+    /// </summary>
+    internal static async Task<Dictionary<int, (string? NumeroRapporto, string? CodiceStrumento)>> DatiTaratureAsync(
+        ContestoLaboratorioAI ctx, IReadOnlyCollection<TermometroEsterno> righe, CancellationToken ct)
+    {
+        var idTarature = righe.Where(t => t.IdTaraturaOrigine != null).Select(t => t.IdTaraturaOrigine!.Value).Distinct().ToList();
+        return idTarature.Count == 0 ? new()
+            : (await ctx.Tarature.AsNoTracking().Where(x => idTarature.Contains(x.IdTaratura))
+                .Select(x => new { x.IdTaratura, x.NumeroRapporto, x.StrumentoCodice }).ToListAsync(ct))
+              .ToDictionary(x => x.IdTaratura, x => (x.NumeroRapporto, x.StrumentoCodice));
+    }
+
+    /// <summary>
+    /// Le due colonne dell'archivio esterni (18/11/2026): «N° rapporto» = quello generato dal modulo Taratura (vuoto per
+    /// l'archivio storico); «Codice strumento» = il numero dell'archivio (registro storico, inserimento a mano) oppure,
+    /// per le righe create da una taratura, il codice strumento della taratura.
+    /// </summary>
+    internal static (string? NumeroRapporto, string? CodiceStrumento) Colonne(TermometroEsterno t,
+        Dictionary<int, (string? NumeroRapporto, string? CodiceStrumento)> tarature)
+    {
+        if (t.IdTaraturaOrigine is int it && tarature.TryGetValue(it, out var d))
+            return (d.NumeroRapporto, !string.IsNullOrWhiteSpace(d.CodiceStrumento) ? d.CodiceStrumento : t.NumeroRapporto?.ToString());
+        return (null, t.NumeroRapporto?.ToString());
     }
 
     [HttpPost("api/scadenziario/esterni")]
@@ -94,7 +127,9 @@ public class ScadenziarioController : Controller
             ? await _ctx.TermometriEsterni.FirstOrDefaultAsync(x => x.IdTermometroEsterno == id, ct)
             : null;
         if (t is null) { t = new TermometroEsterno { DataCreazione = DateTime.UtcNow }; _ctx.TermometriEsterni.Add(t); }
-        t.NumeroRapporto = req.NumeroRapporto; t.Tipologia = req.Tipologia;
+        // 18/11/2026: per le righe create da una taratura n° rapporto e codice strumento vengono dal modulo Taratura.
+        if (t.IdTaraturaOrigine is null) t.NumeroRapporto = req.NumeroRapporto;
+        t.Tipologia = req.Tipologia;
         t.DataTaratura = req.DataTaratura; t.DataScadenza = req.DataScadenza;
         t.Cliente = req.Cliente; t.Riferimento = req.Riferimento; t.Note = req.Note;
         t.DataConsegna = req.DataConsegna; t.OperatoreConsegna = req.OperatoreConsegna; t.RifFattura = req.RifFattura;

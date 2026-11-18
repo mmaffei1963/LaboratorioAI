@@ -158,7 +158,7 @@ async function salvaCdr(pulsante) {
 
 // ══ Form taratura ══
 function nuovaTaratura() {
-    ['t-id', 't-strumento', 't-codice', 't-scadenza', 't-numero', 't-responsabile'].forEach(id => $(id).value = '');
+    ['t-id', 't-strumento', 't-codice', 't-scadenza', 't-numero', 't-responsabile', 't-rif-interno'].forEach(id => $(id).value = '');
     committente.svuota();
     $('t-tipo').value = '0'; $('t-servizio').value = '1';
     $('t-cdr').value = ''; $('t-risoluzione').value = '0.1'; $('t-istruzione').value = 'IO 4-01';
@@ -206,7 +206,7 @@ function duplica() {
     }));
 
     // Nuova taratura: azzera identità strumento e numero, ripristina intestazione.
-    ['t-id', 't-strumento', 't-codice', 't-numero'].forEach(id => $(id).value = '');
+    ['t-id', 't-strumento', 't-codice', 't-numero', 't-rif-interno'].forEach(id => $(id).value = '');
     $('t-cdr').value = intestazione.cdr;
     $('t-risoluzione').value = intestazione.risoluzione;
     $('t-istruzione').value = intestazione.istruzione;
@@ -245,6 +245,7 @@ async function apriTaratura(id) {
         $('t-data').value = (t.dataTaratura ?? '').substring(0, 10);
         $('t-scadenza').value = (t.dataScadenza ?? '').substring(0, 10);
         $('t-numero').value = t.numeroRapporto ?? '';
+        $('t-rif-interno').value = t.riferimentoInterno ?? '';   // 18/11/2026
         misure = (t.misure ?? []).map(m => ({ punto: m.punto, tRiferimento: m.tRiferimento, letturaStrumento: m.letturaStrumento }));
         if (misure.length === 0) misure = [nuovaMisura('A')];
         renderMisure();
@@ -323,6 +324,7 @@ async function salvaTaratura(pulsante) {
         dataTaratura: $('t-data').value, dataScadenza: $('t-scadenza').value || null,
         riferimentoIstruzione: $('t-istruzione').value,
         responsabile: $('t-responsabile').value || null,
+        riferimentoInterno: $('t-rif-interno').value.trim() || null,   // 18/11/2026: solo scadenziario
         misure: misure.filter(m => (m.punto || '').trim() !== '')
     };
     const libera = occupa(pulsante, 'Salvataggio…');

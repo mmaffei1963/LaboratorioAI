@@ -225,13 +225,16 @@ public class TaraturaController : Controller
         var t = await _ctx.Tarature.AsNoTracking().FirstOrDefaultAsync(x => x.IdTaratura == id, ct);
         if (t is null) return NotFound(new { messaggio = "Taratura non trovata." });
         var misure = JsonSerializer.Deserialize<List<RigaMisuraDto>>(t.DatiMisure, JsonOpts) ?? new();
+        // 18/11/2026: il riferimento interno sta solo nello scadenziario (riga creata da questa taratura).
+        var riferimentoInterno = await _ctx.TermometriEsterni.AsNoTracking().Where(x => x.IdTaraturaOrigine == id)
+            .Select(x => x.Riferimento).FirstOrDefaultAsync(ct);
         return Json(new
         {
             t.IdTaratura, t.IdCampioneRiferimento, t.StrumentoIdentificazione, t.StrumentoCodice,
             t.RisoluzioneStrumento, t.FattoreCopertura, t.IdClienteArcLab, t.Committente, t.IdInsediamentoArcLab, t.Insediamento,
             TipoTermometro = (int)t.TipoTermometro, Servizio = (int)t.Servizio,
             t.NumeroRapporto, DataTaratura = t.DataTaratura, DataScadenza = t.DataScadenza,
-            t.RiferimentoIstruzione, t.Responsabile, t.Note, Misure = misure
+            t.RiferimentoIstruzione, t.Responsabile, t.Note, Misure = misure, RiferimentoInterno = riferimentoInterno
         });
     }
 
@@ -330,6 +333,7 @@ public class TaraturaController : Controller
             te.DataTaratura = t.DataTaratura;
             te.DataScadenza = t.DataScadenza;
             te.Cliente = t.Committente;
+            te.Riferimento = Vuoto(req.RiferimentoInterno);   // 18/11/2026: solo scadenziario, non nel rapporto
             te.TipoTermometro = t.TipoTermometro;   // 03/11/2026
             te.Servizio = t.Servizio;
             te.DataUltimaModifica = ora;
@@ -780,6 +784,8 @@ public record RichiestaSalvaTaratura
     public string? Responsabile { get; init; }
     public string? Note { get; init; }
     public List<RigaMisuraDto>? Misure { get; init; }
+    /// <summary>18/11/2026: riferimento interno del termometro del cliente; non va nel rapporto, va nel «Rif.» dello scadenziario.</summary>
+    public string? RiferimentoInterno { get; init; }
 }
 
 public record RichiestaRapportoTaratura

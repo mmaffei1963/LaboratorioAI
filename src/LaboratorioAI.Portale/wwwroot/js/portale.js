@@ -330,9 +330,102 @@ const euro = (v) => Number(v || 0).toLocaleString('it-IT', { minimumFractionDigi
 
 function mostraScheda(id) {
     document.querySelectorAll('.scheda').forEach(b => b.classList.toggle('attiva', b.dataset.scheda === id));
-    document.getElementById('sezione-campioni').classList.toggle('nascosto', id !== 'sezione-campioni');
-    document.getElementById('sezione-offerte').classList.toggle('nascosto', id !== 'sezione-offerte');
+    for (const sezione of ['sezione-campioni', 'sezione-offerte', 'sezione-ordini'])
+        document.getElementById(sezione).classList.toggle('nascosto', id !== sezione);
     if (id === 'sezione-offerte') caricaOfferta();
+    if (id === 'sezione-ordini') apriOrdini();
+}
+
+// ── Ordini di accettazione (18/11/2026) ────────────────────
+
+let ordiniPreparati = false;
+
+function apriOrdini() {
+    if (!ordiniPreparati) {
+        const oggi = new Date();
+        const unAnnoFa = new Date(oggi.getFullYear() - 1, oggi.getMonth(), oggi.getDate());
+        const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        document.getElementById('o-dal').value = iso(unAnnoFa);
+        document.getElementById('o-al').value = iso(oggi);
+        ordiniPreparati = true;
+    }
+    // Insediamenti: gli stessi dei filtri dei campioni (già caricati per il cliente corrente).
+    popola('o-insediamento', insediamentiTutti ?? [], 'Tutti');
+    cercaOrdini();
+}
+
+async function cercaOrdini() {
+    const stato = document.getElementById('ordini-stato');
+    const corpo = document.querySelector('#tabella-ordini tbody');
+    corpo.innerHTML = '';
+    const idCliente = clienteOfferta();
+    if (sessione?.operatore && !idCliente) { stato.textContent = 'Accesso operatore: scegli un cliente in alto.'; return; }
+    const p = new URLSearchParams();
+    if (idCliente) p.set('idCliente', idCliente);
+    for (const [chiave, id] of [['dal', 'o-dal'], ['al', 'o-al'], ['idInsediamento', 'o-insediamento'], ['lotto', 'o-lotto']]) {
+        const v = document.getElementById(id).value.trim();
+        if (v) p.set(chiave, v);
+    }
+    stato.textContent = 'Ricerca in corso…';
+    try {
+        const lotti = await api('/api/ordini?' + p.toString());
+        stato.textContent = lotti.length ? `${lotti.length} lotti` + (lotti.length >= 2000 ? ' (i più recenti: restringi il periodo)' : '') : 'Nessun lotto nel periodo.';
+        corpo.innerHTML = lotti.map(l => `<tr>
+            <td><strong>${testo(l.codLotto)}</strong></td>
+            <td>${testo(l.dataRicezione ?? '')}</td>
+            <td>${testo(l.insediamento ?? '')}${l.insediamentoCitta ? ` <span class="piccolo-nota">${testo(l.insediamentoCitta)}</span>` : ''}</td>
+            <td class="numerico">${l.numeroCampioni}</td>
+            <td>${l.pronto
+                ? `<button class="pulsante-tenue" data-lotto="${l.idLotto}" data-cod="${testo(l.codLotto)}" data-anteprima="1">Anteprima</button>
+                   <button class="pulsante-tenue" data-lotto="${l.idLotto}" data-cod="${testo(l.codLotto)}">Scarica PDF</button>`
+                : '<span class="stato stato-arancio">In preparazione</span>'}</td>
+        </tr>`).join('');
+    } catch (e) { stato.textContent = e.message; }
+}
+
+async function scaricaOrdine(pulsante) {
+    // 18/11/2026: «Anteprima» apre il PDF in una nuova scheda del browser invece di scaricarlo. La scheda si apre
+    // subito (dentro il clic, altrimenti il browser la blocca) e riceve il PDF quando è pronto.
+    const anteprima = pulsante.dataset.anteprima === '1';
+    const finestra = anteprima ? window.open('', '_blank') : null;
+    if (finestra) finestra.document.title = 'Preparazione dell\'Ordine…';
+    pulsante.disabled = true;
+    const testoPrima = pulsante.textContent;
+    pulsante.textContent = 'Preparazione…';
+    try {
+        const token = sessionStorage.getItem(CHIAVE_TOKEN);
+        const id = clienteOfferta();
+        const risposta = await fetch(`/api/ordini/${pulsante.dataset.lotto}/pdf` + (id ? `?idCliente=${id}` : ''), {
+            headers: token ? { [INTESTAZIONE]: token } : {}
+        });
+        if (risposta.status === 401 && token) { esci(false); throw new Error('Sessione scaduta.'); }
+        if (!risposta.ok) {
+            let msg = `Errore ${risposta.status}`;
+            try { msg = (await risposta.json()).messaggio || msg; } catch { /* corpo non JSON */ }
+            throw new Error(msg);
+        }
+        const blob = new Blob([await risposta.blob()], { type: 'application/pdf' });
+        const indirizzo = URL.createObjectURL(blob);
+        if (anteprima) {
+            if (finestra) finestra.location.href = indirizzo;
+            else window.open(indirizzo, '_blank');
+            setTimeout(() => URL.revokeObjectURL(indirizzo), 60000);
+        } else {
+            const cd = risposta.headers.get('content-disposition') || '';
+            const nome = (cd.match(/filename="?([^";]+)"?/) || [])[1] || `Ordine_${pulsante.dataset.cod}.pdf`;
+            const a = document.createElement('a');
+            a.href = indirizzo;
+            a.download = nome;
+            a.click();
+            URL.revokeObjectURL(indirizzo);
+        }
+    } catch (e) {
+        if (finestra) finestra.close();
+        document.getElementById('ordini-stato').textContent = e.message;
+    } finally {
+        pulsante.disabled = false;
+        pulsante.textContent = testoPrima;
+    }
 }
 
 function clienteOfferta() {
@@ -595,6 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await caricaFiltri();
         await cerca();
         if (!document.getElementById('sezione-offerte').classList.contains('nascosto')) caricaOfferta();
+        if (!document.getElementById('sezione-ordini').classList.contains('nascosto')) apriOrdini();
         statoPasswordCliente();
     });
 
@@ -610,6 +704,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelectorAll('.scheda').forEach(b => b.addEventListener('click', () => mostraScheda(b.dataset.scheda)));
     document.getElementById('btn-offerta-pdf').addEventListener('click', scaricaOffertaPdf);
+    document.getElementById('btn-ordini-cerca').addEventListener('click', cercaOrdini);
+    document.getElementById('o-lotto').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cercaOrdini(); } });
+    document.querySelector('#tabella-ordini tbody').addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-lotto]');
+        if (b) scaricaOrdine(b);
+    });
 
     document.getElementById('chiudi-prove').addEventListener('click', () =>
         document.getElementById('pannello-prove').classList.add('nascosto'));

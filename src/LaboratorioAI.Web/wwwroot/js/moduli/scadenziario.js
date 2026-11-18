@@ -83,6 +83,9 @@ function testoStato(t) {
 function renderEsterni() {
     const soloDaFatt = $('filtro-fatturare')?.checked;
     const cliente = norm($('filtro-cliente')?.value);
+    const numero = norm($('filtro-numero')?.value);        // 18/11/2026
+    const codice = norm($('filtro-codice')?.value);
+    const tipologia = norm($('filtro-tipologia')?.value);
     const rif = $('filtro-rif')?.value ?? '';
     const stato = $('filtro-stato')?.value ?? 'inuso';
     const preavviso = ($('filtro-preavviso')?.value ?? '').trim();
@@ -94,6 +97,9 @@ function renderEsterni() {
     const lista = esterni.filter(t => {
         if (soloDaFatt && t.fatturato) return false;
         if (cliente && !norm(t.cliente).includes(cliente)) return false;
+        if (numero && !norm(t.numeroRapporto).includes(numero)) return false;
+        if (codice && !norm(t.codiceStrumento).includes(codice)) return false;
+        if (tipologia && !norm(t.tipologia).includes(tipologia)) return false;
         if (rif && (t.riferimento ?? '').trim() !== rif) return false;
         if (stato && t.stato !== stato) return false;
         if (tipo !== '' && String(t.tipoTermometro ?? 0) !== tipo) return false;
@@ -118,14 +124,15 @@ function renderEsterni() {
                <button class="pulsante pulsante-tenue" data-stato="dismessa" data-id="${t.idTermometroEsterno}" title="Il cliente non la rinnova più">Dismessa</button>`
             : `<button class="pulsante pulsante-tenue" data-stato="inuso" data-id="${t.idTermometroEsterno}" title="Torna tra le scadenze">Rimetti in uso</button>`;
         return `<tr${!t.fatturato ? ' style="background:#fdf4f4"' : ''}>
-            <td class="numerico">${t.numeroRapporto ?? '—'}</td><td>${TIPI[t.tipoTermometro] || '<span class="sottotesto">—</span>'}</td>
+            <td>${esc(t.numeroRapporto) || '<span class="sottotesto">—</span>'}</td><td>${esc(t.codiceStrumento) || '<span class="sottotesto">—</span>'}</td>
+            <td>${TIPI[t.tipoTermometro] || '<span class="sottotesto">—</span>'}</td>
             <td>${esc(t.tipologia)}</td><td>${t.servizio === 2 ? '<strong>fornitura + taratura</strong>' : 'solo taratura'}</td>
             <td>${dataIt(t.dataTaratura)}</td><td>${dataIt(t.dataScadenza)}</td>
             <td>${esc(t.cliente)}</td><td>${esc(t.riferimento)}</td><td>${testoStato(t)}</td><td>${dataIt(t.dataConsegna)}</td>
             <td>${fatt}</td>
             <td>${puoGestire ? `<button class="pulsante pulsante-tenue" data-edit="${i}">Modifica</button> ${azioniStato} <button class="pulsante pulsante-tenue" data-del="${t.idTermometroEsterno}">Elimina</button>` : ''}</td>
         </tr>`;
-    }).join('') || '<tr><td colspan="12">Nessun termometro con questi filtri.</td></tr>';
+    }).join('') || '<tr><td colspan="13">Nessun termometro con questi filtri.</td></tr>';
     document.querySelectorAll('#tabella-esterni [data-edit]').forEach(b => b.addEventListener('click', () => apriEsterno(esterni[+b.dataset.edit])));
     document.querySelectorAll('#tabella-esterni [data-stato]').forEach(b => b.addEventListener('click', async () => {
         try {
@@ -145,7 +152,10 @@ function apriEsterno(t) {
     t = t || {};
     $('esterno-titolo').textContent = t.idTermometroEsterno ? 'Modifica termometro esterno' : 'Nuovo termometro esterno';
     $('e-id').value = t.idTermometroEsterno || '';
-    $('e-numero').value = t.numeroRapporto ?? '';
+    // 18/11/2026: per le righe create da una taratura il codice strumento viene dal modulo Taratura: qui non si modifica.
+    $('e-numero').disabled = !!t.daTaratura;
+    $('e-numero').value = t.daTaratura ? '' : (t.codiceStrumento ?? '');
+    $('e-numero').placeholder = t.daTaratura ? `${t.codiceStrumento ?? ''} (dalla taratura n° ${t.numeroRapporto ?? ''})` : '';
     $('e-tipologia').value = t.tipologia ?? '';
     $('e-tipo').value = String(t.tipoTermometro ?? 0);
     $('e-servizio').value = String(t.servizio ?? 1);
@@ -219,7 +229,7 @@ $('btn-esterno-salva')?.addEventListener('click', salvaEsterno);
 $('btn-esterno-annulla')?.addEventListener('click', () => $('pannello-esterno').classList.add('nascosto'));
 $('filtro-fatturare')?.addEventListener('change', renderEsterni);
 ['filtro-rif', 'filtro-stato', 'filtro-vecchie', 'filtro-tipo', 'filtro-servizio'].forEach(id => $(id)?.addEventListener('change', renderEsterni));
-['filtro-cliente', 'filtro-preavviso'].forEach(id => $(id)?.addEventListener('input', renderEsterni));
+['filtro-cliente', 'filtro-preavviso', 'filtro-numero', 'filtro-codice', 'filtro-tipologia'].forEach(id => $(id)?.addEventListener('input', renderEsterni));
 async function caricaClienti() {
     const lc = $('lista-clienti'); if (!lc) return;
     try {

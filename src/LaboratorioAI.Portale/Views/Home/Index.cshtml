@@ -111,6 +111,7 @@
         <nav class="schede" id="schede">
             <button type="button" class="scheda attiva" data-scheda="sezione-campioni">Campioni</button>
             <button type="button" class="scheda" data-scheda="sezione-offerte">Offerte</button>
+            <button type="button" class="scheda" data-scheda="sezione-ordini">Ordini di accettazione</button>
         </nav>
 
         <div id="sezione-campioni">
@@ -212,6 +213,29 @@
                 </table>
             </div>
         </section>
+        </div>
+
+        <!-- 18/11/2026: Ordini di accettazione dei lotti ricevuti -->
+        <div id="sezione-ordini" class="nascosto">
+            <section class="riquadro">
+                <div class="griglia-filtri">
+                    <label>Ricevuti dal<input type="date" id="o-dal" /></label>
+                    <label>al<input type="date" id="o-al" /></label>
+                    <label>Insediamento<select id="o-insediamento"><option value="">Tutti</option></select></label>
+                    <label>N° lotto<input type="text" id="o-lotto" placeholder="es. 10831" /></label>
+                </div>
+                <div class="azioni-filtri"><button class="pulsante" id="btn-ordini-cerca">Cerca</button></div>
+            </section>
+            <section class="riquadro">
+                <div class="barra-risultati"><span id="ordini-stato">Scegli il periodo e premi Cerca.</span></div>
+                <div class="tabella-scorrevole">
+                    <table class="tabella" id="tabella-ordini">
+                        <thead><tr><th>N° lotto</th><th>Ricevuto il</th><th>Insediamento</th><th>Campioni</th><th>Ordine</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p class="piccolo-nota">L'Ordine di accettazione riporta i campioni ricevuti, le analisi richieste e le Condizioni generali di fornitura in vigore alla data di ricezione.</p>
+            </section>
         </div>
 
         <!-- 17/11/2026: Offerte — offerta di laboratorio dalle commesse attive -->

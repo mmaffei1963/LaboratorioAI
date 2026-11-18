@@ -28,6 +28,10 @@
     @* 03/11/2026: filtri per cliente, riferimento, stato e preavviso; nascoste le scadute da oltre 12 mesi *@
     <div class="griglia-filtri">
         <label>Cliente<input type="search" id="filtro-cliente" placeholder="parte del nome" /></label>
+        @* 18/11/2026: ricerche libere su n° rapporto, codice strumento e tipologia *@
+        <label>N° rapporto<input type="search" id="filtro-numero" placeholder="es. 26-012" /></label>
+        <label>Codice strumento<input type="search" id="filtro-codice" placeholder="parte del codice" /></label>
+        <label>Tipologia<input type="search" id="filtro-tipologia" placeholder="parte del testo" /></label>
         <label>Riferimento<select id="filtro-rif"><option value="">tutti</option></select></label>
         <label>Stato
             <select id="filtro-stato">
@@ -56,7 +60,7 @@
     <div class="tabella-scorrevole" style="max-height:26rem">
         <table class="tabella" id="tabella-esterni">
             <thead><tr>
-                <th class="numerico">N° Rapporto</th><th>Tipo</th><th>Tipologia</th><th>Servizio</th><th>Taratura</th><th>Scadenza</th><th>Cliente</th><th>Rif.</th><th>Stato</th><th>Consegna</th><th>Fatt.</th><th></th>
+                <th>N° rapporto</th><th>Codice strumento</th><th>Tipo</th><th>Tipologia</th><th>Servizio</th><th>Taratura</th><th>Scadenza</th><th>Cliente</th><th>Rif.</th><th>Stato</th><th>Consegna</th><th>Fatt.</th><th></th>
             </tr></thead>
             <tbody></tbody>
         </table>
@@ -69,7 +73,7 @@
         <div class="barra-risultati"><h2 id="esterno-titolo">Nuovo termometro esterno</h2></div>
         <input type="hidden" id="e-id" />
         <div class="griglia-filtri">
-            <label>N° Rapporto<input type="number" id="e-numero" /></label>
+            <label>Codice strumento<input type="number" id="e-numero" /></label>
             <label>Tipo<select id="e-tipo"><option value="0">—</option><option value="1">a sonda</option><option value="2">a gabbia</option><option value="3">pirometro</option><option value="4">datalogger</option><option value="5">altro</option></select></label>
             <label>Servizio<select id="e-servizio"><option value="1">solo taratura</option><option value="2">termometro nuovo fornito da noi + taratura</option></select></label>
             <label>Tipologia / descrizione<input type="text" id="e-tipologia" /></label>

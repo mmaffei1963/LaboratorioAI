@@ -3,6 +3,7 @@ using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.ArcLab;
 using LaboratorioAI.Dati.ArcLab.Repository;
 using LaboratorioAI.Dati.LaboratorioAI;
+using LaboratorioAI.Documenti;
 using LaboratorioAI.Portale.Autenticazione;
 using LaboratorioAI.Portale.Servizi;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,11 @@ builder.Services.AddScoped<ServizioOfferteClienti>();
 // Password del portale (17/11/2026): password personale, recupero via email, ripristino dell'operatore.
 builder.Services.AddScoped<IRepositoryCredenzialiClienti, RepositoryCredenzialiClienti>();
 builder.Services.AddScoped<ServizioPasswordPortale>();
+// Ordini di accettazione (18/11/2026): stesso repository e stesso generatore dell'anteprima di LaboratorioAI.
+builder.Services.AddScoped<IRepositoryOrdineAccettazione, RepositoryOrdineAccettazione>();
+builder.Services.AddScoped<IRepositoryAnagrafiche, RepositoryAnagrafiche>();
+builder.Services.AddSingleton<IGeneratoreOrdineAccettazione, GeneratoreOrdineAccettazione>();
+builder.Services.AddScoped<ServizioOrdiniPortale>();
 // Approvazione delle Condizioni Generali (pagina /Firma, 10/10/2026): registro delle evidenze a impronte concatenate.
 builder.Services.AddScoped<IRegistroEvidenzeApprovazioni, RegistroEvidenzeApprovazioni>();
 // Invio del codice OTP delle Condizioni (15/10/2026): stessa configurazione Smtp della Web app.

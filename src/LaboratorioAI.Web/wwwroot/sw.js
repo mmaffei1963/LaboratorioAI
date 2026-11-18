@@ -1,7 +1,7 @@
 // Service worker per la pagina "Prelievo vocale": rende l'app installabile e funzionante offline.
 // Strategia: network-first con cache di ripiego (così vedi sempre la versione aggiornata quando c'è
 // rete, ma la pagina resta usabile offline). Attivo solo su HTTPS/localhost.
-const CACHE = 'labai-prelievo-v4';
+const CACHE = 'labai-prelievo-v5';
 const BASE = [
   '/Prelievo',
   '/css/sito.css',
@@ -25,6 +25,10 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  // 18/11/2026: il service worker si occupa SOLO dei file della pagina Prelievo vocale. Prima intercettava tutto il
+  // sito e, dopo un aggiornamento, poteva mostrare pagine vecchie (es. Scadenziario con le colonne sfalsate).
+  const percorso = new URL(req.url).pathname;
+  if (!BASE.includes(percorso)) return;
   e.respondWith(
     fetch(req)
       .then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return res; })

@@ -18,8 +18,14 @@ internal static class RinnovoTermometriEsterni
             .Where(t => t.Attivo && t.DataCancellazione == null && t.DataRinnovo == null && !t.EscludiScadenze
                         && t.IdTermometroEsterno != nuova.IdTermometroEsterno)
             .ToListAsync(ct);
-        return RinnoviTermometri.Candidati(nuova, archivio)
-            .Select(t => (object)new { t.IdTermometroEsterno, t.NumeroRapporto, t.Tipologia, t.Cliente, t.Riferimento, t.DataTaratura, t.DataScadenza })
+        var candidati = RinnoviTermometri.Candidati(nuova, archivio).ToList();
+        var tarature = await ScadenziarioController.DatiTaratureAsync(ctx, candidati, ct);   // 18/11/2026
+        return candidati
+            .Select(t =>
+            {
+                var (numero, codice) = ScadenziarioController.Colonne(t, tarature);
+                return (object)new { t.IdTermometroEsterno, NumeroRapporto = numero ?? codice, CodiceStrumento = codice, t.Tipologia, t.Cliente, t.Riferimento, t.DataTaratura, t.DataScadenza };
+            })
             .ToList();
     }
 
