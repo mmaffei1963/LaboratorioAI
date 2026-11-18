@@ -82,8 +82,16 @@ async function entra(evento) {
         // Le credenziali viaggiano nel corpo della richiesta, mai nell'indirizzo
         const esito = await invia('/api/accesso/entra', {
             codiceContabilita: codice,
-            credenziale
+            credenziale,
+            tokenDispositivo: leggiBrowser(codice)
         });
+
+        // 18/11/2026: primo accesso da questo browser con la partita IVA → codice via email.
+        if (esito.verifica) {
+            document.getElementById('credenziale').value = '';
+            apriVerifica(codice, esito);
+            return;
+        }
 
         sessionStorage.setItem(CHIAVE_TOKEN, esito.token);
 
@@ -127,6 +135,8 @@ async function mostraApplicazione() {
     document.getElementById('schermata-accesso').classList.add('nascosto');
     document.getElementById('applicazione').classList.remove('nascosto');
     document.getElementById('nome-cliente').textContent = sessione.ragioneSociale ?? '';
+    // 17/11/2026: il cambio password è per i clienti, non per l'accesso operatore.
+    document.getElementById('btn-password').classList.toggle('nascosto', !!sessione.operatore);
 
     if (sessione.operatore) {
         document.getElementById('barra-operatore').classList.remove('nascosto');
@@ -413,6 +423,153 @@ async function scaricaOffertaPdf() {
     }
 }
 
+// ── Verifica del browser nuovo (18/11/2026) ────────────────
+
+const CHIAVE_BROWSER = 'labai-portale-browser-';
+let verificaInCorso = null;
+
+function leggiBrowser(codice) {
+    try { return localStorage.getItem(CHIAVE_BROWSER + codice.trim().toUpperCase()) || null; } catch { return null; }
+}
+
+function salvaBrowser(codice, token) {
+    try { if (token) localStorage.setItem(CHIAVE_BROWSER + codice.trim().toUpperCase(), token); } catch { /* facoltativo */ }
+}
+
+function apriVerifica(codice, esito) {
+    verificaInCorso = { codice, token: esito.tokenVerifica };
+    document.getElementById('ver-avviso').textContent = esito.messaggio;
+    document.getElementById('ver-codice').value = '';
+    document.getElementById('btn-ver-conferma').disabled = false;
+    messaggio('ver-messaggio', '');
+    document.getElementById('dlg-verifica').showModal();
+    document.getElementById('ver-codice').focus();
+}
+
+async function confermaVerifica() {
+    if (!verificaInCorso) return;
+    const pulsante = document.getElementById('btn-ver-conferma');
+    pulsante.disabled = true;
+    try {
+        const esito = await invia('/api/accesso/verifica', {
+            tokenVerifica: verificaInCorso.token,
+            codice: document.getElementById('ver-codice').value.trim(),
+            ricordaBrowser: document.getElementById('ver-ricorda').checked
+        });
+        salvaBrowser(verificaInCorso.codice, esito.tokenDispositivo);
+        if (document.getElementById('ricorda').checked) localStorage.setItem(CHIAVE_CODICE, verificaInCorso.codice);
+        sessionStorage.setItem(CHIAVE_TOKEN, esito.token);
+        verificaInCorso = null;
+        document.getElementById('dlg-verifica').close();
+        sessione = esito;
+        await mostraApplicazione();
+        return;
+    } catch (e) { messaggio('ver-messaggio', e.message); }
+    pulsante.disabled = false;
+}
+
+// ── Password (17/11/2026) ──────────────────────────────────
+
+function messaggio(id, testoMsg, ok) {
+    const el = document.getElementById(id);
+    el.textContent = testoMsg || '';
+    el.className = 'messaggio-finestra ' + (ok ? 'ok-msg' : 'errore-msg');
+}
+
+function apriRecupero() {
+    document.getElementById('rec-codice').value = document.getElementById('codice').value.trim();
+    document.getElementById('recupero-passo1').classList.remove('nascosto');
+    document.getElementById('recupero-passo2').classList.add('nascosto');
+    ['rec-token', 'rec-nuova', 'rec-ripetuta'].forEach(id => document.getElementById(id).value = '');
+    messaggio('rec-messaggio', '');
+    document.getElementById('btn-rec-conferma').disabled = false;
+    document.getElementById('dlg-recupero').showModal();
+}
+
+async function inviaCodiceRecupero() {
+    const pulsante = document.getElementById('btn-rec-invia');
+    pulsante.disabled = true;
+    try {
+        const r = await invia('/api/password/recupero/richiedi', { codiceContabilita: document.getElementById('rec-codice').value.trim() });
+        document.getElementById('rec-avviso').textContent = r.messaggio;
+        document.getElementById('recupero-passo1').classList.add('nascosto');
+        document.getElementById('recupero-passo2').classList.remove('nascosto');
+        messaggio('rec-messaggio', '');
+        document.getElementById('rec-token').focus();
+    } catch (e) { messaggio('rec-messaggio', e.message); }
+    finally { pulsante.disabled = false; }
+}
+
+async function confermaRecupero() {
+    const pulsante = document.getElementById('btn-rec-conferma');
+    pulsante.disabled = true;
+    try {
+        const r = await invia('/api/password/recupero/conferma', {
+            codiceContabilita: document.getElementById('rec-codice').value.trim(),
+            tokenRecupero: document.getElementById('rec-token').value.trim(),
+            passwordNuova: document.getElementById('rec-nuova').value,
+            passwordRipetuta: document.getElementById('rec-ripetuta').value
+        });
+        ['rec-token', 'rec-nuova', 'rec-ripetuta'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('codice').value = document.getElementById('rec-codice').value.trim();
+        messaggio('rec-messaggio', r.messaggio, true);
+        document.getElementById('btn-rec-conferma').disabled = true;
+        setTimeout(() => { document.getElementById('dlg-recupero').close(); document.getElementById('credenziale').focus(); }, 2500);
+        return;
+    } catch (e) { messaggio('rec-messaggio', e.message); }
+    pulsante.disabled = false;
+}
+
+function apriCambioPassword() {
+    ['pw-attuale', 'pw-nuova', 'pw-ripetuta'].forEach(id => document.getElementById(id).value = '');
+    messaggio('pw-messaggio', '');
+    document.getElementById('btn-pw-salva').disabled = false;
+    document.getElementById('dlg-password').showModal();
+}
+
+async function salvaPassword() {
+    const pulsante = document.getElementById('btn-pw-salva');
+    pulsante.disabled = true;
+    try {
+        const r = await invia('/api/password/cambia', {
+            passwordAttuale: document.getElementById('pw-attuale').value,
+            passwordNuova: document.getElementById('pw-nuova').value,
+            passwordRipetuta: document.getElementById('pw-ripetuta').value
+        });
+        ['pw-attuale', 'pw-nuova', 'pw-ripetuta'].forEach(id => document.getElementById(id).value = '');
+        messaggio('pw-messaggio', r.messaggio, true);
+        return;
+    } catch (e) { messaggio('pw-messaggio', e.message); }
+    pulsante.disabled = false;
+}
+
+// Operatore: stato delle credenziali del cliente scelto e ripristino della partita IVA.
+async function statoPasswordCliente() {
+    const stato = document.getElementById('stato-password');
+    const btn = document.getElementById('btn-ripristina');
+    const id = document.getElementById('scelta-cliente')?.value;
+    stato.classList.add('nascosto'); btn.classList.add('nascosto');
+    if (!sessione?.operatore || !id) return;
+    try {
+        const r = await api(`/api/password/stato?idCliente=${id}`);
+        stato.textContent = r.personale ? `Il cliente usa una password personale (dal ${r.dal}).` : 'Il cliente entra con la partita IVA.';
+        stato.classList.remove('nascosto');
+        btn.classList.toggle('nascosto', !r.personale);
+    } catch { /* informazione facoltativa */ }
+}
+
+async function ripristinaCredenziali() {
+    const id = document.getElementById('scelta-cliente')?.value;
+    if (!id) return;
+    const nome = document.getElementById('scelta-cliente').selectedOptions[0]?.textContent ?? '';
+    if (!window.confirm(`Ripristinare le credenziali originali di ${nome}? Il cliente tornerà a entrare con la partita IVA e la sua password personale non varrà più.`)) return;
+    try {
+        const r = await invia('/api/password/ripristina', { idCliente: Number(id) });
+        document.getElementById('stato-password').textContent = r.messaggio;
+        document.getElementById('btn-ripristina').classList.add('nascosto');
+    } catch (e) { document.getElementById('stato-password').textContent = e.message; }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const codiceSalvato = localStorage.getItem(CHIAVE_CODICE);
     if (codiceSalvato) {
@@ -438,7 +595,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         await caricaFiltri();
         await cerca();
         if (!document.getElementById('sezione-offerte').classList.contains('nascosto')) caricaOfferta();
+        statoPasswordCliente();
     });
+
+    document.getElementById('btn-dimenticata').addEventListener('click', apriRecupero);
+    document.getElementById('btn-ver-conferma').addEventListener('click', confermaVerifica);
+    document.getElementById('ver-codice').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confermaVerifica(); } });
+    document.getElementById('btn-rec-invia').addEventListener('click', inviaCodiceRecupero);
+    document.getElementById('btn-rec-conferma').addEventListener('click', confermaRecupero);
+    document.getElementById('btn-password').addEventListener('click', apriCambioPassword);
+    document.getElementById('btn-pw-salva').addEventListener('click', salvaPassword);
+    document.getElementById('btn-ripristina').addEventListener('click', ripristinaCredenziali);
+    document.querySelectorAll('dialog [data-chiudi]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
 
     document.querySelectorAll('.scheda').forEach(b => b.addEventListener('click', () => mostraScheda(b.dataset.scheda)));
     document.getElementById('btn-offerta-pdf').addEventListener('click', scaricaOffertaPdf);

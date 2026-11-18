@@ -35,12 +35,23 @@ public class AccessoController : ControllerBase
             return BadRequest(new { messaggio = "Indicare codice cliente e credenziale." });
         }
 
-        var (esito, sessione) = await _accesso.AccediAsync(
+        var (esito, sessione, tokenVerifica) = await _accesso.AccediAsync(
             richiesta.CodiceContabilita,
             richiesta.Credenziale,
+            richiesta.TokenDispositivo,
             HttpContext.Connection.RemoteIpAddress?.ToString(),
             Request.Headers.UserAgent.FirstOrDefault(),
             ct);
+
+        // 18/11/2026: credenziali corrette da un browser nuovo → codice inviato all'email del cliente.
+        if (esito == EsitoAccesso.Riuscito && tokenVerifica is not null)
+            return Ok(new
+            {
+                Verifica = true,
+                TokenVerifica = tokenVerifica,
+                Messaggio = "Per sicurezza, al primo accesso da questo browser abbiamo inviato un codice all'indirizzo email " +
+                            "del cliente registrato presso MARE.A. Inseriscilo qui sotto (vale 15 minuti)."
+            });
 
         return esito switch
         {
@@ -65,6 +76,25 @@ public class AccessoController : ControllerBase
                 messaggio = "Codice cliente o credenziale non corretti."
             })
         };
+    }
+
+    /// <summary>Conferma del codice ricevuto per email al primo accesso da un browser nuovo (18/11/2026).</summary>
+    [HttpPost("verifica")]
+    public async Task<IActionResult> Verifica([FromBody] RichiestaVerifica richiesta, CancellationToken ct)
+    {
+        var (esito, sessione, tokenDispositivo, messaggio) = await _accesso.ConfermaVerificaAsync(
+            richiesta.TokenVerifica ?? "", richiesta.Codice ?? "", richiesta.RicordaBrowser,
+            HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.FirstOrDefault(), ct);
+        if (esito != EsitoAccesso.Riuscito || sessione is null)
+            return Unauthorized(new { messaggio });
+        return Ok(new
+        {
+            sessione.Token,
+            sessione.RagioneSociale,
+            sessione.Operatore,
+            Scadenza = sessione.Scadenza.ToLocalTime(),
+            TokenDispositivo = tokenDispositivo
+        });
     }
 
     [HttpPost("esci")]
@@ -97,5 +127,8 @@ public class AccessoController : ControllerBase
     /// Il nome del campo credenziale è fra quelli intercettati dal filtro
     /// di log, così il valore non compare nemmeno in caso di eccezione.
     /// </remarks>
-    public record RichiestaAccesso(string CodiceContabilita, string Credenziale);
+    public record RichiestaAccesso(string CodiceContabilita, string Credenziale, string? TokenDispositivo = null);
+
+    /// <remarks>I nomi contengono «token»: il filtro dei log li omette.</remarks>
+    public record RichiestaVerifica(string? TokenVerifica, string? Codice, bool RicordaBrowser);
 }

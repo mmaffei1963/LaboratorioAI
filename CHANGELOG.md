@@ -1418,3 +1418,30 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 17/11/2026 — Offerte: solo clienti attivi con codice contabilità
 - Anche l'offerta del portale considera solo clienti attivi (Clienti.Attivo) con codice contabilità; per gli altri risulta «Nessun incarico di analisi attivo».
+
+## 17/11/2026 — Portale: password personale, recupero via email, ripristino dell'operatore
+- Il cliente può scegliere una password personale al posto della partita IVA (pulsante «Password» in alto, solo accesso
+  cliente; nessun obbligo). Con una password personale attiva la partita IVA non vale più per entrare.
+- «Password dimenticata?» nella pagina di accesso: codice di 6 cifre (15 minuti, 5 tentativi) inviato all'email del
+  cliente in ArcLab (Clienti.email); risposta sempre uguale per non rivelare quali codici cliente esistono.
+- Accesso operatore: per il cliente scelto si vede se entra con la partita IVA o con una password personale, con il
+  pulsante «Ripristina credenziali originali».
+- Nuove tabelle portale.PasswordClienti, portale.CodiciRecuperoPassword, portale.EventiPasswordClienti (solo impronte,
+  nessuna password o codice in chiaro). MIGRAZIONE DA CREARE: PasswordPortaleClienti. ArcLab in sola lettura.
+- Test: RegolePasswordPortaleTest.
+
+## 18/11/2026 — Portale: sicurezza (verifica del browser nuovo, intestazioni, indirizzi reali)
+- Chi entra con la partita IVA da un browser non riconosciuto riceve un codice (15 minuti, 5 tentativi) all'email del
+  cliente in ArcLab; con «Ricorda questo browser» non serve più per 180 giorni. Con una password personale la verifica
+  non serve. Clienti senza email in ArcLab (o invio fallito): accesso come prima, segnalato nel log. Al massimo 6
+  verifiche l'ora per cliente, poi accesso bloccato temporaneamente. Il ripristino dell'operatore revoca i browser riconosciuti.
+- Intestazioni di sicurezza su tutte le pagine (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options,
+  Referrer-Policy, Permissions-Policy).
+- Indirizzi reali dei visitatori: X-Forwarded-For accettato solo da Cloudflare e dalle reti interne (prima era ignorato).
+- Nuove tabelle portale.DispositiviFidati e portale.VerificheAccesso. MIGRAZIONE DA CREARE: VerificaBrowserPortale.
+
+## 18/11/2026 — Portale: filtri e ricerca campioni più veloci
+- /api/campioni/filtri era la richiesta più lenta (da 7 a 48 secondi, errori 500 a 30 secondi): query separate per
+  cliente e per operatore (senza «@IdCliente IS NULL OR»), OPTION (RECOMPILE) e risultato tenuto in memoria 20 minuti.
+  L'operatore senza cliente scelto vede i cataloghi completi di matrici e controlli.
+- Ricerca campioni: OPTION (RECOMPILE) e attesa massima 60 secondi.

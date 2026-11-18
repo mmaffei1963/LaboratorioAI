@@ -41,6 +41,9 @@ builder.Services.AddScoped<IRepositoryPortale, RepositoryPortale>();
 builder.Services.AddScoped<IRepositoryOfferteClienti, RepositoryOfferteClienti>();
 builder.Services.AddScoped<IRepositoryControlli, RepositoryControlli>();
 builder.Services.AddScoped<ServizioOfferteClienti>();
+// Password del portale (17/11/2026): password personale, recupero via email, ripristino dell'operatore.
+builder.Services.AddScoped<IRepositoryCredenzialiClienti, RepositoryCredenzialiClienti>();
+builder.Services.AddScoped<ServizioPasswordPortale>();
 // Approvazione delle Condizioni Generali (pagina /Firma, 10/10/2026): registro delle evidenze a impronte concatenate.
 builder.Services.AddScoped<IRegistroEvidenzeApprovazioni, RegistroEvidenzeApprovazioni>();
 // Invio del codice OTP delle Condizioni (15/10/2026): stessa configurazione Smtp della Web app.
@@ -80,10 +83,32 @@ if (!app.Environment.IsDevelopment())
 // Cloudflare inoltra l'indirizzo reale del visitatore nelle intestazioni:
 // senza questa configurazione la protezione da tentativi ripetuti
 // vedrebbe un unico indirizzo per tutti.
-app.UseForwardedHeaders(new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+// 18/11/2026: per impostazione predefinita ASP.NET Core si fida solo dei proxy locali e ignorava le intestazioni di
+// Cloudflare: si dichiarano fidati gli indirizzi di Cloudflare (e le reti interne, per un eventuale proxy in sede).
+// Si prende solo l'ultimo indirizzo aggiunto (quello visto da Cloudflare): gli altri possono essere falsificati.
+var opzioniInoltro = new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
 {
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
-                     | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+                     | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    ForwardLimit = 1
+};
+foreach (var rete in ReteFidata.Cloudflare.Concat(ReteFidata.Interne))
+    opzioniInoltro.KnownNetworks.Add(ReteFidata.Leggi(rete));
+app.UseForwardedHeaders(opzioniInoltro);
+
+// 18/11/2026: intestazioni di sicurezza. Il portale usa solo risorse proprie: niente script esterni, niente inserimento
+// in pagine di altri siti, niente sniffing dei tipi di file.
+app.Use(async (contesto, successivo) =>
+{
+    var h = contesto.Response.Headers;
+    h["X-Content-Type-Options"] = "nosniff";
+    h["X-Frame-Options"] = "DENY";
+    h["Referrer-Policy"] = "same-origin";
+    h["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+    h["Content-Security-Policy"] =
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; " +
+        "connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+    await successivo();
 });
 
 app.UseSerilogRequestLogging(opzioni =>
@@ -144,5 +169,25 @@ public class PuliziaSessioni : BackgroundService
 
             await Task.Delay(TimeSpan.FromHours(6), ct);
         }
+    }
+}
+
+/// <summary>Reti fidate per le intestazioni X-Forwarded-* (18/11/2026). Elenco di Cloudflare: https://www.cloudflare.com/ips/</summary>
+static class ReteFidata
+{
+    public static readonly string[] Cloudflare =
+    [
+        "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22", "103.31.4.0/22", "141.101.64.0/18", "108.162.192.0/18",
+        "190.93.240.0/20", "188.114.96.0/20", "197.234.240.0/22", "198.41.128.0/17", "162.158.0.0/15", "104.16.0.0/13",
+        "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22",
+        "2400:cb00::/32", "2606:4700::/32", "2803:f800::/32", "2405:b500::/32", "2405:8100::/32", "2a06:98c0::/29", "2c0f:f248::/32"
+    ];
+
+    public static readonly string[] Interne = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"];
+
+    public static Microsoft.AspNetCore.HttpOverrides.IPNetwork Leggi(string cidr)
+    {
+        var parti = cidr.Split('/');
+        return new Microsoft.AspNetCore.HttpOverrides.IPNetwork(System.Net.IPAddress.Parse(parti[0]), int.Parse(parti[1]));
     }
 }

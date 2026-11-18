@@ -240,6 +240,22 @@ main { padding: 24px 28px; max-width: 1500px; margin: 0 auto; }
 .offerta .etichetta-modifica { display: inline-block; font-size: .7rem; background: var(--arancio-bg); color: var(--arancio);
           border-radius: 10px; padding: 1px 8px; margin-left: 4px; }
 
+/* ── Password (17/11/2026) ───────────────────────────────── */
+.link-accesso { background: none; border: none; color: var(--grigio-500); text-decoration: underline; cursor: pointer;
+                font: inherit; font-size: .8rem; margin-top: 10px; padding: 0; }
+.finestra { border: none; border-radius: var(--raggio); box-shadow: var(--ombra-md); padding: 24px; max-width: 460px; width: calc(100% - 32px); }
+.finestra::backdrop { background: rgba(0,0,0,.45); }
+.finestra h2 { margin: 0 0 10px; font-size: 1.1rem; }
+.finestra p { font-size: .84rem; line-height: 1.5; }
+.finestra .campo { margin-bottom: 12px; }
+.finestra .campo input { width: 100%; }
+.azioni-finestra { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.messaggio-finestra { min-height: 1.2em; margin: 10px 0 0; font-size: .82rem; }
+.messaggio-finestra.errore-msg { color: var(--rosso); }
+.messaggio-finestra.ok-msg { color: var(--verde); }
+.nota-campo { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--grigio-500); }
+.stato-password { font-size: .8rem; color: var(--grigio-700); margin-left: 12px; }
+
 /* ── Adattamento a schermi ridotti ───────────────────────── */
 @media (max-width: 768px) {
     .intestazione { padding: 0 14px; }

@@ -77,59 +77,94 @@ public class RepositoryPortale : IRepositoryPortale
     // FILTRI
     // ═══════════════════════════════════════════════════════════════
 
+    // 18/11/2026: i filtri erano la richiesta più lenta del portale (fino a 48 s, errori 500 a 30 s). Cause: la forma
+    // «@IdCliente IS NULL OR ...» che costringe SQL Server a un piano unico (scansione di tutti i campioni) e il ricalcolo
+    // a ogni apertura. Ora: query separate per cliente e per operatore, OPTION (RECOMPILE) e risultato tenuto in memoria
+    // per 20 minuti (matrici e controlli usati da un cliente cambiano di rado).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, (DateTime Scadenza, FiltriPortale Filtri)> CacheFiltri = new();
+    private static readonly TimeSpan DurataCacheFiltri = TimeSpan.FromMinutes(20);
+
     public async Task<FiltriPortale> FiltriAsync(int? idCliente, CancellationToken ct = default)
     {
+        var chiave = idCliente ?? 0;
+        if (CacheFiltri.TryGetValue(chiave, out var inCache) && inCache.Scadenza > DateTime.UtcNow)
+            return inCache.Filtri;
+
         using var cn = await _fabbrica.ApriAsync(ct);
-
-        const string sqlInsediamenti = """
-            SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.IDCliente
-            FROM Insediamento i
-            WHERE i.NomeInsed IS NOT NULL
-              AND (@IdCliente IS NULL OR i.IDCliente = @IdCliente)
-            ORDER BY i.NomeInsed
-            """;
-
-        // Matrici e controlli effettivamente usati dal cliente:
-        // proporre l'intero catalogo sarebbe fuorviante
-        const string sqlMatrici = """
-            SELECT DISTINCT mx.IdMatrice AS Id, mx.Matrice AS Nome
-            FROM matrice mx
-            INNER JOIN Campione ca        ON ca.IdMatrice = mx.IdMatrice
-            INNER JOIN Lotto lo           ON lo.IdLotto = ca.IdLotto
-            INNER JOIN commessa cm        ON cm.IdCommessa = lo.IdCommessa
-            INNER JOIN ContattoCliente cc ON cc.IDContatto = cm.IDContatto
-            INNER JOIN Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
-            WHERE mx.Matrice IS NOT NULL
-              AND (@IdCliente IS NULL OR i.IDCliente = @IdCliente)
-            ORDER BY mx.Matrice
-            """;
-
-        const string sqlControlli = """
-            SELECT DISTINCT co.IDControllo AS Id, co.Controllo AS Nome
-            FROM Controllo co
-            INNER JOIN commessa cm        ON cm.IDControllo = co.IDControllo
-            INNER JOIN ContattoCliente cc ON cc.IDContatto = cm.IDContatto
-            INNER JOIN Insediamento i     ON i.IDInsediamento = cc.IDInsediamento
-            WHERE co.Controllo IS NOT NULL
-              AND (@IdCliente IS NULL OR i.IDCliente = @IdCliente)
-            ORDER BY co.Controllo
-            """;
-
         var parametri = new { IdCliente = idCliente };
 
-        var insediamenti = await cn.QueryAsync<VoceInsediamento>(
-            new CommandDefinition(sqlInsediamenti, parametri, cancellationToken: ct));
-        var matrici = await cn.QueryAsync<VoceAnagrafica>(
-            new CommandDefinition(sqlMatrici, parametri, cancellationToken: ct));
-        var controlli = await cn.QueryAsync<VoceAnagrafica>(
-            new CommandDefinition(sqlControlli, parametri, cancellationToken: ct));
+        string sqlInsediamenti, sqlMatrici, sqlControlli;
+        if (idCliente is null)
+        {
+            // Operatore senza cliente scelto: i cataloghi, senza scorrere tutti i campioni.
+            sqlInsediamenti = """
+                SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.IDCliente
+                FROM Insediamento i
+                WHERE i.NomeInsed IS NOT NULL
+                ORDER BY i.NomeInsed
+                """;
+            sqlMatrici = """
+                SELECT mx.IdMatrice AS Id, mx.Matrice AS Nome
+                FROM matrice mx
+                WHERE mx.Matrice IS NOT NULL
+                ORDER BY mx.Matrice
+                """;
+            sqlControlli = """
+                SELECT co.IDControllo AS Id, co.Controllo AS Nome
+                FROM Controllo co
+                WHERE co.Controllo IS NOT NULL
+                ORDER BY co.Controllo
+                """;
+        }
+        else
+        {
+            // Matrici e controlli effettivamente usati dal cliente: proporre l'intero catalogo sarebbe fuorviante.
+            sqlInsediamenti = """
+                SELECT i.IDInsediamento AS Id, i.NomeInsed AS Nome, i.IDCliente
+                FROM Insediamento i
+                WHERE i.NomeInsed IS NOT NULL AND i.IDCliente = @IdCliente
+                ORDER BY i.NomeInsed
+                OPTION (RECOMPILE)
+                """;
+            sqlMatrici = """
+                SELECT DISTINCT mx.IdMatrice AS Id, mx.Matrice AS Nome
+                FROM Insediamento i
+                INNER JOIN ContattoCliente cc ON cc.IDInsediamento = i.IDInsediamento
+                INNER JOIN commessa cm        ON cm.IDContatto = cc.IDContatto
+                INNER JOIN Lotto lo           ON lo.IdCommessa = cm.IdCommessa
+                INNER JOIN Campione ca        ON ca.IdLotto = lo.IdLotto
+                INNER JOIN matrice mx         ON mx.IdMatrice = ca.IdMatrice
+                WHERE i.IDCliente = @IdCliente AND mx.Matrice IS NOT NULL
+                ORDER BY mx.Matrice
+                OPTION (RECOMPILE)
+                """;
+            sqlControlli = """
+                SELECT DISTINCT co.IDControllo AS Id, co.Controllo AS Nome
+                FROM Insediamento i
+                INNER JOIN ContattoCliente cc ON cc.IDInsediamento = i.IDInsediamento
+                INNER JOIN commessa cm        ON cm.IDContatto = cc.IDContatto
+                INNER JOIN Controllo co       ON co.IDControllo = cm.IDControllo
+                WHERE i.IDCliente = @IdCliente AND co.Controllo IS NOT NULL
+                ORDER BY co.Controllo
+                OPTION (RECOMPILE)
+                """;
+        }
 
-        return new FiltriPortale
+        var insediamenti = await cn.QueryAsync<VoceInsediamento>(
+            new CommandDefinition(sqlInsediamenti, parametri, commandTimeout: 60, cancellationToken: ct));
+        var matrici = await cn.QueryAsync<VoceAnagrafica>(
+            new CommandDefinition(sqlMatrici, parametri, commandTimeout: 60, cancellationToken: ct));
+        var controlli = await cn.QueryAsync<VoceAnagrafica>(
+            new CommandDefinition(sqlControlli, parametri, commandTimeout: 60, cancellationToken: ct));
+
+        var filtri = new FiltriPortale
         {
             Insediamenti = insediamenti.ToList(),
             Matrici = matrici.ToList(),
             Controlli = controlli.ToList()
         };
+        CacheFiltri[chiave] = (DateTime.UtcNow.Add(DurataCacheFiltri), filtri);
+        return filtri;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -237,11 +272,13 @@ public class RepositoryPortale : IRepositoryPortale
             LEFT  JOIN matrice mx         ON mx.IdMatrice = ca.IdMatrice
             WHERE {string.Join("\n              AND ", condizioni)}
             ORDER BY lo.DataRic DESC, lo.CodLotto DESC
+            OPTION (RECOMPILE)
             """;
 
+        // 18/11/2026: piano calcolato sui filtri effettivi (RECOMPILE) e attesa massima 60 s invece di 30.
         using var cn = await _fabbrica.ApriAsync(ct);
         return (await cn.QueryAsync<CampionePortale>(
-            new CommandDefinition(sql, p, cancellationToken: ct))).ToList();
+            new CommandDefinition(sql, p, commandTimeout: 60, cancellationToken: ct))).ToList();
 
         static string? Contiene(string? valore) =>
             string.IsNullOrWhiteSpace(valore) ? null : $"%{valore.Trim()}%";

@@ -2665,6 +2665,54 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("ClientiTolti", "clienti");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.CodiceRecuperoPassword", b =>
+                {
+                    b.Property<int>("IdCodiceRecuperoPassword")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCodiceRecuperoPassword"));
+
+                    b.Property<DateTime>("DataCreazioneUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImprontaCodice")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("IndirizzoIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("Sale")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ScadenzaUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Tentativi")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Usato")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdCodiceRecuperoPassword");
+
+                    b.HasIndex("IdClienteArcLab", "DataCreazioneUtc");
+
+                    b.HasIndex("IndirizzoIp", "DataCreazioneUtc");
+
+                    b.ToTable("CodiciRecuperoPassword", "portale");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.CodiceVenditoreCommerciale", b =>
                 {
                     b.Property<int>("IdCodiceVenditore")
@@ -3950,6 +3998,57 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("DenominazioniMetodoVerificate", "app");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.DispositivoFidatoPortale", b =>
+                {
+                    b.Property<int>("IdDispositivoFidatoPortale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDispositivoFidatoPortale"));
+
+                    b.Property<DateTime>("DataCreazioneUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("DataRevocaUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImprontaToken")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("IndirizzoIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<bool>("Revocato")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ScadenzaUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UltimoUsoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("IdDispositivoFidatoPortale");
+
+                    b.HasIndex("ImprontaToken")
+                        .IsUnique();
+
+                    b.HasIndex("IdClienteArcLab", "Revocato");
+
+                    b.ToTable("DispositiviFidati", "portale");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.DocumentoTipo", b =>
                 {
                     b.Property<int>("IdDocumentoTipo")
@@ -4578,6 +4677,50 @@ namespace LaboratorioAI.Dati.Migrations
                         });
 
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.EventoPasswordCliente", b =>
+                {
+                    b.Property<long>("IdEventoPasswordCliente")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("IdEventoPasswordCliente"));
+
+                    b.Property<string>("CodiceContabilita")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("DataUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Dettaglio")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Evento")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IndirizzoIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("IdEventoPasswordCliente");
+
+                    b.HasIndex("IdClienteArcLab", "DataUtc");
+
+                    b.ToTable("EventiPasswordClienti", "portale");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.FatturatoClienteMensile", b =>
@@ -6744,6 +6887,49 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasKey("IdPacchettoConsulenza");
 
                     b.ToTable("PacchettiConsulenza", "cons");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.PasswordCliente", b =>
+                {
+                    b.Property<int>("IdPasswordCliente")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPasswordCliente"));
+
+                    b.Property<bool>("Annullata")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DataAnnullamentoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataImpostazioneUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImprontaPassword")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MotivoAnnullamento")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Origine")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdPasswordCliente");
+
+                    b.HasIndex("IdClienteArcLab", "Annullata");
+
+                    b.ToTable("PasswordClienti", "portale");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.PercentualeVoceLaboratorio", b =>
@@ -10831,6 +11017,70 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("IdMateriaPrima", "Corrente");
 
                     b.ToTable("ValoriNutrizionali", "nutri");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.VerificaAccessoPortale", b =>
+                {
+                    b.Property<int>("IdVerificaAccessoPortale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVerificaAccessoPortale"));
+
+                    b.Property<string>("CodiceContabilita")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("DataCreazioneUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImprontaCodice")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ImprontaToken")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("IndirizzoIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("RagioneSociale")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Sale")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ScadenzaUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Tentativi")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Usata")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdVerificaAccessoPortale");
+
+                    b.HasIndex("ImprontaToken")
+                        .IsUnique();
+
+                    b.HasIndex("IdClienteArcLab", "DataCreazioneUtc");
+
+                    b.ToTable("VerificheAccesso", "portale");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.VerificaMetodoAccreditamento", b =>

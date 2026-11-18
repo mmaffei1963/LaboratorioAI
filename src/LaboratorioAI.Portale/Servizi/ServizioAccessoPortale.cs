@@ -3,6 +3,7 @@ using System.Text;
 using LaboratorioAI.Core.Entita;
 using LaboratorioAI.Core.Modelli;
 using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.LaboratorioAI;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +12,18 @@ namespace LaboratorioAI.Portale.Servizi;
 /// <summary>Verifica delle credenziali e gestione delle sessioni del portale.</summary>
 public interface IServizioAccessoPortale
 {
-    Task<(EsitoAccesso Esito, SessioneAttiva? Sessione)> AccediAsync(
-        string codiceContabilita, string credenziale,
+    /// <summary>
+    /// Verifica le credenziali. Se il cliente entra con la partita IVA da un browser non riconosciuto
+    /// (<paramref name="tokenDispositivo"/> assente o non valido) non apre la sessione: invia un codice all'email del
+    /// cliente e restituisce <c>TokenVerifica</c>, da usare con <see cref="ConfermaVerificaAsync"/> (18/11/2026).
+    /// </summary>
+    Task<(EsitoAccesso Esito, SessioneAttiva? Sessione, string? TokenVerifica)> AccediAsync(
+        string codiceContabilita, string credenziale, string? tokenDispositivo,
+        string? indirizzoIp, string? userAgent, CancellationToken ct = default);
+
+    /// <summary>Conferma il codice ricevuto per email: apre la sessione e, se richiesto, riconosce il browser.</summary>
+    Task<(EsitoAccesso Esito, SessioneAttiva? Sessione, string? TokenDispositivo, string? Messaggio)> ConfermaVerificaAsync(
+        string tokenVerifica, string codice, bool ricordaBrowser,
         string? indirizzoIp, string? userAgent, CancellationToken ct = default);
 
     Task<SessioneAttiva?> VerificaTokenAsync(string token, CancellationToken ct = default);
@@ -30,25 +41,37 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
     private readonly ContestoLaboratorioAI _ctx;
     private readonly OpzioniPortale _opzioni;
     private readonly ILogger<ServizioAccessoPortale> _log;
+    private readonly IRepositoryCredenzialiClienti _credenziali;
+    private readonly IServizioEmail _email;
+
+    // Verifica del browser nuovo (18/11/2026)
+    private const int GiorniBrowserRiconosciuto = 180;
+    private const int MinutiValiditaVerifica = 15;
+    private const int TentativiMassimiVerifica = 5;
+    private const int VerificheMassimeOraPerCliente = 6;
 
     public ServizioAccessoPortale(
         IRepositoryPortale repository,
         ContestoLaboratorioAI ctx,
         Microsoft.Extensions.Options.IOptions<OpzioniPortale> opzioni,
-        ILogger<ServizioAccessoPortale> log)
+        ILogger<ServizioAccessoPortale> log,
+        IRepositoryCredenzialiClienti credenziali,
+        IServizioEmail email)
     {
         _repository = repository;
         _ctx = ctx;
         _opzioni = opzioni.Value;
         _log = log;
+        _credenziali = credenziali;
+        _email = email;
     }
 
     // ═══════════════════════════════════════════════════════════════
     // ACCESSO
     // ═══════════════════════════════════════════════════════════════
 
-    public async Task<(EsitoAccesso, SessioneAttiva?)> AccediAsync(
-        string codiceContabilita, string credenziale,
+    public async Task<(EsitoAccesso, SessioneAttiva?, string?)> AccediAsync(
+        string codiceContabilita, string credenziale, string? tokenDispositivo,
         string? indirizzoIp, string? userAgent, CancellationToken ct = default)
     {
         var codice = codiceContabilita.Trim().ToUpperInvariant();
@@ -56,7 +79,7 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
         if (await TroppiTentativiAsync(codice, indirizzoIp, ct))
         {
             await RegistraTentativoAsync(codice, indirizzoIp, false, "limite tentativi", ct);
-            return (EsitoAccesso.TroppiTentativi, null);
+            return (EsitoAccesso.TroppiTentativi, null, null);
         }
 
         // ── Accesso operatore MARE.A ───────────────────────────────
@@ -66,34 +89,59 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             {
                 _log.LogWarning("Tentativo di accesso operatore con credenziale non configurata.");
                 await RegistraTentativoAsync(codice, indirizzoIp, false, "operatore non configurato", ct);
-                return (EsitoAccesso.CredenzialiNonValide, null);
+                return (EsitoAccesso.CredenzialiNonValide, null, null);
             }
 
             if (!ConfrontoSicuro(credenziale, _opzioni.CredenzialeOperatore!))
             {
                 await RegistraTentativoAsync(codice, indirizzoIp, false, "credenziale errata", ct);
-                return (EsitoAccesso.CredenzialiNonValide, null);
+                return (EsitoAccesso.CredenzialiNonValide, null, null);
             }
 
             var sessioneOperatore = await CreaSessioneAsync(
                 null, codice, "MARE.A srl — accesso operatore", true, indirizzoIp, userAgent, ct);
 
             await RegistraTentativoAsync(codice, indirizzoIp, true, null, ct);
-            return (EsitoAccesso.Riuscito, sessioneOperatore);
+            return (EsitoAccesso.Riuscito, sessioneOperatore, null);
         }
 
         // ── Accesso cliente ────────────────────────────────────────
         var (cliente, credenzialeRegistrata) = await _repository.CercaPerAccessoAsync(codice, ct);
 
+        // 17/11/2026: se il cliente ha scelto una password personale vale solo quella (la partita IVA non più).
+        var improntaPersonale = cliente is null ? null
+            : await ServizioPasswordPortale.ImprontaAttivaAsync(_ctx, cliente.IdCliente, ct);
+
         // Il confronto viene eseguito anche quando il cliente non esiste,
         // così il tempo di risposta non rivela quali codici siano validi.
         var atteso = credenzialeRegistrata ?? Guid.NewGuid().ToString();
-        var corrisponde = ConfrontoSicuro(credenziale, atteso);
+        var corrisponde = improntaPersonale is not null
+            ? ServizioPasswordPortale.Verifica(improntaPersonale, credenziale)
+            : ConfrontoSicuro(credenziale, atteso);
 
         if (cliente is null || !corrisponde)
         {
             await RegistraTentativoAsync(codice, indirizzoIp, false, "credenziale errata", ct);
-            return (EsitoAccesso.CredenzialiNonValide, null);
+            return (EsitoAccesso.CredenzialiNonValide, null, null);
+        }
+
+        // 18/11/2026: con la partita IVA (dato pubblico) da un browser non riconosciuto serve il codice via email.
+        // Con una password personale non serve. Senza email registrata in ArcLab l'accesso resta come prima.
+        if (improntaPersonale is null && !await BrowserRiconosciutoAsync(cliente.IdCliente, tokenDispositivo, ct))
+        {
+            string? tokenVerifica;
+            try { tokenVerifica = await AvviaVerificaAsync(cliente, indirizzoIp, ct); }
+            catch (LimiteVerificheException)
+            {
+                // Troppe verifiche: si blocca (non si salta la verifica).
+                await RegistraTentativoAsync(codice, indirizzoIp, false, "limite verifiche email", ct);
+                return (EsitoAccesso.TroppiTentativi, null, null);
+            }
+            if (tokenVerifica is not null)
+            {
+                await RegistraTentativoAsync(codice, indirizzoIp, true, "credenziali corrette, verifica email inviata", ct);
+                return (EsitoAccesso.Riuscito, null, tokenVerifica);
+            }
         }
 
         var sessione = await CreaSessioneAsync(
@@ -101,7 +149,126 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             false, indirizzoIp, userAgent, ct);
 
         await RegistraTentativoAsync(codice, indirizzoIp, true, null, ct);
-        return (EsitoAccesso.Riuscito, sessione);
+        return (EsitoAccesso.Riuscito, sessione, null);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // VERIFICA DEL BROWSER NUOVO (18/11/2026)
+    // ═══════════════════════════════════════════════════════════════
+
+    private static string ImprontaToken(string token) => CatenaEvidenze.Sha256("browser|" + token);
+
+    private async Task<bool> BrowserRiconosciutoAsync(int idCliente, string? token, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.Length > 200) return false;
+        var impronta = ImprontaToken(token);
+        var d = await _ctx.Set<DispositivoFidatoPortale>().FirstOrDefaultAsync(x => x.ImprontaToken == impronta, ct);
+        if (d is null || d.Revocato || d.IdClienteArcLab != idCliente || d.ScadenzaUtc < DateTime.UtcNow) return false;
+        d.UltimoUsoUtc = DateTime.UtcNow;
+        await _ctx.SaveChangesAsync(ct);
+        return true;
+    }
+
+    /// <summary>Invia il codice all'email del cliente; null se non c'è email (accesso come prima) o se l'invio fallisce.</summary>
+    private async Task<string?> AvviaVerificaAsync(ClientePortale cliente, string? ip, CancellationToken ct)
+    {
+        var dati = await _credenziali.DatiAsync(cliente.IdCliente, ct);
+        var indirizzi = dati?.IndirizziEmail ?? [];
+        if (indirizzi.Count == 0)
+        {
+            _log.LogWarning("Accesso senza verifica email: il cliente {IdCliente} non ha un'email in ArcLab", cliente.IdCliente);
+            return null;
+        }
+
+        var adesso = DateTime.UtcNow;
+        var recenti = await _ctx.Set<VerificaAccessoPortale>()
+            .CountAsync(v => v.IdClienteArcLab == cliente.IdCliente && v.DataCreazioneUtc > adesso.AddHours(-1), ct);
+        if (recenti >= VerificheMassimeOraPerCliente)
+            throw new LimiteVerificheException();
+
+        var token = GeneraToken();
+        var otp = CodiceOtp.Genera();
+        var sale = CodiceOtp.Sale();
+        var v = new VerificaAccessoPortale
+        {
+            IdClienteArcLab = cliente.IdCliente,
+            CodiceContabilita = cliente.CodiceContabilita,
+            RagioneSociale = cliente.RagioneSociale,
+            ImprontaToken = ImprontaToken(token),
+            Sale = sale,
+            ImprontaCodice = CodiceOtp.Impronta(otp, sale, cliente.IdCliente),
+            DataCreazioneUtc = adesso,
+            ScadenzaUtc = adesso.AddMinutes(MinutiValiditaVerifica),
+            IndirizzoIp = ip
+        };
+        _ctx.Set<VerificaAccessoPortale>().Add(v);
+        await _ctx.SaveChangesAsync(ct);
+
+        var corpo = $"""
+            <p>Gentile cliente,</p>
+            <p>è stato chiesto l'accesso all'Area Clienti MARE.A per il codice cliente <strong>{System.Net.WebUtility.HtmlEncode(cliente.CodiceContabilita)}</strong>
+               da un browser non ancora riconosciuto.</p>
+            <p>Il codice da inserire è: <strong style="font-size:1.3em;letter-spacing:.15em">{otp}</strong></p>
+            <p>Il codice vale {MinutiValiditaVerifica} minuti. Se non sei stato tu, non inserirlo e avvisa MARE.A al numero 0541 830442:
+               qualcuno conosce le tue credenziali. Puoi anche scegliere una password personale dall'Area Clienti (pulsante «Password»).</p>
+            <p>MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN)</p>
+            """;
+        try
+        {
+            await _email.InviaAsync(indirizzi, "Area Clienti MARE.A — codice di accesso", corpo, ct);
+            return token;
+        }
+        catch (Exception ex)
+        {
+            // Senza email non si blocca il cliente: l'accesso prosegue come prima e resta traccia nel log.
+            _log.LogError(ex, "Invio del codice di verifica accesso non riuscito per il cliente {IdCliente}", cliente.IdCliente);
+            v.Usata = true;
+            await _ctx.SaveChangesAsync(ct);
+            return null;
+        }
+    }
+
+    public async Task<(EsitoAccesso, SessioneAttiva?, string?, string?)> ConfermaVerificaAsync(
+        string tokenVerifica, string codice, bool ricordaBrowser, string? indirizzoIp, string? userAgent, CancellationToken ct = default)
+    {
+        const string NonValido = "Codice non valido o scaduto: rifai l'accesso per riceverne uno nuovo.";
+        if (string.IsNullOrWhiteSpace(tokenVerifica) || tokenVerifica.Length > 200)
+            return (EsitoAccesso.CredenzialiNonValide, null, null, NonValido);
+
+        var impronta = ImprontaToken(tokenVerifica);
+        var v = await _ctx.Set<VerificaAccessoPortale>().FirstOrDefaultAsync(x => x.ImprontaToken == impronta, ct);
+        if (v is null || v.Usata || v.ScadenzaUtc < DateTime.UtcNow || v.Tentativi >= TentativiMassimiVerifica)
+            return (EsitoAccesso.CredenzialiNonValide, null, null, NonValido);
+
+        if (!CodiceOtp.Corrisponde(codice, v.Sale, v.IdClienteArcLab, v.ImprontaCodice))
+        {
+            v.Tentativi++;
+            await _ctx.SaveChangesAsync(ct);
+            await RegistraTentativoAsync(v.CodiceContabilita, indirizzoIp, false, "codice di verifica errato", ct);
+            return (EsitoAccesso.CredenzialiNonValide, null, null,
+                v.Tentativi >= TentativiMassimiVerifica ? NonValido : "Codice non corretto.");
+        }
+
+        v.Usata = true;
+        string? tokenDispositivo = null;
+        if (ricordaBrowser)
+        {
+            tokenDispositivo = GeneraToken();
+            _ctx.Set<DispositivoFidatoPortale>().Add(new DispositivoFidatoPortale
+            {
+                IdClienteArcLab = v.IdClienteArcLab,
+                ImprontaToken = ImprontaToken(tokenDispositivo),
+                DataCreazioneUtc = DateTime.UtcNow,
+                ScadenzaUtc = DateTime.UtcNow.AddDays(GiorniBrowserRiconosciuto),
+                IndirizzoIp = indirizzoIp,
+                UserAgent = userAgent?.Length > 500 ? userAgent[..500] : userAgent
+            });
+        }
+        await _ctx.SaveChangesAsync(ct);
+
+        var sessione = await CreaSessioneAsync(v.IdClienteArcLab, v.CodiceContabilita, v.RagioneSociale, false, indirizzoIp, userAgent, ct);
+        await RegistraTentativoAsync(v.CodiceContabilita, indirizzoIp, true, ricordaBrowser ? "verifica email, browser riconosciuto" : "verifica email", ct);
+        return (EsitoAccesso.Riuscito, sessione, tokenDispositivo, null);
     }
 
     /// <summary>
@@ -248,3 +415,6 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             .ExecuteDeleteAsync(ct);
     }
 }
+
+/// <summary>Troppe verifiche via email per lo stesso cliente nell'ultima ora (18/11/2026).</summary>
+internal sealed class LimiteVerificheException : Exception { }

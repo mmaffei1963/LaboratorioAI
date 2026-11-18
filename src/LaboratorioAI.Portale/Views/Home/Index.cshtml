@@ -20,7 +20,7 @@
         </div>
 
         <div class="campo">
-            <label for="credenziale">Partita IVA</label>
+            <label for="credenziale">Password <span class="nota-campo">(la partita IVA, se non l'hai cambiata)</span></label>
             <input type="password" id="credenziale" name="password"
                    autocomplete="current-password" required />
         </div>
@@ -33,11 +33,51 @@
 
         <p class="errore-accesso nascosto" id="errore-accesso"></p>
 
+        <!-- 17/11/2026: recupero della password con codice via email -->
+        <button type="button" class="link-accesso" id="btn-dimenticata">Password dimenticata?</button>
+
         <p class="nota-accesso">
             MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN)
         </p>
     </form>
 </div>
+
+<!-- ═══════════ VERIFICA DEL BROWSER NUOVO (18/11/2026) ═══════════ -->
+<dialog id="dlg-verifica" class="finestra">
+    <h2>Verifica dell'accesso</h2>
+    <p id="ver-avviso"></p>
+    <div class="campo"><label for="ver-codice">Codice ricevuto per email</label><input type="text" id="ver-codice" inputmode="numeric" autocomplete="one-time-code" maxlength="10" /></div>
+    <label class="ricorda"><input type="checkbox" id="ver-ricorda" checked /> Ricorda questo browser per 180 giorni (non spuntare su un computer condiviso)</label>
+    <div class="azioni-finestra">
+        <button type="button" class="pulsante-tenue" data-chiudi>Annulla</button>
+        <button type="button" class="pulsante" id="btn-ver-conferma">Entra</button>
+    </div>
+    <p class="messaggio-finestra" id="ver-messaggio"></p>
+</dialog>
+
+<!-- ═══════════ RECUPERO PASSWORD (17/11/2026) ═══════════ -->
+<dialog id="dlg-recupero" class="finestra">
+    <h2>Recupero della password</h2>
+    <div id="recupero-passo1">
+        <p>Indica il codice cliente: invieremo un codice all'indirizzo email del cliente registrato presso MARE.A.</p>
+        <div class="campo"><label for="rec-codice">Codice cliente</label><input type="text" id="rec-codice" autocomplete="username" /></div>
+        <div class="azioni-finestra">
+            <button type="button" class="pulsante-tenue" data-chiudi>Annulla</button>
+            <button type="button" class="pulsante" id="btn-rec-invia">Invia il codice</button>
+        </div>
+    </div>
+    <div id="recupero-passo2" class="nascosto">
+        <p id="rec-avviso"></p>
+        <div class="campo"><label for="rec-token">Codice ricevuto per email</label><input type="text" id="rec-token" inputmode="numeric" autocomplete="one-time-code" maxlength="10" /></div>
+        <div class="campo"><label for="rec-nuova">Password nuova (almeno 8 caratteri)</label><input type="password" id="rec-nuova" autocomplete="new-password" /></div>
+        <div class="campo"><label for="rec-ripetuta">Ripeti la password nuova</label><input type="password" id="rec-ripetuta" autocomplete="new-password" /></div>
+        <div class="azioni-finestra">
+            <button type="button" class="pulsante-tenue" data-chiudi>Annulla</button>
+            <button type="button" class="pulsante" id="btn-rec-conferma">Imposta la password</button>
+        </div>
+    </div>
+    <p class="messaggio-finestra" id="rec-messaggio"></p>
+</dialog>
 
 <!-- ═══════════ APPLICAZIONE ═══════════ -->
 <div id="applicazione" class="nascosto">
@@ -52,6 +92,7 @@
         </div>
         <div class="intestazione-utente">
             <span id="nome-cliente"></span>
+            <button class="pulsante-esci nascosto" id="btn-password" title="Puoi scegliere una password personale al posto della partita IVA">Password</button>
             <button class="pulsante-esci" id="btn-esci">Esci</button>
         </div>
     </header>
@@ -61,6 +102,9 @@
             <label>Accesso operatore — cliente da visualizzare
                 <select id="scelta-cliente"><option value="">Tutti i clienti</option></select>
             </label>
+            <!-- 17/11/2026: credenziali del cliente scelto, con ripristino della partita IVA -->
+            <span id="stato-password" class="stato-password nascosto"></span>
+            <button type="button" class="pulsante-tenue nascosto" id="btn-ripristina">Ripristina credenziali originali</button>
         </div>
 
         <!-- 17/11/2026: schede Campioni / Offerte -->
@@ -181,6 +225,21 @@
             </section>
         </div>
     </main>
+
+    <!-- 17/11/2026: cambio password del cliente -->
+    <dialog id="dlg-password" class="finestra">
+        <h2>Password personale</h2>
+        <p>Se vuoi, puoi scegliere una password personale al posto della partita IVA. Da quel momento per entrare vale solo la
+            password nuova; se la dimentichi puoi recuperarla dalla pagina di accesso con un codice inviato per email.</p>
+        <div class="campo"><label for="pw-attuale">Password attuale (la partita IVA, se non l'hai mai cambiata)</label><input type="password" id="pw-attuale" autocomplete="current-password" /></div>
+        <div class="campo"><label for="pw-nuova">Password nuova (almeno 8 caratteri)</label><input type="password" id="pw-nuova" autocomplete="new-password" /></div>
+        <div class="campo"><label for="pw-ripetuta">Ripeti la password nuova</label><input type="password" id="pw-ripetuta" autocomplete="new-password" /></div>
+        <div class="azioni-finestra">
+            <button type="button" class="pulsante-tenue" data-chiudi>Chiudi</button>
+            <button type="button" class="pulsante" id="btn-pw-salva">Cambia password</button>
+        </div>
+        <p class="messaggio-finestra" id="pw-messaggio"></p>
+    </dialog>
 
     <footer class="pie">
         MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN) — Tel. 0541 830442
