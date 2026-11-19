@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using LaboratorioAI.Core.Entita;
@@ -190,7 +190,7 @@ public static class RegoleLimiti
     {
         var tratti = citazioneNormalizzata.Split(new[] { '|', '…', ';', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .SelectMany(t => t.Split("...", StringSplitOptions.RemoveEmptyEntries))
-            .Select(Compatta).Where(t => t.Length >= 3).ToList();
+            .Select(Compatta).Where(t => t.Length >= 3 || t.Any(char.IsDigit)).ToList();
         if (tratti.Count < 2) return false;
         // si prova da ogni posizione in cui compare il primo tratto
         for (var inizio = testoCompatto.IndexOf(tratti[0], StringComparison.Ordinal); inizio >= 0;
@@ -275,3 +275,4 @@ public static class RegoleLimiti
     /// <summary>Famiglie in cui la categoria si ricava dalla sola famiglia della matrice (nessun abbinamento a mano).</summary>
     public static bool CategoriaDaFamiglia(FamigliaNormativa f) => f is not FamigliaNormativa.Alimenti;
 }
+
