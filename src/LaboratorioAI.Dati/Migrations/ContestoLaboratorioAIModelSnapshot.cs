@@ -1404,6 +1404,63 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("AssegnazioniClienti", "clienti");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Assenza", b =>
+                {
+                    b.Property<int>("IdAssenza")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAssenza"));
+
+                    b.Property<bool>("Annullata")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Causale")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTime?>("DataAnnullamento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Giorno")
+                        .HasColumnType("date");
+
+                    b.Property<int>("IdLavoratore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtenteCreazione")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MotivoAnnullamento")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("Ore")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.HasKey("IdAssenza");
+
+                    b.HasIndex("Giorno");
+
+                    b.HasIndex("IdLavoratore", "Giorno");
+
+                    b.ToTable("Assenze", "presenze", t =>
+                        {
+                            t.HasCheckConstraint("CK_Assenze_Causale", "[Causale] IN ('FER', 'PER', '104', 'SEG', 'MAL', 'MAT', 'DS', 'ALT')");
+
+                            t.HasCheckConstraint("CK_Assenze_Ore", "[Ore] >= 0 AND [Ore] <= 24");
+                        });
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AttivitaConsulenza", b =>
                 {
                     b.Property<int>("IdAttivitaConsulenza")
@@ -5181,6 +5238,46 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("GestionaliCompilazione", "man");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.GiornoCalendarioAziendale", b =>
+                {
+                    b.Property<int>("IdGiornoCalendario")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGiornoCalendario"));
+
+                    b.Property<string>("Descrizione")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateOnly>("Giorno")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("IdSede")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Ore")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.HasKey("IdGiornoCalendario");
+
+                    b.HasIndex("IdSede", "Giorno")
+                        .IsUnique();
+
+                    b.ToTable("CalendarioAziendale", "presenze", t =>
+                        {
+                            t.HasCheckConstraint("CK_CalendarioAziendale_Ore", "[Ore] IS NULL OR ([Ore] > 0 AND [Ore] <= 24)");
+
+                            t.HasCheckConstraint("CK_CalendarioAziendale_Tipo", "[Tipo] IN ('FE', 'CH')");
+                        });
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.GiroVerificaLimiti", b =>
                 {
                     b.Property<int>("IdGiroVerificaLimiti")
@@ -5354,6 +5451,26 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("DataOra");
 
                     b.ToTable("ImportazioniAzw", "provv");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ImpostazionePresenze", b =>
+                {
+                    b.Property<int>("IdImpostazione")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("InizioConteggi")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdImpostazione");
+
+                    b.ToTable("ImpostazioniPresenze", "presenze");
+
+                    b.HasData(
+                        new
+                        {
+                            IdImpostazione = 1,
+                            InizioConteggi = new DateOnly(2027, 1, 1)
+                        });
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.ImpostazioniAndamento", b =>
@@ -5815,6 +5932,89 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("IdClienteArcLab", "Stato");
 
                     b.ToTable("InvitiFirmatario", "contratti");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Lavoratore", b =>
+                {
+                    b.Property<int>("IdLavoratore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdLavoratore"));
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly?>("AttivoDal")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Cognome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Colore")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltimaModifica")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdSede")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdUtente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Ordine")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OreDomenica")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreGiovedi")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreLunedi")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreMartedi")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreMercoledi")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreSabato")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("OreVenerdi")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.HasKey("IdLavoratore");
+
+                    b.HasIndex("Cognome")
+                        .IsUnique();
+
+                    b.HasIndex("IdSede");
+
+                    b.HasIndex("IdUtente")
+                        .IsUnique();
+
+                    b.ToTable("Lavoratori", "presenze", t =>
+                        {
+                            t.HasCheckConstraint("CK_Lavoratori_Ore", "[OreLunedi] BETWEEN 0 AND 24 AND [OreMartedi] BETWEEN 0 AND 24 AND [OreMercoledi] BETWEEN 0 AND 24 AND [OreGiovedi] BETWEEN 0 AND 24 AND [OreVenerdi] BETWEEN 0 AND 24 AND [OreSabato] BETWEEN 0 AND 24 AND [OreDomenica] BETWEEN 0 AND 24");
+                        });
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.LetturaDocumentoPortale", b =>
@@ -6398,6 +6598,52 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasFilter("[CodiceAttivita] IS NOT NULL AND [SiglaRegione] IS NOT NULL");
 
                     b.ToTable("ModelliDocumento", "man");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ModificaPresenze", b =>
+                {
+                    b.Property<long>("IdModifica")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("IdModifica"));
+
+                    b.Property<string>("Azione")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Dopo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly?>("Giorno")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("IdLavoratore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtenteAutore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Prima")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("QuandoUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("IdModifica");
+
+                    b.HasIndex("IdUtenteAutore");
+
+                    b.HasIndex("QuandoUtc");
+
+                    b.HasIndex("IdLavoratore", "Giorno");
+
+                    b.ToTable("RegistroModifiche", "presenze");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.MovimentoAnaliticoMensile", b =>
@@ -9548,6 +9794,44 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("ScelteResponsabile", "man");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.SedeAziendale", b =>
+                {
+                    b.Property<int>("IdSede")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSede"));
+
+                    b.Property<bool>("Attiva")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("IdSede");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Sedi", "presenze");
+
+                    b.HasData(
+                        new
+                        {
+                            IdSede = 1,
+                            Attiva = true,
+                            Nome = "Cattolica"
+                        },
+                        new
+                        {
+                            IdSede = 2,
+                            Attiva = true,
+                            Nome = "Pesaro"
+                        });
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.SedeCompilazione", b =>
                 {
                     b.Property<int>("IdSedeCompilazione")
@@ -10684,6 +10968,68 @@ namespace LaboratorioAI.Dati.Migrations
                     b.HasIndex("NumeroRapporto");
 
                     b.ToTable("TermometriEsterni", "tarature");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Timbratura", b =>
+                {
+                    b.Property<int>("IdTimbratura")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTimbratura"));
+
+                    b.Property<bool>("Annullata")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DataAnnullamento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataOraUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Giorno")
+                        .HasColumnType("date");
+
+                    b.Property<int>("IdLavoratore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdUtenteCreazione")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Luogo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MotivoAnnullamento")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Origine")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nchar(1)")
+                        .IsFixedLength();
+
+                    b.HasKey("IdTimbratura");
+
+                    b.HasIndex("Giorno");
+
+                    b.HasIndex("IdLavoratore", "Giorno");
+
+                    b.ToTable("Timbrature", "presenze", t =>
+                        {
+                            t.HasCheckConstraint("CK_Timbrature_Origine", "[Origine] IN ('App', 'Manuale')");
+
+                            t.HasCheckConstraint("CK_Timbrature_Tipo", "[Tipo] IN ('E', 'U')");
+                        });
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.TipoManuale", b =>
@@ -12186,6 +12532,17 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Assenza", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Lavoratore", "Lavoratore")
+                        .WithMany()
+                        .HasForeignKey("IdLavoratore")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lavoratore");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.AutorizzatoCompilazione", b =>
                 {
                     b.HasOne("LaboratorioAI.Core.Entita.Compilazione", "Compilazione")
@@ -12482,6 +12839,16 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("Compilazione");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.GiornoCalendarioAziendale", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.SedeAziendale", "Sede")
+                        .WithMany()
+                        .HasForeignKey("IdSede")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Sede");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.GiroVerificaLimiti", b =>
                 {
                     b.HasOne("LaboratorioAI.Core.Entita.FonteNormativa", null)
@@ -12506,6 +12873,25 @@ namespace LaboratorioAI.Dati.Migrations
                         .HasForeignKey("CompilazioneIdCompilazione");
 
                     b.Navigation("Compilazione");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Lavoratore", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.SedeAziendale", "Sede")
+                        .WithMany()
+                        .HasForeignKey("IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LaboratorioAI.Core.Entita.Utente", "Utente")
+                        .WithMany()
+                        .HasForeignKey("IdUtente")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Sede");
+
+                    b.Navigation("Utente");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.LimiteNormativo", b =>
@@ -12582,6 +12968,19 @@ namespace LaboratorioAI.Dati.Migrations
                         .IsRequired();
 
                     b.Navigation("TipoManuale");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.ModificaPresenze", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Lavoratore", null)
+                        .WithMany()
+                        .HasForeignKey("IdLavoratore")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("LaboratorioAI.Core.Entita.Utente", null)
+                        .WithMany()
+                        .HasForeignKey("IdUtenteAutore")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.MovimentoProvvigioneArchiviato", b =>
@@ -13043,6 +13442,17 @@ namespace LaboratorioAI.Dati.Migrations
                     b.Navigation("CampioneRiferimento");
 
                     b.Navigation("Utente");
+                });
+
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.Timbratura", b =>
+                {
+                    b.HasOne("LaboratorioAI.Core.Entita.Lavoratore", "Lavoratore")
+                        .WithMany()
+                        .HasForeignKey("IdLavoratore")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lavoratore");
                 });
 
             modelBuilder.Entity("LaboratorioAI.Core.Entita.UtenteRuolo", b =>

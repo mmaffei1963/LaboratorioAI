@@ -175,6 +175,12 @@ public static class Permessi
     /// <summary>21/10/2026: modificare parametri, dati dei soci, premi area laboratorio, chiudere l'anno (solo il socio «gestore»).</summary>
     public const string CompensiSociGestisci = "compensisoci.gestisci";
 
+    // ── Presenze (19/11/2026) ──
+    /// <summary>Timbrare e vedere/correggere le proprie presenze e assenze (tutti gli operatori).</summary>
+    public const string PresenzeTimbra = "presenze.timbra";
+    /// <summary>Lavoratori, sedi e calendari, prospetto e correzioni di tutti, esportazione in Excel (per ora Mirko e Vaccarini).</summary>
+    public const string PresenzeGestisci = "presenze.gestisci";
+
     // ── Limiti normativi (17/10/2026, procedura limiti normativi Rev. 0) ──
     /// <summary>Consultare schede limite e fonti (sola lettura).</summary>
     public const string LimitiConsulta = "limiti.consulta";
@@ -241,6 +247,7 @@ public static class Permessi
         RapportiniCompila, RapportiniGestione,
         ClientiSeguire, ClientiGestisci, ClientiSubentri,
         DirezioneConsulta, DirezioneGestisci, ConsuntiviConsulta, RicercaFattureConsulta, CompensiSociConsulta, CompensiSociGestisci,
+        PresenzeTimbra, PresenzeGestisci,
         LimitiConsulta, LimitiValida,
         CondizioniGestione, CondizioniFirmatari,
         AmministrazioneUtenti, AmministrazioneConfigurazioni, AmministrazioneAudit,

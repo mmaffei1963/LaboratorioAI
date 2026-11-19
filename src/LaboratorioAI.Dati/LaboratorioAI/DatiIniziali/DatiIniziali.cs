@@ -29,6 +29,7 @@ public static class Popolamento
         var nuovoConsuntivo = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.ConsuntiviConsulta, ct);
         var nuoviCompensiSoci = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.CompensiSociConsulta, ct);
         var nuovaRicercaFatture = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.RicercaFattureConsulta, ct);
+        var nuovePresenze = !await ctx.Permessi.AnyAsync(p => p.Codice == Permessi.PresenzeTimbra, ct);
         await PopolaPermessiAsync(ctx, ct);
         await PopolaRuoliAsync(ctx, primaVolta, ct);
         // 16/11/2026: la max incertezza ammessa delle bilance è ora in % del carico minimo di linearità; i valori vecchi
@@ -62,6 +63,21 @@ public static class Popolamento
                 && !await ctx.RuoliPermessi.AnyAsync(rp => rp.IdRuolo == socio.IdRuolo && rp.IdPermesso == permesso.IdPermesso, ct))
             {
                 ctx.RuoliPermessi.Add(new RuoloPermesso { IdRuolo = socio.IdRuolo, IdPermesso = permesso.IdPermesso });
+                await ctx.SaveChangesAsync(ct);
+            }
+        }
+        if (nuovePresenze && !primaVolta)
+        {
+            // 19/11/2026: «presenze.timbra» va a tutti i ruoli esistenti una volta sola, quando nasce il permesso (timbrano tutti gli
+            // operatori). «presenze.gestisci» no: va dato da «Utenti e ruoli» a chi deve gestire (per ora Mirko e Vaccarini).
+            var permessoTimbra = await ctx.Permessi.FirstOrDefaultAsync(p => p.Codice == Permessi.PresenzeTimbra, ct);
+            if (permessoTimbra is not null)
+            {
+                foreach (var ruoloPresenze in await ctx.Ruoli.ToListAsync(ct))
+                {
+                    if (!await ctx.RuoliPermessi.AnyAsync(rp => rp.IdRuolo == ruoloPresenze.IdRuolo && rp.IdPermesso == permessoTimbra.IdPermesso, ct))
+                        ctx.RuoliPermessi.Add(new RuoloPermesso { IdRuolo = ruoloPresenze.IdRuolo, IdPermesso = permessoTimbra.IdPermesso });
+                }
                 await ctx.SaveChangesAsync(ct);
             }
         }
@@ -233,6 +249,8 @@ public static class Popolamento
         (Permessi.RicercaFattureConsulta, "Ricerca delle fatture di vendita per testo della fattura (AZW)",            AreaFunzionale.Amministrazione),
         (Permessi.CompensiSociConsulta, "Compensi soci e rimborsi spese (riservato ai soci: serve anche essere un socio attivo)", AreaFunzionale.Direzione),
         (Permessi.CompensiSociGestisci, "Compensi soci: parametri, dati dei soci, premi area laboratorio, chiusura dell'anno (solo il socio gestore)", AreaFunzionale.Direzione),
+        (Permessi.PresenzeTimbra, "Presenze: timbrare e vedere o correggere le proprie presenze e assenze", AreaFunzionale.Amministrazione),
+        (Permessi.PresenzeGestisci, "Presenze: lavoratori, sedi e calendari, prospetto mensile, correzioni di tutti, esportazione in Excel", AreaFunzionale.Amministrazione),
         (Permessi.LimitiConsulta, "Limiti normativi: consultare schede limite e fonti", AreaFunzionale.LimitiNormativi),
         (Permessi.LimitiValida,   "Limiti normativi: fonti, estrazione AI, proposta, validazione e correzione delle schede", AreaFunzionale.LimitiNormativi),
 

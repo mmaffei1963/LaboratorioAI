@@ -2,6 +2,19 @@
 
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## Presenze, fase 2: tabelle e permessi (19/11/2026)
+- Nuove entita' `SedeAziendale`, `Lavoratore`, `Timbratura`, `Assenza`, `GiornoCalendarioAziendale`, `ImpostazionePresenze`, `ModificaPresenze` (`Core\Entita\Presenze.cs`) e relative configurazioni nello schema `presenze` (`ConfigurazioniPresenze.cs`). Sedi Cattolica e Pesaro e inizio conteggi 1/1/2027 gia' inseriti.
+- Permessi `presenze.timbra` (assegnato una volta sola a tutti i ruoli esistenti) e `presenze.gestisci` (da dare in "Utenti e ruoli" a Mirko e Vaccarini).
+- Migrazioni `Presenze` (tabelle) e `PresenzeRegistroSoloAggiunta` (trigger: il registro delle modifiche non si puo' modificare ne' cancellare).
+- Nessun accesso a ArcLab. Nessuna cancellazione fisica.
+
+## Presenze, fase 1: motore di calcolo (19/11/2026)
+- Nuovo motore di calcolo delle presenze in `LaboratorioAI.Core\Presenze` (nessun accesso al database): arrotondamento al quarto d'ora, coppie entrata/uscita con anomalie, ore da contratto, festivita' nazionali (San Francesco dal 2026), chiusure aziendali, straordinario, ore non lavorate, contenuto e colore delle celle del prospetto.
+- Regole portate 1:1 dall'app di Vaccarini. Test: 335, di cui 272 generati chiamando il codice Python originale (260 giornate e 12 mesi interi).
+- I residui di ferie e permessi non si gestiscono: li fornisce Contabilcoop.
+
+## Limiti normativi: citazioni di righe di tabella (19/11/2026)
+- `RegoleLimiti.CitazioneATratti`: i pezzi brevi che contengono una cifra non vengono piu' scartati. Una citazione con il valore sbagliato (es. "Antimonio | 5 | ug/l" contro "10") non risulta piu' presente nella fonte. Corretto il test `Citazione_RigaDiTabellaBreve` che falliva.
 ## Script per due postazioni, ufficio e portatile (06/11/2026)
 - Il codice e' su GitHub (repository privato): si lavora con `git pull` / `git push`; vedi `LAVORARE_DA_DUE_POSTAZIONI.md`.
 - Nuovi `scripts\PostazioneComune.ps1` (riconosce il PC dell'ufficio `PCMAREA01`), `scripts\Controlla-Ambiente.ps1` e `scripts\Controlla-Pubblicazione.ps1`.

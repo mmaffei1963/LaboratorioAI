@@ -195,6 +195,15 @@ public class ContestoLaboratorioAI : DbContext
     // Avviso campioni in ritardo (22/10/2026)
     public DbSet<CampioneNascostoRitardi> CampioniNascostiRitardi => Set<CampioneNascostoRitardi>();
 
+    // Presenze (19/11/2026, schema presenze)
+    public DbSet<SedeAziendale> SediAziendali => Set<SedeAziendale>();
+    public DbSet<Lavoratore> Lavoratori => Set<Lavoratore>();
+    public DbSet<Timbratura> Timbrature => Set<Timbratura>();
+    public DbSet<Assenza> Assenze => Set<Assenza>();
+    public DbSet<GiornoCalendarioAziendale> CalendarioAziendale => Set<GiornoCalendarioAziendale>();
+    public DbSet<ImpostazionePresenze> ImpostazioniPresenze => Set<ImpostazionePresenze>();
+    public DbSet<ModificaPresenze> RegistroModifichePresenze => Set<ModificaPresenze>();
+
     // Compensi soci (21/10/2026, schema soci)
     public DbSet<Socio> Soci => Set<Socio>();
     public DbSet<AnnoCompensi> AnniCompensi => Set<AnnoCompensi>();
