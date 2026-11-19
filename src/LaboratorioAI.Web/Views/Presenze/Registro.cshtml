@@ -1,0 +1,55 @@
+@model LaboratorioAI.Web.Controllers.ModelloRegistro
+@using LaboratorioAI.Core.Presenze
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Registro delle modifiche</h1>
+        <p class="sottotitolo">Chi ha cambiato cosa e quando, con il motivo. Il registro è solo in aggiunta: non si modifica e non si cancella.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Index">Timbra</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+@if (Model.Elenco.Count > 0)
+{
+    <form method="get" asp-action="Registro" class="riquadro">
+        <label>Lavoratore
+            <select name="lavoratore" onchange="this.form.submit()">
+                <option value="">tutti</option>
+                @foreach (var x in Model.Elenco)
+                {
+                    <option value="@x.IdLavoratore" selected="@(Model.Lavoratore?.IdLavoratore == x.IdLavoratore)">@x.Cognome</option>
+                }
+            </select>
+        </label>
+    </form>
+}
+
+<section class="riquadro">
+    @if (Model.Voci.Count == 0)
+    {
+        <p class="sottotesto">Nessuna modifica registrata.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole" style="max-height:36rem">
+            <table class="tabella">
+                <thead><tr><th>Quando</th><th>Chi</th><th>Lavoratore</th><th>Azione</th><th>Giorno</th><th>Prima</th><th>Dopo</th><th>Motivo</th></tr></thead>
+                <tbody>
+                @foreach (var v in Model.Voci)
+                {
+                    <tr>
+                        <td>@FusoPresenze.Locale(v.QuandoUtc).ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@v.Autore</td><td>@v.Lavoratore</td><td>@v.Azione</td>
+                        <td>@(v.Giorno?.ToString("dd/MM/yyyy"))</td>
+                        <td>@v.Prima</td><td>@v.Dopo</td><td>@v.Motivo</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

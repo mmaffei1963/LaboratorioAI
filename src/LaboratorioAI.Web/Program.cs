@@ -189,6 +189,7 @@ builder.Services.AddScoped<LaboratorioAI.Dati.Provvigioni.ServizioProvvigioniLab
 builder.Services.AddScoped<LaboratorioAI.Dati.Direzione.ServizioRendimentoCommerciali>();
 builder.Services.AddScoped<LaboratorioAI.Dati.Direzione.ServizioConsuntivi>();
 builder.Services.AddScoped<LaboratorioAI.Dati.Direzione.ServizioCompensiSoci>();
+builder.Services.AddScoped<LaboratorioAI.Dati.Presenze.ServizioPresenze>();   // 19/11/2026: presenze
 builder.Services.AddScoped<LaboratorioAI.Dati.ArcLab.Repository.RepositoryRitardiCampioni>();
 builder.Services.AddScoped<LaboratorioAI.Dati.CicloAnalitico.ServizioRitardiCampioni>();
 builder.Services.AddScoped<LaboratorioAI.Web.Servizi.ImportatoreCompensiSociExcel>();

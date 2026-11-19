@@ -1,0 +1,145 @@
+@model LaboratorioAI.Web.Controllers.ModelloGiorno
+@using LaboratorioAI.Core.Presenze
+@{
+    var l = Model.Lavoratore;
+    var g = Model.Calcolo;
+    var data = Model.Data.ToString("yyyy-MM-dd");
+    string idRotta = Model.Proprio ? "" : l.IdLavoratore.ToString();
+    int? idRottaNum = Model.Proprio ? null : l.IdLavoratore;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@MotoreCalcoloPresenze.GiorniLunghi[MotoreCalcoloPresenze.IndiceGiornoSettimana(Model.Data)] @Model.Data.ToString("dd/MM/yyyy")@(Model.Proprio ? "" : " — " + l.Cognome)</h1>
+        <p class="sottotitolo">
+            Ore da contratto @MotoreCalcoloPresenze.OreFmt(g.Contratto), lavorate @MotoreCalcoloPresenze.OreFmt(g.Lavorate),
+            assenze @MotoreCalcoloPresenze.OreFmt(g.OreAssenze)@(g.Chiusura > 0 ? ", chiusura " + MotoreCalcoloPresenze.OreFmt(g.Chiusura) : "").
+            @if (g.Straordinario > 0) { <text>Straordinario @MotoreCalcoloPresenze.OreFmt(g.Straordinario).</text> }
+            @if (g.NonLavorate > 0) { <text>Da giustificare @MotoreCalcoloPresenze.OreFmt(g.NonLavorate).</text> }
+            @if (g.Festivo) { <text>@g.FestivoDescrizione.</text> }
+            @if (g.ChiusuraDescrizione.Length > 0) { <text>@g.ChiusuraDescrizione.</text> }
+        </p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Mese" asp-route-anno="@Model.Data.Year" asp-route-mese="@Model.Data.Month" asp-route-lavoratore="@idRottaNum">Torna al mese</a>
+        <a class="pulsante" asp-action="Assenza" asp-route-data="@data" asp-route-lavoratore="@idRottaNum">Nuova assenza</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+@foreach (var a in g.Anomalie)
+{
+    <p class="sottotesto" style="color:#b42318;font-weight:600">Da controllare: @a</p>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Timbrature</h2></div>
+    <p class="sottotesto">Ogni correzione richiede il motivo e finisce nel registro delle modifiche.</p>
+    @foreach (var t in Model.Dati.Timbrature)
+    {
+        if (t.Annullata)
+        {
+            <p class="sottotesto" style="text-decoration:line-through">
+                @t.Ora — @(t.Tipo == "E" ? "Entrata" : "Uscita") @t.Luogo (@t.Origine)
+                <span style="text-decoration:none"> — annullata: @t.MotivoAnnullamento</span>
+            </p>
+        }
+        else
+        {
+            <form method="post" asp-action="SalvaTimbratura" class="griglia-filtri" style="align-items:end;border-bottom:1px solid #e5e5e5;padding-bottom:0.5rem">
+                <input type="hidden" name="data" value="@data" />
+                <input type="hidden" name="lavoratore" value="@idRotta" />
+                <input type="hidden" name="idTimbratura" value="@t.IdTimbratura" />
+                <label>Ora<input type="time" name="ora" value="@t.Ora" required /></label>
+                <label>Tipo
+                    <select name="tipo">
+                        <option value="E" selected="@(t.Tipo == "E")">Entrata</option>
+                        <option value="U" selected="@(t.Tipo == "U")">Uscita</option>
+                    </select>
+                </label>
+                <label>Luogo<input type="text" name="luogo" value="@t.Luogo" maxlength="120" /></label>
+                <label>Motivo della correzione<input type="text" name="motivo" /></label>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                    <button class="pulsante" type="submit">Salva modifica</button>
+                    <button class="pulsante secondario" type="submit" formaction="@Url.Action("AnnullaTimbratura")">Annulla timbratura</button>
+                    <span class="sottotesto">@t.Origine</span>
+                </div>
+            </form>
+        }
+    }
+    @if (Model.Dati.Timbrature.Count == 0)
+    {
+        <p class="sottotesto">Nessuna timbratura in questo giorno.</p>
+    }
+
+    <h3 style="margin-top:1rem">Aggiungi una timbratura</h3>
+    <form method="post" asp-action="SalvaTimbratura">
+        <input type="hidden" name="data" value="@data" />
+        <input type="hidden" name="lavoratore" value="@idRotta" />
+        <div class="griglia-filtri">
+            <label>Ora<input type="time" name="ora" required /></label>
+            <label>Tipo
+                <select name="tipo"><option value="E">Entrata</option><option value="U">Uscita</option></select>
+            </label>
+            <label>Luogo<input type="text" name="luogo" maxlength="120" /></label>
+            <label>Motivo (obbligatorio)<input type="text" name="motivo" /></label>
+            <div style="display:flex;align-items:flex-end"><button class="pulsante" type="submit">Aggiungi</button></div>
+        </div>
+    </form>
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Assenze</h2></div>
+    @if (Model.Dati.Assenze.Count == 0)
+    {
+        <p class="sottotesto">Nessuna assenza in questo giorno.</p>
+    }
+    else
+    {
+        foreach (var a in Model.Dati.Assenze)
+        {
+            if (a.Annullata)
+            {
+                <p class="sottotesto" style="text-decoration:line-through">
+                    @CausaliPresenze.Descrizione(a.Causale) @MotoreCalcoloPresenze.OreFmt((double)a.Ore) @a.Note
+                    <span style="text-decoration:none"> — annullata: @a.MotivoAnnullamento</span>
+                </p>
+            }
+            else
+            {
+                <form method="post" asp-action="AnnullaAssenza" class="griglia-filtri" style="align-items:end;border-bottom:1px solid #e5e5e5;padding-bottom:0.5rem">
+                    <input type="hidden" name="lavoratore" value="@idRotta" />
+                    <input type="hidden" name="idAssenza" value="@a.IdAssenza" />
+                    <p style="margin:0"><strong>@CausaliPresenze.Descrizione(a.Causale)</strong> — @MotoreCalcoloPresenze.OreFmt((double)a.Ore)@(string.IsNullOrEmpty(a.Note) ? "" : " — " + a.Note)</p>
+                    <label>Motivo dell'annullamento<input type="text" name="motivo" /></label>
+                    <div><button class="pulsante secondario" type="submit">Annulla assenza</button></div>
+                </form>
+            }
+        }
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Registro delle modifiche di questo giorno</h2></div>
+    @if (Model.Dati.Storico.Count == 0)
+    {
+        <p class="sottotesto">Nessuna modifica registrata.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole" style="max-height:18rem">
+            <table class="tabella">
+                <thead><tr><th>Quando</th><th>Chi</th><th>Azione</th><th>Prima</th><th>Dopo</th><th>Motivo</th></tr></thead>
+                <tbody>
+                @foreach (var v in Model.Dati.Storico)
+                {
+                    <tr>
+                        <td>@FusoPresenze.Locale(v.QuandoUtc).ToString("dd/MM/yyyy HH:mm")</td><td>@v.Autore</td><td>@v.Azione</td>
+                        <td>@v.Prima</td><td>@v.Dopo</td><td>@v.Motivo</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

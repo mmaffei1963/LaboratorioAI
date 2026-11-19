@@ -1,0 +1,78 @@
+@model LaboratorioAI.Web.Controllers.ModelloTimbra
+@using LaboratorioAI.Core.Presenze
+@{
+    ViewData["Titolo"] = "Presenze";
+    var l = Model.Lavoratore;
+    var g = Model.Oggi;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Presenze</h1>
+        <p class="sottotitolo">Timbra l'entrata e l'uscita, anche per la pausa pranzo. Gli orari si arrotondano al quarto d'ora più vicino.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Mese">Le mie presenze</a>
+        <a class="pulsante secondario" asp-action="Registro">Registro delle modifiche</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+@if (l is null || g is null)
+{
+    <section class="riquadro">
+        <p>Non risulti ancora tra i lavoratori delle presenze. Chiedi a chi gestisce le presenze di registrarti.</p>
+    </section>
+}
+else
+{
+    <section class="riquadro">
+        <div class="barra-risultati">
+            <h2>@l.Cognome — oggi @g.Data.ToString("dd/MM/yyyy")</h2>
+            <span class="sottotesto">Sede @l.Sede?.Nome</span>
+        </div>
+        <form method="post" asp-action="Timbra">
+            <div class="griglia-filtri">
+                <label style="grid-column:1/-1">Luogo (facoltativo, per esempio il nome del cliente)
+                    <input type="text" name="luogo" maxlength="120" autocomplete="off" />
+                </label>
+                <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:flex-end">
+                    <button class="@(Model.Prossimo == "E" ? "pulsante" : "pulsante secondario")" type="submit" name="tipo" value="E">Entrata</button>
+                    <button class="@(Model.Prossimo == "U" ? "pulsante" : "pulsante secondario")" type="submit" name="tipo" value="U">Uscita</button>
+                </div>
+            </div>
+        </form>
+        <p class="sottotesto">Prossima timbratura prevista: <strong>@(Model.Prossimo == "E" ? "entrata" : "uscita")</strong>.</p>
+    </section>
+
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Timbrature di oggi</h2></div>
+        @if (g.Timbrature.Count == 0)
+        {
+            <p class="sottotesto">Nessuna timbratura ancora.</p>
+        }
+        else
+        {
+            <table class="tabella">
+                <thead><tr><th>Tipo</th><th>Ora</th><th>Conteggiata</th><th>Luogo</th></tr></thead>
+                <tbody>
+                @foreach (var t in g.Timbrature)
+                {
+                    <tr>
+                        <td>@(t.Tipo == "E" ? "Entrata" : "Uscita")</td>
+                        <td>@t.Ora</td>
+                        <td>@MotoreCalcoloPresenze.MinutiInHhmm(MotoreCalcoloPresenze.Arrotonda(t.Ora))</td>
+                        <td>@t.Luogo</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        @foreach (var a in g.Anomalie)
+        {
+            <p class="sottotesto" style="color:#b42318">@a</p>
+        }
+        <p class="sottotesto">Ore lavorate finora (a coppie entrata-uscita): <strong>@MotoreCalcoloPresenze.OreFmt(g.Lavorate)</strong> su @MotoreCalcoloPresenze.OreFmt(g.Contratto) da contratto.</p>
+    </section>
+}

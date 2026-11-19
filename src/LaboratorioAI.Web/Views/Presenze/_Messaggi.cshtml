@@ -1,0 +1,8 @@
+@if (TempData["Esito"] is string esito)
+{
+    <p class="sottotesto" style="color:#1a7f37;font-weight:600">@esito</p>
+}
+@if (TempData["Errore"] is string errore)
+{
+    <p class="sottotesto" style="color:#b42318;font-weight:600">@errore</p>
+}

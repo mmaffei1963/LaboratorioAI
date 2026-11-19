@@ -2,6 +2,13 @@
 
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## Presenze, fase 3: timbra, presenze del mese, correzioni (19/11/2026)
+- Nuove pagine `/Presenze` (Timbra), `/Presenze/Mese` (Le mie presenze), giorno con correzione delle timbrature (motivo obbligatorio), `/Presenze/Assenza` (giornata intera o ore, anche su piu' giorni), `/Presenze/Registro`, `/Presenze/Lavoratori` (solo `presenze.gestisci`).
+- Nuovo `ServizioPresenze` (Dati\Presenze), nuove regole `RegolePresenze` e `FusoPresenze` (Core\Presenze, 25 test): fuso orario Europe/Rome, ora legale, validazioni, assenze su piu' giorni.
+- Il calendario aziendale si precarica da solo: festivita' nazionali (San Francesco dal 2026) e patroni (Cattolica 30 aprile, Pesaro 24 settembre).
+- Timbrature e assenze non si cancellano: si annullano con il motivo, e ogni correzione va nel registro (solo in aggiunta).
+- Menu: gruppo Presenze.
+
 ## Presenze, fase 2: tabelle e permessi (19/11/2026)
 - Nuove entita' `SedeAziendale`, `Lavoratore`, `Timbratura`, `Assenza`, `GiornoCalendarioAziendale`, `ImpostazionePresenze`, `ModificaPresenze` (`Core\Entita\Presenze.cs`) e relative configurazioni nello schema `presenze` (`ConfigurazioniPresenze.cs`). Sedi Cattolica e Pesaro e inizio conteggi 1/1/2027 gia' inseriti.
 - Permessi `presenze.timbra` (assegnato una volta sola a tutti i ruoli esistenti) e `presenze.gestisci` (da dare in "Utenti e ruoli" a Mirko e Vaccarini).

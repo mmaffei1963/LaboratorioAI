@@ -1,0 +1,61 @@
+@model LaboratorioAI.Web.Controllers.ModelloLavoratore
+@{
+    var m = Model.Modulo;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@(m.IdLavoratore is null ? "Nuovo lavoratore" : "Modifica lavoratore")</h1>
+        <p class="sottotitolo">Le ore da contratto si scrivono come 8, 7,5 oppure 7:30. Le modifiche finiscono nel registro. Un lavoratore non si cancella: si disattiva.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Lavoratori">Torna all'elenco</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+<section class="riquadro">
+    <form method="post" asp-action="SalvaLavoratore">
+        <input type="hidden" name="IdLavoratore" value="@m.IdLavoratore" />
+        <div class="griglia-filtri">
+            <label>Cognome nel prospetto<input type="text" name="Cognome" value="@m.Cognome" maxlength="100" required /></label>
+            <label>Utente di LaboratorioAI
+                <select name="IdUtente" required>
+                    <option value="">— scegli —</option>
+                    @foreach (var u in Model.Utenti)
+                    {
+                        <option value="@u.IdUtente" selected="@(u.IdUtente == m.IdUtente)">@u.NomeCompleto (@u.Email)</option>
+                    }
+                </select>
+            </label>
+            <label>Sede
+                <select name="IdSede" required>
+                    <option value="">— scegli —</option>
+                    @foreach (var s in Model.Sedi)
+                    {
+                        <option value="@s.IdSede" selected="@(s.IdSede == m.IdSede)">@s.Nome</option>
+                    }
+                </select>
+            </label>
+            <label>Colore nel prospetto<input type="color" name="Colore" value="@m.Colore" /></label>
+            <label>Ordine nel prospetto<input type="number" name="Ordine" value="@m.Ordine" /></label>
+            <label>Attivo dal (assunzione; vuoto = da sempre)<input type="date" name="AttivoDal" value="@m.AttivoDal" /></label>
+        </div>
+        <div class="barra-risultati" style="margin-top:0.6rem"><h3>Ore da contratto</h3></div>
+        <div class="griglia-filtri">
+            <label>Lunedì<input type="text" name="OreLunedi" value="@m.OreLunedi" inputmode="decimal" /></label>
+            <label>Martedì<input type="text" name="OreMartedi" value="@m.OreMartedi" inputmode="decimal" /></label>
+            <label>Mercoledì<input type="text" name="OreMercoledi" value="@m.OreMercoledi" inputmode="decimal" /></label>
+            <label>Giovedì<input type="text" name="OreGiovedi" value="@m.OreGiovedi" inputmode="decimal" /></label>
+            <label>Venerdì<input type="text" name="OreVenerdi" value="@m.OreVenerdi" inputmode="decimal" /></label>
+            <label>Sabato<input type="text" name="OreSabato" value="@m.OreSabato" inputmode="decimal" /></label>
+            <label>Domenica<input type="text" name="OreDomenica" value="@m.OreDomenica" inputmode="decimal" /></label>
+        </div>
+        <label class="casella" style="margin:0.6rem 0">
+            <input type="checkbox" name="Attivo" value="true" checked="@m.Attivo" /> Attivo (timbra e compare nel prospetto)
+        </label>
+        <input type="hidden" name="Attivo" value="false" />
+        <div><button class="pulsante" type="submit">Salva</button></div>
+    </form>
+</section>

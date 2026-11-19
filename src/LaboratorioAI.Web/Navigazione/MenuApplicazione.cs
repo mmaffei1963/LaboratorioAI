@@ -142,6 +142,13 @@ public static class MenuApplicazione
             new("Rimborsi spese soci", "/CompensiSoci/Rimborsi", Permessi.CompensiSociConsulta, "Rimborsi spese di ogni socio, con ricevuta facoltativa: ognuno inserisce i propri, tutti i soci li vedono."),
             new("Classificazione voci", "/Direzione/Voci", Permessi.DirezioneConsulta, "Voci di costo AZW: fisse o variabili, macrocategoria, materie prime."),
         }),
+        new("Presenze", "Presenze", "Timbrature, assenze e correzioni", Icone.Clip, new List<VoceMenu>
+        {
+            new("Timbra", "/Presenze", Permessi.PresenzeTimbra, "Entrata e uscita dal tuo terminale, anche per la pausa pranzo."),
+            new("Le mie presenze", "/Presenze/Mese", Permessi.PresenzeTimbra, "Ore lavorate, assenze, straordinario e ore da giustificare del mese; correzione delle timbrature e nuove assenze."),
+            new("Registro delle modifiche", "/Presenze/Registro", Permessi.PresenzeTimbra, "Chi ha corretto timbrature e assenze, quando e perche'."),
+            new("Lavoratori delle presenze", "/Presenze/Lavoratori", Permessi.PresenzeGestisci, "Chi timbra: sede, colore e ore da contratto (riservato a chi gestisce le presenze)."),
+        }),
         new("Impostazioni", "Impostazioni e controllo", "Configurazioni e registro", Icone.Gear, new List<VoceMenu>
         {
             new("Impostazioni documenti", "/Impostazioni", Permessi.AmministrazioneConfigurazioni, "Revisioni delle condizioni, moduli e impostazioni dei documenti."),

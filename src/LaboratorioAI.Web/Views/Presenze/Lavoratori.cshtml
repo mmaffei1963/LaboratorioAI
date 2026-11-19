@@ -1,0 +1,52 @@
+@model LaboratorioAI.Web.Controllers.ModelloElencoLavoratori
+@using LaboratorioAI.Core.Presenze
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Lavoratori delle presenze</h1>
+        <p class="sottotitolo">Chi timbra, con sede, colore nel prospetto e ore da contratto per giorno della settimana. Ogni lavoratore è collegato al suo utente di LaboratorioAI (accesso Microsoft 365).</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante" asp-action="ModificaLavoratore">Nuovo lavoratore</a>
+        <a class="pulsante secondario" asp-action="Registro">Registro delle modifiche</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead>
+                <tr>
+                    <th>Cognome</th><th>Utente</th><th>Sede</th><th>Attivo dal</th>
+                    <th>Lun</th><th>Mar</th><th>Mer</th><th>Gio</th><th>Ven</th><th>Sab</th><th>Dom</th><th>Stato</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var l in Model.Lavoratori)
+            {
+                <tr style="@(l.Attivo ? "" : "color:#888")">
+                    <td><span style="display:inline-block;width:0.9rem;height:0.9rem;border-radius:3px;background:@l.Colore;vertical-align:middle"></span> @l.Cognome</td>
+                    <td>@l.Utente?.NomeCompleto</td>
+                    <td>@l.Sede?.Nome</td>
+                    <td>@(l.AttivoDal?.ToString("dd/MM/yyyy"))</td>
+                    <td>@MotoreCalcoloPresenze.OreFmt((double)l.OreLunedi)</td><td>@MotoreCalcoloPresenze.OreFmt((double)l.OreMartedi)</td>
+                    <td>@MotoreCalcoloPresenze.OreFmt((double)l.OreMercoledi)</td><td>@MotoreCalcoloPresenze.OreFmt((double)l.OreGiovedi)</td>
+                    <td>@MotoreCalcoloPresenze.OreFmt((double)l.OreVenerdi)</td><td>@MotoreCalcoloPresenze.OreFmt((double)l.OreSabato)</td>
+                    <td>@MotoreCalcoloPresenze.OreFmt((double)l.OreDomenica)</td>
+                    <td>@(l.Attivo ? "attivo" : "non attivo")</td>
+                    <td style="white-space:nowrap">
+                        <a asp-action="ModificaLavoratore" asp-route-id="@l.IdLavoratore">Modifica</a> ·
+                        <a asp-action="Mese" asp-route-lavoratore="@l.IdLavoratore">Presenze</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.Lavoratori.Count == 0)
+    {
+        <p class="sottotesto">Nessun lavoratore registrato. Prima di aggiungerne uno, la persona deve avere il suo utente in «Utenti e ruoli».</p>
+    }
+</section>

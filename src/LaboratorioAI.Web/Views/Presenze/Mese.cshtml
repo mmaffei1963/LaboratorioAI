@@ -1,0 +1,82 @@
+@model LaboratorioAI.Web.Controllers.ModelloMese
+@using LaboratorioAI.Core.Presenze
+@{
+    var l = Model.Lavoratore;
+    int? idRotta = Model.Proprio ? null : l.IdLavoratore;
+    var t = Model.Prospetto.Totali;
+    string Ore(double v) => v == 0 ? "" : MotoreCalcoloPresenze.OreFmt(v);
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>@(Model.Proprio ? "Le mie presenze" : "Presenze di " + l.Cognome) — @MotoreCalcoloPresenze.Mesi[Model.Mese - 1] @Model.Anno</h1>
+        <p class="sottotitolo">Ore lavorate, assenze, straordinario e ore da giustificare di ogni giorno. Apri un giorno per correggere le timbrature.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Mese" asp-route-anno="@Model.Precedente.Year" asp-route-mese="@Model.Precedente.Month" asp-route-lavoratore="@idRotta">&larr; Mese precedente</a>
+        <a class="pulsante secondario" asp-action="Mese" asp-route-anno="@Model.Successivo.Year" asp-route-mese="@Model.Successivo.Month" asp-route-lavoratore="@idRotta">Mese successivo &rarr;</a>
+        <a class="pulsante" asp-action="Assenza" asp-route-lavoratore="@idRotta">Nuova assenza</a>
+        <a class="pulsante secondario" asp-action="Index">Timbra</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+@if (Model.Elenco.Count > 0)
+{
+    <form method="get" asp-action="Mese" class="riquadro">
+        <input type="hidden" name="anno" value="@Model.Anno" />
+        <input type="hidden" name="mese" value="@Model.Mese" />
+        <label>Lavoratore
+            <select name="lavoratore" onchange="this.form.submit()">
+                @foreach (var x in Model.Elenco)
+                {
+                    <option value="@x.IdLavoratore" selected="@(x.IdLavoratore == l.IdLavoratore)">@x.Cognome</option>
+                }
+            </select>
+        </label>
+    </form>
+}
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead>
+                <tr>
+                    <th>Giorno</th><th>Timbrature</th><th class="numerico">Lavorate</th><th>Assenze</th>
+                    <th class="numerico">Straordinario</th><th class="numerico">Da giustificare</th><th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var g in Model.Prospetto.Giorni)
+            {
+                var festa = g.Festivo || g.ChiusuraDescrizione.Length > 0 || g.Weekend;
+                var ds = g.Data.ToString("yyyy-MM-dd");
+                <tr style="@(festa ? "background:#f6f6f6" : "")">
+                    <td><a asp-action="Giorno" asp-route-data="@ds" asp-route-lavoratore="@idRotta">@MotoreCalcoloPresenze.GiorniBrevi[MotoreCalcoloPresenze.IndiceGiornoSettimana(g.Data)] @g.Data.Day</a></td>
+                    <td>@string.Join("   ", g.Timbrature.Select(x => x.Tipo + " " + x.Ora))</td>
+                    <td class="numerico">@Ore(g.Lavorate)</td>
+                    <td>@ContenutoCellaPresenze.DescrizioneAssenze(g.Assenze)</td>
+                    <td class="numerico">@Ore(g.Straordinario)</td>
+                    <td class="numerico">@Ore(g.NonLavorate)</td>
+                    <td>
+                        @if (g.Festivo) { <span>@g.FestivoDescrizione</span> }
+                        @if (g.ChiusuraDescrizione.Length > 0) { <span>@g.ChiusuraDescrizione</span> }
+                        @foreach (var a in g.Anomalie) { <span style="color:#b42318">@a. </span> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+            <tfoot>
+                <tr style="font-weight:600">
+                    <td>Totali</td><td></td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Lavorate)</td>
+                    <td>@string.Join("; ", t.Causali.Select(c => CausaliPresenze.Descrizione(c.Key) + " " + MotoreCalcoloPresenze.OreFmt(c.Value)))</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Straordinario)</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.NonLavorate)</td>
+                    <td>Da contratto fino a oggi: @MotoreCalcoloPresenze.OreFmt(t.Contratto)@(t.GiorniConAnomalie > 0 ? $" — giorni da controllare: {t.GiorniConAnomalie}" : "")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>

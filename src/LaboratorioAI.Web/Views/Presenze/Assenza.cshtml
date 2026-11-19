@@ -1,0 +1,46 @@
+@model LaboratorioAI.Web.Controllers.ModelloAssenza
+@using LaboratorioAI.Core.Presenze
+@{
+    var l = Model.Lavoratore;
+    var data = Model.Data.ToString("yyyy-MM-dd");
+    string idRotta = Model.Proprio ? "" : l.IdLavoratore.ToString();
+    int? idRottaNum = Model.Proprio ? null : l.IdLavoratore;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Nuova assenza@(Model.Proprio ? "" : " — " + l.Cognome)</h1>
+        <p class="sottotitolo">Per più giorni o per giornate intere si saltano festivi, chiusure aziendali e giorni senza ore da contratto. Al massimo due mesi per volta.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Mese" asp-route-anno="@Model.Data.Year" asp-route-mese="@Model.Data.Month" asp-route-lavoratore="@idRottaNum">Annulla</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+<section class="riquadro">
+    <form method="post" asp-action="NuovaAssenza">
+        <input type="hidden" name="lavoratore" value="@idRotta" />
+        <div class="griglia-filtri">
+            <label>Dal<input type="date" name="dal" value="@data" required /></label>
+            <label>Al (se è un solo giorno lascia uguale o vuoto)<input type="date" name="al" value="@data" /></label>
+            <label>Causale
+                <select name="causale">
+                    @foreach (var c in CausaliPresenze.Tutte)
+                    {
+                        <option value="@c.Codice">@c.Descrizione</option>
+                    }
+                </select>
+            </label>
+            <fieldset style="border:0;padding:0;margin:0">
+                <legend style="font-size:0.85rem">Durata</legend>
+                <label class="casella"><input type="radio" name="durata" value="intera" checked /> giornata intera (ore da contratto)</label>
+                <label class="casella"><input type="radio" name="durata" value="ore" /> solo alcune ore</label>
+            </fieldset>
+            <label>Ore (se «solo alcune ore», per esempio 2 oppure 2:30)<input type="text" name="ore" inputmode="decimal" /></label>
+            <label style="grid-column:1/-1">Note (obbligatorie per «Altro»)<input type="text" name="note" maxlength="200" /></label>
+        </div>
+        <button class="pulsante" type="submit">Inserisci</button>
+    </form>
+</section>
