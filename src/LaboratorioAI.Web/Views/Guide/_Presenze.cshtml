@@ -1,0 +1,85 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Presenze» (19/11/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Le presenze sostituiscono l'app di Vaccarini: ognuno timbra <strong>entrata e uscita dal proprio terminale</strong>
+        (si entra con il proprio account Microsoft 365) e il programma calcola le ore, le assenze, lo straordinario e le ore da giustificare.
+        Gli orari si arrotondano al <strong>quarto d'ora</strong> più vicino. Il conteggio parte dal <strong>1 gennaio 2027</strong>: le date precedenti
+        non compaiono nel prospetto.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Timbrare l'entrata o l'uscita</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Timbra</strong>.</li>
+        <li>Se vuoi, scrivi il <strong>luogo</strong> (per esempio il nome del cliente dove lavori).</li>
+        <li>Premi <span class="tasto">Entrata</span> o <span class="tasto">Uscita</span>: il pulsante in evidenza è quello previsto.</li>
+        <li>Per la pausa pranzo si timbra l'uscita quando esci e l'entrata quando rientri.</li>
+    </ol>
+    <p class="nota">Se la pagina dice che non risulti tra i lavoratori delle presenze, chiedi a chi gestisce le presenze (Mirko Maffei o Vaccarini) di registrarti.</p>
+</details>
+
+<details class="situazione">
+    <summary>Ho dimenticato di timbrare, o ho sbagliato un orario</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Le mie presenze</strong> e clicca il giorno da correggere.</li>
+        <li>Per cambiare un orario modifica <strong>Ora</strong>, <strong>Tipo</strong> o <strong>Luogo</strong>, scrivi il <strong>motivo</strong> e premi <span class="tasto">Salva modifica</span>.</li>
+        <li>Per una timbratura mancante usa <strong>Aggiungi una timbratura</strong>: ora, tipo, motivo (obbligatorio) e <span class="tasto">Aggiungi</span>.</li>
+        <li>Per togliere una timbratura di troppo premi <span class="tasto">Annulla timbratura</span>.</li>
+    </ol>
+    <p class="nota">Ognuno corregge solo le <strong>proprie</strong> timbrature. Ogni correzione resta nel <strong>Registro delle modifiche</strong> con chi, quando e perché:
+        la timbratura annullata non sparisce, resta barrata.</p>
+</details>
+
+<details class="situazione">
+    <summary>Cosa significa «giorni da controllare»</summary>
+    <p>In «Le mie presenze» i giorni con una timbratura che non torna sono scritti in rosso nelle note: un'entrata senza uscita, un'uscita senza entrata,
+        un'uscita prima dell'entrata. Il giorno in corso non conta: l'uscita può ancora arrivare. Per sistemarli apri il giorno e correggi come sopra.</p>
+    <p class="nota">Non è la stessa cosa delle <strong>ore da giustificare</strong>: quelle sono le ore da contratto non coperte da lavoro, ferie, permessi o altre assenze.</p>
+</details>
+
+<details class="situazione">
+    <summary>Inserire ferie, permessi o altre assenze</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Le mie presenze</strong> (o il Prospetto mensile) e premi <span class="tasto">Nuova assenza</span>.</li>
+        <li>Scegli <strong>Dal / Al</strong> (un solo giorno: lascia uguale o vuoto), la <strong>causale</strong> (Ferie, Permesso, Malattia…) e la durata:
+            <em>giornata intera</em> oppure <em>solo alcune ore</em> (per esempio 2 oppure 2:30).</li>
+        <li>Premi <span class="tasto">Inserisci</span>.</li>
+    </ol>
+    <p class="nota">Con più giorni si saltano festivi, chiusure aziendali e giorni senza ore da contratto; al massimo due mesi per volta.
+        Con la causale «Altro» le note sono obbligatorie. I residui di ferie e permessi <strong>non</strong> si gestiscono qui (restano a Contabilcoop).
+        Per annullare un'assenza apri il giorno e premi <span class="tasto">Annulla assenza</span>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Vedere chi è in ferie negli stessi giorni miei</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Calendario ferie</strong>.</li>
+        <li>Scegli l'anno e, se vuoi, la sede.</li>
+        <li>Sotto ogni mese la riga <strong>Assenti</strong> dice quanti sono fuori ogni giorno: è evidenziata quando sono due o più.</li>
+    </ol>
+    <p class="nota">Il calendario ferie mostra solo <strong>ferie e permessi</strong>. Malattia, L. 104, donazione sangue, seggio e le altre assenze non si vedono mai agli altri.</p>
+</details>
+
+<details class="situazione">
+    <summary>Guardare il prospetto del mese</summary>
+    <p>Apri <strong>Presenze → Prospetto mensile</strong>: un mese, tutti i lavoratori, come il vecchio foglio CALENDARIO. Clicca un giorno della <strong>tua</strong> riga per aprirlo e correggerlo.
+        Nelle righe dei colleghi vedi soltanto assenze di ferie e permessi, festività e chiusure: non le loro timbrature né le altre causali.
+        Puoi filtrare per sede.</p>
+</details>
+
+<details class="situazione">
+    <summary>Festività e chiusure aziendali</summary>
+    <p>Apri <strong>Presenze → Calendario aziendale</strong>: lo vedono tutti. Le festività nazionali e i patroni delle sedi
+        (Cattolica: San Pio V, 30 aprile; Pesaro: San Terenzio, 24 settembre) sono già inseriti. Aggiungere o togliere una voce lo fa solo chi gestisce le presenze.</p>
+</details>
+
+<details class="situazione">
+    <summary>Chi ha cambiato cosa</summary>
+    <p>Apri <strong>Presenze → Registro delle modifiche</strong>: ogni correzione di timbrature e assenze, con data, autore, valore prima e dopo e motivo.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

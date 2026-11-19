@@ -1,0 +1,66 @@
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida «Presenze: gestione» (19/11/2026). Riservata a chi ha il permesso di gestire le presenze. *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Chi gestisce le presenze (Mirko Maffei e Vaccarini) registra chi timbra, controlla i totali del mese, tiene il calendario aziendale
+        e può correggere le presenze di chiunque. Per l'uso di tutti i giorni (timbrare, correggere le proprie ore, ferie) vedi la guida «Presenze».</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Registrare un nuovo lavoratore</summary>
+    <ol class="passi">
+        <li>La persona deve già avere il suo utente in <strong>Utenti e ruoli</strong> (entra con l'account Microsoft 365).</li>
+        <li>Apri <strong>Presenze → Lavoratori delle presenze</strong> e premi <span class="tasto">Nuovo lavoratore</span>.</li>
+        <li>Collega l'utente e indica sede, colore nel prospetto, data «attivo dal» e le <strong>ore da contratto</strong> per ogni giorno della settimana.</li>
+        <li>Salva. Da quel momento può timbrare.</li>
+    </ol>
+    <p class="nota">Chi non lavora più si segna «non attivo», non si cancella: le sue presenze passate restano nel prospetto dei mesi in cui ha dati.
+        Per timbrare serve il permesso «presenze.timbra» (di norma lo hanno tutti); quello di gestione si assegna in <strong>Utenti e ruoli</strong>.</p>
+</details>
+
+<details class="situazione">
+    <summary>Controllare i totali del mese e chi è in sede</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Riepilogo presenze</strong>.</li>
+        <li>In alto <strong>In sede adesso</strong>: chi ha l'ultima timbratura aperta e, per gli altri, l'ultima timbratura di oggi.</li>
+        <li>Sotto i <strong>totali del mese</strong> per lavoratore: ore da contratto, lavorate, straordinario, da giustificare, chiusura, assenze e <strong>giorni da controllare</strong>.</li>
+        <li>Con <span class="tasto">Dettaglio</span> apri il mese di quel lavoratore.</li>
+    </ol>
+    <p class="nota">Nella pagina principale, accanto alla voce «Riepilogo presenze», compare il numero dei <strong>giorni da controllare</strong> del mese e di quello precedente,
+        sommati su tutti i lavoratori. Se è zero il numero non compare. Il dato si aggiorna ogni due minuti circa.</p>
+</details>
+
+<details class="situazione">
+    <summary>Correggere le presenze di un collega</summary>
+    <ol class="passi">
+        <li>Dal <strong>Riepilogo presenze</strong> premi <span class="tasto">Dettaglio</span> sulla riga del lavoratore (oppure scegli il nome nell'elenco «Lavoratore» in «Le mie presenze»).</li>
+        <li>Apri il giorno e correggi, aggiungi o annulla le timbrature, oppure premi <span class="tasto">Nuova assenza</span>.</li>
+        <li>Scrivi sempre il <strong>motivo</strong>: finisce nel Registro delle modifiche a tuo nome, con il nome del lavoratore.</li>
+    </ol>
+</details>
+
+<details class="situazione">
+    <summary>Inserire una festività o una chiusura aziendale</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Calendario aziendale</strong> e scegli l'anno.</li>
+        <li>In «Aggiungi festività o chiusura» scegli il <strong>tipo</strong> (Festività o Chiusura aziendale) e la <strong>sede</strong> (o tutte le sedi).</li>
+        <li>Indica <strong>Dal / Al</strong> (vuoto = un solo giorno) e una descrizione. Per una chiusura parziale scrivi le <strong>ore</strong> (0–24; solo per le chiusure).</li>
+        <li>Scrivi il motivo e premi <span class="tasto">Aggiungi</span>. Per toglierne una usa <span class="tasto">Togli</span> sulla riga.</li>
+    </ol>
+    <p class="nota">Le festività valgono per tutti i giorni dell'intervallo; le chiusure saltano sabato e domenica, salvo che sia un solo giorno. Al massimo 62 giorni per volta.
+        Ogni modifica resta nel registro; il calendario lo vedono tutti i colleghi.</p>
+</details>
+
+<details class="situazione">
+    <summary>Esportare il prospetto in Excel</summary>
+    <ol class="passi">
+        <li>Apri <strong>Presenze → Prospetto mensile</strong> e scegli mese e, se serve, la sede.</li>
+        <li>Premi <span class="tasto">Esporta in Excel</span>: il file contiene il prospetto del mese e un foglio con la legenda.</li>
+    </ol>
+    <p class="nota">L'esportazione è riservata a chi gestisce le presenze e viene annotata nel registro delle attività. Il file contiene dati dei colleghi (anche malattie e permessi): trattalo con riservatezza.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>

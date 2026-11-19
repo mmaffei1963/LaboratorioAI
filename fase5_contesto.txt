@@ -1,0 +1,446 @@
+﻿=== Guide.cs ===
+using LaboratorioAI.Core.Costanti;
+
+namespace LaboratorioAI.Web.Navigazione;
+
+/// <summary>Una guida d'uso: codice (= nome della vista Views/Guide/_{Codice}.cshtml), pagine a cui si riferisce, permessi.</summary>
+public record Guida(string Codice, string Titolo, string Descrizione, string[] Percorsi, string Permesso, DateOnly Aggiornata);
+
+/// <summary>
+/// Guide d'uso delle funzioni (11/10/2026). Si aprono dal pulsante Â«? GuidaÂ» in testata: sulla pagina di una funzione
+/// apre la sua guida in un pannello laterale; altrove porta all'elenco /Guide. Ognuno vede solo le guide delle funzioni
+/// che puÃ² usare (stessa regola del menu: <c>Permesso</c> puÃ² elencarne piÃ¹ d'uno separati da Â«|Â»).
+/// Per aggiungere una guida: una riga qui e la vista parziale Views/Guide/_{Codice}.cshtml.
+/// </summary>
+public static class Guide
+{
+    public static readonly IReadOnlyList<Guida> Elenco = new List<Guida>
+    {
+        new("ManualisticaModelli", "Manualistica: modelli",
+            "Caricare i modelli Word della manualistica, controllare i marcatori e approvarli: servono due approvazioni di persone diverse, e chi carica non approva.",
+            new[] { "/Manualistica/Modelli" }, Permessi.ManualisticaConsulta, new DateOnly(2026, 11, 1)),
+        new("Condizioni", "Condizioni e firme",
+            "Far approvare ai clienti le Condizioni Generali di Fornitura: chiedere chi firma, mandare il link, seguire le risposte.",
+            new[] { "/Condizioni" }, Permessi.CondizioniFirmatari + "|" + Permessi.CondizioniGestione, new DateOnly(2026, 10, 15)),
+        new("Direzione", "Direzione: indicatori, territorio e commerciali",
+            "Leggere fatturato, costi e margini di MAREA e delle aree; l'andamento per territorio e la sede di Pesaro; il rendimento dei commerciali; il commento AI; classificare le voci di costo di AZW.",
+            new[] { "/Direzione" }, Permessi.DirezioneConsulta, new DateOnly(2026, 10, 13)),
+        new("Subentri", "Cambi di gestione",
+            "Sedi perse (Legionella, analisi, consulenza per area): capire se Ã¨ cambiato il gestore e chi va ricontattato.",
+            new[] { "/ClientiDaSeguire/Subentri" }, Permessi.ClientiSeguire + "|" + Permessi.ClientiSubentri, new DateOnly(2026, 10, 12)),
+        new("ClientiDaSeguire", "Clienti da seguire",
+            "Chi chiamare: clienti in calo, Legionella in ritardo, richiami in scadenza; come segnare telefonate e visite.",
+            new[] { "/ClientiDaSeguire" }, Permessi.ClientiSeguire + "|" + Permessi.ClientiGestisci, new DateOnly(2026, 10, 11)),
+        new("Preventivi", "Preventivi analisi",
+            "Preparare un'offerta di analisi su carta intestata: cliente, controlli, sconti, approvazione, Word e PDF.",
+            new[] { "/Preventivi" }, Permessi.PreventiviGestione + "|" + Permessi.PreventiviApprova, new DateOnly(2026, 10, 11)),
+        new("Controlli", "Proposta controlli",
+            "Proporre un nuovo controllo scegliendo i metodi dal catalogo; approvazione ed e-mail per l'inserimento in ArcLab.",
+            new[] { "/Controlli" }, Permessi.ControlliProponi + "|" + Permessi.ControlliApprova, new DateOnly(2026, 10, 11)),
+        new("MieProvvigioni", "Le mie provvigioni",
+            "Leggere le proprie provvigioni: trimestri, premio annuale, obiettivi, clienti.",
+            new[] { "/MieProvvigioni" }, Permessi.ProvvigioniProprie, new DateOnly(2026, 10, 11)),
+        new("RichiestePrivati", "Richieste analisi privati",
+            "Compilare e stampare il modulo da firmare quando un privato consegna un campione: cliente, campione, prove, prezzo IVA inclusa, tempi e giudizio di conformitÃ .",
+            new[] { "/RichiestePrivati" }, Permessi.RichiestePrivatiGestione, new DateOnly(2026, 11, 5)),
+        new("OrdiniAccettazione", "Ordini di Accettazione",
+            "Clienti privati: stampare l'Ordine da firmare alla consegna del campione e ritrovare chi riceve il Rapporto di Prova per e-mail o a mano.",
+            new[] { "/OrdiniAccettazione" }, Permessi.OrdiniAccettazioneGestione, new DateOnly(2026, 10, 14)),
+        new("Accettazione", "Accettazione campioni",
+            "Accettazione fuori sede: cliente, commessa, campioni, etichette e schede; tracciato XML per l'import in ArcLab.",
+            new[] { "/Accettazione" }, Permessi.AccettazioneEsegui, new DateOnly(2026, 10, 11)),
+        new("Prelievo", "Prelievo vocale",
+            "Segnare i campioni durante il prelievo, anche a voce e senza rete, e generare il riepilogo del giro.",
+            new[] { "/Prelievo" }, Permessi.AccettazioneEsegui, new DateOnly(2026, 10, 11)),
+        new("Validazione", "Da Validare",
+            "Campioni in attesa di validazione: risultati e controllo con l'AI, singolo o massivo, prima di validare in ArcLab.",
+            new[] { "/Validazione" }, Permessi.ValidazioneVisualizza, new DateOnly(2026, 10, 11)),
+        new("LimitiNormativi", "Limiti normativi",
+            "Ricavare i limiti di legge dalle fonti ufficiali con l'AI, controllarli e validarli: la base delle segnalazioni in Â«Da ValidareÂ».",
+            new[] { "/LimitiNormativi" }, Permessi.LimitiConsulta, new DateOnly(2026, 10, 17)),
+        new("CertificatiEsterni", "Certificati esterni Â· rinomina",
+            "Leggere i PDF dei laboratori esterni, controllare le criticitÃ  e salvarli rinominati per Palomar.",
+            new[] { "/CertificatiEsterni" }, Permessi.CertificatiEsterniGestione, new DateOnly(2026, 10, 11)),
+        new("SoloEsterni", "Certificati esterni non ricertificati",
+            "Certificati dei laboratori esterni senza nostro certificato e loro stato di fatturazione.",
+            new[] { "/SoloEsterni" }, Permessi.SoloEsterniVisualizza, new DateOnly(2026, 10, 11)),
+        new("LaboratoriEsterni", "Laboratori Esterni",
+            "Analisi mandate fuori e controllo degli accreditamenti ACCREDIA dei laboratori esterni.",
+            new[] { "/LaboratoriEsterni" }, Permessi.LaboratoriEsterniConsulta, new DateOnly(2026, 10, 11)),
+        new("InviiLaboratoriEsterni", "Invio campioni ai lab esterni",
+            "Mandare al laboratorio esterno l'Excel dei campioni spediti, per e-mail con copia a refertazione@mare-a.com.",
+            new[] { "/InviiLaboratoriEsterni" }, Permessi.LaboratoriEsterniInvio, new DateOnly(2026, 11, 6)),
+        new("RicercaFatture", "Ricerca fatture per descrizione",
+            "Trovare fatture di vendita e costi di un periodo per testo, area, cliente o fornitore, commessa e responsabile del cliente, con totali ed Excel.",
+            new[] { "/RicercaFatture" }, Permessi.RicercaFattureConsulta, new DateOnly(2026, 11, 11)),
+        new("RicercaErrori", "Ricerca errori",
+            "Controlli su ArcLab per trovare errori di inserimento da correggere: cruscotto e sezioni dettagliate.",
+            new[] { "/RicercaErrori" }, Permessi.RicercaErroriVisualizza, new DateOnly(2026, 10, 11)),
+        new("Certificati", "Certificati emessi",
+            "Ritrovare un rapporto di prova emesso, leggerne i risultati, farlo analizzare dall'AI o scaricarlo in Excel.",
+            new[] { "/Consultazione/Certificati" }, Permessi.ConsultazioneCertificati, new DateOnly(2026, 10, 11)),
+        new("Consultazione", "Ricerca campioni",
+            "Trovare campioni nell'archivio combinando i filtri, vederne le prove ed esportare in Excel.",
+            new[] { "/Consultazione" }, Permessi.ConsultazioneCampioni, new DateOnly(2026, 10, 11)),
+        new("Metodi", "Metodi e controlli",
+            "Dai metodi ai controlli che li contengono e dal controllo ai suoi metodi, con accreditamento, subappalto e prezzi.",
+            new[] { "/Metodi" }, Permessi.MetodiConsulta, new DateOnly(2026, 10, 11)),
+        new("Commesse", "Commesse",
+            "Commesse in vigore per cliente, controllo o incarico, con i campioni arrivati o le prestazioni fatte.",
+            new[] { "/Commesse" }, Permessi.CommesseConsulta, new DateOnly(2026, 10, 11)),
+        new("Statistiche", "Statistiche",
+            "Ricerca prova per prova su tutto l'archivio, con filtri per zona, metodo e valore ed esportazione Excel.",
+            new[] { "/Statistiche" }, Permessi.StatisticheVisualizza, new DateOnly(2026, 10, 11)),
+        new("ResponsabiliClienti", "Responsabili clienti",
+            "Sigle di zona AZW e nome del responsabile cliente MARE.A riportato nei contratti di consulenza.",
+            new[] { "/PreventiviConsulenza/Responsabili" }, Permessi.PreventiviConsulenza, new DateOnly(2026, 10, 11)),
+        new("AttivitaConsulenza", "AttivitÃ  e pacchetti consulenza",
+            "AttivitÃ  dei preventivi di consulenza (da ArcLab) con prezzi, testi e contenuti, e pacchetti di settore.",
+            new[] { "/PreventiviConsulenza/Attivita", "/PreventiviConsulenza/AttivitaModifica", "/PreventiviConsulenza/Pacchetti", "/PreventiviConsulenza/Pacchetto" },
+            Permessi.PreventiviConsulenza, new DateOnly(2026, 10, 11)),
+        new("PreventiviConsulenza", "Preventivi consulenza",
+            "Contratti di consulenza e formazione (serie C): cliente, pacchetto o attivitÃ , prezzi, documento Word/PDF e dati per le commesse ArcLab.",
+            new[] { "/PreventiviConsulenza" }, Permessi.PreventiviConsulenza, new DateOnly(2026, 10, 11)),
+        new("Rapportini", "Rapportini di consulenza",
+            "Rapportino dell'intervento al cliente prima della fattura: attivitÃ , documenti, delega, invio, conferma.",
+            new[] { "/Rapportini" }, Permessi.RapportiniCompila + "|" + Permessi.RapportiniGestione, new DateOnly(2026, 10, 11)),
+        new("TamponiContratto", "Tamponi in contratto",
+            "Tamponi del periodo e verifica del contratto HACCP che li comprende, prima della fatturazione.",
+            new[] { "/TamponiContratto" }, Permessi.PrefatturatoTamponi, new DateOnly(2026, 10, 11)),
+        new("NonFatturare", "Non fatturare",
+            "Campioni con il flag Â«non fatturareÂ» del periodo, per prelevatore e ricevitore, da controllare.",
+            new[] { "/NonFatturare" }, Permessi.PrefatturatoNonFatturare, new DateOnly(2026, 10, 11)),
+        new("Provvigioni", "Provvigioni",
+            "Provvigioni dei commerciali sugli incassi AZW, per trimestre; importazione, chiusura trimestri, convenzioni.",
+            new[] { "/Provvigioni" }, Permessi.ProvvigioniGestisci + "|" + Permessi.ProvvigioniConsulta, new DateOnly(2026, 10, 11)),
+        new("AccordiProvvigioni", "Accordi provvigioni",
+            "Regole delle provvigioni: voci, percentuali, basi di calcolo e premio, per versioni con data di validitÃ .",
+            new[] { "/AccordiProvvigioni" }, Permessi.ProvvigioniGestisci + "|" + Permessi.ProvvigioniConsulta, new DateOnly(2026, 10, 11)),
+        new("Segnalatori", "Segnalatori e compensi",
+            "Chi ci porta clienti: segnalatori, condizioni, clienti segnalati e compensi sugli incassi.",
+            new[] { "/Segnalatori" }, Permessi.ProvvigioniGestisci, new DateOnly(2026, 10, 11)),
+        new("Impostazioni", "Impostazioni documenti",
+            "Revisione delle Condizioni, moduli, cartelle, indirizzi e testi standard condivisi dai documenti.",
+            new[] { "/Impostazioni" }, Permessi.AmministrazioneConfigurazioni, new DateOnly(2026, 10, 11)),
+        new("VociPreventivo", "Voci preventivi",
+            "Voci accessorie e condizioni di pagamento proposte nei preventivi di analisi.",
+            new[] { "/VociPreventivo" }, Permessi.AmministrazioneConfigurazioni, new DateOnly(2026, 10, 11)),
+        new("SigleLaboratori", "Sigle laboratori esterni",
+            "Sigle e parole chiave dei laboratori esterni per il riconoscimento e la rinomina dei certificati.",
+            new[] { "/SigleLaboratori" }, Permessi.AmministrazioneConfigurazioni, new DateOnly(2026, 10, 11)),
+        new("ConsulenzeAmministrazione", "Consulenze: documenti e deleghe",
+            "Deleghe operative (generazione e firma), dati dei consulenti e documenti tipo dei rapportini.",
+            new[] { "/ConsulenzeAmministrazione" }, Permessi.RapportiniGestione, new DateOnly(2026, 10, 11)),
+        new("Utenti", "Utenti e ruoli",
+            "Chi entra in LaboratorioAI e cosa puÃ² fare: persone, ruoli e permessi.",
+            new[] { "/Utenti" }, Permessi.AmministrazioneUtenti, new DateOnly(2026, 10, 11)),
+        new("Audit", "Registro attivitÃ ",
+            "Chi ha fatto cosa e quando: ricerca nel registro delle operazioni.",
+            new[] { "/Audit" }, Permessi.AmministrazioneAudit, new DateOnly(2026, 10, 11)),
+        new("DomandeGuida", "Domande alla guida",
+            "Cosa chiedono i colleghi a Â«Chiedi alla guidaÂ»: risposte, voti, domande piÃ¹ frequenti e costo.",
+            new[] { "/Guide/Domande" }, Permessi.GuideDomande, new DateOnly(2026, 10, 11)),
+        new("MateriePrime", "Materie prime",
+            "Catalogo degli ingredienti con i valori per 100 g: da scheda tecnica PDF, a mano o dalle banche dati CREA, USDA, CNF.",
+            new[] { "/MateriePrime" }, Permessi.NutrizionaleMateriePrime, new DateOnly(2026, 10, 11)),
+        new("Ricette", "Ricette nutrizionali",
+            "Dichiarazione nutrizionale dalla ricetta, rapporto per il cliente e pannelli Nutrition Facts USA e Canada.",
+            new[] { "/Ricette" }, Permessi.NutrizionaleRicette, new DateOnly(2026, 10, 11)),
+        new("Taratura", "Taratura termometri",
+            "Tarare un termometro per confronto con il CDR: letture, calcolo, rapporto ed etichetta; gestire i CDR.",
+            new[] { "/Taratura" }, Permessi.TaraturaEsegui, new DateOnly(2026, 10, 11)),
+        new("Incubatori", "Taratura incubatori",
+            "Tarare il misuratore di incubatori, frigo e celle alla temperatura di esercizio: conformitÃ  e allarmi.",
+            new[] { "/Incubatori" }, Permessi.IncubatoriEsegui, new DateOnly(2026, 10, 11)),
+        new("Mappatura", "Mappatura incubatori",
+            "Verificare che la temperatura sia uguale su tutti i ripiani: 5 letture per ripiano, esito e rapporto.",
+            new[] { "/Mappatura" }, Permessi.MappaturaEsegui, new DateOnly(2026, 10, 11)),
+        new("Bilance", "Taratura bilance",
+            "Tarare una bilancia con la pesiera: eccentricitÃ , ripetibilitÃ , linearitÃ  e rapporto.",
+            new[] { "/Bilance" }, Permessi.BilanceEsegui, new DateOnly(2026, 10, 11)),
+        new("Scadenziario", "Scadenziario tarature",
+            "Strumenti nostri in scadenza (da ArcLab) e termometri dei clienti: scadenze, consegna e fatturazione.",
+            new[] { "/Scadenziario" }, Permessi.ScadenziarioVisualizza, new DateOnly(2026, 10, 11)),
+    };
+
+    private static bool Consentita(Guida g, Func<string, bool> haPermesso) => g.Permesso.Split('|').Any(haPermesso);
+
+    public static IEnumerable<Guida> Visibili(Func<string, bool> haPermesso) => Elenco.Where(g => Consentita(g, haPermesso));
+
+    public static Guida? PerCodice(string codice, Func<string, bool> haPermesso) =>
+        Elenco.FirstOrDefault(g => string.Equals(g.Codice, codice, StringComparison.OrdinalIgnoreCase) && Consentita(g, haPermesso));
+
+    /// <summary>Guida della pagina aperta (confronto sull'inizio del percorso), se l'utente puÃ² vederla.</summary>
+    public static Guida? PerPercorso(string? percorso, Func<string, bool> haPermesso) =>
+        string.IsNullOrEmpty(percorso) ? null : Visibili(haPermesso).FirstOrDefault(g => g.Percorsi.Any(p =>
+            percorso.Equals(p, StringComparison.OrdinalIgnoreCase) || percorso.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase)));
+}
+=== ContatoriHome.cs ===
+using LaboratorioAI.Core.Costanti;
+using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Repository;
+using LaboratorioAI.Core.Servizi;
+using LaboratorioAI.Dati.Clienti;
+using LaboratorioAI.Dati.LaboratorioAI;
+using LaboratorioAI.Dati.LaboratorioAI.Accreditamenti;
+using LaboratorioAI.Dati.MonitorTemperature;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace LaboratorioAI.Web.Navigazione;
+
+/// <summary>Numero di Â«cose da fareÂ» di una funzione, con la frase che lo spiega (suggerimento sulla home).</summary>
+public sealed record ContatoreHome(int Numero, string Breve, string Testo);
+
+/// <summary>
+/// Contatori della pagina principale (08/10/2026, vedi claude/proposta-home-menu-registro-attivita.md Â§3).
+/// Ogni contatore Ã¨ legato a una voce del menu (stesso indirizzo) e si calcola solo se l'utente vede quella voce.
+/// Regole:
+/// - solo conteggi leggeri, ognuno con un tempo massimo (<see cref="TempoMassimo"/>): se una fonte Ã¨ lenta o
+///   irraggiungibile quel numero semplicemente non compare, la home non si blocca e non va in errore;
+/// - risultati tenuti in memoria per <see cref="Durata"/>, cosÃ¬ aprire la home piÃ¹ volte non ripete le query;
+/// - tutto in sola lettura (ArcLab, Monitor Econorma e database di LabAI).
+/// La home si apre subito; i numeri arrivano dopo, con una chiamata separata (Home/Contatori, js/moduli/home.js).
+/// Per aggiungere un contatore: una riga in <see cref="Definizioni"/> con l'indirizzo della voce di menu.
+/// </summary>
+public sealed class ServizioContatoriHome
+{
+    public static readonly TimeSpan Durata = TimeSpan.FromMinutes(2);
+    public static readonly TimeSpan TempoMassimo = TimeSpan.FromSeconds(10);
+
+    /// <summary>Preavviso per le tarature in scadenza (come il valore predefinito dello Scadenziario).</summary>
+    public const int GiorniTarature = 30;
+
+    private sealed record Definizione(
+        string Url, string Breve, string Testo, bool PerUtente,
+        Func<IServiceProvider, IContestoUtente, CancellationToken, Task<int>> Calcola,
+        string? Permesso = null);   // 17/10/2026: permesso in piÃ¹ rispetto alla voce di menu (es. solo i validatori)
+
+    private static readonly IReadOnlyList<Definizione> Definizioni = new List<Definizione>
+    {
+        // â”€â”€ Ciclo analitico â”€â”€
+        new("/Validazione", "da validare", "campioni con tutte le prove verificate, senza certificato", false,
+            (sp, _, ct) => sp.GetRequiredService<IRepositoryCampioni>().ContaDaValidareAsync(ct)),
+        new("/LimitiNormativi", "da validare", "schede limite proposte o da riverificare, in attesa di un validatore", false,
+            (sp, _, ct) => sp.GetRequiredService<ContestoLaboratorioAI>().LimitiNormativi
+                .CountAsync(x => x.Stato == StatoSchedaLimite.Proposta || x.Stato == StatoSchedaLimite.DaRiverificare, ct),
+            Permessi.LimitiValida),
+        new("/CertificatiEsterni", "da rinominare", "certificati PDF nella cartella di arrivo, da rinominare", false,
+            (sp, _, ct) => Task.Run(() => CertificatiInArrivo(sp.GetRequiredService<IConfiguration>()), ct)),
+
+        // â”€â”€ Commerciale â”€â”€
+        new("/ClientiDaSeguire", "da richiamare", "clienti da richiamare oggi o giÃ  in ritardo (promemoria)", false,
+            async (sp, _, ct) => (await sp.GetRequiredService<ServizioClientiDaSeguire>().PromemoriaAsync(DateTime.Today, ct)).Count),
+        new("/Controlli", "in attesa", "proposte di nuovi controlli in attesa di approvazione", false,
+            (sp, _, ct) => sp.GetRequiredService<ContestoLaboratorioAI>().ProposteControllo
+                .CountAsync(p => p.Attivo && p.DataCancellazione == null && p.Stato == StatoProposta.DaApprovare, ct)),
+
+        // â”€â”€ Consulenza â”€â”€ (chi non gestisce i rapportini vede solo i propri, come nella pagina)
+        new("/Rapportini", "da confermare", "rapportini inviati o contestati, da confermare", true,
+            RapportiniDaConfermareAsync),
+
+        new("/LaboratoriEsterni", "da sistemare", "accreditamenti dei laboratori in subappalto da sistemare: verifiche diverse dal flag di ArcLab, numeri ACCREDIA diversi, controllo ACCREDIA fermo", false,
+            async (sp, _, ct) => (await sp.GetRequiredService<ServizioAnomalieAccreditamenti>().CalcolaAsync(ct)).Totale),
+
+        // â”€â”€ Strumenti e tarature â”€â”€
+        new("/Scadenziario", "in scadenza", $"tarature scadute o in scadenza entro {GiorniTarature} giorni", false,
+            async (sp, _, ct) => (await sp.GetRequiredService<IRepositoryScadenziario>().ScadenziarioInterniAsync(GiorniTarature, ct)).Count),
+
+        // â”€â”€ Monitor Econorma â”€â”€
+        new("/MonitorTemperature/Sonde", "da verificare", "sonde con il seriale da verificare (diverso da ArcLab, doppio o non mappato)", false,
+            SerialiDaVerificareAsync),
+
+        // â”€â”€ Impostazioni e controllo â”€â”€
+        new("/ClientiDaSeguire/Assegnazioni", "da approvare", "assegnazioni di clienti proposte, da approvare", false,
+            (sp, _, ct) => sp.GetRequiredService<ContestoLaboratorioAI>().AssegnazioniClienti
+                .CountAsync(a => a.Stato == StatoAssegnazioneCliente.Proposta, ct)),
+    };
+
+    private readonly IServiceScopeFactory _scope;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<ServizioContatoriHome> _log;
+
+    public ServizioContatoriHome(IServiceScopeFactory scope, IMemoryCache cache, ILogger<ServizioContatoriHome> log)
+    {
+        _scope = scope;
+        _cache = cache;
+        _log = log;
+    }
+
+    /// <summary>
+    /// Contatori delle voci visibili all'utente, per indirizzo della voce. Calcolati in parallelo (ognuno con il
+    /// proprio contesto dati); quelli non riusciti o oltre il tempo massimo sono omessi.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<string, ContatoreHome>> CalcolaAsync(IContestoUtente utente, CancellationToken ct)
+    {
+        var visibili = MenuApplicazione.Visibili(utente.HaPermesso).SelectMany(g => g.Voci)
+            .Select(v => v.Url).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var daCalcolare = Definizioni.Where(d => visibili.Contains(d.Url) && (d.Permesso is null || utente.HaPermesso(d.Permesso))).ToList();
+
+        var risultati = await Task.WhenAll(daCalcolare.Select(d => UnoAsync(d, utente, ct)));
+        return daCalcolare.Zip(risultati)
+            .Where(x => x.Second is not null)
+            .ToDictionary(x => x.First.Url, x => new ContatoreHome(x.Second!.Value, x.First.Breve, x.First.Testo), StringComparer.OrdinalIgnoreCase);
+    }
+
+    private async Task<int?> UnoAsync(Definizione d, IContestoUtente utente, CancellationToken ct)
+    {
+        // Chi gestisce i rapportini vede il totale: stessa chiave per tutti i gestori.
+        var perUtente = d.PerUtente && !utente.HaPermesso(Permessi.RapportiniGestione);
+        var chiave = $"contatore-home|{d.Url}|{(perUtente ? utente.IdUtente?.ToString() ?? "-" : "tutti")}";
+        if (_cache.TryGetValue(chiave, out int memorizzato)) return memorizzato;
+
+        using var limite = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        limite.CancelAfter(TempoMassimo);
+        try
+        {
+            using var scope = _scope.CreateScope();
+            var calcolo = d.Calcola(scope.ServiceProvider, utente, limite.Token);
+            // WaitAsync: anche una fonte che ignora l'annullamento (es. cartella di rete) non trattiene la home.
+            var n = await calcolo.WaitAsync(TempoMassimo, ct);
+            _cache.Set(chiave, n, Durata);
+            return n;
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            _log.LogWarning(ex, "Contatore della home non calcolato: {Url}", d.Url);
+            return null;
+        }
+    }
+
+    // â”€â”€ Calcoli piÃ¹ articolati â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    /// <summary>PDF presenti nella cartella di arrivo dei certificati esterni (quelli giÃ  trattati vengono spostati).</summary>
+    private static int CertificatiInArrivo(IConfiguration config)
+    {
+        var cartella = config["CertificatiEsterni:CartellaArrivo"];
+        if (string.IsNullOrWhiteSpace(cartella) || !Directory.Exists(cartella))
+            throw new DirectoryNotFoundException($"Cartella di arrivo dei certificati esterni non raggiungibile: {cartella}");
+        return Directory.EnumerateFiles(cartella, "*.pdf", SearchOption.TopDirectoryOnly).Count();
+    }
+
+    private static Task<int> RapportiniDaConfermareAsync(IServiceProvider sp, IContestoUtente utente, CancellationToken ct)
+    {
+        var q = sp.GetRequiredService<ContestoLaboratorioAI>().Rapportini.AsNoTracking()
+            .Where(r => r.Stato == StatoRapportino.Inviato || r.Stato == StatoRapportino.Contestato);
+        if (!utente.HaPermesso(Permessi.RapportiniGestione))
+        {
+            var idu = utente.IdUtente ?? -1;
+            q = q.Where(r => r.IdUtenteCreazione == idu);
+        }
+        return q.CountAsync(ct);
+    }
+
+    /// <summary>
+    /// Sonde attive in ArcLab con il seriale da verificare: seriale in LabAI diverso da ArcLab, seriale usato da piÃ¹
+    /// sonde in ArcLab, oppure sonda non ancora nella mappa di LabAI. Stessa regola della pagina Sonde
+    /// (Areas/MonitorTemperature/Views/Sonde/Index.cshtml): se si cambia lÃ¬, va cambiata anche qui.
+    /// </summary>
+    private static async Task<int> SerialiDaVerificareAsync(IServiceProvider sp, IContestoUtente _, CancellationToken ct)
+    {
+        var sonde = (await sp.GetRequiredService<IRepositoryArcLabSonde>().GetSondeAttiveAsync(ct)).ToList();
+        var mappa = (await sp.GetRequiredService<ContestoMonitorTemperature>().MappaSonde.AsNoTracking().ToListAsync(ct))
+            .GroupBy(x => x.IdApparecchioSonda)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.IdMappa).First());
+        static string Norm(string? s) => (s ?? "").Trim().ToUpperInvariant();
+        var doppi = sonde.Where(x => !string.IsNullOrWhiteSpace(x.SerialeSonda))
+            .GroupBy(x => Norm(x.SerialeSonda)).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
+        return sonde.Count(s =>
+            !mappa.TryGetValue(s.IdApparecchioSonda, out var m)
+            || (!string.IsNullOrWhiteSpace(m.SerialeSonda) && Norm(m.SerialeSonda) != Norm(s.SerialeSonda))
+            || doppi.Contains(Norm(s.SerialeSonda)));
+    }
+}
+=== file guide ===
+Domande.cshtml
+Guida.cshtml
+Index.cshtml
+_Accettazione.cshtml
+_AccordiProvvigioni.cshtml
+_AttivitaConsulenza.cshtml
+_Audit.cshtml
+_Bilance.cshtml
+_Certificati.cshtml
+_CertificatiEsterni.cshtml
+_ClientiDaSeguire.cshtml
+_Commesse.cshtml
+_Condizioni.cshtml
+_ConsulenzeAmministrazione.cshtml
+_Consultazione.cshtml
+_Controlli.cshtml
+_Direzione.cshtml
+_DomandeGuida.cshtml
+_Impostazioni.cshtml
+_Incubatori.cshtml
+_InviiLaboratoriEsterni.cshtml
+_LaboratoriEsterni.cshtml
+_LimitiNormativi.cshtml
+_ManualisticaModelli.cshtml
+_Mappatura.cshtml
+_MateriePrime.cshtml
+_Metodi.cshtml
+_MieProvvigioni.cshtml
+_NonFatturare.cshtml
+_OrdiniAccettazione.cshtml
+_Prelievo.cshtml
+_Preventivi.cshtml
+_PreventiviConsulenza.cshtml
+_Provvigioni.cshtml
+_Rapportini.cshtml
+_ResponsabiliClienti.cshtml
+_RicercaErrori.cshtml
+_RicercaFatture.cshtml
+_Ricette.cshtml
+_RichiestePrivati.cshtml
+_Scadenziario.cshtml
+_Segnalatori.cshtml
+_SigleLaboratori.cshtml
+_SoloEsterni.cshtml
+_Statistiche.cshtml
+_Subentri.cshtml
+_TamponiContratto.cshtml
+_Taratura.cshtml
+_Utenti.cshtml
+_Validazione.cshtml
+_VociPreventivo.cshtml
+=== _Audit.cshtml ===
+@model LaboratorioAI.Web.Navigazione.Guida
+@* Guida Â«Registro attivitÃ  (audit)Â» (11/10/2026). *@
+
+<div class="guida-intro">
+    <p><strong>A cosa serve.</strong> Il programma registra le operazioni importanti: <strong>chi</strong> ha fatto <strong>cosa</strong> e <strong>quando</strong>
+        (salvataggi, invii, approvazioni, modifiche di utenti e permessi, rinomine dei certificatiâ€¦). Il registro non si modifica e non si cancella:
+        serve come evidenza (ISO/IEC 17025) e per capire cosa Ã¨ successo quando qualcosa non torna.</p>
+</div>
+
+<h2>Cosa devo fare?</h2>
+<p class="sottotesto">Clicca sulla situazione in cui ti trovi.</p>
+
+<details class="situazione">
+    <summary>Cercare chi ha fatto un'operazione</summary>
+    <ol class="passi">
+        <li>Scegli l'<strong>area</strong> (es. Condizioni, Taratura, Scadenziario) oppure lasciale tutte.</li>
+        <li>Se serve, scrivi l'<strong>utente</strong> (e-mail) o una parte dell'<strong>azione</strong> (es. Â«salvataÂ», Â«inviatoÂ», Â«permessiÂ»).</li>
+        <li>Metti il periodo <em>dal / al</em> e premi <span class="tasto">Cerca</span>.</li>
+    </ol>
+    <p class="nota">Ogni riga ha data e ora, utente, azione, esito e l'oggetto interessato (es. il numero del rapporto). Le operazioni fatte da una casella condivisa
+        risultano a nome della casella.</p>
+</details>
+
+<p class="nota">Dubbi o problemi: Mirko Maffei.</p>
+=== riferimenti contatori ===
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:15: public sealed record ContatoreHome(int Numero, string Breve, string Testo);
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:19: /// Ogni contatore è legato a una voce del menu (stesso indirizzo) e si calcola solo se l'utente vede quella voce.
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:26: /// Per aggiungere un contatore: una riga in <see cref="Definizioni"/> con l'indirizzo della voce di menu.
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:28: public sealed class ServizioContatoriHome
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:83: private readonly ILogger<ServizioContatoriHome> _log;
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:85: public ServizioContatoriHome(IServiceScopeFactory scope, IMemoryCache cache, ILogger<ServizioContatoriHome> log)
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:96: public async Task<IReadOnlyDictionary<string, ContatoreHome>> CalcolaAsync(IContestoUtente utente, CancellationToken ct)
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:105: .ToDictionary(x => x.First.Url, x => new ContatoreHome(x.Second!.Value, x.First.Breve, x.First.Testo), StringComparer.OrdinalIgnoreCase);
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:112: var chiave = $"contatore-home|{d.Url}|{(perUtente ? utente.IdUtente?.ToString() ?? "-" : "tutti")}";
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Navigazione\ContatoriHome.cs:128: _log.LogWarning(ex, "Contatore della home non calcolato: {Url}", d.Url);
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Controllers\AccettazioneController.cs:238: // Il contatore interno viene riusato per il NUMERO DI VERBALE (nostro documento):
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Controllers\HomeController.cs:14: private readonly ServizioContatoriHome _contatori;
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Controllers\HomeController.cs:18: public HomeController(IContestoUtente utente, ServizioContatoriHome contatori, ContestoLaboratorioAI db, ILogger<HomeController> log)
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\Views\Home\Index.cshtml:20: (Navigazione/ContatoriHome.cs) e li scrive nei segnaposto data-conta-voce / data-conta-cartella.
+C:\Sviluppo\LaboratorioAI\src\LaboratorioAI.Web\wwwroot\js\moduli\home.js:16: // solo per le voci visibili e calcolate; un contatore mancante (fonte lenta o irraggiungibile) non compare.

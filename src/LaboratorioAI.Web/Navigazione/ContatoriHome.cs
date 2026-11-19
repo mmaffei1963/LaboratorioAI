@@ -1,11 +1,13 @@
 using LaboratorioAI.Core.Costanti;
 using LaboratorioAI.Core.Entita;
+using LaboratorioAI.Core.Presenze;
 using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.Clienti;
 using LaboratorioAI.Dati.LaboratorioAI;
 using LaboratorioAI.Dati.LaboratorioAI.Accreditamenti;
 using LaboratorioAI.Dati.MonitorTemperature;
+using LaboratorioAI.Dati.Presenze;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -60,6 +62,10 @@ public sealed class ServizioContatoriHome
         // ── Consulenza ── (chi non gestisce i rapportini vede solo i propri, come nella pagina)
         new("/Rapportini", "da confermare", "rapportini inviati o contestati, da confermare", true,
             RapportiniDaConfermareAsync),
+
+        // 19/11/2026: presenze. La voce di menu Riepilogo e' solo per chi gestisce le presenze, quindi il contatore e' solo per loro.
+        new("/Presenze/Riepilogo", "da controllare", "giorni con timbrature da controllare (entrata o uscita mancante) nel mese e in quello precedente, su tutti i lavoratori", false,
+            PresenzeDaControllareAsync),
 
         new("/LaboratoriEsterni", "da sistemare", "accreditamenti dei laboratori in subappalto da sistemare: verifiche diverse dal flag di ArcLab, numeri ACCREDIA diversi, controllo ACCREDIA fermo", false,
             async (sp, _, ct) => (await sp.GetRequiredService<ServizioAnomalieAccreditamenti>().CalcolaAsync(ct)).Totale),
@@ -131,6 +137,21 @@ public sealed class ServizioContatoriHome
     }
 
     // ── Calcoli più articolati ────────────────────────────────────────
+
+    /// <summary>
+    /// Giorni con timbrature che non tornano (entrata senza uscita, uscita senza entrata) nel mese corrente e in quello precedente,
+    /// sommati su tutti i lavoratori. Il giorno in corso non conta. Stesso calcolo del Riepilogo presenze.
+    /// </summary>
+    private static async Task<int> PresenzeDaControllareAsync(IServiceProvider sp, IContestoUtente _, CancellationToken ct)
+    {
+        var servizio = sp.GetRequiredService<ServizioPresenze>();
+        var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+        var precedente = oggi.AddMonths(-1);
+        var totale = 0;
+        foreach (var (anno, mese) in new[] { (precedente.Year, precedente.Month), (oggi.Year, oggi.Month) })
+            totale += (await servizio.ProspettoMensileAsync(anno, mese, null, ct)).Sum(r => r.Prospetto.Totali.GiorniConAnomalie);
+        return totale;
+    }
 
     /// <summary>PDF presenti nella cartella di arrivo dei certificati esterni (quelli già trattati vengono spostati).</summary>
     private static int CertificatiInArrivo(IConfiguration config)

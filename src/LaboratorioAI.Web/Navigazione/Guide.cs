@@ -15,6 +15,13 @@ public static class Guide
 {
     public static readonly IReadOnlyList<Guida> Elenco = new List<Guida>
     {
+        // 19/11/2026: la guida di gestione va prima, cosi' chi gestisce la trova sulle pagine riservate (/Presenze/Lavoratori, /Presenze/Riepilogo).
+        new("PresenzeGestione", "Presenze: gestione",
+            "Registrare chi timbra, controllare i totali del mese e chi \u00e8 in sede, correggere le presenze dei colleghi, tenere il calendario aziendale, esportare in Excel.",
+            new[] { "/Presenze/Lavoratori", "/Presenze/ModificaLavoratore", "/Presenze/Riepilogo" }, Permessi.PresenzeGestisci, new DateOnly(2026, 11, 19)),
+        new("Presenze", "Presenze",
+            "Timbrare entrata e uscita, correggere le proprie timbrature, inserire ferie e permessi, vedere il prospetto del mese e il calendario ferie.",
+            new[] { "/Presenze" }, Permessi.PresenzeTimbra, new DateOnly(2026, 11, 19)),
         new("ManualisticaModelli", "Manualistica: modelli",
             "Caricare i modelli Word della manualistica, controllare i marcatori e approvarli: servono due approvazioni di persone diverse, e chi carica non approva.",
             new[] { "/Manualistica/Modelli" }, Permessi.ManualisticaConsulta, new DateOnly(2026, 11, 1)),
