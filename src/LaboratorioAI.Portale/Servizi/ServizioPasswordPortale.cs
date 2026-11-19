@@ -187,7 +187,7 @@ public class ServizioPasswordPortale
 
     // ── Ripristino da parte dell'operatore ─────────────────────
 
-    public async Task<Esito> RipristinaAsync(int idCliente, string? ip, string? ua, CancellationToken ct)
+    public async Task<Esito> RipristinaAsync(int idCliente, string? ip, string? ua, CancellationToken ct, string? operatore = null)
     {
         var attive = await _ctx.Set<PasswordCliente>().Where(p => p.IdClienteArcLab == idCliente && !p.Annullata).ToListAsync(ct);
         if (attive.Count == 0) return new(false, "Il cliente entra già con la partita IVA: non c'è niente da ripristinare.");
@@ -197,7 +197,7 @@ public class ServizioPasswordPortale
         { d.Revocato = true; d.DataRevocaUtc = DateTime.UtcNow; }
         await _ctx.SaveChangesAsync(ct);
         var dati = await _credenziali.DatiAsync(idCliente, ct);
-        await EventoAsync(idCliente, dati?.CodiceContabilita, "ripristino-operatore", ip, ua, null, ct);
+        await EventoAsync(idCliente, dati?.CodiceContabilita, "ripristino-operatore", ip, ua, operatore is null ? null : "da " + operatore, ct);
         return new(true, "Credenziali originali ripristinate: il cliente entra di nuovo con la partita IVA.");
     }
 

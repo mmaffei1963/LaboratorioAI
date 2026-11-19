@@ -5817,6 +5817,41 @@ namespace LaboratorioAI.Dati.Migrations
                     b.ToTable("InvitiFirmatario", "contratti");
                 });
 
+            modelBuilder.Entity("LaboratorioAI.Core.Entita.LetturaDocumentoPortale", b =>
+                {
+                    b.Property<int>("IdLetturaDocumentoPortale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdLetturaDocumentoPortale"));
+
+                    b.Property<DateTime>("DataAggiornamentoUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("IdClienteArcLab")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEntry")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Letto")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Origine")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("IdLetturaDocumentoPortale");
+
+                    b.HasIndex("IdClienteArcLab", "IdEntry")
+                        .IsUnique();
+
+                    b.ToTable("LettureDocumenti", "portale");
+                });
+
             modelBuilder.Entity("LaboratorioAI.Core.Entita.LimiteNormativo", b =>
                 {
                     b.Property<int>("IdLimiteNormativo")
@@ -9664,6 +9699,10 @@ namespace LaboratorioAI.Dati.Migrations
 
                     b.Property<DateTime?>("DataRevoca")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("EmailOperatore")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int?>("IdCliente")
                         .HasColumnType("int");

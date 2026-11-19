@@ -26,6 +26,13 @@ public interface IServizioAccessoPortale
         string tokenVerifica, string codice, bool ricordaBrowser,
         string? indirizzoIp, string? userAgent, CancellationToken ct = default);
 
+    /// <summary>
+    /// Accesso operatore con Microsoft 365 (19/11/2026): apre una sessione operatore se la persona è un utente attivo di
+    /// LaboratorioAI con almeno un ruolo attivo (cercata per identificativo Entra, poi per e-mail). Null se non abilitata.
+    /// </summary>
+    Task<SessioneAttiva?> AccediOperatore365Async(Guid? objectId, string? email, string? nome,
+        string? indirizzoIp, string? userAgent, CancellationToken ct = default);
+
     Task<SessioneAttiva?> VerificaTokenAsync(string token, CancellationToken ct = default);
 
     Task RevocaAsync(string token, CancellationToken ct = default);
@@ -337,7 +344,7 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
 
     private async Task<SessioneAttiva> CreaSessioneAsync(
         int? idCliente, string codice, string ragioneSociale, bool operatore,
-        string? indirizzoIp, string? userAgent, CancellationToken ct)
+        string? indirizzoIp, string? userAgent, CancellationToken ct, string? emailOperatore = null)
     {
         var token = GeneraToken();
         var scadenza = DateTime.UtcNow.AddHours(_opzioni.DurataSessioneOre);
@@ -349,6 +356,7 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             CodiceContabilita = codice,
             RagioneSociale = ragioneSociale,
             Operatore = operatore,
+            EmailOperatore = emailOperatore,
             DataCreazione = DateTime.UtcNow,
             Scadenza = scadenza,
             IndirizzoIp = indirizzoIp,
@@ -363,6 +371,7 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             IdCliente = idCliente,
             RagioneSociale = ragioneSociale,
             Operatore = operatore,
+            EmailOperatore = emailOperatore,
             Scadenza = scadenza
         };
     }
@@ -371,6 +380,41 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
     private static string GeneraToken() =>
         Convert.ToBase64String(RandomNumberGenerator.GetBytes(48))
             .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+    public async Task<SessioneAttiva?> AccediOperatore365Async(Guid? objectId, string? email, string? nome,
+        string? indirizzoIp, string? userAgent, CancellationToken ct = default)
+    {
+        var mail = email?.Trim().ToLowerInvariant();
+        if (objectId is null && string.IsNullOrEmpty(mail)) return null;
+
+        // Utente di LaboratorioAI: prima per identificativo Entra, poi per e-mail (persona registrata in anticipo).
+        var utente = objectId is Guid oid
+            ? await _ctx.Utenti.AsNoTracking().FirstOrDefaultAsync(u => u.ObjectIdEntra == oid, ct)
+            : null;
+        if (utente is null && !string.IsNullOrEmpty(mail))
+            utente = await _ctx.Utenti.AsNoTracking().FirstOrDefaultAsync(u => u.Email.ToLower() == mail, ct);
+
+        // Abilitato = utente attivo con almeno un ruolo attivo (decisione del 19/11/2026: tutti i colleghi, il portale
+        // per l'operatore è di sola consultazione più il ripristino delle credenziali).
+        var abilitato = utente is { Attivo: true }
+            && await _ctx.UtentiRuoli.AsNoTracking().AnyAsync(ur => ur.IdUtente == utente.IdUtente && ur.Ruolo.Attivo, ct);
+
+        var codice = "365:" + (mail ?? objectId?.ToString());
+        if (codice.Length > 50) codice = codice[..50];
+        if (!abilitato)
+        {
+            _log.LogWarning("Accesso operatore 365 rifiutato per {Email} ({ObjectId}): non è un utente attivo di LaboratorioAI.", mail, objectId);
+            await RegistraTentativoAsync(codice, indirizzoIp, false, "operatore 365 non abilitato", ct);
+            return null;
+        }
+
+        var nomeVisibile = string.IsNullOrWhiteSpace(utente!.NomeCompleto) ? (nome ?? mail ?? "operatore") : utente.NomeCompleto;
+        var sessione = await CreaSessioneAsync(null, _opzioni.CodiceOperatore.ToUpperInvariant(),
+            $"MARE.A srl — {nomeVisibile}", true, indirizzoIp, userAgent, ct, mail ?? utente.Email);
+        await RegistraTentativoAsync(codice, indirizzoIp, true, null, ct);
+        _log.LogInformation("Accesso operatore 365: {Email}", mail ?? utente.Email);
+        return sessione;
+    }
 
     public async Task<SessioneAttiva?> VerificaTokenAsync(
         string token, CancellationToken ct = default)
@@ -391,6 +435,7 @@ public class ServizioAccessoPortale : IServizioAccessoPortale
             IdCliente = sessione.IdCliente,
             RagioneSociale = sessione.RagioneSociale,
             Operatore = sessione.Operatore,
+            EmailOperatore = sessione.EmailOperatore,
             Scadenza = sessione.Scadenza
         };
     }

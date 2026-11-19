@@ -330,10 +330,11 @@ const euro = (v) => Number(v || 0).toLocaleString('it-IT', { minimumFractionDigi
 
 function mostraScheda(id) {
     document.querySelectorAll('.scheda').forEach(b => b.classList.toggle('attiva', b.dataset.scheda === id));
-    for (const sezione of ['sezione-campioni', 'sezione-offerte', 'sezione-ordini'])
+    for (const sezione of ['sezione-campioni', 'sezione-offerte', 'sezione-ordini', 'sezione-documenti'])
         document.getElementById(sezione).classList.toggle('nascosto', id !== sezione);
     if (id === 'sezione-offerte') caricaOfferta();
     if (id === 'sezione-ordini') apriOrdini();
+    if (id === 'sezione-documenti') caricaDocumenti();
 }
 
 // ── Ordini di accettazione (18/11/2026) ────────────────────
@@ -426,6 +427,163 @@ async function scaricaOrdine(pulsante) {
         pulsante.disabled = false;
         pulsante.textContent = testoPrima;
     }
+}
+
+// ── Documenti (19/11/2026) ─────────────────────────────────
+// Tutti i documenti del cliente arrivano in una volta; i filtri lavorano nel browser. Area predefinita: Laboratorio.
+
+const AREE_DOCUMENTI = ['Laboratorio', 'HACCP', 'Sicurezza', 'Formazione', 'Privacy', 'Legionella', 'Piscine', 'Altro'];
+const MASSIMO_RIGHE_DOCUMENTI = 500;
+let documenti = [];
+let documentiCliente = undefined;
+
+const dataIt = (iso) => iso ? iso.split('-').reverse().join('/') : '';
+
+async function caricaDocumenti(forza = false) {
+    const stato = document.getElementById('documenti-stato');
+    const idCliente = clienteOfferta();
+    if (sessione?.operatore && !idCliente) {
+        documenti = []; documentiCliente = undefined;
+        document.querySelector('#tabella-documenti tbody').innerHTML = '';
+        stato.textContent = 'Accesso operatore: scegli un cliente in alto.';
+        return;
+    }
+    if (!forza && documentiCliente === idCliente) { filtraDocumenti(); return; }
+    stato.textContent = 'Caricamento dei documenti…';
+    try {
+        documenti = await api('/api/documenti' + (idCliente ? `?idCliente=${idCliente}` : ''));
+        documentiCliente = idCliente;
+        preparaFiltriDocumenti();
+        filtraDocumenti();
+    } catch (e) { stato.textContent = e.message; }
+}
+
+function preparaFiltriDocumenti() {
+    const area = document.getElementById('d-area');
+    const presenti = new Set(documenti.map(d => d.area));
+    const scelta = area.value || 'Laboratorio';
+    area.innerHTML = '<option value="">Tutte</option>' + AREE_DOCUMENTI
+        .map(a => `<option value="${a}">${a}${presenti.has(a) ? '' : ' (nessuno)'}</option>`).join('');
+    area.value = scelta;
+    aggiornaTendineDocumenti();
+}
+
+// Insediamenti e tipi: quelli presenti nei documenti dell'area scelta.
+function aggiornaTendineDocumenti() {
+    const area = document.getElementById('d-area').value;
+    const base = documenti.filter(d => !area || d.area === area);
+    const riempi = (id, valori) => {
+        const sel = document.getElementById(id);
+        const prima = sel.value;
+        const unici = [...new Set(valori.filter(v => v))].sort((a, b) => a.localeCompare(b, 'it'));
+        sel.innerHTML = '<option value="">Tutti</option>' + unici.map(v => `<option value="${testo(v)}">${testo(v)}</option>`).join('');
+        if (unici.includes(prima)) sel.value = prima;
+    };
+    riempi('d-insediamento', base.map(d => d.insediamento));
+    riempi('d-tipo', base.map(d => d.tipo));
+}
+
+function filtraDocumenti() {
+    const v = (id) => document.getElementById(id).value.trim();
+    const contiene = (campo, cerca) => !cerca || (campo || '').toLowerCase().includes(cerca.toLowerCase());
+    const traDate = (iso, dal, al) => (!dal || (iso && iso >= dal)) && (!al || (iso && iso <= al));
+    const f = {
+        area: v('d-area'), esito: v('d-esito'), letto: v('d-letto'), ins: v('d-insediamento'), tipo: v('d-tipo'),
+        dal: v('d-dal'), al: v('d-al'), titolo: v('d-titolo'), campione: v('d-campione'), pdal: v('d-pdal'), pal: v('d-pal'),
+        verbale: v('d-verbale'), luogo: v('d-luogo'), punto: v('d-punto'), sdal: v('d-sdal'), sal: v('d-sal'), tag: v('d-tag')
+    };
+    const righe = documenti.filter(d =>
+        (!f.area || d.area === f.area) &&
+        (f.esito === '' || (f.esito === '1' ? d.isPositivo === true : d.isPositivo === false)) &&
+        (f.letto === '' || (f.letto === '1') === d.letto) &&
+        (!f.ins || d.insediamento === f.ins) &&
+        (!f.tipo || d.tipo === f.tipo) &&
+        traDate(d.dataUpload, f.dal, f.al) && traDate(d.dataPrelievo, f.pdal, f.pal) && traDate(d.scadenza, f.sdal, f.sal) &&
+        contiene(d.titolo, f.titolo) && contiene(d.campione, f.campione) && contiene(d.verbale, f.verbale) &&
+        contiene(d.luogo, f.luogo) && contiene(d.punto, f.punto) && contiene(d.tag, f.tag));
+
+    const daLeggere = righe.filter(d => !d.letto).length;
+    document.getElementById('documenti-stato').textContent = righe.length
+        ? `${righe.length} documenti` + (daLeggere ? ` · ${daLeggere} da leggere` : '') +
+          (righe.length > MASSIMO_RIGHE_DOCUMENTI ? ` · mostrati i ${MASSIMO_RIGHE_DOCUMENTI} più recenti: restringi i filtri` : '')
+        : (documenti.length ? 'Nessun documento con questi filtri.' : 'Nessun documento pubblicato.');
+
+    const operatore = !!sessione?.operatore;
+    document.querySelector('#tabella-documenti tbody').innerHTML = righe.slice(0, MASSIMO_RIGHE_DOCUMENTI).map(d => `
+        <tr class="${d.letto ? '' : 'da-leggere'}">
+            <td class="azioni-doc">
+                <button class="pulsante-tenue" data-doc="${d.id}" data-azione="scarica" title="Scarica il file">Scarica${d.estensione ? ` <span class="piccolo-nota">.${testo(d.estensione)}</span>` : ''}</button>
+                ${d.letto && !operatore ? `<button class="pulsante-tenue" data-doc="${d.id}" data-azione="non-letto" title="Segna di nuovo come da leggere">Non letto</button>` : ''}
+            </td>
+            <td>${testo(d.insediamento ?? '')}</td>
+            <td class="numerico">${dataIt(d.dataUpload)}</td>
+            <td>${testo(d.tipo ?? '')}${d.byCliente ? ' <span class="piccolo-nota">(caricato da voi)</span>' : ''}</td>
+            <td class="titolo-doc">${testo(d.titolo ?? '')}${d.isPositivo ? ' <span class="stato stato-rosso">Non conforme</span>' : ''}</td>
+            <td>${testo(d.campione ?? '')}</td>
+            <td class="numerico">${dataIt(d.dataPrelievo)}</td>
+            <td>${testo(d.verbale ?? '')}</td>
+            <td>${testo(d.luogo ?? '')}</td>
+            <td>${testo(d.punto ?? '')}</td>
+            <td class="numerico">${d.certificato ? '' : dataIt(d.scadenza)}</td>
+        </tr>`).join('');
+}
+
+async function scaricaDocumento(pulsante) {
+    const stato = document.getElementById('documenti-stato');
+    pulsante.disabled = true;
+    try {
+        const token = sessionStorage.getItem(CHIAVE_TOKEN);
+        const idCliente = clienteOfferta();
+        const risposta = await fetch(`/api/documenti/${pulsante.dataset.doc}/file` + (idCliente ? `?idCliente=${idCliente}` : ''), {
+            headers: token ? { [INTESTAZIONE]: token } : {}
+        });
+        if (risposta.status === 401 && token) { esci(false); throw new Error('Sessione scaduta.'); }
+        if (!risposta.ok) {
+            let msg = `Errore ${risposta.status}`;
+            try { msg = (await risposta.json()).messaggio || msg; } catch { /* corpo non JSON */ }
+            throw new Error(msg);
+        }
+        const blob = await risposta.blob();
+        const cd = risposta.headers.get('content-disposition') || '';
+        const nome = decodeURIComponent((cd.match(/filename\*=UTF-8''([^;]+)/i) || [])[1] || '') ||
+            (cd.match(/filename="?([^";]+)"?/) || [])[1] || `documento_${pulsante.dataset.doc}`;
+        const indirizzo = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = indirizzo;
+        a.download = nome;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(indirizzo), 10000);
+        // Il cliente: il documento diventa «letto» anche a video.
+        if (!sessione?.operatore) {
+            const d = documenti.find(x => String(x.id) === pulsante.dataset.doc);
+            if (d) { d.letto = true; filtraDocumenti(); }
+        }
+    } catch (e) {
+        stato.textContent = e.message;
+    } finally {
+        pulsante.disabled = false;
+    }
+}
+
+async function segnaNonLetto(pulsante) {
+    pulsante.disabled = true;
+    try {
+        await invia(`/api/documenti/${pulsante.dataset.doc}/non-letto`, {});
+        const d = documenti.find(x => String(x.id) === pulsante.dataset.doc);
+        if (d) d.letto = false;
+        filtraDocumenti();
+    } catch (e) {
+        document.getElementById('documenti-stato').textContent = e.message;
+        pulsante.disabled = false;
+    }
+}
+
+function azzeraFiltriDocumenti() {
+    document.querySelectorAll('#filtri-documenti input').forEach(c => c.value = '');
+    document.querySelectorAll('#filtri-documenti select').forEach(s => s.value = '');
+    document.getElementById('d-area').value = 'Laboratorio';
+    aggiornaTendineDocumenti();
+    filtraDocumenti();
 }
 
 function clienteOfferta() {
@@ -671,6 +829,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('credenziale').focus();
     }
 
+    // 19/11/2026: rientro dal login Microsoft 365 degli operatori. Il token arriva nel frammento dell'indirizzo
+    // (#operatore=…, mai inviato al server): si salva e si toglie subito dall'indirizzo e dalla cronologia.
+    const frammento = new URLSearchParams(location.hash.slice(1));
+    if (frammento.has('operatore') || frammento.has('operatore-errore')) {
+        history.replaceState(null, '', location.pathname + location.search);
+        if (frammento.get('operatore')) sessionStorage.setItem(CHIAVE_TOKEN, frammento.get('operatore'));
+        const errori = {
+            'non-abilitato': 'Il tuo account Microsoft 365 non è abilitato: devi essere un utente attivo di LaboratorioAI.',
+            'accesso': 'Accesso Microsoft 365 non riuscito. Riprova.',
+            'configurazione': 'Accesso Microsoft 365 non ancora configurato sul portale.'
+        };
+        const codiceErrore = frammento.get('operatore-errore');
+        if (codiceErrore) {
+            const box = document.getElementById('errore-accesso');
+            box.textContent = errori[codiceErrore] || 'Accesso Microsoft 365 non riuscito.';
+            box.classList.remove('nascosto');
+        }
+    }
+
     // Ripristino della sessione dopo un ricaricamento della pagina
     if (sessionStorage.getItem(CHIAVE_TOKEN)) {
         try {
@@ -689,6 +866,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await cerca();
         if (!document.getElementById('sezione-offerte').classList.contains('nascosto')) caricaOfferta();
         if (!document.getElementById('sezione-ordini').classList.contains('nascosto')) apriOrdini();
+        if (!document.getElementById('sezione-documenti').classList.contains('nascosto')) caricaDocumenti();
         statoPasswordCliente();
     });
 
@@ -709,6 +887,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('#tabella-ordini tbody').addEventListener('click', (e) => {
         const b = e.target.closest('button[data-lotto]');
         if (b) scaricaOrdine(b);
+    });
+
+    // 19/11/2026: Documenti
+    document.getElementById('d-area').addEventListener('change', () => { aggiornaTendineDocumenti(); filtraDocumenti(); });
+    document.querySelectorAll('#filtri-documenti select, #filtri-documenti input[type=date]').forEach(c =>
+        c.addEventListener('change', filtraDocumenti));
+    document.querySelectorAll('#filtri-documenti input[type=text]').forEach(c => c.addEventListener('input', filtraDocumenti));
+    document.getElementById('btn-doc-azzera').addEventListener('click', azzeraFiltriDocumenti);
+    document.querySelector('#tabella-documenti tbody').addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-doc]');
+        if (!b) return;
+        if (b.dataset.azione === 'non-letto') segnaNonLetto(b); else scaricaDocumento(b);
     });
 
     document.getElementById('chiudi-prove').addEventListener('click', () =>

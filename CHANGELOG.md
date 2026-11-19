@@ -1467,3 +1467,21 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 
 ## 18/11/2026 — Service worker solo per Prelievo vocale
 - sw.js (cache labai-prelievo-v5) gestisce solo i file della pagina Prelievo vocale: prima intercettava tutto il sito e dopo un aggiornamento il browser poteva mostrare pagine vecchie.
+
+## 19/11/2026 — Portale: scheda «Documenti» (da Palomar / Marea.Entries)
+- Nuova scheda Documenti: tutti i documenti pubblicati del cliente (Marea.Entries, SOLA LETTURA), filtro predefinito sull'area Laboratorio.
+- Regole fisse nella query: esclusi i documenti bloccati (IsBloccato) e i certificati senza DataFirma (non firmati digitalmente).
+- Colonne: Scarica / Non letto, insediamento, data caricamento, tipo, titolo (badge «Non conforme» se IsPositivo = 1), campione, data prelievo, verbale, luogo, punto, scadenza (vuota per i certificati).
+- Filtri su tutti i campi: area, esito (tutti / conformi / non conformi), lettura, insediamento, tipo, date di caricamento, prelievo e scadenza, testo su titolo, campione, verbale, luogo, punto, etichette.
+- Stato letto/non letto nella nuova tabella portale.LettureDocumenti (migrazione LettureDocumentiPortale); senza riga vale «letto» se il documento era già stato scaricato da Palomar. L'accesso operatore non cambia lo stato del cliente.
+- Scarico solo dei documenti del cliente in sessione, solo da percorsi sotto D:\web\, C:\web\, D:\marea\ (configurabile con Portale:Documenti:RadiciAmmesse; traduzione della radice con Portale:Documenti:SostituisciDa / SostituisciCon).
+- File: Core/Entita/LetturaDocumentoPortale.cs, Core/Modelli/ModelliDocumentiPortale.cs, Core/Repository/IRepositoryDocumentiPortale.cs, Dati/LaboratorioAI/Configurazioni/ConfigurazioneLetturaDocumentoPortale.cs, Dati/ArcLab/Repository/RepositoryDocumentiPortale.cs, Portale/Servizi/ServizioDocumentiPortale.cs, Portale/Controllers/DocumentiController.cs, Portale/Views/Home/Index.cshtml, Portale/wwwroot/js/portale.js, Portale/wwwroot/css/portale.css; Portale/Program.cs con comando di inserimento (due righe DI).
+
+## 19/11/2026 — Portale: accesso operatori con Microsoft 365
+- Nella pagina di accesso, pulsante «Accesso personale MARE.A (Microsoft 365)»: login Microsoft (stessa registrazione Entra ID di LaboratorioAI), poi sessione operatore del portale se la persona è un utente attivo di LaboratorioAI con almeno un ruolo attivo (decisione di Mirko: tutti i colleghi; per l'operatore il portale è consultazione più ripristino delle credenziali).
+- Il token della sessione torna nel frammento dell'indirizzo (#operatore=…), mai inviato al server né nei log, e la pagina lo cancella subito; il cookie Microsoft si cancella al rientro.
+- Sessioni: nuova colonna portale.SessioniPortale.EmailOperatore (migrazione OperatoreMicrosoft365); il ripristino delle credenziali del cliente registra chi l'ha fatto.
+- Vecchio accesso con codice MAREA e password: spento togliendo Portale:CredenzialeOperatore dalla configurazione di produzione; si riattiva in emergenza rimettendo la voce.
+- Sviluppo: il pulsante fa un accesso di sviluppo come «Utente di sviluppo» (sviluppo@mare-a.com), senza Microsoft.
+- Produzione: copiare la sezione «EntraId» dall'appsettings.Production.json della Web a quello del Portale; in Entra ID aggiungere l'URI di reindirizzamento https://portale.mare-a.com/signin-oidc.
+- File: Portale/Autenticazione/AccessoOperatore365.cs, Portale/Controllers/OperatoreController.cs, Portale/Servizi/ServizioAccessoPortale.cs, Portale/Servizi/ServizioPasswordPortale.cs, Portale/Controllers/PasswordController.cs, Core/Entita/SessionePortale.cs, Core/Modelli/ModelliPortale.cs, Dati/LaboratorioAI/Configurazioni/ConfigurazioniPortaleAudit.cs, Portale/Views/Home/Index.cshtml, Portale/wwwroot/js/portale.js, Portale/wwwroot/css/portale.css; Program.cs e csproj del Portale con comandi di inserimento.

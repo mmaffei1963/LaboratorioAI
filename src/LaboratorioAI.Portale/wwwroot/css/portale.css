@@ -275,3 +275,19 @@ main { padding: 24px 28px; max-width: 1500px; margin: 0 auto; }
 @media (max-width: 480px) {
     .griglia-filtri { grid-template-columns: 1fr; }
 }
+
+/* 19/11/2026: Documenti */
+.tabella-documenti td { vertical-align: top; }
+.tabella-documenti tr.da-leggere td { font-weight: 600; }
+.tabella-documenti tr.da-leggere td.titolo-doc { color: var(--rosso); }
+.tabella-documenti .azioni-doc { white-space: nowrap; }
+.tabella-documenti .azioni-doc button { padding: 4px 9px; font-size: .76rem; }
+.tabella-documenti .azioni-doc .piccolo-nota { margin: 0; font-size: .7rem; }
+.stato-rosso { background: #FDECEC; color: #B3261E; }
+
+/* 19/11/2026: accesso del personale con Microsoft 365 */
+.accesso-personale { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grigio-100); text-align: center; }
+.pulsante-365 { display: inline-block; font-size: .8rem; color: var(--grigio-500); text-decoration: none;
+    border: 1px solid var(--grigio-100); border-radius: 6px; padding: 7px 12px; }
+.pulsante-365:hover { color: var(--rosso); border-color: var(--rosso); }
+

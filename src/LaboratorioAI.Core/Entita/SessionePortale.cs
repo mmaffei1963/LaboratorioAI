@@ -23,6 +23,12 @@ public class SessionePortale
     /// <summary>Sessione di operatore interno, con visibilità su tutti i clienti.</summary>
     public bool Operatore { get; set; }
 
+    /// <summary>
+    /// 19/11/2026: e-mail aziendale (Microsoft 365) dell'operatore che ha aperto la sessione, per sapere sempre chi è
+    /// entrato. Nulla per i clienti e per il vecchio accesso con codice operatore.
+    /// </summary>
+    public string? EmailOperatore { get; set; }
+
     public DateTime DataCreazione { get; set; }
     public DateTime Scadenza { get; set; }
     public DateTime? DataRevoca { get; set; }

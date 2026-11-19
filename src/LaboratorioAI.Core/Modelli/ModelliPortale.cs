@@ -29,6 +29,8 @@ public record SessioneAttiva
     public int? IdCliente { get; init; }
     public string? RagioneSociale { get; init; }
     public bool Operatore { get; init; }
+    /// <summary>19/11/2026: e-mail 365 dell'operatore (null per clienti e vecchio accesso).</summary>
+    public string? EmailOperatore { get; init; }
     public DateTime Scadenza { get; init; }
 }
 

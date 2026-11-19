@@ -1,4 +1,4 @@
-using LaboratorioAI.Core.Repository;
+﻿using LaboratorioAI.Core.Repository;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.ArcLab;
 using LaboratorioAI.Dati.ArcLab.Repository;
@@ -50,6 +50,11 @@ builder.Services.AddScoped<IRepositoryOrdineAccettazione, RepositoryOrdineAccett
 builder.Services.AddScoped<IRepositoryAnagrafiche, RepositoryAnagrafiche>();
 builder.Services.AddSingleton<IGeneratoreOrdineAccettazione, GeneratoreOrdineAccettazione>();
 builder.Services.AddScoped<ServizioOrdiniPortale>();
+// Documenti (19/11/2026): documenti del cliente da Marea.Entries (sola lettura).
+builder.Services.AddScoped<IRepositoryDocumentiPortale, RepositoryDocumentiPortale>();
+builder.Services.AddScoped<ServizioDocumentiPortale>();
+// Accesso operatori con Microsoft 365 (19/11/2026), al posto del codice operatore con password.
+AccessoOperatore365.Configura(builder);
 // Approvazione delle Condizioni Generali (pagina /Firma, 10/10/2026): registro delle evidenze a impronte concatenate.
 builder.Services.AddScoped<IRegistroEvidenzeApprovazioni, RegistroEvidenzeApprovazioni>();
 // Invio del codice OTP delle Condizioni (15/10/2026): stessa configurazione Smtp della Web app.
@@ -128,6 +133,7 @@ app.UseSerilogRequestLogging(opzioni =>
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication(); // 19/11/2026: solo per il rientro dal login Microsoft degli operatori
 
 app.UseMiddleware<MiddlewareSessione>();
 

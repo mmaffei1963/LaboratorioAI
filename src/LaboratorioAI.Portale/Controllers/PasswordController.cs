@@ -65,7 +65,7 @@ public class PasswordController : ControllerBase
     [HttpPost("ripristina")]
     [RichiedeSessione(SoloOperatore = true)]
     public async Task<IActionResult> Ripristina([FromBody] RichiestaRipristino r, CancellationToken ct) =>
-        Risposta(await _servizio.RipristinaAsync(r.IdCliente, Ip, Agente, ct));
+        Risposta(await _servizio.RipristinaAsync(r.IdCliente, Ip, Agente, ct, _sessione.Sessione?.EmailOperatore));
 
     // I nomi dei campi contengono «password»: il filtro dei log li omette.
     public record RichiestaCambio(string? PasswordAttuale, string? PasswordNuova, string? PasswordRipetuta);

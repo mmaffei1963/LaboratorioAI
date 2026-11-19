@@ -14,6 +14,7 @@ public class ConfigurazioneSessionePortale : IEntityTypeConfiguration<SessionePo
         e.Property(x => x.Token).HasMaxLength(128).IsRequired();
         e.Property(x => x.CodiceContabilita).HasMaxLength(50);
         e.Property(x => x.RagioneSociale).HasMaxLength(255);
+        e.Property(x => x.EmailOperatore).HasMaxLength(255);
         e.Property(x => x.IndirizzoIp).HasMaxLength(45);   // IPv6
         e.Property(x => x.UserAgent).HasMaxLength(500);
         e.Property(x => x.DataCreazione).HasDefaultValueSql("SYSUTCDATETIME()");

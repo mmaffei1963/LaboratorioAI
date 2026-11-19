@@ -36,6 +36,11 @@
         <!-- 17/11/2026: recupero della password con codice via email -->
         <button type="button" class="link-accesso" id="btn-dimenticata">Password dimenticata?</button>
 
+        <!-- 19/11/2026: accesso del personale MARE.A con Microsoft 365 -->
+        <div class="accesso-personale">
+            <a class="pulsante-365" href="/operatore/accedi">Accesso personale MARE.A (Microsoft 365)</a>
+        </div>
+
         <p class="nota-accesso">
             MARE.A srl — Via E. Toti, 2 — 47841 Cattolica (RN)
         </p>
@@ -112,6 +117,7 @@
             <button type="button" class="scheda attiva" data-scheda="sezione-campioni">Campioni</button>
             <button type="button" class="scheda" data-scheda="sezione-offerte">Offerte</button>
             <button type="button" class="scheda" data-scheda="sezione-ordini">Ordini di accettazione</button>
+            <button type="button" class="scheda" data-scheda="sezione-documenti">Documenti</button>
         </nav>
 
         <div id="sezione-campioni">
@@ -235,6 +241,53 @@
                     </table>
                 </div>
                 <p class="piccolo-nota">L'Ordine di accettazione riporta i campioni ricevuti, le analisi richieste e le Condizioni generali di fornitura in vigore alla data di ricezione.</p>
+            </section>
+        </div>
+
+        <!-- 19/11/2026: Documenti pubblicati (da Palomar / Marea.Entries) -->
+        <div id="sezione-documenti" class="nascosto">
+            <section class="riquadro">
+                <div class="griglia-filtri" id="filtri-documenti">
+                    <label>Area<select id="d-area"></select></label>
+                    <label>Esito<select id="d-esito">
+                        <option value="">Tutti</option>
+                        <option value="0">Solo conformi</option>
+                        <option value="1">Solo non conformi</option>
+                    </select></label>
+                    <label>Lettura<select id="d-letto">
+                        <option value="">Tutti</option>
+                        <option value="0">Solo da leggere</option>
+                        <option value="1">Solo letti</option>
+                    </select></label>
+                    <label>Insediamento<select id="d-insediamento"><option value="">Tutti</option></select></label>
+                    <label>Tipo di documento<select id="d-tipo"><option value="">Tutti</option></select></label>
+                    <label>Caricati dal<input type="date" id="d-dal" /></label>
+                    <label>al<input type="date" id="d-al" /></label>
+                    <label>Titolo<input type="text" id="d-titolo" /></label>
+                    <label>Campione<input type="text" id="d-campione" /></label>
+                    <label>Prelievo dal<input type="date" id="d-pdal" /></label>
+                    <label>al<input type="date" id="d-pal" /></label>
+                    <label>N° verbale<input type="text" id="d-verbale" /></label>
+                    <label>Luogo di prelievo<input type="text" id="d-luogo" /></label>
+                    <label>Punto di prelievo<input type="text" id="d-punto" /></label>
+                    <label>Scadenza dal<input type="date" id="d-sdal" /></label>
+                    <label>al<input type="date" id="d-sal" /></label>
+                    <label>Etichette<input type="text" id="d-tag" placeholder="es. TAMPONI" /></label>
+                </div>
+                <div class="azioni-filtri"><button class="pulsante-tenue" id="btn-doc-azzera">Azzera filtri</button></div>
+            </section>
+            <section class="riquadro">
+                <div class="barra-risultati"><span id="documenti-stato">Caricamento dei documenti…</span></div>
+                <div class="tabella-scorrevole">
+                    <table class="tabella tabella-documenti" id="tabella-documenti">
+                        <thead><tr>
+                            <th></th><th>Insediamento</th><th>Caricato il</th><th>Tipo</th><th>Titolo</th><th>Campione</th>
+                            <th>Prelievo</th><th>Verbale</th><th>Luogo di prelievo</th><th>Punto di prelievo</th><th>Scadenza</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p class="piccolo-nota">In grassetto i documenti non ancora scaricati. I certificati pubblicati sono firmati digitalmente.</p>
             </section>
         </div>
 
