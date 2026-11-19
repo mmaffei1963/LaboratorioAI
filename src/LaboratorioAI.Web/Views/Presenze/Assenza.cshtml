@@ -13,6 +13,7 @@
         <p class="sottotitolo">Per più giorni o per giornate intere si saltano festivi, chiusure aziendali e giorni senza ore da contratto. Al massimo due mesi per volta.</p>
     </div>
     <div class="azioni">
+        <a class="pulsante secondario" asp-action="Ferie" asp-route-anno="@Model.Data.Year">Vedi chi è in ferie</a>
         <a class="pulsante secondario" asp-action="Mese" asp-route-anno="@Model.Data.Year" asp-route-mese="@Model.Data.Month" asp-route-lavoratore="@idRottaNum">Annulla</a>
     </div>
 </div>

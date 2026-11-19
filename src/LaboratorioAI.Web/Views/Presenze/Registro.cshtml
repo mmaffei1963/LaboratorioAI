@@ -43,7 +43,7 @@
                 {
                     <tr>
                         <td>@FusoPresenze.Locale(v.QuandoUtc).ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@v.Autore</td><td>@v.Lavoratore</td><td>@v.Azione</td>
+                        <td>@v.Autore</td><td>@(v.Azione.StartsWith("calendario") ? "(calendario)" : v.Lavoratore)</td><td>@v.Azione</td>
                         <td>@(v.Giorno?.ToString("dd/MM/yyyy"))</td>
                         <td>@v.Prima</td><td>@v.Dopo</td><td>@v.Motivo</td>
                     </tr>

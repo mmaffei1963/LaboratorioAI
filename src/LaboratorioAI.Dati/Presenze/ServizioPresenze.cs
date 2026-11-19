@@ -25,6 +25,19 @@ public sealed record VoceRegistro(DateTime QuandoUtc, string Autore, string Lavo
 public sealed record DatiGiorno(IReadOnlyList<RigaTimbratura> Timbrature, IReadOnlyList<RigaAssenza> Assenze,
     IReadOnlyList<VoceRegistro> Storico);
 
+public sealed record RigaProspetto(Lavoratore Lavoratore, ProspettoLavoratore Prospetto);
+
+public sealed record RigaCalendario(int IdGiornoCalendario, DateOnly Giorno, string Tipo, string? Descrizione, decimal? Ore,
+    int? IdSede, string? Sede);
+
+/// <summary>Dati del calendario delle ferie di un anno: lavoratori, ferie e permessi per lavoratore e giorno, calendario per sede.</summary>
+public sealed record DatiFerie(IReadOnlyList<Lavoratore> Lavoratori,
+    IReadOnlyDictionary<int, IReadOnlyDictionary<DateOnly, IReadOnlyList<AssenzaGiorno>>> Assenze,
+    IReadOnlyDictionary<int, IReadOnlyDictionary<DateOnly, VoceCalendario>> CalendarioPerSede);
+
+/// <summary>Chi è in sede adesso (entrata senza uscita) oppure l'ultima timbratura di oggi.</summary>
+public sealed record PresenzaOggi(Lavoratore Lavoratore, bool InSede, string? UltimaOra, string? UltimoTipo);
+
 /// <summary>Dati del modulo «Lavoratore» (testi come arrivano dal form).</summary>
 public sealed class ModuloLavoratore
 {
@@ -48,6 +61,8 @@ public sealed class ModuloLavoratore
 public sealed class ServizioPresenze
 {
     private static readonly Regex ColoreEsadecimale = new("^#[0-9A-Fa-f]{6}$", RegexOptions.Compiled);
+
+    private const string AzionePrecarico = "calendario.precarica";
 
     private readonly ContestoLaboratorioAI _ctx;
 
@@ -167,6 +182,10 @@ public sealed class ServizioPresenze
     {
         var dal = new DateOnly(anno, 1, 1);
         var al = new DateOnly(anno, 12, 31);
+        // Il precarico si fa una volta sola per anno (lo ricorda una riga del registro): così chi toglie un giorno dal calendario
+        // non se lo ritrova alla visita successiva.
+        if (await _ctx.RegistroModifichePresenze.AsNoTracking().AnyAsync(m => m.Azione == AzionePrecarico && m.Giorno == dal, ct))
+            return;
         var sedi = await _ctx.SediAziendali.AsNoTracking().ToListAsync(ct);
         var esistenti = await _ctx.CalendarioAziendale.AsNoTracking()
             .Where(c => c.Giorno >= dal && c.Giorno <= al)
@@ -189,8 +208,12 @@ public sealed class ServizioPresenze
                     IdSede = sede.IdSede, Giorno = patrono.Giorno, Tipo = VoceCalendario.Festivita, Descrizione = patrono.Descrizione,
                 });
         }
-        if (nuovi.Count == 0) return;
         _ctx.CalendarioAziendale.AddRange(nuovi);
+        _ctx.RegistroModifichePresenze.Add(new ModificaPresenze
+        {
+            QuandoUtc = DateTime.UtcNow, Azione = AzionePrecarico, Giorno = dal,
+            Dopo = JsonSerializer.Serialize(new { anno, inserite = nuovi.Count }),
+        });
         try { await _ctx.SaveChangesAsync(ct); }
         catch (DbUpdateException)
         {
@@ -410,11 +433,172 @@ public sealed class ServizioPresenze
             from autore in autori.DefaultIfEmpty()
             join lav in _ctx.Lavoratori.AsNoTracking() on m.IdLavoratore equals (int?)lav.IdLavoratore into lavoratori
             from lavoratore in lavoratori.DefaultIfEmpty()
-            where (idLavoratore == null || m.IdLavoratore == idLavoratore) && (giorno == null || m.Giorno == giorno)
+            where m.Azione != AzionePrecarico && (idLavoratore == null || m.IdLavoratore == idLavoratore) && (giorno == null || m.Giorno == giorno)
             orderby m.IdModifica descending
             select new { m.QuandoUtc, Autore = autore != null ? autore.NomeCompleto : "", Lavoratore = lavoratore != null ? lavoratore.Cognome : "",
                 m.Azione, m.Giorno, m.Prima, m.Dopo, m.Motivo }
         ).Take(massimo).ToListAsync(ct);
         return righe.Select(r => new VoceRegistro(r.QuandoUtc, r.Autore, r.Lavoratore, r.Azione, r.Giorno, r.Prima, r.Dopo, r.Motivo)).ToList();
+    }
+
+    // ------------------------------------------------------------------ prospetto mensile e riepilogo
+
+    /// <summary>
+    /// Lavoratori da mostrare in un mese: gli attivi (assunti entro la fine del mese) e chi ora non è più attivo ma ha dati in quel mese.
+    /// Filtro facoltativo per sede.
+    /// </summary>
+    public async Task<List<Lavoratore>> LavoratoriDelMeseAsync(int anno, int mese, int? idSede, CancellationToken ct)
+    {
+        var dal = new DateOnly(anno, mese, 1);
+        var al = dal.AddMonths(1).AddDays(-1);
+        var conTimbrature = _ctx.Timbrature.AsNoTracking().Where(t => !t.Annullata && t.Giorno >= dal && t.Giorno <= al).Select(t => t.IdLavoratore);
+        var conAssenze = _ctx.Assenze.AsNoTracking().Where(a => !a.Annullata && a.Giorno >= dal && a.Giorno <= al).Select(a => a.IdLavoratore);
+        var conDati = await conTimbrature.Union(conAssenze).ToListAsync(ct);
+        var q = _ctx.Lavoratori.AsNoTracking().Include(l => l.Sede)
+            .Where(l => (l.Attivo && (l.AttivoDal == null || l.AttivoDal <= al)) || conDati.Contains(l.IdLavoratore));
+        if (idSede is int s) q = q.Where(l => l.IdSede == s);
+        return await q.OrderBy(l => l.Ordine).ThenBy(l => l.Cognome).ToListAsync(ct);
+    }
+
+    /// <summary>Il calcolo del mese per ogni lavoratore (per il prospetto, il riepilogo e l'esportazione in Excel).</summary>
+    public async Task<List<RigaProspetto>> ProspettoMensileAsync(int anno, int mese, int? idSede, CancellationToken ct)
+    {
+        var dal = new DateOnly(anno, mese, 1);
+        var al = dal.AddMonths(1).AddDays(-1);
+        var risultato = new List<RigaProspetto>();
+        foreach (var l in await LavoratoriDelMeseAsync(anno, mese, idSede, ct))
+            risultato.Add(new RigaProspetto(l, await CalcolaAsync(l, dal, al, ct)));
+        return risultato;
+    }
+
+    /// <summary>Chi è in sede adesso e, per gli altri, l'ultima timbratura di oggi (solo lavoratori attivi).</summary>
+    public async Task<List<PresenzaOggi>> PresentiOggiAsync(CancellationToken ct)
+    {
+        var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+        var risultato = new List<PresenzaOggi>();
+        foreach (var l in await _ctx.Lavoratori.AsNoTracking().Include(x => x.Sede).Where(x => x.Attivo)
+                     .OrderBy(x => x.Ordine).ThenBy(x => x.Cognome).ToListAsync(ct))
+        {
+            var g = (await CalcolaAsync(l, oggi, oggi, ct)).Giorni[0];
+            var ultima = g.Timbrature.Count > 0 ? g.Timbrature[^1] : null;
+            risultato.Add(new PresenzaOggi(l, g.InCorso, ultima?.Ora, ultima?.Tipo));
+        }
+        return risultato;
+    }
+
+    // ------------------------------------------------------------------ calendario aziendale (modifica)
+
+    /// <summary>Le voci del calendario dell'anno (festività e chiusure, per tutte le sedi o per una sede).</summary>
+    public async Task<List<RigaCalendario>> CalendarioAnnoAsync(int anno, CancellationToken ct)
+    {
+        await AssicuraCalendarioAsync(anno, ct);
+        var dal = new DateOnly(anno, 1, 1);
+        var al = new DateOnly(anno, 12, 31);
+        var righe = await _ctx.CalendarioAziendale.AsNoTracking().Include(c => c.Sede)
+            .Where(c => c.Giorno >= dal && c.Giorno <= al)
+            .OrderBy(c => c.Giorno).ThenBy(c => c.IdSede).ToListAsync(ct);
+        return righe.Select(c => new RigaCalendario(c.IdGiornoCalendario, c.Giorno, c.Tipo, c.Descrizione, c.Ore,
+            c.IdSede, c.Sede?.Nome)).ToList();
+    }
+
+    private static string DescriviCalendario(GiornoCalendarioAziendale c) =>
+        JsonSerializer.Serialize(new { data = c.Giorno.ToString("yyyy-MM-dd"), sede = c.IdSede, tipo = c.Tipo, descrizione = c.Descrizione, ore = c.Ore });
+
+    private static ModificaPresenze RegistroCalendario(DateTime adesso, int? idAutore, string azione, DateOnly giorno,
+        string? prima, string? dopo, string? motivo) =>
+        new()
+        {
+            QuandoUtc = adesso, IdUtenteAutore = idAutore, IdLavoratore = null, Azione = azione, Giorno = giorno,
+            Prima = prima, Dopo = dopo, Motivo = RegolePresenze.NormalizzaTesto(motivo, 500),
+        };
+
+    /// <summary>
+    /// Aggiunge festività o chiusure. Se per quella sede (o per tutte) il giorno c'è già, la voce viene sostituita.
+    /// Ogni giorno finisce nel registro con il valore prima e dopo.
+    /// </summary>
+    public async Task<(string? Errore, int Giorni)> AggiungiCalendarioAsync(string? tipo, int? idSede, DateOnly dal, DateOnly al,
+        string? descrizione, string? ore, string? motivo, int? idAutore, CancellationToken ct)
+    {
+        var esito = RegoleCalendarioPresenze.Pianifica(tipo, dal, al, ore);
+        if (!esito.Valido) return (esito.Errore, 0);
+        if (idSede is int s && !await _ctx.SediAziendali.AnyAsync(x => x.IdSede == s, ct)) return ("Sede non trovata.", 0);
+
+        var testo = RegoleCalendarioPresenze.Descrizione(tipo!, descrizione);
+        var oreDecimali = esito.Ore is double o ? Math.Round((decimal)o, 2) : (decimal?)null;
+        var adesso = DateTime.UtcNow;
+        var primo = esito.Giorni[0];
+        var ultimo = esito.Giorni[^1];
+        var esistenti = await _ctx.CalendarioAziendale
+            .Where(c => c.IdSede == idSede && c.Giorno >= primo && c.Giorno <= ultimo).ToListAsync(ct);
+        foreach (var giorno in esito.Giorni)
+        {
+            var c = esistenti.FirstOrDefault(x => x.Giorno == giorno);
+            string? prima = null;
+            if (c is null)
+            {
+                c = new GiornoCalendarioAziendale { IdSede = idSede, Giorno = giorno };
+                _ctx.CalendarioAziendale.Add(c);
+            }
+            else prima = DescriviCalendario(c);
+            c.Tipo = tipo!; c.Descrizione = testo; c.Ore = oreDecimali;
+            _ctx.RegistroModifichePresenze.Add(RegistroCalendario(adesso, idAutore,
+                prima is null ? "calendario.aggiungi" : "calendario.modifica", giorno, prima, DescriviCalendario(c), motivo));
+        }
+        await _ctx.SaveChangesAsync(ct);
+        return (null, esito.Giorni.Count);
+    }
+
+    /// <summary>Toglie una voce dal calendario (richiede il motivo). La voce resta nel registro, prima e dopo.</summary>
+    public async Task<(string? Errore, int? Anno)> EliminaCalendarioAsync(int idGiornoCalendario, string? motivo, int? idAutore, CancellationToken ct)
+    {
+        var errore = RegolePresenze.ValidaMotivo(motivo);
+        if (errore is not null) return (errore, null);
+        var c = await _ctx.CalendarioAziendale.FirstOrDefaultAsync(x => x.IdGiornoCalendario == idGiornoCalendario, ct);
+        if (c is null) return ("Voce del calendario non trovata.", null);
+        _ctx.RegistroModifichePresenze.Add(RegistroCalendario(DateTime.UtcNow, idAutore, "calendario.elimina", c.Giorno,
+            DescriviCalendario(c), null, motivo));
+        _ctx.CalendarioAziendale.Remove(c);
+        await _ctx.SaveChangesAsync(ct);
+        return (null, c.Giorno.Year);
+    }
+
+    // ------------------------------------------------------------------ calendario ferie (visibile a tutti)
+
+    /// <summary>
+    /// Ferie e permessi di tutti i lavoratori attivi in un anno (filtro facoltativo per sede). Le altre causali non vengono lette:
+    /// malattia, L. 104 e simili non si condividono con i colleghi.
+    /// </summary>
+    public async Task<DatiFerie> FerieAnnoAsync(int anno, int? idSede, CancellationToken ct)
+    {
+        var dal = new DateOnly(anno, 1, 1);
+        var al = new DateOnly(anno, 12, 31);
+        var q = _ctx.Lavoratori.AsNoTracking().Include(l => l.Sede)
+            .Where(l => l.Attivo && (l.AttivoDal == null || l.AttivoDal <= al));
+        if (idSede is int s) q = q.Where(l => l.IdSede == s);
+        var lavoratori = await q.OrderBy(l => l.Ordine).ThenBy(l => l.Cognome).ToListAsync(ct);
+        var ids = lavoratori.Select(l => l.IdLavoratore).ToList();
+
+        var righe = await _ctx.Assenze.AsNoTracking()
+            .Where(a => !a.Annullata && a.Giorno >= dal && a.Giorno <= al
+                        && (a.Causale == CausaliPresenze.Ferie || a.Causale == CausaliPresenze.Permesso)
+                        && ids.Contains(a.IdLavoratore))
+            .OrderBy(a => a.IdAssenza).ToListAsync(ct);
+        var assenze = new Dictionary<int, IReadOnlyDictionary<DateOnly, IReadOnlyList<AssenzaGiorno>>>();
+        foreach (var gruppo in righe.GroupBy(a => a.IdLavoratore))
+            assenze[gruppo.Key] = gruppo.GroupBy(a => a.Giorno).ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<AssenzaGiorno>)g.Select(a => new AssenzaGiorno(a.Causale, (double)a.Ore, null)).ToList());
+
+        var calendario = await CalendarioAnnoAsync(anno, ct);
+        var perSede = new Dictionary<int, IReadOnlyDictionary<DateOnly, VoceCalendario>>();
+        foreach (var idDellaSede in lavoratori.Select(l => l.IdSede).Distinct())
+        {
+            var voci = new Dictionary<DateOnly, VoceCalendario>();
+            // Prima le voci per tutte le sedi, poi quelle della sede: la sede ha la precedenza.
+            foreach (var r in calendario.Where(r => r.IdSede == null || r.IdSede == idDellaSede).OrderBy(r => r.IdSede.HasValue ? 1 : 0))
+                voci[r.Giorno] = new VoceCalendario(r.Tipo, r.Descrizione, r.Ore is decimal o ? (double)o : null);
+            perSede[idDellaSede] = voci;
+        }
+        return new DatiFerie(lavoratori, assenze, perSede);
     }
 }

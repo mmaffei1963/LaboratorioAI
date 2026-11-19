@@ -1,0 +1,88 @@
+@model LaboratorioAI.Web.Controllers.ModelloCalendario
+@using LaboratorioAI.Core.Presenze
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Calendario aziendale @Model.Anno</h1>
+        <p class="sottotitolo">Festività e chiusure aziendali, per tutte le sedi o per una sede. Le festività nazionali e i patroni delle sedi sono già inseriti. Le modifiche le fa chi gestisce le presenze e restano nel registro.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Calendario" asp-route-anno="@(Model.Anno - 1)">&larr; @(Model.Anno - 1)</a>
+        <a class="pulsante secondario" asp-action="Calendario" asp-route-anno="@(Model.Anno + 1)">@(Model.Anno + 1) &rarr;</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+@if (Model.PuoModificare)
+{
+    <section class="riquadro">
+        <div class="barra-risultati"><h2>Aggiungi festività o chiusura</h2></div>
+        <p class="sottotesto">Per più giorni le chiusure saltano sabato e domenica. Se il giorno c'è già per quella sede, viene sostituito. «Ore» serve solo per le chiusure parziali (per esempio 4): vuoto vuol dire tutta la giornata.</p>
+        <form method="post" asp-action="AggiungiCalendario">
+            <input type="hidden" name="anno" value="@Model.Anno" />
+            <div class="griglia-filtri">
+                <label>Tipo
+                    <select name="tipo">
+                        <option value="FE">Festività</option>
+                        <option value="CH">Chiusura aziendale</option>
+                    </select>
+                </label>
+                <label>Sede
+                    <select name="sede">
+                        <option value="">tutte le sedi</option>
+                        @foreach (var s in Model.Sedi)
+                        {
+                            <option value="@s.IdSede">@s.Nome</option>
+                        }
+                    </select>
+                </label>
+                <label>Dal<input type="date" name="dal" required /></label>
+                <label>Al (vuoto = un solo giorno)<input type="date" name="al" /></label>
+                <label>Descrizione<input type="text" name="descrizione" maxlength="80" /></label>
+                <label>Ore (solo chiusure parziali)<input type="text" name="ore" inputmode="decimal" /></label>
+                <label>Motivo (facoltativo)<input type="text" name="motivo" /></label>
+                <div style="display:flex;align-items:flex-end"><button class="pulsante" type="submit">Aggiungi</button></div>
+            </div>
+        </form>
+    </section>
+}
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Voci del @Model.Anno</h2></div>
+    @if (Model.Righe.Count == 0)
+    {
+        <p class="sottotesto">Nessuna voce.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Giorno</th><th>Tipo</th><th>Sede</th><th>Descrizione</th><th class="numerico">Ore</th>@if (Model.PuoModificare) { <th></th> }</tr></thead>
+                <tbody>
+                @foreach (var r in Model.Righe)
+                {
+                    <tr>
+                        <td>@MotoreCalcoloPresenze.GiorniBrevi[MotoreCalcoloPresenze.IndiceGiornoSettimana(r.Giorno)] @r.Giorno.ToString("dd/MM/yyyy")</td>
+                        <td>@(r.Tipo == "CH" ? "Chiusura" : "Festività")</td>
+                        <td>@(r.Sede ?? "tutte")</td>
+                        <td>@r.Descrizione</td>
+                        <td class="numerico">@(r.Ore is decimal o ? MotoreCalcoloPresenze.OreFmt((double)o) : (r.Tipo == "CH" ? "giornata" : ""))</td>
+                        @if (Model.PuoModificare)
+                        {
+                            <td>
+                                <form method="post" asp-action="EliminaCalendario" style="display:flex;gap:0.4rem;align-items:center">
+                                    <input type="hidden" name="idGiornoCalendario" value="@r.IdGiornoCalendario" />
+                                    <input type="hidden" name="anno" value="@Model.Anno" />
+                                    <input type="text" name="motivo" placeholder="motivo per toglierla" />
+                                    <button class="pulsante secondario" type="submit">Togli</button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -146,6 +146,10 @@ public static class MenuApplicazione
         {
             new("Timbra", "/Presenze", Permessi.PresenzeTimbra, "Entrata e uscita dal tuo terminale, anche per la pausa pranzo."),
             new("Le mie presenze", "/Presenze/Mese", Permessi.PresenzeTimbra, "Ore lavorate, assenze, straordinario e ore da giustificare del mese; correzione delle timbrature e nuove assenze."),
+            new("Calendario ferie", "/Presenze/Ferie", Permessi.PresenzeTimbra, "Ferie e permessi di tutti, per vedere chi e' assente nello stesso periodo."),
+            new("Prospetto mensile", "/Presenze/Prospetto", Permessi.PresenzeTimbra, "Il mese di tutti i lavoratori come il vecchio CALENDARIO, con esportazione in Excel."),
+            new("Riepilogo presenze", "/Presenze/Riepilogo", Permessi.PresenzeGestisci, "Totali del mese per lavoratore e chi e' in sede adesso (riservato a chi gestisce le presenze)."),
+            new("Calendario aziendale", "/Presenze/Calendario", Permessi.PresenzeTimbra, "Festivita' e chiusure per sede; le modifiche sono riservate a chi gestisce le presenze."),
             new("Registro delle modifiche", "/Presenze/Registro", Permessi.PresenzeTimbra, "Chi ha corretto timbrature e assenze, quando e perche'."),
             new("Lavoratori delle presenze", "/Presenze/Lavoratori", Permessi.PresenzeGestisci, "Chi timbra: sede, colore e ore da contratto (riservato a chi gestisce le presenze)."),
         }),

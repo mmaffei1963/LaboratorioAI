@@ -6,6 +6,7 @@ using LaboratorioAI.Core.Presenze;
 using LaboratorioAI.Core.Servizi;
 using LaboratorioAI.Dati.Presenze;
 using LaboratorioAI.Web.Autorizzazione;
+using LaboratorioAI.Web.Esportazioni;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LaboratorioAI.Web.Controllers;
@@ -22,6 +23,16 @@ public sealed record ModelloAssenza(Lavoratore Lavoratore, DateOnly Data, bool P
 public sealed record ModelloRegistro(Lavoratore? Lavoratore, IReadOnlyList<VoceRegistro> Voci, IReadOnlyList<Lavoratore> Elenco);
 
 public sealed record ModelloElencoLavoratori(IReadOnlyList<Lavoratore> Lavoratori);
+
+public sealed record ModelloProspetto(int Anno, int Mese, IReadOnlyList<RigaProspetto> Righe, IReadOnlyList<SedeAziendale> Sedi,
+    int? IdSede, int? IdMio, DateOnly Precedente, DateOnly Successivo, bool PuoGestire);
+
+public sealed record ModelloFerie(int Anno, DatiFerie Dati, IReadOnlyList<SedeAziendale> Sedi, int? IdSede, int? IdMio);
+
+public sealed record ModelloRiepilogo(int Anno, int Mese, IReadOnlyList<RigaProspetto> Righe, IReadOnlyList<PresenzaOggi> Presenti,
+    DateOnly Precedente, DateOnly Successivo);
+
+public sealed record ModelloCalendario(int Anno, IReadOnlyList<RigaCalendario> Righe, IReadOnlyList<SedeAziendale> Sedi, bool PuoModificare);
 
 public sealed record ModelloLavoratore(ModuloLavoratore Modulo, IReadOnlyList<SedeAziendale> Sedi, IReadOnlyList<Utente> Utenti);
 
@@ -303,4 +314,119 @@ public class PresenzeController : Controller
     }
 
     private static string Ore(decimal ore) => ore.ToString("0.##", CultureInfo.InvariantCulture);
+
+    // ═══════════════════════════════════════════════════════════
+    // Prospetto mensile (come il vecchio CALENDARIO): tutti i lavoratori, un mese. Si apre in modifica solo la propria riga.
+    // ═══════════════════════════════════════════════════════════
+
+    private static bool MeseValido(int anno, int mese) => anno is >= 2000 and <= 2100 && mese is >= 1 and <= 12;
+
+    public async Task<IActionResult> Prospetto(int? anno, int? mese, int? sede, CancellationToken ct)
+    {
+        var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+        var a = anno ?? oggi.Year;
+        var m = mese ?? oggi.Month;
+        if (!MeseValido(a, m)) return BadRequest();
+        var righe = await _servizio.ProspettoMensileAsync(a, m, sede, ct);
+        var sedi = await _servizio.SediAsync(ct);
+        var mio = await MioAsync(ct);
+        var dal = new DateOnly(a, m, 1);
+        ViewData["Titolo"] = "Prospetto mensile";
+        return View(new ModelloProspetto(a, m, righe, sedi, sede, mio?.IdLavoratore, dal.AddDays(-1), dal.AddMonths(1), PuoGestire));
+    }
+
+    public async Task<IActionResult> EsportaProspetto(int anno, int mese, int? sede, CancellationToken ct)
+    {
+        // Il file contiene i commenti delle celle (motivi delle assenze, luoghi, anomalie): lo esporta solo chi gestisce.
+        if (!PuoGestire) return StatusCode(403);
+        if (!MeseValido(anno, mese)) return BadRequest();
+        var righe = await _servizio.ProspettoMensileAsync(anno, mese, sede, ct);
+        var nomeSede = sede is int s ? (await _servizio.SediAsync(ct)).FirstOrDefault(x => x.IdSede == s)?.Nome : null;
+        var contenuto = EsportaProspettoExcel.Crea(anno, mese, nomeSede, righe.Select(r => r.Prospetto).ToList());
+        await _audit.RegistraAsync(AreaFunzionale.Amministrazione, "presenze.esporta", tipoEntita: "Presenze",
+            idEntita: $"{anno}-{mese:00}", dettaglio: nomeSede, ct: ct);
+        var nomeFile = $"Presenze_{anno}-{mese:00}{(nomeSede is null ? "" : "_" + nomeSede.Replace(' ', '_'))}.xlsx";
+        return File(contenuto, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nomeFile);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Riepilogo del mese e chi è in sede (solo chi gestisce)
+    // ═══════════════════════════════════════════════════════════
+
+    public async Task<IActionResult> Riepilogo(int? anno, int? mese, CancellationToken ct)
+    {
+        if (!PuoGestire) return StatusCode(403);
+        var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+        var a = anno ?? oggi.Year;
+        var m = mese ?? oggi.Month;
+        if (!MeseValido(a, m)) return BadRequest();
+        var righe = await _servizio.ProspettoMensileAsync(a, m, null, ct);
+        var presenti = await _servizio.PresentiOggiAsync(ct);
+        var dal = new DateOnly(a, m, 1);
+        ViewData["Titolo"] = "Riepilogo presenze";
+        return View(new ModelloRiepilogo(a, m, righe, presenti, dal.AddDays(-1), dal.AddMonths(1)));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Calendario aziendale: lo vedono tutti, lo modifica solo chi gestisce (con il motivo e il registro)
+    // ═══════════════════════════════════════════════════════════
+
+    public async Task<IActionResult> Calendario(int? anno, CancellationToken ct)
+    {
+        var a = anno ?? FusoPresenze.GiornoLocale(DateTime.UtcNow).Year;
+        if (a is < 2000 or > 2100) return BadRequest();
+        ViewData["Titolo"] = "Calendario aziendale";
+        return View(new ModelloCalendario(a, await _servizio.CalendarioAnnoAsync(a, ct), await _servizio.SediAsync(ct), PuoGestire));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AggiungiCalendario(int anno, string? tipo, int? sede, string? dal, string? al, string? descrizione,
+        string? ore, string? motivo, CancellationToken ct)
+    {
+        if (!PuoGestire) return StatusCode(403);
+        if (!TryData(dal, out var primo) || !TryData(string.IsNullOrWhiteSpace(al) ? dal : al, out var ultimo))
+        {
+            TempData["Errore"] = "Date non valide.";
+            return RedirectToAction(nameof(Calendario), new { anno });
+        }
+        var (errore, giorni) = await _servizio.AggiungiCalendarioAsync(tipo, sede, primo, ultimo, descrizione, ore, motivo, _utente.IdUtente, ct);
+        if (errore is null)
+        {
+            TempData["Esito"] = $"Calendario aggiornato: {giorni} giorn{(giorni == 1 ? "o" : "i")}.";
+            await _audit.RegistraAsync(AreaFunzionale.Amministrazione, "presenze.calendario.aggiungi", tipoEntita: "CalendarioPresenze",
+                dettaglio: $"{tipo} {primo:yyyy-MM-dd}..{ultimo:yyyy-MM-dd}", ct: ct);
+        }
+        else TempData["Errore"] = errore;
+        return RedirectToAction(nameof(Calendario), new { anno = errore is null ? primo.Year : anno });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminaCalendario(int idGiornoCalendario, int anno, string? motivo, CancellationToken ct)
+    {
+        if (!PuoGestire) return StatusCode(403);
+        var (errore, annoVoce) = await _servizio.EliminaCalendarioAsync(idGiornoCalendario, motivo, _utente.IdUtente, ct);
+        if (errore is null)
+        {
+            TempData["Esito"] = "Voce tolta dal calendario.";
+            await _audit.RegistraAsync(AreaFunzionale.Amministrazione, "presenze.calendario.elimina", tipoEntita: "CalendarioPresenze",
+                idEntita: idGiornoCalendario.ToString(CultureInfo.InvariantCulture), ct: ct);
+        }
+        else TempData["Errore"] = errore;
+        return RedirectToAction(nameof(Calendario), new { anno = annoVoce ?? anno });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Calendario ferie: ferie e permessi di tutti, per vedere chi è assente nello stesso periodo (visibile a tutti)
+    // ═══════════════════════════════════════════════════════════
+
+    public async Task<IActionResult> Ferie(int? anno, int? sede, CancellationToken ct)
+    {
+        var a = anno ?? FusoPresenze.GiornoLocale(DateTime.UtcNow).Year;
+        if (a is < 2000 or > 2100) return BadRequest();
+        var dati = await _servizio.FerieAnnoAsync(a, sede, ct);
+        var sedi = await _servizio.SediAsync(ct);
+        var mio = await MioAsync(ct);
+        ViewData["Titolo"] = "Calendario ferie";
+        return View(new ModelloFerie(a, dati, sedi, sede, mio?.IdLavoratore));
+    }
 }

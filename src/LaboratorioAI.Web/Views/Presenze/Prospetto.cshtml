@@ -1,0 +1,132 @@
+@model LaboratorioAI.Web.Controllers.ModelloProspetto
+@using LaboratorioAI.Core.Presenze
+@{
+    var giorni = MotoreCalcoloPresenze.GiorniMese(Model.Anno, Model.Mese).ToList();
+    var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+    var totaliGiorno = new double[giorni.Count];
+    var nomeMese = MotoreCalcoloPresenze.Mesi[Model.Mese - 1];
+    var sedeRotta = Model.IdSede;
+}
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Prospetto mensile — @nomeMese @Model.Anno</h1>
+        <p class="sottotitolo">Come il vecchio CALENDARIO: un mese, tutti i lavoratori. Clicca un giorno della tua riga per correggerlo; le altre righe sono solo da consultare.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Prospetto" asp-route-anno="@Model.Precedente.Year" asp-route-mese="@Model.Precedente.Month" asp-route-sede="@sedeRotta">&larr; Mese precedente</a>
+        <a class="pulsante secondario" asp-action="Prospetto" asp-route-anno="@Model.Successivo.Year" asp-route-mese="@Model.Successivo.Month" asp-route-sede="@sedeRotta">Mese successivo &rarr;</a>
+        <a class="pulsante" asp-action="Assenza">Nuova assenza (ferie, permessi)</a>
+        <a class="pulsante secondario" asp-action="Ferie" asp-route-anno="@Model.Anno" asp-route-sede="@sedeRotta">Calendario ferie</a>
+        @if (Model.PuoGestire)
+        {
+            <a class="pulsante secondario" asp-action="EsportaProspetto" asp-route-anno="@Model.Anno" asp-route-mese="@Model.Mese" asp-route-sede="@sedeRotta">Esporta in Excel</a>
+        }
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+<form method="get" asp-action="Prospetto" class="riquadro">
+    <input type="hidden" name="anno" value="@Model.Anno" />
+    <input type="hidden" name="mese" value="@Model.Mese" />
+    <label>Sede
+        <select name="sede" onchange="this.form.submit()">
+            <option value="">tutte</option>
+            @foreach (var s in Model.Sedi)
+            {
+                <option value="@s.IdSede" selected="@(Model.IdSede == s.IdSede)">@s.Nome</option>
+            }
+        </select>
+    </label>
+</form>
+
+<section class="riquadro">
+    <div class="tabella-scorrevole">
+        <table class="tabella prospetto-presenze" style="font-size:0.78rem;border-collapse:collapse">
+            <thead>
+                <tr>
+                    <th style="text-align:right;color:#003399">@nomeMese</th>
+                    @foreach (var d in giorni)
+                    {
+                        var fine = d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                        <th style="text-align:center;padding:2px 3px;@(fine ? "background:#e8eef9;color:#000" : "")@(d == oggi ? ";outline:2px solid #b00" : "")">
+                            <div>@MotoreCalcoloPresenze.GiorniBrevi[MotoreCalcoloPresenze.IndiceGiornoSettimana(d)]</div>
+                            <div>@d.Day</div>
+                        </th>
+                    }
+                    <th style="text-align:center;color:#003399">Totali</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model.Righe)
+            {
+                var p = r.Prospetto;
+                var sua = r.Lavoratore.IdLavoratore == Model.IdMio;
+                var scuro = ProspettoPresenze.ColoreScuro(p.Calcolo.Colore);
+                double totaleRiga = 0;
+                <tr>
+                    <td style="text-align:center;font-weight:600;padding:2px 8px;border:1px solid #000;background:@p.Calcolo.Colore;color:@(scuro ? "#fff" : "#000")">@p.Calcolo.Nome</td>
+                    @for (var i = 0; i < p.Giorni.Count; i++)
+                    {
+                        var g = p.Giorni[i];
+                        var c = ContenutoCellaPresenze.Costruisci(p.Calcolo, g);
+                        // Sulle righe dei colleghi (chi non gestisce) niente ore da giustificare né straordinario: si vedono solo assenze, festività e chiusure.
+                        if (!sua && !Model.PuoGestire && c is not null && (c.Sfondo == ContenutoCellaPresenze.Grigio || c.CarattereRosso)) { c = null; }
+                        var testo = ProspettoPresenze.TestoCella(c);
+                        if (c is { Ore: double ore }) { totaleRiga += ore; totaliGiorno[i] += ore; }
+                        var stile = "text-align:center;padding:2px 3px;border:1px solid #000;min-width:1.9rem";
+                        if (c?.Sfondo is string sfondo) { stile += ";background:" + ProspettoPresenze.ColoreHtml(sfondo); }
+                        if (c is not null)
+                        {
+                            if (c.Grassetto) { stile += ";font-weight:700"; }
+                            if (c.Corsivo) { stile += ";font-style:italic"; }
+                            if (ProspettoPresenze.ColoreCarattere(c, p.Calcolo.Colore) is string car) { stile += ";color:" + ProspettoPresenze.ColoreHtml(car); }
+                        }
+                        <td style="@stile" title="@(sua || Model.PuoGestire ? c?.Nota : null)">
+                            @if (sua)
+                            {
+                                <a asp-action="Giorno" asp-route-data="@g.Data.ToString("yyyy-MM-dd")" style="display:block;color:inherit;text-decoration:none;min-height:1.1rem">@(testo.Length == 0 ? " " : testo)</a>
+                            }
+                            else
+                            {
+                                @(testo.Length == 0 ? " " : testo)
+                            }
+                        </td>
+                    }
+                    <td style="text-align:center;font-weight:700;padding:2px 6px;border:1px solid #000">@(sua || Model.PuoGestire ? ProspettoPresenze.TestoOre(totaleRiga) : "")</td>
+                </tr>
+            }
+            </tbody>
+            @if (Model.Righe.Count > 0 && Model.PuoGestire)
+            {
+                <tfoot>
+                    <tr style="font-weight:700;color:#003399">
+                        <td style="text-align:center;border:1px solid #000;padding:2px 8px">Ore totali</td>
+                        @foreach (var t in totaliGiorno)
+                        {
+                            <td style="text-align:center;border:1px solid #000;padding:2px 3px">@(t == 0 ? " " : ProspettoPresenze.TestoOre(t))</td>
+                        }
+                        <td style="text-align:center;border:1px solid #000;padding:2px 6px">@ProspettoPresenze.TestoOre(totaliGiorno.Sum())</td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+    @if (Model.Righe.Count == 0)
+    {
+        <p class="sottotesto">Nessun lavoratore da mostrare per questo mese.</p>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Legenda</h2></div>
+    <p class="sottotesto">
+        <span style="background:#ffff00;border:1px solid #000;padding:0 0.5rem">FS / FE</span> fine settimana e festività ·
+        <span style="background:#ff0000;border:1px solid #000;padding:0 0.5rem;font-weight:700">8</span> chiusura aziendale ·
+        <span style="background:#ffc000;border:1px solid #000;padding:0 0.5rem;font-weight:700">4</span> ferie, permessi, malattia e altre assenze (colore del lavoratore; passa il mouse per il motivo, ma solo sulla tua riga) ·
+        <span style="border:1px solid #000;padding:0 0.5rem;font-weight:700;color:#ff0000">1,5</span> straordinario ·
+        <span style="background:#d9d9d9;border:1px solid #000;padding:0 0.5rem;font-style:italic">2</span> ore non lavorate da giustificare.
+        Le ore si possono controllare e correggere solo sulla propria riga; ogni correzione resta nel registro delle modifiche.
+    </p>
+</section>

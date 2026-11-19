@@ -1,0 +1,80 @@
+@model LaboratorioAI.Web.Controllers.ModelloRiepilogo
+@using LaboratorioAI.Core.Presenze
+
+<div class="barra-strumenti">
+    <div>
+        <h1>Riepilogo — @MotoreCalcoloPresenze.Mesi[Model.Mese - 1] @Model.Anno</h1>
+        <p class="sottotitolo">Totali del mese per lavoratore e chi è in sede adesso. Riservato a chi gestisce le presenze.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Riepilogo" asp-route-anno="@Model.Precedente.Year" asp-route-mese="@Model.Precedente.Month">&larr; Mese precedente</a>
+        <a class="pulsante secondario" asp-action="Riepilogo" asp-route-anno="@Model.Successivo.Year" asp-route-mese="@Model.Successivo.Month">Mese successivo &rarr;</a>
+        <a class="pulsante secondario" asp-action="Prospetto" asp-route-anno="@Model.Anno" asp-route-mese="@Model.Mese">Prospetto mensile</a>
+    </div>
+</div>
+
+<partial name="_Messaggi" />
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>In sede adesso</h2></div>
+    @if (Model.Presenti.Count == 0)
+    {
+        <p class="sottotesto">Nessun lavoratore attivo.</p>
+    }
+    else
+    {
+        <table class="tabella">
+            <thead><tr><th>Lavoratore</th><th>Sede</th><th>Stato</th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Presenti)
+            {
+                <tr>
+                    <td>@x.Lavoratore.Cognome</td>
+                    <td>@x.Lavoratore.Sede?.Nome</td>
+                    <td>
+                        @if (x.InSede) { <strong style="color:#1a7f37">in sede</strong><span class="sottotesto"> (entrata alle @x.UltimaOra)</span> }
+                        else if (x.UltimaOra is not null) { <span class="sottotesto">ultima timbratura oggi: @(x.UltimoTipo == "E" ? "entrata" : "uscita") alle @x.UltimaOra</span> }
+                        else { <span class="sottotesto">nessuna timbratura oggi</span> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</section>
+
+<section class="riquadro">
+    <div class="barra-risultati"><h2>Totali del mese</h2></div>
+    <p class="sottotesto">Il contratto conta solo i giorni fino a oggi. «Da giustificare» sono le ore sotto il contratto senza assenza né chiusura.</p>
+    <div class="tabella-scorrevole">
+        <table class="tabella">
+            <thead>
+                <tr>
+                    <th>Lavoratore</th><th class="numerico">Da contratto</th><th class="numerico">Lavorate</th><th class="numerico">Straordinario</th>
+                    <th class="numerico">Da giustificare</th><th class="numerico">Chiusura</th><th>Assenze</th><th class="numerico">Giorni da controllare</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model.Righe)
+            {
+                var t = r.Prospetto.Totali;
+                <tr>
+                    <td>@r.Lavoratore.Cognome</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Contratto)</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Lavorate)</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Straordinario)</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.NonLavorate)</td>
+                    <td class="numerico">@MotoreCalcoloPresenze.OreFmt(t.Chiusura)</td>
+                    <td>@string.Join("; ", t.Causali.Select(c => CausaliPresenze.Descrizione(c.Key) + " " + MotoreCalcoloPresenze.OreFmt(c.Value)))</td>
+                    <td class="numerico">@(t.GiorniConAnomalie == 0 ? "" : t.GiorniConAnomalie.ToString())</td>
+                    <td><a asp-action="Mese" asp-route-anno="@Model.Anno" asp-route-mese="@Model.Mese" asp-route-lavoratore="@r.Lavoratore.IdLavoratore">Dettaglio</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.Righe.Count == 0)
+    {
+        <p class="sottotesto">Nessun lavoratore da mostrare per questo mese.</p>
+    }
+</section>

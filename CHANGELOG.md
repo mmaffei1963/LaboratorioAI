@@ -2,6 +2,20 @@
 
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/).
 
+## Presenze, fase 4b: calendario ferie e riservatezza del prospetto (19/11/2026)
+- Nuova pagina `/Presenze/Ferie`: ferie e permessi di tutti i lavoratori, un blocco per mese come nel CALENDARIO Excel, con la riga «Assenti» (giorni con due o più persone fuori evidenziati) e filtro per sede. Le altre causali (malattia, L. 104, donazione sangue, seggio...) non compaiono mai. Link «Vedi chi è in ferie» da «Nuova assenza».
+- Prospetto mensile: sulle righe dei colleghi chi non gestisce le presenze non vede più commenti, ore da giustificare, straordinario e totali; vede solo assenze, festività e chiusure. L'esportazione in Excel (contiene i commenti) è riservata a `presenze.gestisci`.
+- Nuove regole `CalendarioFeriePresenze` (Core\Presenze, 16 test).
+
+## Presenze, fase 4: prospetto mensile, riepilogo, calendario aziendale, esportazione Excel (19/11/2026)
+- Nuova pagina `/Presenze/Prospetto`: il mese di tutti i lavoratori come il vecchio CALENDARIO (colori: FS/FE giallo, chiusure rosso, assenze nel colore del lavoratore, straordinario in rosso, ore non lavorate grigio corsivo; commento con il motivo al passaggio del mouse). Filtro per sede. Ognuno apre in modifica solo la propria riga.
+- Pulsante «Esporta in Excel» (ClosedXML): stessa struttura del CALENDARIO, con totali di riga e di giorno e foglio Legenda. È una copia in lettura: i dati restano nel database.
+- Nuova pagina `/Presenze/Riepilogo` (solo `presenze.gestisci`): totali del mese per lavoratore e chi è in sede adesso.
+- Nuova pagina `/Presenze/Calendario`: festività e chiusure per tutte le sedi o per una sede, visibile a tutti; aggiungere e togliere voci è riservato a `presenze.gestisci`, con il motivo e la riga nel registro delle modifiche (prima e dopo).
+- Le festività nazionali e i patroni si precaricano una volta sola per anno: se ne togli una non ricompare. Il registro delle modifiche non mostra la riga tecnica del precarico.
+- Nuove regole `RegoleCalendarioPresenze` e `ProspettoPresenze` (Core\Presenze, 26 test).
+- Menu Presenze: Prospetto mensile, Riepilogo presenze, Calendario aziendale.
+
 ## Presenze, fase 3: timbra, presenze del mese, correzioni (19/11/2026)
 - Nuove pagine `/Presenze` (Timbra), `/Presenze/Mese` (Le mie presenze), giorno con correzione delle timbrature (motivo obbligatorio), `/Presenze/Assenza` (giornata intera o ore, anche su piu' giorni), `/Presenze/Registro`, `/Presenze/Lavoratori` (solo `presenze.gestisci`).
 - Nuovo `ServizioPresenze` (Dati\Presenze), nuove regole `RegolePresenze` e `FusoPresenze` (Core\Presenze, 25 test): fuso orario Europe/Rome, ora legale, validazioni, assenze su piu' giorni.
