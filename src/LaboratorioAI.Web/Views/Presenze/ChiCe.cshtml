@@ -1,0 +1,88 @@
+@model LaboratorioAI.Web.Controllers.ModelloChiCe
+@using LaboratorioAI.Core.Presenze
+@{
+    ViewData["Titolo"] = "Chi c'è adesso";
+    var righe = Model.Righe;
+    int Conta(StatoDisponibilita s) => righe.Count(r => r.Giorno.Stato == s);
+    string Colore(StatoDisponibilita s) => s switch
+    {
+        StatoDisponibilita.InServizio => "#1a7f37",
+        StatoDisponibilita.Uscito => "#9a6700",
+        StatoDisponibilita.NonTimbrato => "#57606a",
+        StatoDisponibilita.Assente => "#b42318",
+        _ => "#8c959f",
+    };
+}
+<meta http-equiv="refresh" content="60" />
+<div class="barra-strumenti">
+    <div>
+        <h1>Chi c'è adesso</h1>
+        <p class="sottotitolo">Chi ha timbrato, chi è uscito e chi è assente oggi. «In servizio» vuol dire che ha timbrato l'entrata: può essere in sede, da casa o dal cliente (se ha scritto il luogo lo vedi accanto). Si aggiorna da solo ogni minuto.</p>
+    </div>
+    <div class="azioni">
+        <a class="pulsante secondario" asp-action="Index">Timbra</a>
+        <a class="pulsante secondario" asp-action="Ferie">Calendario ferie</a>
+    </div>
+</div>
+
+<form method="get" asp-action="ChiCe" class="riquadro">
+    <label>Sede
+        <select name="sede" onchange="this.form.submit()">
+            <option value="">tutte</option>
+            @foreach (var s in Model.Sedi)
+            {
+                <option value="@s.IdSede" selected="@(Model.IdSede == s.IdSede)">@s.Nome</option>
+            }
+        </select>
+    </label>
+</form>
+
+<section class="riquadro">
+    <div class="barra-risultati">
+        <h2>Oggi, ore @Model.Aggiornato.ToString("HH:mm")</h2>
+        <span class="sottotesto">
+            In servizio <strong>@Conta(StatoDisponibilita.InServizio)</strong> ·
+            Usciti <strong>@Conta(StatoDisponibilita.Uscito)</strong> ·
+            Non ancora timbrato <strong>@Conta(StatoDisponibilita.NonTimbrato)</strong> ·
+            Assenti <strong>@Conta(StatoDisponibilita.Assente)</strong>
+        </span>
+    </div>
+    @if (righe.Count == 0)
+    {
+        <p class="sottotesto">Nessun lavoratore da mostrare.</p>
+    }
+    else
+    {
+        <div class="tabella-scorrevole">
+            <table class="tabella">
+                <thead><tr><th>Lavoratore</th><th>Sede</th><th>Stato</th><th>Dettaglio</th></tr></thead>
+                <tbody>
+                @foreach (var r in righe)
+                {
+                    var g = r.Giorno;
+                    <tr>
+                        <td><span style="display:inline-block;width:0.9rem;height:0.9rem;border-radius:3px;background:@r.Colore;vertical-align:middle"></span> @r.Cognome</td>
+                        <td>@r.Sede</td>
+                        <td><strong style="color:@Colore(g.Stato)">@DisponibilitaPresenze.Descrizione(g.Stato)</strong></td>
+                        <td>
+                            @switch (g.Stato)
+                            {
+                                case StatoDisponibilita.InServizio:
+                                    <span>dalle @g.Ora@(g.Luogo is null ? "" : " · " + g.Luogo)</span>
+                                    break;
+                                case StatoDisponibilita.Uscito:
+                                    <span>uscito/a alle @g.Ora</span>
+                                    break;
+                                case StatoDisponibilita.NonPrevisto:
+                                    <span>@g.Motivo</span>
+                                    break;
+                            }
+                            @if (g.PermessoParziale) { <span class="sottotesto"> · permesso parziale</span> }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -1,8 +1,8 @@
-@if (TempData["Esito"] is string esito)
+﻿@if (TempData["Esito"] is string esito)
 {
-    <p class="sottotesto" style="color:#1a7f37;font-weight:600">@esito</p>
+    <div role="status" style="background:#e6f4ea;border:1px solid #1a7f37;color:#1a7f37;padding:0.7rem 1rem;border-radius:6px;font-weight:600;margin:0.5rem 0">@esito</div>
 }
 @if (TempData["Errore"] is string errore)
 {
-    <p class="sottotesto" style="color:#b42318;font-weight:600">@errore</p>
+    <div role="alert" style="background:#fdecea;border:1px solid #b42318;color:#b42318;padding:0.7rem 1rem;border-radius:6px;font-weight:700;margin:0.5rem 0">&#9888; @errore</div>
 }

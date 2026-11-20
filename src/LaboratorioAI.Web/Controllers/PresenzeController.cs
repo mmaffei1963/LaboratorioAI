@@ -56,6 +56,23 @@ public class PresenzeController : Controller
 
     private bool PuoGestire => _utente.HaPermesso(Permessi.PresenzeGestisci);
 
+    /// <summary>
+    /// Chi c'è adesso (20/11/2026): lo stato di oggi di tutti, per tutti. Dell'assenza si mostra solo che c'è, mai la causale.
+    /// Il calcolo si tiene in memoria 30 secondi (uguale per tutti), così molte pagine aperte non pesano sul database.
+    /// </summary>
+    public async Task<IActionResult> ChiCe(int? sede, CancellationToken ct)
+    {
+        var memoria = HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+        var tutte = await Microsoft.Extensions.Caching.Memory.CacheExtensions.GetOrCreateAsync(memoria, "presenze-chi-ce", async voce =>
+        {
+            voce.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+            return await _servizio.DisponibilitaOggiAsync(ct);
+        }) ?? new List<RigaDisponibilita>();
+        var righe = sede is int s ? tutte.Where(r => r.IdSede == s).ToList() : tutte;
+        ViewData["Titolo"] = "Chi c'è adesso";
+        return View(new ModelloChiCe(righe, await _servizio.SediAsync(ct), sede, FusoPresenze.Locale(DateTime.UtcNow)));
+    }
+
     private async Task<Lavoratore?> MioAsync(CancellationToken ct) =>
         _utente.IdUtente is int id ? await _servizio.LavoratoreDaUtenteAsync(id, ct) : null;
 

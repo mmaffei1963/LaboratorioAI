@@ -1522,3 +1522,9 @@ Principio: nei documenti per il cliente nessun impegno non richiesto da legge, n
 ## Presenze, fase 5: guide e contatore nella home (19/11/2026)
 - Due guide d'uso: Â«PresenzeÂ» (per tutti: timbrare, correggere, ferie, prospetto, calendario ferie) e Â«Presenze: gestioneÂ» (solo chi gestisce: lavoratori, riepilogo, correzioni dei colleghi, calendario aziendale, esportazione). Â«Chiedi alla guidaÂ» le legge in automatico.
 - Pagina principale: accanto a Â«Riepilogo presenzeÂ» compare il numero dei giorni con timbrature da controllare (mese corrente e precedente, tutti i lavoratori; solo per chi gestisce le presenze).
+## Presenze, fase 5b: Â«Chi c'Ã¨ adessoÂ» (20/11/2026)
+- Nuova pagina `/Presenze/ChiCe` (menu Presenze â†’ Chi c'Ã¨ adesso), per tutti: per ogni lavoratore attivo lo stato di oggi (in servizio, uscito, non ancora timbrato, assente, non previsto), con l'ora dell'ultima timbratura e il luogo scritto da chi timbra. L'assenza si vede solo come Â«assenteÂ», mai la causale. Si aggiorna ogni minuto (dati in memoria per 30 secondi), con filtro per sede.
+- Pagina principale: sulla voce Â«Chi c'Ã¨ adessoÂ» il numero di chi Ã¨ in servizio.
+- Nuove regole `DisponibilitaPresenze` (Core\Presenze, 17 test). Guida Â«PresenzeÂ» aggiornata.
+## Presenze: avviso se manca il motivo (20/11/2026)
+- Nella pagina del giorno il motivo di correzione, aggiunta e annullamento e' obbligatorio gia' nel modulo: se manca, il browser avvisa subito e non invia. I messaggi di esito e di errore sono ora riquadri ben visibili (verde e rosso).

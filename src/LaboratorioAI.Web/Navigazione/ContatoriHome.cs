@@ -67,6 +67,9 @@ public sealed class ServizioContatoriHome
         new("/Presenze/Riepilogo", "da controllare", "giorni con timbrature da controllare (entrata o uscita mancante) nel mese e in quello precedente, su tutti i lavoratori", false,
             PresenzeDaControllareAsync),
 
+        new("/Presenze/ChiCe", "in servizio", "colleghi che hanno timbrato l'entrata e non sono ancora usciti", false,
+            PresenzeInServizioAsync),
+
         new("/LaboratoriEsterni", "da sistemare", "accreditamenti dei laboratori in subappalto da sistemare: verifiche diverse dal flag di ArcLab, numeri ACCREDIA diversi, controllo ACCREDIA fermo", false,
             async (sp, _, ct) => (await sp.GetRequiredService<ServizioAnomalieAccreditamenti>().CalcolaAsync(ct)).Totale),
 
@@ -152,6 +155,10 @@ public sealed class ServizioContatoriHome
             totale += (await servizio.ProspettoMensileAsync(anno, mese, null, ct)).Sum(r => r.Prospetto.Totali.GiorniConAnomalie);
         return totale;
     }
+
+    /// <summary>Colleghi in servizio adesso (ultima timbratura di oggi = entrata). Stesso calcolo della pagina «Chi c'è adesso».</summary>
+    private static async Task<int> PresenzeInServizioAsync(IServiceProvider sp, IContestoUtente _, CancellationToken ct) =>
+        DisponibilitaPresenze.InServizio(await sp.GetRequiredService<ServizioPresenze>().DisponibilitaOggiAsync(ct));
 
     /// <summary>PDF presenti nella cartella di arrivo dei certificati esterni (quelli già trattati vengono spostati).</summary>
     private static int CertificatiInArrivo(IConfiguration config)

@@ -1,4 +1,4 @@
-@model LaboratorioAI.Web.Controllers.ModelloGiorno
+﻿@model LaboratorioAI.Web.Controllers.ModelloGiorno
 @using LaboratorioAI.Core.Presenze
 @{
     var l = Model.Lavoratore;
@@ -58,7 +58,7 @@
                     </select>
                 </label>
                 <label>Luogo<input type="text" name="luogo" value="@t.Luogo" maxlength="120" /></label>
-                <label>Motivo della correzione<input type="text" name="motivo" /></label>
+                <label>Motivo della correzione (obbligatorio)<input type="text" name="motivo" required oninvalid="this.setCustomValidity('Scrivi il motivo: senza motivo la modifica non viene salvata.')" oninput="this.setCustomValidity('')" /></label>
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
                     <button class="pulsante" type="submit">Salva modifica</button>
                     <button class="pulsante secondario" type="submit" formaction="@Url.Action("AnnullaTimbratura")">Annulla timbratura</button>
@@ -82,7 +82,7 @@
                 <select name="tipo"><option value="E">Entrata</option><option value="U">Uscita</option></select>
             </label>
             <label>Luogo<input type="text" name="luogo" maxlength="120" /></label>
-            <label>Motivo (obbligatorio)<input type="text" name="motivo" /></label>
+            <label>Motivo (obbligatorio)<input type="text" name="motivo" required oninvalid="this.setCustomValidity('Scrivi il motivo: senza motivo la modifica non viene salvata.')" oninput="this.setCustomValidity('')" /></label>
             <div style="display:flex;align-items:flex-end"><button class="pulsante" type="submit">Aggiungi</button></div>
         </div>
     </form>
@@ -111,7 +111,7 @@
                     <input type="hidden" name="lavoratore" value="@idRotta" />
                     <input type="hidden" name="idAssenza" value="@a.IdAssenza" />
                     <p style="margin:0"><strong>@CausaliPresenze.Descrizione(a.Causale)</strong> — @MotoreCalcoloPresenze.OreFmt((double)a.Ore)@(string.IsNullOrEmpty(a.Note) ? "" : " — " + a.Note)</p>
-                    <label>Motivo dell'annullamento<input type="text" name="motivo" /></label>
+                    <label>Motivo dell'annullamento (obbligatorio)<input type="text" name="motivo" required oninvalid="this.setCustomValidity('Scrivi il motivo: senza motivo la modifica non viene salvata.')" oninput="this.setCustomValidity('')" /></label>
                     <div><button class="pulsante secondario" type="submit">Annulla assenza</button></div>
                 </form>
             }

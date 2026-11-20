@@ -145,6 +145,7 @@ public static class MenuApplicazione
         new("Presenze", "Presenze", "Timbrature, assenze e correzioni", Icone.Clip, new List<VoceMenu>
         {
             new("Timbra", "/Presenze", Permessi.PresenzeTimbra, "Entrata e uscita dal tuo terminale, anche per la pausa pranzo."),
+            new("Chi c'e' adesso", "/Presenze/ChiCe", Permessi.PresenzeTimbra, "Chi ha timbrato, chi e' uscito e chi e' assente oggi, per sapere subito chi trovi."),
             new("Le mie presenze", "/Presenze/Mese", Permessi.PresenzeTimbra, "Ore lavorate, assenze, straordinario e ore da giustificare del mese; correzione delle timbrature e nuove assenze."),
             new("Calendario ferie", "/Presenze/Ferie", Permessi.PresenzeTimbra, "Ferie e permessi di tutti, per vedere chi e' assente nello stesso periodo."),
             new("Prospetto mensile", "/Presenze/Prospetto", Permessi.PresenzeTimbra, "Il mese di tutti i lavoratori come il vecchio CALENDARIO, con esportazione in Excel."),

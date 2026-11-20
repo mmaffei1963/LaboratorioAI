@@ -486,6 +486,23 @@ public sealed class ServizioPresenze
         return risultato;
     }
 
+    // ------------------------------------------------------------------ chi c'e' adesso
+
+    /// <summary>Stato di oggi di ogni lavoratore attivo (per «Chi c'è adesso»): stesso calcolo del prospetto, nell'ordine dell'elenco.</summary>
+    public async Task<List<RigaDisponibilita>> DisponibilitaOggiAsync(CancellationToken ct)
+    {
+        var oggi = FusoPresenze.GiornoLocale(DateTime.UtcNow);
+        var risultato = new List<RigaDisponibilita>();
+        foreach (var l in await _ctx.Lavoratori.AsNoTracking().Include(x => x.Sede)
+                     .Where(x => x.Attivo && (x.AttivoDal == null || x.AttivoDal <= oggi))
+                     .OrderBy(x => x.Ordine).ThenBy(x => x.Cognome).ToListAsync(ct))
+        {
+            var g = (await CalcolaAsync(l, oggi, oggi, ct)).Giorni[0];
+            risultato.Add(new RigaDisponibilita(l.IdLavoratore, l.Cognome, l.Colore, l.IdSede, l.Sede?.Nome ?? "", DisponibilitaPresenze.Valuta(g)));
+        }
+        return risultato;
+    }
+
     // ------------------------------------------------------------------ calendario aziendale (modifica)
 
     /// <summary>Le voci del calendario dell'anno (festività e chiusure, per tutte le sedi o per una sede).</summary>
