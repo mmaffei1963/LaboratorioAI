@@ -35,6 +35,7 @@ public class AccettazioniController : Controller
                 {
                     IdAccettazione = a.IdAccettazione, DataArrivo = a.DataArrivo, Fornitore = f.RagioneSociale, Articolo = ar.Descrizione,
                     Lotto = l != null ? l.Codice : null, IdLotto = a.IdLotto, Quantita = a.Quantita, UnitaMisura = a.UnitaMisura, Giudizio = a.Giudizio,
+                    Progressivo = a.Progressivo, Colli = a.Colli, Annullata = a.Annullata,
                     NumeroOrdine = _db.OrdiniRighe.Where(r => r.IdOrdineRiga == a.IdOrdineRiga)
                         .Join(_db.Ordini, r => r.IdOrdine, o => o.IdOrdine, (r, o) => o.Numero).FirstOrDefault()
                 };
@@ -144,6 +145,7 @@ public class AccettazioniController : Controller
             IdInsediamento = sede.IdInsediamento, IdOrdineRiga = m.IdOrdineRiga, IdFornitore = m.IdFornitore.Value, IdArticolo = m.IdArticolo.Value,
             DataArrivo = m.DataArrivo, TipoDocumento = Pulisci(m.TipoDocumento), NumeroDocumento = Pulisci(m.NumeroDocumento), DataDocumento = m.DataDocumento,
             Vettore = Pulisci(m.Vettore), Quantita = quantita, UnitaMisura = unita, Giudizio = m.Giudizio, NoteReclami = Pulisci(m.NoteReclami),
+            Colli = m.Colli is > 0 ? m.Colli : null, Progressivo = await ProssimoProgressivoAsync(m.DataArrivo.Year, ct),
             IdUtente = idUtente, DataCreazione = adesso
         };
         _db.Accettazioni.Add(accettazione);
@@ -184,7 +186,7 @@ public class AccettazioniController : Controller
             await _db.SaveChangesAsync(ct);
             var idOrdine = await _db.OrdiniRighe.Where(r => r.IdOrdineRiga == riga).Select(r => r.IdOrdine).FirstAsync(ct);
             var righeAttive = await _db.OrdiniRighe.Where(r => r.IdOrdine == idOrdine && r.Attiva).Select(r => r.IdOrdineRiga).ToListAsync(ct);
-            var accettate = await _db.Accettazioni.Where(a => a.IdOrdineRiga != null && righeAttive.Contains(a.IdOrdineRiga.Value))
+            var accettate = await _db.Accettazioni.Where(a => !a.Annullata && a.IdOrdineRiga != null && righeAttive.Contains(a.IdOrdineRiga.Value))
                 .Select(a => a.IdOrdineRiga!.Value).Distinct().ToListAsync(ct);
             if (righeAttive.All(accettate.Contains))
             {
@@ -214,6 +216,7 @@ public class AccettazioniController : Controller
         if (a is null) return NotFound();
         var m = await IntestazioneAsync(a.IdInsediamento, a.IdFornitore, a.IdArticolo, null, ct);
         m.IdAccettazione = id;
+        m.Progressivo = a.Progressivo; m.DataArrivo = a.DataArrivo; m.Colli = a.Colli; m.Annullata = a.Annullata;
         m.Accettata = a.DataCreazione; m.TipoDocumento = a.TipoDocumento; m.DataDocumento = a.DataDocumento; m.NumeroDocumento = a.NumeroDocumento;
         m.Quantita = a.Quantita; m.UnitaMisura = a.UnitaMisura; m.Giudizio = a.Giudizio; m.Note = a.NoteReclami;
         m.NumeroOrdine = await (from r in _db.OrdiniRighe.AsNoTracking() join o in _db.Ordini.AsNoTracking() on r.IdOrdine equals o.IdOrdine
@@ -258,24 +261,28 @@ public class AccettazioniController : Controller
         if (EGestore) return SoloAzienda();
         var a = await _db.Accettazioni.AsNoTracking().Include(x => x.Controlli).FirstOrDefaultAsync(x => x.IdAccettazione == id, ct);
         if (a is null) return NotFound();
+        if (a.Annullata) { TempData["Errore"] = "Questa accettazione è annullata: non si corregge."; return RedirectToAction(nameof(Index)); }
         var m = new ModelloNuovaAccettazione
         {
             IdAccettazione = id, IdOrdineRiga = a.IdOrdineRiga, IdFornitore = a.IdFornitore, IdArticolo = a.IdArticolo, DataArrivo = a.DataArrivo,
             TipoDocumento = a.TipoDocumento, NumeroDocumento = a.NumeroDocumento, DataDocumento = a.DataDocumento, Vettore = a.Vettore,
-            Quantita = a.Quantita, UnitaMisura = a.UnitaMisura, Giudizio = a.Giudizio, NoteReclami = a.NoteReclami, Respinta = a.Giudizio == GiudizioAccettazione.Respinto
+            Quantita = a.Quantita, UnitaMisura = a.UnitaMisura, Giudizio = a.Giudizio, NoteReclami = a.NoteReclami, Respinta = a.Giudizio == GiudizioAccettazione.Respinto,
+            Colli = a.Colli, FornitoreArticoloModificabili = a.IdOrdineRiga == null
         };
         if (a.IdLotto is { } il)
         {
             var l = await _db.Lotti.AsNoTracking().FirstAsync(x => x.IdLotto == il, ct);
             m.CodiceLotto = l.Codice; m.DataProduzione = l.DataProduzioneFornitore; m.DataScadenza = l.DataScadenza; m.ETmc = l.ETmc;
             m.EnteBio = l.EnteBio; m.IdCategoria = l.IdCategoria;
-            if (await _db.Accettazioni.AnyAsync(x => x.IdLotto == il && x.IdAccettazione != id, ct))
+            if (await _db.Accettazioni.AnyAsync(x => x.IdLotto == il && x.IdAccettazione != id && !x.Annullata, ct))
             {
                 m.CodiceBloccato = true;
                 m.MotivoCodiceBloccato = "Questo lotto è condiviso con altre accettazioni: il codice non si cambia da qui.";
             }
+            m.LottoUsato = await LottoUsatoAsync(il, ct);
         }
         await CompletaAsync(m, ct);
+        await CaricaOpzioniFornitoriArticoliAsync(m, ct);
         await CaricaControlliAsync(m, ct);
         // Si aggiungono i controlli già registrati che non sono più nel profilo, e si riportano i valori inseriti.
         foreach (var c in a.Controlli.Where(c => m.Controlli.All(x => x.Controllo != c.Controllo)))
@@ -295,17 +302,33 @@ public class AccettazioniController : Controller
         if (EGestore) return SoloAzienda();
         var a = await _db.Accettazioni.Include(x => x.Controlli).FirstOrDefaultAsync(x => x.IdAccettazione == id, ct);
         if (a is null) return NotFound();
+        if (a.Annullata) { TempData["Errore"] = "Questa accettazione è annullata: non si corregge."; return RedirectToAction(nameof(Index)); }
         var inseriti = m.Controlli;
-        m.IdAccettazione = id; m.IdFornitore = a.IdFornitore; m.IdArticolo = a.IdArticolo; m.IdOrdineRiga = a.IdOrdineRiga;
+        // Fornitore e articolo si correggono solo se l'accettazione non nasce da un ordine.
+        var modificabili = a.IdOrdineRiga == null;
+        var nuovoForn = modificabili && m.IdFornitore is { } nf ? nf : a.IdFornitore;
+        var nuovoArt = modificabili && m.IdArticolo is { } na ? na : a.IdArticolo;
+        m.IdAccettazione = id; m.IdFornitore = nuovoForn; m.IdArticolo = nuovoArt; m.IdOrdineRiga = a.IdOrdineRiga;
+        m.FornitoreArticoloModificabili = modificabili;
         var categoriaScelta = m.IdCategoria;
         var lotto = a.IdLotto is { } il ? await _db.Lotti.FirstOrDefaultAsync(x => x.IdLotto == il, ct) : null;
         m.Respinta = a.Giudizio == GiudizioAccettazione.Respinto;
-        if (lotto != null && await _db.Accettazioni.AnyAsync(x => x.IdLotto == lotto.IdLotto && x.IdAccettazione != id, ct))
+        var condiviso = lotto != null && await _db.Accettazioni.AnyAsync(x => x.IdLotto == lotto.IdLotto && x.IdAccettazione != id && !x.Annullata, ct);
+        if (condiviso)
         {
             m.CodiceBloccato = true;
             m.MotivoCodiceBloccato = "Questo lotto è condiviso con altre accettazioni: il codice non si cambia da qui.";
         }
+        m.LottoUsato = lotto != null && await LottoUsatoAsync(lotto.IdLotto, ct);
+        var fornitoreValido = await _db.Fornitori.AnyAsync(f => f.IdFornitore == nuovoForn, ct);
+        var articoloValido = await _db.Articoli.AnyAsync(x => x.IdArticolo == nuovoArt, ct);
+        if (!fornitoreValido || !articoloValido)
+        {
+            m.IdFornitore = a.IdFornitore; m.IdArticolo = a.IdArticolo; nuovoForn = a.IdFornitore; nuovoArt = a.IdArticolo;
+            ModelState.AddModelError("", "Il fornitore o l'articolo scelto non esiste.");
+        }
         await CompletaAsync(m, ct);
+        await CaricaOpzioniFornitoriArticoliAsync(m, ct);
         m.IdCategoria = categoriaScelta ?? m.IdCategoria;
         await CaricaControlliAsync(m, ct);
         foreach (var c in inseriti.Where(c => m.Controlli.All(x => x.Controllo != c.Controllo)))
@@ -325,14 +348,25 @@ public class AccettazioniController : Controller
         if (lotto != null && string.IsNullOrWhiteSpace(m.CodiceLotto)) errori.Add("Scrivi il lotto del fornitore.");
         if (m.DataArrivo > DateOnly.FromDateTime(DateTime.Now).AddDays(1)) errori.Add("La data di arrivo non può essere nel futuro.");
 
+        var cambiaForn = nuovoForn != a.IdFornitore;
+        var cambiaArt = nuovoArt != a.IdArticolo;
+        var cambiaMatrice = lotto != null && lotto.IdCategoria != null && lotto.IdCategoria != m.IdCategoria;
+        if (lotto != null && (cambiaForn || cambiaArt))
+        {
+            if (condiviso) errori.Add("Questo lotto è condiviso con altre accettazioni: fornitore e articolo non si cambiano da qui. Annulla e registra di nuovo questa accettazione.");
+        }
+        if (lotto != null && (cambiaForn || cambiaArt || cambiaMatrice) && m.LottoUsato && !m.ConfermaLottoUsato)
+            errori.Add("Il lotto è già stato usato (produzioni, spedizioni o impegni): per cambiare fornitore, articolo o matrice spunta la conferma in fondo alla pagina. La correzione vale anche per le produzioni passate e il valore di prima resta nel registro attività.");
+
         var nuovoCodice = Pulisci(m.CodiceLotto);
         var cambiaCodice = lotto != null && nuovoCodice != null && nuovoCodice != lotto.Codice;
-        if (cambiaCodice)
+        if (cambiaCodice && m.CodiceBloccato) errori.Add(m.MotivoCodiceBloccato!);
+        if (lotto != null && (cambiaCodice || cambiaForn || cambiaArt))
         {
-            if (m.CodiceBloccato) errori.Add(m.MotivoCodiceBloccato!);
-            else if (await _db.Lotti.AnyAsync(l => l.IdLotto != lotto!.IdLotto && l.IdArticolo == lotto.IdArticolo && l.IdFornitore == lotto.IdFornitore
-                                                 && l.Codice == nuovoCodice && l.Tipo == TipoLotto.Ingresso, ct))
-                errori.Add($"Esiste già un lotto «{nuovoCodice}» per questo articolo e questo fornitore.");
+            var codiceFinale = nuovoCodice ?? lotto.Codice;
+            if (await _db.Lotti.AnyAsync(l => l.IdLotto != lotto.IdLotto && l.IdArticolo == nuovoArt && l.IdFornitore == nuovoForn
+                                            && l.Codice == codiceFinale && l.Tipo == TipoLotto.Ingresso, ct))
+                errori.Add($"Esiste già un lotto «{codiceFinale}» per questo articolo e questo fornitore.");
         }
         decimal delta = 0m;
         if (lotto != null && m.Quantita is > 0)
@@ -358,6 +392,23 @@ public class AccettazioniController : Controller
         }
         var adesso = DateTime.UtcNow;
         var idUtente = _db.IdUtenteCorrente;
+        var colliNuovi = m.Colli is > 0 ? m.Colli : null;
+        Nota("colli", a.Colli, colliNuovi);
+        if (cambiaForn)
+        {
+            var vecchio = await _db.Fornitori.AsNoTracking().Where(f => f.IdFornitore == a.IdFornitore).Select(f => f.RagioneSociale).FirstOrDefaultAsync(ct);
+            Nota("fornitore", vecchio, m.Fornitore);
+            a.IdFornitore = nuovoForn;
+            if (lotto != null) lotto.IdFornitore = nuovoForn;
+        }
+        if (cambiaArt)
+        {
+            var vecchio = await _db.Articoli.AsNoTracking().Where(x => x.IdArticolo == a.IdArticolo).Select(x => x.Descrizione).FirstOrDefaultAsync(ct);
+            Nota("articolo", vecchio, m.Articolo);
+            a.IdArticolo = nuovoArt;
+            if (lotto != null) lotto.IdArticolo = nuovoArt;
+        }
+        a.Colli = colliNuovi;
         Nota("data arrivo", a.DataArrivo, m.DataArrivo);
         Nota("tipo documento", a.TipoDocumento, Pulisci(m.TipoDocumento));
         Nota("n. documento", a.NumeroDocumento, Pulisci(m.NumeroDocumento));
@@ -466,5 +517,86 @@ public class AccettazioniController : Controller
         if (m.Controlli.Count == 0)
             m.Controlli = new[] { TipoControllo.Etichettatura, TipoControllo.Confezione, TipoControllo.Temperatura }
                 .Select(t => new ControlloInput { Controllo = t, Nome = NomiControlli.Nome(t) }).ToList();
+    }
+
+    // ── Annullamento di un'accettazione registrata per errore ─────
+    // Nulla si cancella: l'accettazione resta in archivio come «annullata», il carico in magazzino viene stornato e tutto finisce nel registro attività.
+    [HttpPost("{id:int}/Annulla")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Annulla(int id, CancellationToken ct)
+    {
+        if (EGestore) return SoloAzienda();
+        var a = await _db.Accettazioni.FirstOrDefaultAsync(x => x.IdAccettazione == id, ct);
+        if (a is null) return NotFound();
+        IActionResult Errore(string testo) { TempData["Errore"] = testo; return RedirectToAction(nameof(Correggi), new { id }); }
+        if (a.Annullata) { TempData["Errore"] = "Questa accettazione è già annullata."; return RedirectToAction(nameof(Index)); }
+
+        var lotto = a.IdLotto is { } il ? await _db.Lotti.FirstOrDefaultAsync(x => x.IdLotto == il, ct) : null;
+        var altre = lotto != null && await _db.Accettazioni.AnyAsync(x => x.IdLotto == lotto.IdLotto && x.IdAccettazione != id && !x.Annullata, ct);
+        decimal giacenza = 0m;
+        if (lotto != null)
+        {
+            giacenza = await _db.MovimentiLotto.Where(mv => mv.IdLotto == lotto.IdLotto).SumAsync(mv => (decimal?)mv.Quantita, ct) ?? 0m;
+            if (giacenza < a.Quantita)
+                return Errore($"Parte della merce di questo carico è già stata usata o spedita (in magazzino restano {giacenza:0.##} di {a.Quantita:0.##}): non si può annullare. Usa «Correggi».");
+            if (!altre && (await _db.ProduzioniConsumi.AnyAsync(c => c.IdLottoIngresso == lotto.IdLotto, ct)
+                           || await _db.SpedizioniRighe.AnyAsync(r => r.IdLotto == lotto.IdLotto, ct)))
+                return Errore("Il lotto è già stato usato in una produzione o spedito: non si può annullare. Usa «Correggi».");
+        }
+
+        var adesso = DateTime.UtcNow;
+        var idUtente = _db.IdUtenteCorrente;
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+        if (lotto != null)
+        {
+            _db.MovimentiLotto.Add(new MovimentoLotto
+            {
+                IdInsediamento = a.IdInsediamento, IdLotto = lotto.IdLotto, Tipo = TipoMovimento.Rettifica, Quantita = -a.Quantita, UnitaMisura = a.UnitaMisura,
+                DataMovimento = adesso, IdAccettazione = id, Nota = $"Accettazione n. {id} annullata", IdUtente = idUtente, DataCreazione = adesso
+            });
+            foreach (var u in await _db.LottiInUso.Where(u => u.IdLotto == lotto.IdLotto && u.Fine == null && (u.IdAccettazione == id || !altre)).ToListAsync(ct))
+                u.Fine = adesso;
+            if (!altre) lotto.Stato = StatoLotto.Esaurito;
+        }
+        a.Annullata = true;
+        if (a.IdOrdineRiga is { } ir)
+        {
+            var idOrdine = await _db.OrdiniRighe.Where(r => r.IdOrdineRiga == ir).Select(r => r.IdOrdine).FirstOrDefaultAsync(ct);
+            var ordine = await _db.Ordini.FirstOrDefaultAsync(o => o.IdOrdine == idOrdine, ct);
+            if (ordine is { Stato: StatoOrdine.Ricevuto }) ordine.Stato = StatoOrdine.Inviato;
+        }
+        _db.Audit.Add(new VoceAudit
+        {
+            IdUtente = idUtente, IdInsediamento = a.IdInsediamento, Azione = "AccettazioneAnnullata", Entita = "Accettazione", IdEntita = id.ToString(),
+            Dopo = $"Accettazione n. {id} annullata (progressivo {a.Progressivo?.ToString() ?? "-"}, quantità {a.Quantita:0.##} {a.UnitaMisura}, lotto {lotto?.Codice ?? "-"})",
+            IndirizzoIp = HttpContext.Connection.RemoteIpAddress?.ToString(), DataOra = adesso
+        });
+        await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        TempData["Messaggio"] = "Accettazione annullata: il carico in magazzino è stato stornato. Resta nell'elenco come «annullata».";
+        return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>Progressivo dell'anno: riparte da 1 ogni 1° gennaio. Le accettazioni annullate tengono il loro numero.</summary>
+    private async Task<int> ProssimoProgressivoAsync(int anno, CancellationToken ct)
+    {
+        var dal = new DateOnly(anno, 1, 1);
+        var al = new DateOnly(anno, 12, 31);
+        var massimo = await _db.Accettazioni.Where(x => x.DataArrivo >= dal && x.DataArrivo <= al).MaxAsync(x => (int?)x.Progressivo, ct);
+        return (massimo ?? 0) + 1;
+    }
+
+    /// <summary>Il lotto è già entrato in produzioni, spedizioni o impegni.</summary>
+    private async Task<bool> LottoUsatoAsync(int idLotto, CancellationToken ct) =>
+        await _db.ProduzioniConsumi.AnyAsync(c => c.IdLottoIngresso == idLotto, ct)
+        || await _db.SpedizioniRighe.AnyAsync(r => r.IdLotto == idLotto, ct)
+        || await _db.LottiInUso.AnyAsync(u => u.IdLotto == idLotto, ct);
+
+    private async Task CaricaOpzioniFornitoriArticoliAsync(ModelloNuovaAccettazione m, CancellationToken ct)
+    {
+        m.Fornitori = await _db.Fornitori.AsNoTracking().Where(f => f.Attivo || f.IdFornitore == m.IdFornitore).OrderBy(f => f.RagioneSociale)
+            .Select(f => new OpzioneAnagrafica { Id = f.IdFornitore, Nome = f.RagioneSociale }).ToListAsync(ct);
+        m.Articoli = await _db.Articoli.AsNoTracking().Where(x => (x.Attivo && x.Tipo != TipoArticolo.ProdottoFinito) || x.IdArticolo == m.IdArticolo).OrderBy(x => x.Descrizione)
+            .Select(x => new OpzioneAnagrafica { Id = x.IdArticolo, Nome = x.Descrizione }).ToListAsync(ct);
     }
 }

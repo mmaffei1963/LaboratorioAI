@@ -72,7 +72,7 @@ public class CategorieController : Controller
         if (EGestore) return SoloAzienda();
         var c = await _db.CategorieMateriaPrima.AsNoTracking().FirstOrDefaultAsync(x => x.IdCategoria == id, ct);
         if (c is null) return NotFound();
-        var m = new ModelloCategoria { IdCategoria = id, Nome = c.Nome, IdProfiloControllo = c.IdProfiloControllo, Note = c.Note, Attivo = c.Attivo };
+        var m = new ModelloCategoria { IdCategoria = id, Nome = c.Nome, IdProfiloControllo = c.IdProfiloControllo, Note = c.Note, Attivo = c.Attivo, PropostaPerFornitore = c.PropostaPerFornitore };
         await CaricaOpzioniCategoria(m, ct);
         return View(m);
     }
@@ -104,11 +104,12 @@ public class CategorieController : Controller
         else
         {
             c = await _db.CategorieMateriaPrima.FirstOrDefaultAsync(x => x.IdCategoria == m.IdCategoria, ct) ?? throw new InvalidOperationException("Categoria non trovata.");
-            prima = $"{c.Nome}; profilo {c.IdProfiloControllo}; in uso={c.Attivo}";
+            prima = $"{c.Nome}; profilo {c.IdProfiloControllo}; in uso={c.Attivo}; per fornitore={c.PropostaPerFornitore}";
         }
+        c.PropostaPerFornitore = m.PropostaPerFornitore;
         c.Nome = nome!; c.IdProfiloControllo = m.IdProfiloControllo; c.Note = string.IsNullOrWhiteSpace(m.Note) ? null : m.Note.Trim(); c.Attivo = m.Attivo;
         await _db.SaveChangesAsync(ct);
-        Registra(m.IdCategoria == 0 ? "CategoriaCreata" : "CategoriaModificata", "Categoria", c.IdCategoria, prima, $"{c.Nome}; profilo {c.IdProfiloControllo}; in uso={c.Attivo}");
+        Registra(m.IdCategoria == 0 ? "CategoriaCreata" : "CategoriaModificata", "Categoria", c.IdCategoria, prima, $"{c.Nome}; profilo {c.IdProfiloControllo}; in uso={c.Attivo}; per fornitore={c.PropostaPerFornitore}");
         await _db.SaveChangesAsync(ct);
         TempData["Messaggio"] = m.IdCategoria == 0 ? $"Categoria «{c.Nome}» creata." : $"Categoria «{c.Nome}» salvata.";
         return RedirectToAction(nameof(Categorie), new { tutte = !c.Attivo });
@@ -143,7 +144,7 @@ public class CategorieController : Controller
     {
         if (EGestore) return SoloAzienda();
         var m = new ModelloProfilo { Controlli = ElencoControlli(null) };
-        foreach (var c in m.Controlli.Where(c => c.Controllo is TipoControllo.Etichettatura or TipoControllo.Confezione or TipoControllo.Temperatura)) c.Presente = true;
+        foreach (var c in m.Controlli.Where(c => c.Controllo is TipoControllo.Etichettatura or TipoControllo.Confezione or TipoControllo.Temperatura)) { c.Presente = true; c.Obbligatorio = true; }
         return View("ModificaProfilo", m);
     }
 

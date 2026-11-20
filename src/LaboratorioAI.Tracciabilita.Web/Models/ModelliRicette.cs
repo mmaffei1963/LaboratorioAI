@@ -60,6 +60,8 @@ public class IngredienteProposto
     public decimal? QuantitaTeorica { get; set; }
     public string Nome { get; set; } = "";
     public int LottiPerFornitore { get; set; }
+    /// <summary>Vero per le farine (ultimi lotti di ogni fornitore); falso: ultimi lotti in assoluto.</summary>
+    public bool PerFornitore { get; set; }
     public IReadOnlyList<LottiDelFornitore> Fornitori { get; set; } = Array.Empty<LottiDelFornitore>();
     public List<(int IdFornitore, string Fornitore, DateOnly UltimoImpegno)> Scartati { get; set; } = new();
 }

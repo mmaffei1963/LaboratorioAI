@@ -39,16 +39,16 @@ public class MagazzinoController : Controller
                     IdLotto = l.IdLotto, Codice = l.Codice, Articolo = a.Descrizione, Fornitore = f != null ? f.RagioneSociale : null,
                     IdCategoria = l.IdCategoria ?? a.IdCategoria, UnitaMisura = a.UnitaMisura, DataScadenza = l.DataScadenza,
                     Giacenza = _db.MovimentiLotto.Where(m => m.IdLotto == l.IdLotto).Sum(m => (decimal?)m.Quantita) ?? 0m,
-                    DataArrivo = _db.Accettazioni.Where(x => x.IdLotto == l.IdLotto).Min(x => (DateOnly?)x.DataArrivo),
+                    DataArrivo = _db.Accettazioni.Where(x => x.IdLotto == l.IdLotto && !x.Annullata).Min(x => (DateOnly?)x.DataArrivo),
                     InUsoDal = _db.LottiInUso.Where(u => u.IdLotto == l.IdLotto).Min(u => (DateTime?)u.Inizio),
                     InUsoAperto = _db.LottiInUso.Any(u => u.IdLotto == l.IdLotto && u.Fine == null)
                 };
         q = q.Where(r => r.Giacenza > 0);
+        // «Da impegnare» è per fornitura (bolla): si decide dopo, in memoria. Qui si prendono i lotti.
         q = vista switch
         {
             "in-uso" => q.Where(r => r.InUsoAperto),
-            "tutti" => q,
-            _ => q.Where(r => r.InUsoDal == null)
+            _ => q
         };
         if (!string.IsNullOrWhiteSpace(cerca))
         {
@@ -56,12 +56,13 @@ public class MagazzinoController : Controller
             q = q.Where(r => r.Codice.Contains(t) || r.Articolo.Contains(t) || (r.Fornitore != null && r.Fornitore.Contains(t)));
         }
         var righe = await q.OrderBy(r => r.Articolo).ThenBy(r => r.DataArrivo).ToListAsync(ct);
+        if (vista == "da-impegnare") righe = await PerFornituraAsync(righe, ct);
         var nomi = await _db.CategorieMateriaPrima.AsNoTracking().ToDictionaryAsync(c => c.IdCategoria, c => c.Nome, ct);
         foreach (var r in righe) r.Matrice = r.IdCategoria is { } ic && nomi.TryGetValue(ic, out var n) ? n : null;
         var m = new ModelloMagazzino
         {
             Vista = vista, Cerca = cerca, Righe = righe,
-            Rimanenze = righe.GroupBy(r => new { r.Fornitore, r.Articolo, r.UnitaMisura })
+            Rimanenze = righe.GroupBy(r => r.IdLotto).Select(g => g.First()).GroupBy(r => new { r.Fornitore, r.Articolo, r.UnitaMisura })
                 .Select(g => new RimanenzaArticolo { Fornitore = g.Key.Fornitore, Articolo = g.Key.Articolo, UnitaMisura = g.Key.UnitaMisura, Quantita = g.Sum(x => x.Giacenza) })
                 .OrderBy(x => x.Articolo).ToList()
         };
@@ -70,7 +71,7 @@ public class MagazzinoController : Controller
 
     [HttpPost("{id:int}/MettiInUso")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MettiInUso(int id, DateOnly? data, string? vista, string? cerca, CancellationToken ct)
+    public async Task<IActionResult> MettiInUso(int id, int? idAccettazione, DateOnly? data, string? vista, string? cerca, CancellationToken ct)
     {
         if (EGestore) return SoloAzienda();
         IActionResult Indietro(string? errore = null, string? messaggio = null)
@@ -85,7 +86,13 @@ public class MagazzinoController : Controller
         if (categoria is null) return Indietro("Il lotto non ha una matrice: assegnala all'articolo prima di metterlo in uso.");
         var giacenza = await _db.MovimentiLotto.Where(m => m.IdLotto == id).SumAsync(m => (decimal?)m.Quantita, ct) ?? 0m;
         if (giacenza <= 0) return Indietro("Il lotto non ha giacenza: non si può mettere in uso.");
-        if (await _db.LottiInUso.AnyAsync(u => u.IdLotto == id && u.Fine == null, ct)) return Indietro("Il lotto è già in uso.");
+        if (idAccettazione is { } ia)
+        {
+            var fornitura = await _db.Accettazioni.AsNoTracking().FirstOrDefaultAsync(x => x.IdAccettazione == ia && x.IdLotto == id && !x.Annullata, ct);
+            if (fornitura is null) return Indietro("La fornitura scelta non appartiene a questo lotto.");
+            if (await _db.LottiInUso.AnyAsync(u => u.IdAccettazione == ia, ct)) return Indietro("Questa fornitura è già stata impegnata.");
+        }
+        else if (await _db.LottiInUso.AnyAsync(u => u.IdLotto == id && u.Fine == null, ct)) return Indietro("Il lotto è già in uso.");
         if (lotto.Stato is StatoLotto.Bloccato or StatoLotto.Richiamato) return Indietro("Il lotto è bloccato o richiamato: non si può usare.");
 
         var giorno = data ?? DateOnly.FromDateTime(DateTime.Now);
@@ -97,7 +104,7 @@ public class MagazzinoController : Controller
         // Il lotto della stessa matrice che era in uso si chiude: ne resta uno solo alla volta.
         var aperti = await _db.LottiInUso.Where(u => u.IdInsediamento == sede.IdInsediamento && u.IdCategoria == categoria && u.Fine == null).ToListAsync(ct);
         foreach (var u in aperti) u.Fine = inizio < u.Inizio ? u.Inizio : inizio;
-        _db.LottiInUso.Add(new LottoInUso { IdInsediamento = sede.IdInsediamento, IdCategoria = categoria.Value, IdLotto = id, Inizio = inizio, IdUtente = _db.IdUtenteCorrente });
+        _db.LottiInUso.Add(new LottoInUso { IdInsediamento = sede.IdInsediamento, IdCategoria = categoria.Value, IdLotto = id, IdAccettazione = idAccettazione, Inizio = inizio, IdUtente = _db.IdUtenteCorrente });
         Registra("LottoMessoInUso", id, $"Lotto {lotto.Codice} in uso dal {giorno:dd/MM/yyyy}");
         await _db.SaveChangesAsync(ct);
         return Indietro(messaggio: $"Lotto {lotto.Codice} messo in uso.");
@@ -128,6 +135,45 @@ public class MagazzinoController : Controller
         await _db.SaveChangesAsync(ct);
         TempData["Messaggio"] = $"Lotto {lotto.Codice} segnato come esaurito.";
         return RedirectToAction(nameof(Index), new { vista, cerca });
+    }
+
+    /// <summary>
+    /// Da impegnare: una riga per ogni fornitura (accettazione) non ancora impegnata. Il lotto è lo stesso, ma ogni bolla si impegna
+    /// con la sua data. Gli impegni registrati prima (senza fornitura) valgono per la prima fornitura del lotto.
+    /// </summary>
+    private async Task<List<RigaMagazzino>> PerFornituraAsync(List<RigaMagazzino> lotti, CancellationToken ct)
+    {
+        var ids = lotti.Select(l => l.IdLotto).ToList();
+        var forniture = await _db.Accettazioni.AsNoTracking().Where(a => !a.Annullata && a.IdLotto != null && ids.Contains(a.IdLotto.Value))
+            .Select(a => new { a.IdAccettazione, IdLotto = a.IdLotto!.Value, a.DataArrivo, a.TipoDocumento, a.NumeroDocumento, a.DataDocumento, a.Quantita })
+            .ToListAsync(ct);
+        var usi = await _db.LottiInUso.AsNoTracking().Where(u => ids.Contains(u.IdLotto)).Select(u => new { u.IdLotto, u.IdAccettazione }).ToListAsync(ct);
+
+        var esito = new List<RigaMagazzino>();
+        foreach (var l in lotti)
+        {
+            var sue = forniture.Where(f => f.IdLotto == l.IdLotto).OrderBy(f => f.IdAccettazione).ToList();
+            var usiLotto = usi.Where(u => u.IdLotto == l.IdLotto).ToList();
+            if (sue.Count == 0)
+            {
+                if (usiLotto.Count == 0) esito.Add(l);
+                continue;
+            }
+            for (var i = 0; i < sue.Count; i++)
+            {
+                var f = sue[i];
+                var impegnata = usiLotto.Any(u => u.IdAccettazione == f.IdAccettazione) || (i == 0 && usiLotto.Any(u => u.IdAccettazione == null));
+                if (impegnata) continue;
+                esito.Add(new RigaMagazzino
+                {
+                    IdLotto = l.IdLotto, IdAccettazione = f.IdAccettazione, Codice = l.Codice, Articolo = l.Articolo, Fornitore = l.Fornitore,
+                    IdCategoria = l.IdCategoria, UnitaMisura = l.UnitaMisura, DataScadenza = l.DataScadenza, Giacenza = l.Giacenza,
+                    DataArrivo = f.DataArrivo, InUsoDal = null, InUsoAperto = false, QuantitaFornitura = f.Quantita,
+                    Documento = SchedaRintracciabilitaAiuti.TestoDocumento(f.TipoDocumento, f.NumeroDocumento, f.DataDocumento)
+                });
+            }
+        }
+        return esito;
     }
 
     private void Registra(string azione, int idLotto, string dettaglio) =>

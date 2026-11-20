@@ -31,7 +31,7 @@
     @foreach (var e in Model.Esclusi) { <input type="hidden" name="escludi" value="@e" /> }
 @foreach (var i in Model.Ingredienti)
 {
-    <h2>@i.Nome <span class="nota">(ultimi @i.LottiPerFornitore per fornitore@(i.QuantitaTeorica is > 0 ? $"; ricetta: {i.QuantitaTeorica:0.###} kg" : ""))</span></h2>
+    <h2>@i.Nome <span class="nota">(ultimi @i.LottiPerFornitore @(i.PerFornitore ? "per fornitore" : "in assoluto")@(i.QuantitaTeorica is > 0 ? $"; ricetta: {i.QuantitaTeorica:0.###} kg" : ""))</span></h2>
     <table class="elenco">
         <thead><tr><th></th><th>Fornitore</th><th>Lotto</th><th>Articolo</th><th>Impegnato il</th><th>Scadenza</th>@if (Model.ModoConsumi != ModoQuantitaConsumi.SoloLotti) { <th>Kg usati</th> }</tr></thead>
         <tbody>

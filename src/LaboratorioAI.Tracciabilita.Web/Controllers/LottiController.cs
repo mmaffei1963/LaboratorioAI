@@ -57,7 +57,7 @@ public class LottiController : Controller
         var giacenze = (await _db.MovimentiLotto.AsNoTracking().Where(mv => ids.Contains(mv.IdLotto))
                 .GroupBy(mv => mv.IdLotto).Select(g => new { IdLotto = g.Key, Somma = g.Sum(x => x.Quantita) }).ToListAsync(ct))
             .ToDictionary(x => x.IdLotto, x => x.Somma);
-        var arrivi = (await _db.Accettazioni.AsNoTracking().Where(x => x.IdLotto != null && ids.Contains(x.IdLotto.Value))
+        var arrivi = (await _db.Accettazioni.AsNoTracking().Where(x => !x.Annullata && x.IdLotto != null && ids.Contains(x.IdLotto.Value))
                 .GroupBy(x => x.IdLotto!.Value).Select(g => new { IdLotto = g.Key, Data = g.Min(x => (DateOnly?)x.DataArrivo) }).ToListAsync(ct))
             .ToDictionary(x => x.IdLotto, x => x.Data);
         m.Righe = pag.Select(r => new RigaLotto

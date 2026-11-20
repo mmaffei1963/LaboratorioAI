@@ -31,6 +31,12 @@ namespace LaboratorioAI.Tracciabilita.Dati.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAccettazione"));
 
+                    b.Property<bool>("Annullata")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("Colli")
+                        .HasColumnType("int");
+
                     b.Property<DateOnly>("DataArrivo")
                         .HasColumnType("date");
 
@@ -71,6 +77,9 @@ namespace LaboratorioAI.Tracciabilita.Dati.Migrations
                     b.Property<string>("NumeroDocumento")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
+
+                    b.Property<int?>("Progressivo")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Quantita")
                         .HasPrecision(18, 3)
@@ -586,6 +595,9 @@ namespace LaboratorioAI.Tracciabilita.Dati.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<bool>("PropostaPerFornitore")
+                        .HasColumnType("bit");
+
                     b.HasKey("IdCategoria");
 
                     b.HasIndex("IdAzienda");
@@ -958,6 +970,9 @@ namespace LaboratorioAI.Tracciabilita.Dati.Migrations
 
                     b.Property<DateTime?>("Fine")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("IdAccettazione")
+                        .HasColumnType("int");
 
                     b.Property<int>("IdAzienda")
                         .HasColumnType("int");

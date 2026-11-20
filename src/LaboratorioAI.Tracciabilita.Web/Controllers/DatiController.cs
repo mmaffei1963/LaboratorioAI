@@ -115,10 +115,10 @@ public class DatiController : Controller
             {
                 var ctrl = controlli.Where(c => c.IdAccettazione == a.IdAccettazione).ToList();
                 var nonConformi = string.Join("; ", ctrl.Where(c => c.Conforme == false).Select(c => c.Controllo.ToString()));
-                righeAcc.Add(new object?[] { Sede(a.IdInsediamento), a.DataArrivo, a.TipoDocumento, a.NumeroDocumento, a.DataDocumento, Forn(a.IdFornitore), Art(a.IdArticolo), CodLotto(a.IdLotto), a.Quantita, a.UnitaMisura, a.Vettore, a.Giudizio.ToString(), nonConformi, a.NoteReclami });
+                righeAcc.Add(new object?[] { Sede(a.IdInsediamento), a.Progressivo is null ? "" : $"{a.Progressivo} – {a.DataArrivo:dd/MM/yyyy}", a.DataArrivo, a.TipoDocumento, a.NumeroDocumento, a.DataDocumento, Forn(a.IdFornitore), Art(a.IdArticolo), CodLotto(a.IdLotto), a.Quantita, a.UnitaMisura, a.Vettore, a.Giudizio.ToString(), nonConformi, a.NoteReclami, a.Colli, a.Annullata ? "Sì" : "" });
             }
             Aggiungi(zip, "07_Arrivi_merce.csv", Csv(
-                new[] { "Sede", "Data arrivo", "Tipo documento", "N. documento", "Data documento", "Fornitore", "Articolo", "Lotto", "Quantità", "Unità", "Vettore", "Giudizio", "Controlli non conformi", "Note e reclami" },
+                new[] { "Sede", "Progressivo", "Data arrivo", "Tipo documento", "N. documento", "Data documento", "Fornitore", "Articolo", "Lotto", "Quantità", "Unità", "Vettore", "Giudizio", "Controlli non conformi", "Note e reclami", "Colli", "Annullata" },
                 righeAcc));
 
             var righeCtrl = new List<object?[]>();

@@ -7,20 +7,22 @@
     <label>Cerca (fornitore, articolo, lotto)<input type="text" name="cerca" value="@Model.Cerca" /></label>
     <button type="submit" class="piccolo">Cerca</button>
 </form>
-<table class="elenco">
-    <thead><tr><th>Arrivo</th><th>Fornitore</th><th>Articolo</th><th>Lotto</th><th>Quantità</th><th>Ordine</th><th>Giudizio</th><th></th></tr></thead>
+<table class="elenco ordinabile">
+    <thead><tr><th>N.</th><th>Arrivo</th><th>Fornitore</th><th>Articolo</th><th>Lotto</th><th>Quantità</th><th>Colli</th><th>Ordine</th><th>Giudizio</th><th data-nofiltro></th></tr></thead>
     <tbody>
     @foreach (var r in Model.Righe)
     {
-        <tr>
+        <tr style="@(r.Annullata ? "opacity:.55;text-decoration:line-through" : "")">
+            <td>@(r.Progressivo is { } pr ? pr + " – " + r.DataArrivo.ToString("dd/MM/yyyy") : "")</td>
             <td>@r.DataArrivo.ToString("dd/MM/yyyy")</td><td>@r.Fornitore</td><td>@r.Articolo</td>
             <td>@if (r.IdLotto is { } il) { <a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@il">@r.Lotto</a> }</td>
-            <td>@r.Quantita.ToString("0.##") @r.UnitaMisura</td><td>@r.NumeroOrdine</td>
-            <td><span class="tag @(r.Giudizio == GiudizioAccettazione.Respinto ? "spento" : "")">@r.Giudizio</span></td>
+            <td>@r.Quantita.ToString("0.##") @r.UnitaMisura</td><td>@r.Colli</td><td>@r.NumeroOrdine</td>
+            <td><span class="tag @(r.Giudizio == GiudizioAccettazione.Respinto || r.Annullata ? "spento" : "")">@(r.Annullata ? "Annullata" : r.Giudizio.ToString())</span></td>
             <td><a asp-action="Etichetta" asp-route-id="@r.IdAccettazione" target="_blank">Etichetta</a>
-                <a asp-action="Correggi" asp-route-id="@r.IdAccettazione">Correggi</a></td>
+                @if (!r.Annullata) { <a asp-action="Correggi" asp-route-id="@r.IdAccettazione">Correggi</a> }</td>
         </tr>
     }
-    @if (Model.Righe.Count == 0) { <tr><td colspan="8">Nessuna accettazione.</td></tr> }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="10">Nessuna accettazione.</td></tr> }
     </tbody>
 </table>
+@section Script { <script src="~/js/tabella.js" asp-append-version="true"></script> }

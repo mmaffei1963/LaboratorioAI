@@ -5,7 +5,7 @@
 <form method="post" asp-action="Modifica" asp-route-id="@Model.IdRicetta" asp-route-idRiga="@Model.IdRicettaRiga" class="modulo">
     <label asp-for="Etichetta">Nome dell'ingrediente</label>
     <input asp-for="Etichetta" />
-    <label asp-for="LottiPerFornitore">Quanti lotti recenti per ogni fornitore</label>
+    <label asp-for="LottiPerFornitore">Quanti lotti recenti proporre (per fornitore per le farine, in assoluto per il resto)</label>
     <input asp-for="LottiPerFornitore" type="number" min="1" max="10" />
     <label asp-for="QuantitaIngrediente">Kg nella ricetta (facoltativo, per i kg consumati calcolati)</label>
     <input asp-for="QuantitaIngrediente" type="number" step="0.001" min="0.001" />

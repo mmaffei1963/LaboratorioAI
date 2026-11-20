@@ -16,6 +16,7 @@
     <label asp-for="Note">Note</label>
     <input asp-for="Note" />
     <label style="font-weight:400"><input type="checkbox" asp-for="Attivo" style="padding:0" /> @Html.DisplayNameFor(m => m.Attivo)</label>
+    <label style="font-weight:400"><input type="checkbox" asp-for="PropostaPerFornitore" style="padding:0" /> @Html.DisplayNameFor(m => m.PropostaPerFornitore)</label>
     @if (Model.IdCategoria != 0 && Model.ArticoliAttivi > 0)
     {
         <p class="nota">@Model.ArticoliAttivi @(Model.ArticoliAttivi == 1 ? "articolo in uso appartiene" : "articoli in uso appartengono") a questa categoria. Se la metti fuori uso non si potrà più scegliere nelle accettazioni, negli ordini e nelle ricette nuove; i lotti già registrati la conservano.</p>

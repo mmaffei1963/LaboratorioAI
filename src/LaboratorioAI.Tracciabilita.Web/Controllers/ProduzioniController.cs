@@ -114,7 +114,7 @@ public class ProduzioniController : Controller
                                           Fornitore = f != null ? f.RagioneSociale : null, l.DataScadenza })
             .ToListAsync(ct);
         var idLotti = consumi.Select(c => c.IdLottoIngresso).Distinct().ToList();
-        var documenti = await _db.DocumentiPerLottoAsync(idLotti, ct);
+        var documenti = await _db.DocumentiPerLottoAsync(idLotti, p.x.Giorno, ct);
         var inizi = (await _db.LottiInUso.AsNoTracking().Where(u => idLotti.Contains(u.IdLotto))
                 .GroupBy(u => u.IdLotto).Select(g => new { Id = g.Key, Inizio = g.Min(u => u.Inizio) }).ToListAsync(ct))
             .ToDictionary(x => x.Id, x => DateOnly.FromDateTime(x.Inizio.ToLocalTime()));
@@ -136,7 +136,7 @@ public class ProduzioniController : Controller
                 g.Righe.Add(new RigaSchedaRintracciabilita
                 {
                     Articolo = c.Articolo, Fornitore = c.Fornitore ?? "", Lotto = c.Lotto, Scadenza = c.DataScadenza,
-                    Documento = documenti.GetValueOrDefault(c.IdLottoIngresso),
+                    Documenti = documenti.GetValueOrDefault(c.IdLottoIngresso) ?? new List<string>(),
                     ImpiegatoDal = inizi.TryGetValue(c.IdLottoIngresso, out var d) ? d : null
                 });
             m.Gruppi.Add(g);

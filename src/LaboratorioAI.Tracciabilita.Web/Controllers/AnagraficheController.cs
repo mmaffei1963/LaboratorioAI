@@ -154,9 +154,21 @@ public class AnagraficheController : Controller
         Articolo a;
         if (m.IdArticolo == 0) { a = new Articolo(); _db.Articoli.Add(a); }
         else a = await _db.Articoli.FirstOrDefaultAsync(x => x.IdArticolo == m.IdArticolo, ct) ?? throw new InvalidOperationException("Articolo non trovato.");
+        var primaArticolo = m.IdArticolo == 0 ? null : $"{a.Descrizione}; codice {a.Codice ?? "-"}; matrice {a.IdCategoria?.ToString() ?? "-"}";
         a.Descrizione = desc; a.Codice = Pulisci(m.Codice); a.Tipo = m.Tipo; a.IdCategoria = m.IdCategoria;
         a.UnitaMisura = m.UnitaMisura!.Trim(); a.Bio = m.Bio; a.Note = Pulisci(m.Note); a.Attivo = m.Attivo;
         await _db.SaveChangesAsync(ct);
+        // Cambiare nome o codice vale per tutte le registrazioni (lotti, accettazioni, produzioni, schede): il valore di prima resta qui.
+        var dopoArticolo = $"{a.Descrizione}; codice {a.Codice ?? "-"}; matrice {a.IdCategoria?.ToString() ?? "-"}";
+        if (primaArticolo is not null && primaArticolo != dopoArticolo)
+        {
+            _db.Audit.Add(new VoceAudit
+            {
+                IdUtente = _db.IdUtenteCorrente, Azione = "ArticoloModificato", Entita = "Articolo", IdEntita = a.IdArticolo.ToString(),
+                Prima = primaArticolo, Dopo = dopoArticolo, IndirizzoIp = HttpContext.Connection.RemoteIpAddress?.ToString(), DataOra = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(ct);
+        }
 
         // Legami articolo-fornitore: si aggiungono o si riattivano; quelli tolti restano come non attivi.
         var scelti = m.FornitoriScelti.Distinct().ToList();

@@ -43,6 +43,11 @@ public class ModelloNuovaAccettazione
     public bool CodiceBloccato { get; set; }
     public string? MotivoCodiceBloccato { get; set; }
     public bool Respinta { get; set; }
+    /// <summary>Il lotto è già stato usato (produzioni, spedizioni, impegni): cambiare fornitore, articolo o matrice chiede conferma.</summary>
+    public bool LottoUsato { get; set; }
+    public bool ConfermaLottoUsato { get; set; }
+    /// <summary>Fornitore e articolo si correggono solo se l'accettazione non nasce da un ordine.</summary>
+    public bool FornitoreArticoloModificabili { get; set; }
 
     // Da dove nasce
     public int? IdOrdineRiga { get; set; }
@@ -63,6 +68,8 @@ public class ModelloNuovaAccettazione
     public string? NumeroDocumento { get; set; }
     public DateOnly? DataDocumento { get; set; }
     public string? Vettore { get; set; }
+    [System.ComponentModel.DataAnnotations.Range(1, 100000, ErrorMessage = "I colli devono essere un numero maggiore di zero.")]
+    public int? Colli { get; set; }
     public string? CodiceLotto { get; set; }
     public DateOnly? DataProduzione { get; set; }
     public DateOnly? DataScadenza { get; set; }
@@ -95,6 +102,9 @@ public class RigaAccettazione
     public string UnitaMisura { get; set; } = "";
     public GiudizioAccettazione Giudizio { get; set; }
     public string? NumeroOrdine { get; set; }
+    public int? Progressivo { get; set; }
+    public int? Colli { get; set; }
+    public bool Annullata { get; set; }
 }
 
 public class ModelloElencoAccettazioni
@@ -114,6 +124,10 @@ public class VoceEtichetta
 public class ModelloEtichetta
 {
     public int IdAccettazione { get; set; }
+    public int? Progressivo { get; set; }
+    public DateOnly? DataArrivo { get; set; }
+    public int? Colli { get; set; }
+    public bool Annullata { get; set; }
     /// <summary>Indirizzo della scheda del lotto, scritto nel codice QR (vuoto se non c'è un lotto).</summary>
     public string? UrlLotto { get; set; }
     public bool Vuota { get; set; }
@@ -142,6 +156,10 @@ public class ModelloEtichetta
 public class RigaMagazzino
 {
     public int IdLotto { get; set; }
+    /// <summary>La fornitura (accettazione) a cui la riga si riferisce nella vista «Da impegnare».</summary>
+    public int? IdAccettazione { get; set; }
+    public string? Documento { get; set; }
+    public decimal? QuantitaFornitura { get; set; }
     public string Codice { get; set; } = "";
     public string Articolo { get; set; } = "";
     public string? Fornitore { get; set; }

@@ -46,7 +46,7 @@
             <tr>
                 <td>@r.Fornitore</td><td>@r.Articolo</td><td>@r.Lotto</td>
                 <td>@(r.Scadenza?.ToString("dd/MM/yyyy") ?? "")</td>
-                <td>@r.Documento</td>
+                <td>@foreach (var d in r.Documenti) { <div>@d</div> }</td>
                 <td>@(r.ImpiegatoDal?.ToString("dd/MM/yyyy") ?? "")</td>
             </tr>
         }

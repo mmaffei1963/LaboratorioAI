@@ -38,6 +38,8 @@ public class ModelloCategoria
     public string? Note { get; set; }
     [Display(Name = "In uso (togli la spunta se non serve più)")]
     public bool Attivo { get; set; } = true;
+    [Display(Name = "Nei «Lotti da usare» proponi gli ultimi lotti di ogni fornitore (per le farine); se non è spuntato si propongono gli ultimi lotti in assoluto")]
+    public bool PropostaPerFornitore { get; set; }
     public int ArticoliAttivi { get; set; }
     public List<OpzioneProfilo> Profili { get; set; } = new();
 }

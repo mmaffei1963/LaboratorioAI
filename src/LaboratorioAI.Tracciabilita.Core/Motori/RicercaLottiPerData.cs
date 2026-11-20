@@ -50,6 +50,32 @@ public static class RicercaLottiPerData
         return risultato.OrderByDescending(r => r.UltimoImpegno).ThenBy(r => r.Fornitore, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
+    /// <summary>
+    /// Come <see cref="Cerca"/>, ma senza guardare il fornitore: gli ultimi <c>quanti</c> lotti in assoluto, per data di
+    /// primo utilizzo non successiva al giorno richiesto (es. olio: i due lotti più recenti, di chiunque). Il risultato è
+    /// raggruppato per fornitore solo per la visualizzazione.
+    /// </summary>
+    public static IReadOnlyList<LottiDelFornitore> CercaAssoluti(
+        IEnumerable<LottoImpegnato> candidati,
+        IReadOnlyCollection<int> categorie,
+        DateOnly giorno,
+        int quanti,
+        IReadOnlyCollection<int>? fornitoriEsclusi = null)
+    {
+        if (quanti < 1) quanti = 1;
+        var ultimi = candidati
+            .Where(c => categorie.Contains(c.IdCategoria) && c.DataImpegno <= giorno)
+            .Where(c => fornitoriEsclusi is null || !fornitoriEsclusi.Contains(c.IdFornitore))
+            .GroupBy(c => c.IdLotto).Select(g => g.OrderBy(x => x.DataImpegno).First())
+            .OrderByDescending(c => c.DataImpegno).ThenByDescending(c => c.IdLotto)
+            .Take(quanti).ToList();
+        return ultimi
+            .GroupBy(c => c.IdFornitore)
+            .Select(g => new LottiDelFornitore(g.Key, g.First().Fornitore, g.Max(x => x.DataImpegno),
+                g.OrderByDescending(x => x.DataImpegno).ThenByDescending(x => x.IdLotto).ToList()))
+            .OrderByDescending(r => r.UltimoImpegno).ThenBy(r => r.Fornitore, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     /// <summary>I fornitori che avrebbero lotti, attivi o no: serve alla pagina per mostrare quali sono stati scartati.</summary>
     public static IReadOnlyList<(int IdFornitore, string Fornitore, DateOnly UltimoImpegno)> FornitoriScartati(
         IEnumerable<LottoImpegnato> candidati, IReadOnlyCollection<int> categorie, DateOnly giorno, int giorniAttivita = GiorniAttivitaPredefiniti)

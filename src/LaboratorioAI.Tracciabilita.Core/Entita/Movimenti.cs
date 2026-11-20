@@ -57,6 +57,15 @@ public class Accettazione : IDellAzienda
     public GiudizioAccettazione Giudizio { get; set; } = GiudizioAccettazione.Accettato;
     public string? NoteReclami { get; set; }
 
+    /// <summary>Numero di colli arrivati (facoltativo).</summary>
+    public int? Colli { get; set; }
+
+    /// <summary>Progressivo dell'anno (si riparte da 1 ogni 1° gennaio), scritto sulla scheda insieme alla data.</summary>
+    public int? Progressivo { get; set; }
+
+    /// <summary>Accettazione annullata (registrata per errore): resta in archivio ma non conta più.</summary>
+    public bool Annullata { get; set; }
+
     /// <summary>Lotto in ingresso creato (o ritrovato) da questa accettazione.</summary>
     public int? IdLotto { get; set; }
 
@@ -184,6 +193,9 @@ public class LottoInUso : IDellAzienda
     public int IdInsediamento { get; set; }
     public int IdCategoria { get; set; }
     public int IdLotto { get; set; }
+
+    /// <summary>La fornitura (accettazione) impegnata. Vuota per gli impegni registrati prima: valgono per la prima fornitura del lotto.</summary>
+    public int? IdAccettazione { get; set; }
     public DateTime Inizio { get; set; }
 
     /// <summary>Vuota = ancora in uso.</summary>

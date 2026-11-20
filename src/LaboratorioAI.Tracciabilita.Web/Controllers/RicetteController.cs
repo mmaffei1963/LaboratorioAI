@@ -331,13 +331,18 @@ public class RicetteController : Controller
             var categorie = new List<int> { r.IdCategoria!.Value };
             categorie.AddRange(extra.Where(e => e.IdRicettaRiga == r.IdRicettaRiga).Select(e => e.IdCategoria));
             var candidati = await CandidatiAsync(categorie, ct);
-            var trovati = RicercaLottiPerData.Cerca(candidati, categorie, giorno, r.LottiPerFornitore, fornitoriEsclusi: esclusi);
+            // Farine (matrice «per fornitore»): gli ultimi lotti di ogni fornitore. Tutto il resto: gli ultimi lotti in assoluto.
+            var perFornitore = await _db.CategorieMateriaPrima.AsNoTracking().AnyAsync(c => categorie.Contains(c.IdCategoria) && c.PropostaPerFornitore, ct);
+            var trovati = perFornitore
+                ? RicercaLottiPerData.Cerca(candidati, categorie, giorno, r.LottiPerFornitore, fornitoriEsclusi: esclusi)
+                : RicercaLottiPerData.CercaAssoluti(candidati, categorie, giorno, r.LottiPerFornitore, esclusi);
             foreach (var f in trovati) vistiFornitori[f.IdFornitore] = f.Fornitore;
             m.Ingredienti.Add(new IngredienteProposto
             {
                 Nome = r.Etichetta ?? "Ingrediente",
                 QuantitaTeorica = r.QuantitaTeorica,
                 LottiPerFornitore = r.LottiPerFornitore,
+                PerFornitore = perFornitore,
                 Fornitori = trovati,
                 Scartati = RicercaLottiPerData.FornitoriScartati(candidati, categorie, giorno).ToList()
             });
@@ -364,7 +369,7 @@ public class RicetteController : Controller
         if (esito is not ViewResult { Model: ModelloProposta p }) return esito;
 
         var idLotti = p.Ingredienti.SelectMany(i => i.Fornitori).SelectMany(f => f.Lotti).Select(l => l.IdLotto).Distinct().ToList();
-        var documenti = await _db.DocumentiPerLottoAsync(idLotti, ct);
+        var documenti = await _db.DocumentiPerLottoAsync(idLotti, p.Giorno, ct);
         var azienda = await _db.Aziende.AsNoTracking().FirstOrDefaultAsync(ct);
         var sede = await _db.Insediamenti.AsNoTracking().Where(i => i.Attivo).OrderBy(i => i.IdInsediamento).Select(i => i.Nome).FirstOrDefaultAsync(ct);
 
@@ -381,7 +386,7 @@ public class RicetteController : Controller
                     g.Righe.Add(new RigaSchedaRintracciabilita
                     {
                         Articolo = l.Articolo, Fornitore = f.Fornitore, Lotto = l.Codice, Scadenza = l.DataScadenza,
-                        Documento = documenti.GetValueOrDefault(l.IdLotto), ImpiegatoDal = l.DataImpegno
+                        Documenti = documenti.GetValueOrDefault(l.IdLotto) ?? new List<string>(), ImpiegatoDal = l.DataImpegno
                     });
             m.Gruppi.Add(g);
         }

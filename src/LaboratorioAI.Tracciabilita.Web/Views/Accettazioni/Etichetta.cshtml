@@ -22,6 +22,7 @@
     .qr { text-align: center; font-size: 10px; color: #52606d; }
     .qr svg { width: 2.6cm; height: 2.6cm; display: block; margin: 0 auto 2px; }
     .firma { margin-top: 2.5rem; text-align: right; color: #8a1c14; font-weight: 600; }
+    .impegno { margin-top: 1.8rem; display: flex; justify-content: space-between; gap: 1rem; color: #8a1c14; font-weight: 600; }
     @@media print { .nascondi { display: none; } body { margin: 1cm; } }
 </style>
 </head>
@@ -29,7 +30,7 @@
 <p class="nascondi">@if (!Model.Vuota && Model.IdAccettazione > 0) { <a href="@Url.Action("Correggi", "Accettazioni", new { id = Model.IdAccettazione })">Correggi i dati</a> }
     <button onclick="window.print()">Stampa</button> <button onclick="if (window.opener) { window.close(); } else { location.href='@Url.Action("Index", "Accettazioni")'; }">Chiudi</button></p>
 <div class="testa"><div><h1>Accettazione in entrata</h1><div>@Model.Azienda@(string.IsNullOrWhiteSpace(Model.Sede) ? "" : " - " + Model.Sede)</div></div>
-    <div style="display:flex; gap:1rem; align-items:flex-start"><div>Mod. ACC-01<br />@(Model.Vuota ? "Scheda da compilare" : "Accettato il " + (Model.Accettata?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")))</div>
+    <div style="display:flex; gap:1rem; align-items:flex-start"><div>Mod. ACC-01<br />@if (Model.Progressivo is { } pg) { <text>N. <strong>@pg – @(Model.DataArrivo?.ToString("dd/MM/yyyy"))</strong><br /></text> }@if (Model.Annullata) { <strong style="color:#b42318">ANNULLATA</strong><br /> }@(Model.Vuota ? "Scheda da compilare" : "Accettato il " + (Model.Accettata?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")))</div>
     @if (!string.IsNullOrEmpty(Model.UrlLotto)) { <div class="qr" id="qr" data-url="@Model.UrlLotto"></div> }</div></div>
 <div class="dati">
     <div><span>N. ordine</span><strong>@Model.NumeroOrdine</strong></div>
@@ -40,6 +41,7 @@
     <div><span>N. documento</span><strong>@Model.NumeroDocumento</strong></div>
     <div><span>Lotto</span><strong style="font-size:1.4em">@Model.Lotto</strong></div>
     <div><span>Quantità</span><strong>@(Model.Quantita is { } q ? q.ToString("0.##") + " " + Model.UnitaMisura : "")</strong></div>
+    <div><span>Colli</span><strong>@Model.Colli</strong></div>
     <div><span>@(Model.ETmc ? "TMC" : "Scadenza")</span><strong>@Model.DataScadenza?.ToString("dd/MM/yyyy")</strong></div>
     <div><span>Data produzione</span><strong>@Model.DataProduzione?.ToString("dd/MM/yyyy")</strong></div>
     <div><span>Ente bio</span><strong>@Model.EnteBio</strong></div>
@@ -59,6 +61,10 @@
     <span class="casella" style="min-width:9rem">@(Model.Giudizio is { } gdz ? gdz.ToString() : "")</span></div>
 @if (!string.IsNullOrWhiteSpace(Model.Note)) { <p><strong>Note:</strong> @Model.Note</p> }
 <div class="firma">FIRMA RESPONSABILE: ______________________</div>
+<div class="impegno">
+    <div>DATA IMPEGNO: ____ / ____ / ________</div>
+    <div>FIRMA OPERATORE: ______________________</div>
+</div>
 @if (!string.IsNullOrEmpty(Model.UrlLotto))
 {
     <script src="~/js/qrcode.js"></script>

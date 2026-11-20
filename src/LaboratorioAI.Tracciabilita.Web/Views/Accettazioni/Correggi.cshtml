@@ -4,14 +4,34 @@
 <h1>Correggi l'accettazione n. @Model.IdAccettazione</h1>
 <p><a asp-action="Index">« Accettazioni</a> · <a asp-action="Etichetta" asp-route-id="@Model.IdAccettazione" target="_blank">Etichetta</a></p>
 <p class="nota">Cambiando la quantità il magazzino si aggiusta con una rettifica; ogni modifica resta nel registro attività con i valori di prima.
-   Fornitore e articolo non si cambiano: per un errore su questi, registra una nuova accettazione.</p>
-    <p><strong>@Model.Fornitore</strong> · @Model.Articolo@(Model.Matrice is null ? "" : " (" + Model.Matrice + ")")
-        @if (Model.NumeroOrdine is not null) { <span>· ordine n. @Model.NumeroOrdine</span> }</p>
+   @if (Model.FornitoreArticoloModificabili) { <text>Fornitore, articolo e matrice si possono correggere qui sotto.</text> }
+   else { <text>Questa accettazione nasce da un ordine: fornitore e articolo seguono l'ordine; la matrice si può correggere.</text> }</p>
+    @if (!Model.FornitoreArticoloModificabili)
+    {
+        <p><strong>@Model.Fornitore</strong> · @Model.Articolo@(Model.Matrice is null ? "" : " (" + Model.Matrice + ")")
+            <span>· ordine n. @Model.NumeroOrdine</span></p>
+    }
     <form method="post" asp-action="Correggi" asp-route-id="@Model.IdAccettazione" class="modulo" style="max-width:34rem">
         <div asp-validation-summary="All" class="errore"></div>
-        <input type="hidden" name="IdAccettazione" value="@Model.IdAccettazione" /><input type="hidden" asp-for="IdOrdineRiga" /><input type="hidden" asp-for="IdFornitore" />
-        <input type="hidden" asp-for="IdArticolo" /><input type="hidden" asp-for="IdCategoria" />
+        <input type="hidden" name="IdAccettazione" value="@Model.IdAccettazione" /><input type="hidden" asp-for="IdOrdineRiga" />
+        @if (!Model.FornitoreArticoloModificabili)
+        {
+            <input type="hidden" asp-for="IdFornitore" /><input type="hidden" asp-for="IdArticolo" />
+        }
         <input type="hidden" asp-for="NumeroOrdine" />
+
+        @if (Model.FornitoreArticoloModificabili)
+        {
+            <h2>Fornitore e articolo</h2>
+            <label>Fornitore
+                <select name="IdFornitore">
+                    @foreach (var f in Model.Fornitori) { <option value="@f.Id" selected="@(Model.IdFornitore == f.Id)">@f.Nome</option> }
+                </select></label>
+            <label>Articolo
+                <select name="IdArticolo">
+                    @foreach (var x in Model.Articoli) { <option value="@x.Id" selected="@(Model.IdArticolo == x.Id)">@x.Nome</option> }
+                </select></label>
+        }
 
         <h2>Documento e lotto</h2>
         <label asp-for="DataArrivo">Data di arrivo</label><input asp-for="DataArrivo" type="date" />
@@ -32,6 +52,7 @@
         {
             <label asp-for="EnteBio">Ente di certificazione biologico</label><input asp-for="EnteBio" />
         }
+        <label asp-for="Colli">Colli (facoltativo)</label><input asp-for="Colli" type="number" min="1" />
         <label asp-for="Quantita">Quantità arrivata</label><input asp-for="Quantita" type="number" step="0.01" min="0.01" />
         <label asp-for="UnitaMisura">Unità</label><input asp-for="UnitaMisura" />
 
@@ -64,5 +85,16 @@
         <h2>Giudizio</h2>
         <select asp-for="Giudizio" asp-items="Html.GetEnumSelectList<GiudizioAccettazione>()"></select>
         <label asp-for="NoteReclami">Note e reclami</label><input asp-for="NoteReclami" />
+        @if (Model.LottoUsato)
+        {
+            <p class="avviso ko">Il lotto è già stato usato in produzioni, spedizioni o impegni. Se cambi fornitore, articolo o matrice la correzione vale anche per quelle registrazioni.</p>
+            <label style="font-weight:400"><input type="checkbox" name="ConfermaLottoUsato" value="true" style="padding:0" /> Confermo la correzione anche se il lotto è già stato usato</label>
+            <input type="hidden" name="ConfermaLottoUsato" value="false" />
+        }
         <button type="submit">Salva la correzione</button>
+    </form>
+    <form method="post" asp-action="Annulla" asp-route-id="@Model.IdAccettazione" style="margin-top:1.5rem"
+          onsubmit="return confirm('Annullare questa accettazione? Il carico in magazzino viene stornato e l\'accettazione resta in archivio come annullata.');">
+        <button type="submit" class="piccolo">Annulla questa accettazione</button>
+        <span class="nota">Per un'accettazione registrata per errore. Non si può annullare se la merce è già stata usata o spedita.</span>
     </form>

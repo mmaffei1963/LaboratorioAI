@@ -11,8 +11,9 @@
     <label>Cerca (lotto, articolo, fornitore)<input type="text" name="cerca" value="@Model.Cerca" /></label>
     <button type="submit" class="piccolo">Cerca</button>
 </form>
-<table class="elenco">
-    <thead><tr><th>Arrivo</th><th>Articolo</th><th>Fornitore</th><th>Matrice</th><th>Lotto</th><th>Scadenza</th><th>Giacenza</th><th>Impegno</th></tr></thead>
+<p class="nota">Clicca su un'intestazione per ordinare la tabella; con le caselle sotto le intestazioni filtri ogni colonna.</p>
+<table class="elenco ordinabile">
+    <thead><tr><th>Arrivo</th><th>Articolo</th><th>Fornitore</th><th>Matrice</th><th>Lotto</th><th>Bolla</th><th>Scadenza</th><th>Giacenza lotto</th><th data-nofiltro>Impegno</th></tr></thead>
     <tbody>
     @foreach (var r in Model.Righe)
     {
@@ -20,6 +21,7 @@
             <td>@r.DataArrivo?.ToString("dd/MM/yyyy")</td>
             <td>@r.Articolo</td><td>@r.Fornitore</td><td>@r.Matrice</td>
             <td><a asp-controller="Lotti" asp-action="Scheda" asp-route-id="@r.IdLotto">@r.Codice</a></td>
+            <td>@r.Documento</td>
             <td>@r.DataScadenza?.ToString("dd/MM/yyyy")</td>
             <td>@r.Giacenza.ToString("0.##") @r.UnitaMisura</td>
             <td style="white-space:nowrap">
@@ -33,7 +35,7 @@
                 }
                 else
                 {
-                    <form method="post" asp-action="MettiInUso" asp-route-id="@r.IdLotto" asp-route-vista="@Model.Vista" asp-route-cerca="@Model.Cerca" style="display:inline">
+                    <form method="post" asp-action="MettiInUso" asp-route-id="@r.IdLotto" asp-route-idAccettazione="@r.IdAccettazione" asp-route-vista="@Model.Vista" asp-route-cerca="@Model.Cerca" style="display:inline">
                         <input type="date" name="data" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
                         <button type="submit" class="piccolo">Metti in uso</button>
                     </form>
@@ -41,13 +43,13 @@
             </td>
         </tr>
     }
-    @if (Model.Righe.Count == 0) { <tr><td colspan="8">Nessun lotto.</td></tr> }
+    @if (Model.Righe.Count == 0) { <tr><td colspan="9">Nessun lotto.</td></tr> }
     </tbody>
 </table>
 @if (Model.Rimanenze.Count > 0)
 {
     <h2>Rimanenze per articolo</h2>
-    <table class="elenco">
+    <table class="elenco ordinabile">
         <thead><tr><th>Fornitore</th><th>Articolo</th><th>Quantità</th></tr></thead>
         <tbody>
         @foreach (var x in Model.Rimanenze)
@@ -57,3 +59,4 @@
         </tbody>
     </table>
 }
+@section Script { <script src="~/js/tabella.js" asp-append-version="true"></script> }

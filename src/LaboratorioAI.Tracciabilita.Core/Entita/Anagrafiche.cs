@@ -76,6 +76,12 @@ public class CategoriaMateriaPrima : IDellAzienda
     public int? IdProfiloControllo { get; set; }
     public string? Note { get; set; }
     public bool Attivo { get; set; } = true;
+
+    /// <summary>
+    /// Nei «Lotti da usare» si propongono gli ultimi lotti di ogni fornitore (farine). Se è falso si propongono
+    /// gli ultimi lotti in assoluto, qualunque sia il fornitore.
+    /// </summary>
+    public bool PropostaPerFornitore { get; set; }
 }
 
 public class Articolo : IDellAzienda

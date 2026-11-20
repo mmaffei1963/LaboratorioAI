@@ -10,7 +10,8 @@ public class RigaSchedaRintracciabilita
     public string Fornitore { get; set; } = "";
     public string Lotto { get; set; } = "";
     public DateOnly? Scadenza { get; set; }
-    public string? Documento { get; set; }
+    /// <summary>Le bolle del lotto (una o più), ognuna con tipo, data e numero.</summary>
+    public List<string> Documenti { get; set; } = new();
     public DateOnly? ImpiegatoDal { get; set; }
 }
 
@@ -48,20 +49,41 @@ public static class SchedaRintracciabilitaAiuti
         return parti.Count == 0 ? null : string.Join(" ", parti);
     }
 
-    /// <summary>Per ogni lotto di ingresso, il documento con cui è arrivato (tipo, numero e data).</summary>
-    public static async Task<Dictionary<int, string>> DocumentiPerLottoAsync(this ContestoTracciabilita db, IReadOnlyCollection<int> idLotti, CancellationToken ct)
+    /// <summary>
+    /// Per ogni lotto di ingresso, le bolle (forniture) con cui è arrivato e che erano impegnate al giorno indicato.
+    /// Un lotto può arrivare più volte con bolle diverse: nella scheda compaiono tutte, non solo la prima.
+    /// Una fornitura conta se è arrivata entro il giorno e: ha un impegno proprio non successivo al giorno; oppure è la prima
+    /// del lotto; oppure, per lotti registrati prima dell'impegno per fornitura, non ha impegni propri.
+    /// </summary>
+    public static async Task<Dictionary<int, List<string>>> DocumentiPerLottoAsync(
+        this ContestoTracciabilita db, IReadOnlyCollection<int> idLotti, DateOnly giorno, CancellationToken ct)
     {
-        // Il legame è sull'accettazione (Accettazione.IdLotto); nei dati importati Lotto.IdAccettazione può mancare.
-        var righe = await db.Accettazioni.AsNoTracking()
-            .Where(a => a.IdLotto != null && idLotti.Contains(a.IdLotto.Value))
+        var forniture = await db.Accettazioni.AsNoTracking()
+            .Where(a => !a.Annullata && a.IdLotto != null && idLotti.Contains(a.IdLotto.Value))
             .OrderBy(a => a.IdAccettazione)
-            .Select(a => new { IdLotto = a.IdLotto!.Value, a.TipoDocumento, a.NumeroDocumento, a.DataDocumento })
+            .Select(a => new { a.IdAccettazione, IdLotto = a.IdLotto!.Value, a.DataArrivo, a.TipoDocumento, a.NumeroDocumento, a.DataDocumento })
             .ToListAsync(ct);
-        var esito = new Dictionary<int, string>();
-        foreach (var r in righe)
+        var usi = await db.LottiInUso.AsNoTracking().Where(u => idLotti.Contains(u.IdLotto))
+            .Select(u => new { u.IdLotto, u.IdAccettazione, u.Inizio }).ToListAsync(ct);
+
+        var esito = new Dictionary<int, List<string>>();
+        foreach (var gruppo in forniture.GroupBy(f => f.IdLotto))
         {
-            var testo = TestoDocumento(r.TipoDocumento, r.NumeroDocumento, r.DataDocumento);
-            if (testo is not null && !esito.ContainsKey(r.IdLotto)) esito[r.IdLotto] = testo;
+            var elenco = gruppo.ToList();
+            var usiLotto = usi.Where(u => u.IdLotto == gruppo.Key).ToList();
+            var regimeNuovo = usiLotto.Any(u => u.IdAccettazione != null);
+            for (var i = 0; i < elenco.Count; i++)
+            {
+                var f = elenco[i];
+                if (f.DataArrivo > giorno) continue;
+                var propri = usiLotto.Where(u => u.IdAccettazione == f.IdAccettazione).Select(u => DateOnly.FromDateTime(u.Inizio.ToLocalTime())).ToList();
+                bool conta = propri.Count > 0 ? propri.Min() <= giorno : (i == 0 || !regimeNuovo);
+                if (!conta) continue;
+                var testo = TestoDocumento(f.TipoDocumento, f.NumeroDocumento, f.DataDocumento);
+                if (testo is null) continue;
+                if (!esito.TryGetValue(gruppo.Key, out var lista)) esito[gruppo.Key] = lista = new List<string>();
+                if (!lista.Contains(testo)) lista.Add(testo);
+            }
         }
         return esito;
     }
